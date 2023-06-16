@@ -19,7 +19,7 @@
       "cache": false
     },
     "type-check": {
-      "dependsOn": ["^db:generate"],
+      "dependsOn": [],
       "cache": false
     }
   },

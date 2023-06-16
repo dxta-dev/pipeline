@@ -1,7 +1,7 @@
 export default function Page() {
   return (
     <>
-    	Hello
+      <div className="bg-red-500">Hello</div>
     </>
   );
 }
