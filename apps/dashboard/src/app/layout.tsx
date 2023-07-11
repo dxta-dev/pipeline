@@ -1,4 +1,4 @@
-import '../global.css';
+import '~/global.css';
 import { ClerkProvider } from "@clerk/nextjs";
 
 export default function RootLayout({
