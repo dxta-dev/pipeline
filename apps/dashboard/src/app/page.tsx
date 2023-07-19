@@ -1,15 +1,20 @@
-import { UserButton } from "@clerk/nextjs";
-
+import { UserButton, OrganizationSwitcher } from "@clerk/nextjs";
+import { MainNav } from "~/components/ui/main-nav";
 
 export default function Page() {
   return (
     <>
-      <div className="bg-red-500">Hello</div>
-    <div>
-      <h1>Page</h1>
-      <p>Page content</p>
-      <UserButton afterSignOutUrl="/" />
-    </div>
+      <div className="flex-col">
+        <div className="border-b">
+          <div className="flex h-16 items-center px-4">
+            <MainNav className="mx-6" />
+            <div className="ml-auto flex items-center space-x-4">
+              <OrganizationSwitcher />
+              <UserButton afterSignOutUrl="/" />
+            </div>
+          </div>
+        </div>
+      </div>
     </>
   );
 }

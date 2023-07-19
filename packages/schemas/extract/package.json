@@ -1,5 +1,5 @@
 {
-  "name": "@acme/db",
+  "name": "@acme/extract-schema",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -8,11 +8,10 @@
   },
   "author": "",
   "license": "ISC",
-  "devDependencies": {
-    "drizzle-kit": "^0.18.1"
-  },
   "dependencies": {
-    "@planetscale/database": "^1.7.0",
-    "drizzle-orm": "^0.26.5"
+    "drizzle-orm": "^0.27.2"
+  },
+  "devDependencies": {
+    "drizzle-kit": "^0.19.7"
   }
 }
