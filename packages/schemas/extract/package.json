@@ -1,13 +1,11 @@
 {
   "name": "@acme/extract-schema",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "type": "module",
+  "main": "src/index.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "db:generate": "drizzle-kit generate:sqlite"
   },
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "drizzle-orm": "^0.27.2"
   },

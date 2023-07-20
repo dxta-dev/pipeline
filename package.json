@@ -6,6 +6,7 @@
   },
   "scripts": {
     "build": "turbo build",
+    "db:generate": "turbo db:generate",
     "clean": "git clean -xdf node_modules",
     "clean:workspaces": "turbo clean",
     "dev": "turbo dev --parallel",
@@ -31,6 +32,8 @@
     "apps/*",
     "packages/*",
     "packages/config/*",
-    "packages/integrations/*"
+    "packages/integrations/*",
+    "packages/schemas/*",
+    "packages/functions/*"
   ]
 }

@@ -1,0 +1,11 @@
+{
+  "name": "@acme/integration-gitlab",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@gitbeaker/rest": "^39.8.0"
+  }
+}

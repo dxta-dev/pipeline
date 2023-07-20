@@ -5,7 +5,6 @@
   },
   "exclude": [],
   "include": [
-    "drizzle.config.ts",
     "src/**/*.ts",
     "src/**/*.ts",
     "src/**/*.cjs",
