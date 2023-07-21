@@ -8,5 +8,5 @@ export const projectsToMembers = sqliteTable('projects_to_members', {
     pk: primaryKey(projectsToMembers.projectId, projectsToMembers.memberId)
 }));
 
-export type ProjectsToMembers = InferModel<typeof projectsToMembers>;
-export type NewProjectToMembers = InferModel<typeof projectsToMembers, 'insert'>;
+export type ProjectToMember = InferModel<typeof projectsToMembers>;
+export type NewProjectToMember = InferModel<typeof projectsToMembers, 'insert'>;

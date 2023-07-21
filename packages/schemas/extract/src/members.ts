@@ -10,5 +10,5 @@ export const members = sqliteTable('members', {
     uniqueExternalId: uniqueIndex('members_external_id_idx').on(members.externalId),
 }));
 
-export type Members = InferModel<typeof members>;
-export type NewMembers = InferModel<typeof members, 'insert'>;
+export type Member = InferModel<typeof members>;
+export type NewMember = InferModel<typeof members, 'insert'>;
