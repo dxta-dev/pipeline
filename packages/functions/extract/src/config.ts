@@ -1,7 +1,7 @@
 import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
 import type { LibSQLDatabase } from 'drizzle-orm/libsql';
 import type { repositories, namespaces } from '@acme/extract-schema';
-import type { NewNamespace, NewRepository} from '@acme/extract-schema';
+import type { SourceControl } from '@acme/source-control';
 
 export type Database = BetterSQLite3Database | LibSQLDatabase;
 

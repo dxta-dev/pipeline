@@ -1,15 +1,22 @@
 {
-  "name": "@acme/functions-extract",
+  "name": "@acme/extract-functions",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@acme/extract-schema": "^1.0.0",
+    "@acme/source-control": "^1.0.0",
     "drizzle-orm": "^0.27.2"
+  },
+  "devDependencies": {
+    "@jest/globals": "^29.6.1",
+    "@types/jest": "^29.5.3",
+    "ts-jest": "^29.1.1",
+    "ts-node": "^10.9.1"
   }
 }
