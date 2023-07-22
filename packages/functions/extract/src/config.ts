@@ -5,10 +5,6 @@ import type { NewNamespace, NewRepository} from '@acme/extract-schema';
 
 export type Database = BetterSQLite3Database | LibSQLDatabase;
 
-export interface SourceControl {
-  getRepo(externalRepositoryId: number): Promise<{ repository: NewRepository, namespace?: NewNamespace }>;
-}
-
 export type Context = {
   integrations: {
     sourceControl: SourceControl;
