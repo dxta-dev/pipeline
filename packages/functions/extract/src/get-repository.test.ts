@@ -10,39 +10,51 @@ import { namespaces, repositories } from '@acme/extract-schema';
 import type { NewNamespace, NewRepository } from '@acme/extract-schema';
 import type { Context } from './config';
 
-const betterSqlite = new Database("test.db");
-const db = drizzle(betterSqlite);
+let betterSqlite: ReturnType<typeof Database>;
+let db: ReturnType<typeof drizzle>;
 let context: Context;
 let fetchRepository: jest.Mock<Promise<{
-    repository: NewRepository,
-    namespace: NewNamespace
+  repository: NewRepository,
+  namespace: NewNamespace
 }>>
 
 beforeAll(() => {
-    migrate(db, { migrationsFolder: "../../../migrations/extract" });
-    fetchRepository = jest.fn(_ => Promise.resolve({
-        repository: { externalId: 1000 },
-        namespace: { externalId: 2000, name: 'gengar' }
-    }));
+  betterSqlite = new Database("test.db");
+  db = drizzle(betterSqlite);
 
-    context = {
-        entities: { namespaces, repositories },
-        integrations: {
-            sourceControl: {
-                fetchRepository
-            }
-        },
-        db
+  migrate(db, { migrationsFolder: "../../../migrations/extract" });
+
+  fetchRepository = jest.fn((externalRepositoryId: number) => {
+    switch (externalRepositoryId) {
+      case 1000:
+        return Promise.resolve({
+          repository: { externalId: 1000 },
+          namespace: { externalId: 2000, name: 'gengar' }
+        });
+      default:
+        return Promise.reject(new Error('Are you mocking me?'));
     }
+  });
+
+  context = {
+    entities: { namespaces, repositories },
+    integrations: {
+      sourceControl: {
+        fetchRepository
+      }
+    },
+    db
+  }
 
 });
 
 afterAll(async () => {
-    betterSqlite.close();
-    await unlink('test.db');
+  betterSqlite.close();
+  await unlink('test.db');
 });
 
-test('get-repository should insert values into db', async () => {
+describe('get-repository', () => {
+  test('should insert values into db', async () => {
     const { namespace, repository } = await getRepository({ externalRepositoryId: 1000 }, context);
 
     expect(namespace).not.toBeNull();
@@ -50,14 +62,18 @@ test('get-repository should insert values into db', async () => {
     expect(fetchRepository).toHaveBeenCalledTimes(1);
 
     const repositoryRow = db.select().from(repositories)
-        .where(eq(repositories.externalId, repository.externalId)).get();
+      .where(eq(repositories.externalId, repository.externalId)).get();
     expect(repositoryRow.externalId).toEqual(repository.externalId);
     expect(repositoryRow.id).toBeDefined();
 
-    if (!namespace) return; // TODO: How to assert for TS that namespace is defined ?
+    if (!namespace) {
+      throw new Error('namespace should not be null');
+    }
+
     const namespaceRow = db.select().from(namespaces)
-        .where(eq(namespaces.externalId, namespace.externalId)).get();
+      .where(eq(namespaces.externalId, namespace.externalId)).get();
     expect(namespaceRow.externalId).toEqual(namespace.externalId);
     expect(namespaceRow.id).toBeDefined();
 
+  });
 });
