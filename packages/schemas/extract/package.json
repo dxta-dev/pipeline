@@ -1,0 +1,15 @@
+{
+  "name": "@acme/extract-schema",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "db:generate": "drizzle-kit generate:sqlite"
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.27.2"
+  },
+  "devDependencies": {
+    "drizzle-kit": "^0.19.7"
+  }
+}
