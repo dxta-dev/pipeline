@@ -14,7 +14,7 @@ export const getRepository: ExtractFunction<{ externalRepositoryId: number }, { 
 
   if (namespace) {
     await db.insert(entities.namespaces).values(namespace)
-      .onConflictDoUpdate({ target: entities.namespaces.externalId, set: entities.namespaces.name })
+      .onConflictDoUpdate({ target: entities.namespaces.externalId, set: { name: namespace.name } })
       .run();
   }
 
