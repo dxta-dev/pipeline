@@ -1,10 +1,12 @@
 {
-  "name": "@acme/integration-gitlab",
+  "name": "@acme/source-control",
   "version": "1.0.0",
-  "type": "module",
+  "description": "",
+  "main": "src/index.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "author": "",
+  "license": "ISC",
   "dependencies": {
     "@acme/extract-schema": "^1.0.0",
     "@gitbeaker/core": "^39.8.0",

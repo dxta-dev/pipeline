@@ -2,6 +2,7 @@
   "$schema": "https://turborepo.org/schema.json",
   "globalDependencies": [".env", "**/.env", "tsconfig.json"],
   "pipeline": {
+    "test": {},
     "dev": {
       "persistent": true,
       "cache": false
