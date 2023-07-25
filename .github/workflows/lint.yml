@@ -23,7 +23,7 @@ jobs:
       - name: Install dependecies
         run: npm ci
 
-      - name: Type Checking
+      - name: Type checking
         run: npm run type-check
 
       - name: Package checking
