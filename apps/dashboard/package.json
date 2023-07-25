@@ -7,7 +7,7 @@
     "clean": "git clean -xdf .next .turbo node_modules",
     "dev": "npm run with-env next dev",
     "lint": "dotenv -v SKIP_ENV_VALIDATION=1 next lint",
-    "lint:fix": "npm lint --fix",
+    "lint:fix": "npm run lint --fix",
     "start": "npm run with-env next start",
     "type-check": "tsc --noEmit",
     "with-env": "dotenv -e ../../.env --"
@@ -33,7 +33,7 @@
     "zod": "^3.21.4"
   },
   "devDependencies": {
-    "@types/node": "^20.3.1",
+    "@types/node": "^20.4.4",
     "@types/react": "^18.2.12",
     "@types/react-dom": "^18.2.5",
     "autoprefixer": "^10.4.14",

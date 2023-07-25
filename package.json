@@ -20,6 +20,7 @@
     "@acme/eslint-config": "^0.1.0",
     "@ianvs/prettier-plugin-sort-imports": "^4.0.2",
     "@manypkg/cli": "^0.21.0",
+    "@types/node": "^20.4.4",
     "@types/prettier": "^2.7.3",
     "eslint": "^8.42.0",
     "next-themes": "^0.2.1",
@@ -36,8 +37,5 @@
     "packages/integrations/*",
     "packages/schemas/*",
     "packages/functions/*"
-  ],
-  "devDependencies": {
-    "@types/node": "^20.4.4"
-  }
+  ]
 }
