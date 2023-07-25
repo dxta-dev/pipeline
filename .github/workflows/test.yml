@@ -23,13 +23,5 @@ jobs:
       - name: Install dependecies
         run: npm ci
 
-      - name: Branch info
-        run: |
-          echo "Git Branch: $(git branch)"
-          echo "Git Log: $(git log --oneline)"
-          echo "HEAD SHA: $(git rev-parse HEAD)"
-          echo "HEAD^1 SHA: $(git rev-parse HEAD^1)"
-          echo "Git Diff: $(git diff HEAD^1)"
-
       - name: Run tests
         run: npm run test
