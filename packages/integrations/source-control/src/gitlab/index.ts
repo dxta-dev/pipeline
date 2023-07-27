@@ -13,7 +13,7 @@ export class GitlabSourceControl implements SourceControl {
     });
   }
 
-  async getRepo(externalRepositoryId: number): Promise<{ repository: NewRepository, namespace?: NewNamespace }> {
+  async fetchRepository(externalRepositoryId: number): Promise<{ repository: NewRepository, namespace?: NewNamespace }> {
     const project = await this.api.Projects.show(externalRepositoryId);
     const namespace = project.namespace;
 
