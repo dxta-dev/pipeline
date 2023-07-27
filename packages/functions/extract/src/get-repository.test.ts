@@ -9,10 +9,11 @@ import Database from "better-sqlite3";
 import { namespaces, repositories } from '@acme/extract-schema';
 import type { NewNamespace, NewRepository } from '@acme/extract-schema';
 import type { Context } from './config';
+import type { GetRepositorySourceControl, GetRepositoryEntities } from './get-repository';
 
 let betterSqlite: ReturnType<typeof Database>;
 let db: ReturnType<typeof drizzle>;
-let context: Context;
+let context: Context<GetRepositorySourceControl, GetRepositoryEntities>;
 let fetchRepository: jest.Mock<Promise<{
   repository: NewRepository,
   namespace: NewNamespace

@@ -1,7 +1,22 @@
 import type { NewNamespace, NewRepository } from "@acme/extract-schema";
-import type { ExtractFunction } from "./config";
+import type { ExtractFunction, Entities } from "./config";
+import type { SourceControl } from "@acme/source-control";
 
-export const getRepository: ExtractFunction<{ externalRepositoryId: number }, { repository: NewRepository, namespace: NewNamespace | null }> = async (
+export type GetRepositoryInput = {
+  externalRepositoryId: number;
+};
+
+export type GetRepositoryOutput = {
+  repository: NewRepository;
+  namespace: NewNamespace | null;
+};
+
+export type GetRepositorySourceControl = Pick<SourceControl, "fetchRepository">;
+export type GetRepositoryEntities = Pick<Entities, "repositories" | "namespaces">;
+
+export type GetRepositoryFunction = ExtractFunction<GetRepositoryInput, GetRepositoryOutput, GetRepositorySourceControl, GetRepositoryEntities>;
+
+export const getRepository: GetRepositoryFunction = async (
   { externalRepositoryId },
   { integrations, db, entities }
 ) => {
