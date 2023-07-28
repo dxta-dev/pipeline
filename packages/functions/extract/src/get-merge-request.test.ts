@@ -1,19 +1,19 @@
 
 import { describe, expect, test } from '@jest/globals';
 import { unlink } from 'fs/promises';
-import { getAllMergeRequest } from './get-merge-request';
+import { getAllMergeRequests } from './get-merge-request';
 
 import { drizzle } from "drizzle-orm/better-sqlite3";
 import { migrate } from "drizzle-orm/better-sqlite3/migrator";
 import Database from "better-sqlite3";
 import { mergeRequests } from '@acme/extract-schema';
 import type { Context } from './config';
-import type { GetAllMergeRequestSourceControl, GetAllMergeRequestEntities } from './get-merge-request';
+import type { GetAllMergeRequestsSourceControl, GetAllMergeRequestsEntities } from './get-merge-request';
 import type { SourceControl } from '@acme/source-control';
 
 let betterSqlite: ReturnType<typeof Database>;
 let db: ReturnType<typeof drizzle>;
-let context: Context<GetAllMergeRequestSourceControl, GetAllMergeRequestEntities>;
+let context: Context<GetAllMergeRequestsSourceControl, GetAllMergeRequestsEntities>;
 let fetchMergeRequests: SourceControl['fetchMergeRequests'];
 
 const databaseName = 'fetch-merge-requests.db';
@@ -69,7 +69,7 @@ afterAll(async () => {
 describe('get-merge-request', () => {
   describe('getAllMergeRequest', () => {
     test('', async () => {
-      const { mergeRequests, paginationInfo } = await getAllMergeRequest({ externalRepositoryId: 1000 }, context);
+      const { mergeRequests, paginationInfo } = await getAllMergeRequests({ externalRepositoryId: 1000 }, context);
 
       expect(mergeRequests).toBeDefined();
       expect(paginationInfo).toBeDefined();
