@@ -4,7 +4,10 @@
   "type": "module",
   "main": "src/index.ts",
   "scripts": {
-    "db:generate": "drizzle-kit generate:sqlite"
+    "db:generate": "drizzle-kit generate:sqlite",
+    "type-check": "tsc --noEmit",
+    "test": "echo \"Warning: no test specified\"",
+    "lint": "eslint ."
   },
   "dependencies": {
     "drizzle-orm": "^0.27.2"

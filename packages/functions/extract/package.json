@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "jest"
+    "type-check": "tsc --noEmit",
+    "test": "jest",
+    "lint": "eslint ."
   },
   "author": "",
   "license": "ISC",
