@@ -4,9 +4,9 @@
   "description": "",
   "main": "src/index.ts",
   "scripts": {
-    "type-check": "tsc --noEmit",
+    "type-check": "tsc --noEmit && echo \"✔ No TypeScript warnings or errors\"",
     "test": "echo \"Warning: no test specified\"",
-    "lint": "eslint ."
+    "lint": "eslint . && echo \"✔ No ESLint warnings or errors\""
   },
   "author": "",
   "license": "ISC",
