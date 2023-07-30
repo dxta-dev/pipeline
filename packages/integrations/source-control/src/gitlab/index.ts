@@ -1,6 +1,6 @@
-import type { SourceControl } from "../source-control";
+import type { SourceControl, Pagination } from "../source-control";
 import type { Gitlab as GitlabType } from '@gitbeaker/core';
-import type { NewRepository, NewNamespace } from "@acme/extract-schema";
+import type { NewRepository, NewNamespace, NewMergeRequest } from "@acme/extract-schema";
 import { Gitlab } from '@gitbeaker/rest';
 
 export class GitlabSourceControl implements SourceControl {
@@ -26,5 +26,10 @@ export class GitlabSourceControl implements SourceControl {
         name: namespace.name,
       } satisfies NewNamespace,
     };
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/require-await
+  async fetchMergeRequests(externalRepositoryId: number, page?: number, perPage?: number): Promise<{ mergeRequests: NewMergeRequest[], pagination: Pagination }> {
+    throw new Error('Method not implemented.');
   }
 }
