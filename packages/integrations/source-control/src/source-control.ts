@@ -1,4 +1,4 @@
-import type { NewRepository, NewNamespace } from "@acme/extract-schema";
+import type { NewRepository, NewNamespace, NewMergeRequest } from "@acme/extract-schema";
 
 export type Pagination = {
   page: number;

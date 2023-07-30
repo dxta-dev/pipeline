@@ -11,13 +11,7 @@ export type Entities = {
   mergeRequests: typeof mergeRequests,
 };
 
-export interface PartialEntities extends Partial<{
-  repositories: typeof repositories,
-  namespaces: typeof namespaces,
-  mergeRequests: typeof mergeRequests,
-}> { }
-
-export type Context<SC extends Partial<SourceControl>, E extends PartialEntities> = {
+export type Context<SC extends Partial<SourceControl>, E extends Partial<Entities>> = {
   integrations: {
     sourceControl: SC;
   };
@@ -27,4 +21,4 @@ export type Context<SC extends Partial<SourceControl>, E extends PartialEntities
 
 export type Input = Record<string, unknown>;
 
-export type ExtractFunction<I extends Input, O, SC extends Partial<SourceControl>, E extends PartialEntities> = (input: I, context: Context<SC, E>) => Promise<O>;
+export type ExtractFunction<I extends Input, O, SC extends Partial<SourceControl>, E extends Partial<Entities>> = (input: I, context: Context<SC, E>) => Promise<O>;
