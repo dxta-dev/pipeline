@@ -8,7 +8,7 @@ export const mergeRequests = sqliteTable('merge_requests', {
   mergeRequestId: integer('merge_request_id').notNull(),
   repositoryId: integer('repository_id').notNull(),
 }, (mergeRequests) => ({
-  uniqueGitlabId: uniqueIndex('merge_requests_external_id_idx').on(mergeRequests.externalId),
+  uniqueExternalId: uniqueIndex('merge_requests_external_id_idx').on(mergeRequests.externalId),
 }));
 
 export type MergeRequest = InferModel<typeof mergeRequests>;

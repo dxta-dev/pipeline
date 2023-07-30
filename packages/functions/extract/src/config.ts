@@ -1,21 +1,24 @@
 import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
 import type { LibSQLDatabase } from 'drizzle-orm/libsql';
-import type { repositories, namespaces } from '@acme/extract-schema';
+import type { repositories, namespaces, mergeRequests } from '@acme/extract-schema';
 import type { SourceControl } from '@acme/source-control';
 
 export type Database = BetterSQLite3Database | LibSQLDatabase;
 
-export type Context = {
+export type Entities = {
+  repositories: typeof repositories,
+  namespaces: typeof namespaces,
+  mergeRequests: typeof mergeRequests,
+};
+
+export type Context<SC extends Partial<SourceControl>, E extends Partial<Entities>> = {
   integrations: {
-    sourceControl: SourceControl;
+    sourceControl: SC;
   };
   db: Database;
-  entities: {
-    repositories: typeof repositories,
-    namespaces: typeof namespaces,
-  };
+  entities: E;
 };
 
 export type Input = Record<string, unknown>;
 
-export type ExtractFunction<I extends Input, O> = (input: I, context: Context) => Promise<O>;
+export type ExtractFunction<I extends Input, O, SC extends Partial<SourceControl>, E extends Partial<Entities>> = (input: I, context: Context<SC, E>) => Promise<O>;
