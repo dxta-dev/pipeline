@@ -7,6 +7,6 @@ export type Pagination = {
 };
 
 export interface SourceControl {
-  fetchRepository(externalRepositoryId: number): Promise<{ repository: NewRepository, namespace?: NewNamespace }>;
-  fetchMergeRequests(externalRepositoryId: number, page?: number, perPage?: number): Promise<{ mergeRequests: NewMergeRequest[], pagination: Pagination }>;
+  fetchRepository(externalRepositoryId: number, namespaceName: string, repositoryName: string): Promise<{ repository: NewRepository, namespace?: NewNamespace }>;
+  fetchMergeRequests(externalRepositoryId: number, namespaceName: string, repositoryName: string, page?: number, perPage?: number): Promise<{ mergeRequests: NewMergeRequest[], pagination: Pagination }>;
 }

@@ -3,8 +3,9 @@ import { sqliteTable, integer, uniqueIndex } from 'drizzle-orm/sqlite-core';
 
 export const mergeRequests = sqliteTable('merge_requests', {
   id: integer('id').primaryKey(),
+  /* Gitlab -> id */
   externalId: integer('external_id').notNull(),
-  /* Gitlab -> iid */
+  /* Gitlab -> iid, GitHub -> number */
   mergeRequestId: integer('merge_request_id').notNull(),
   repositoryId: integer('repository_id').notNull(),
 }, (mergeRequests) => ({

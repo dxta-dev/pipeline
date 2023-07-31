@@ -13,13 +13,15 @@ export class GitlabSourceControl implements SourceControl {
     });
   }
 
-  async fetchRepository(externalRepositoryId: number): Promise<{ repository: NewRepository, namespace?: NewNamespace }> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async fetchRepository(externalRepositoryId: number, namespaceName: string, repositoryName: string): Promise<{ repository: NewRepository, namespace?: NewNamespace }> {
     const project = await this.api.Projects.show(externalRepositoryId);
     const namespace = project.namespace;
 
     return {
       repository: {
         externalId: project.id,
+        name: project.name
       } satisfies NewRepository,
       namespace: {
         externalId: namespace.id,
@@ -29,7 +31,7 @@ export class GitlabSourceControl implements SourceControl {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/require-await
-  async fetchMergeRequests(externalRepositoryId: number, page?: number, perPage?: number): Promise<{ mergeRequests: NewMergeRequest[], pagination: Pagination }> {
+  async fetchMergeRequests(externalRepositoryId: number, namespaceName: string, repositoryName: string, page?: number, perPage?: number): Promise<{ mergeRequests: NewMergeRequest[], pagination: Pagination }> {
     throw new Error('Method not implemented.');
   }
 }

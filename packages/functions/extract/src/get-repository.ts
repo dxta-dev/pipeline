@@ -4,6 +4,8 @@ import type { SourceControl } from "@acme/source-control";
 
 export type GetRepositoryInput = {
   externalRepositoryId: number;
+  namespaceName: string;
+  repositoryName: string;
 };
 
 export type GetRepositoryOutput = {
@@ -17,11 +19,11 @@ export type GetRepositoryEntities = Pick<Entities, "repositories" | "namespaces"
 export type GetRepositoryFunction = ExtractFunction<GetRepositoryInput, GetRepositoryOutput, GetRepositorySourceControl, GetRepositoryEntities>;
 
 export const getRepository: GetRepositoryFunction = async (
-  { externalRepositoryId },
+  { externalRepositoryId, namespaceName, repositoryName },
   { integrations, db, entities }
 ) => {
-
-  const { repository, namespace } = await integrations.sourceControl.fetchRepository(externalRepositoryId);
+  
+  const { repository, namespace } = await integrations.sourceControl.fetchRepository(externalRepositoryId, namespaceName, repositoryName);
 
   await db.insert(entities.repositories).values(repository)
     .onConflictDoNothing({ target: entities.repositories.externalId })
