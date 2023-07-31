@@ -57,7 +57,7 @@ export class GitHubSourceControl implements SourceControl {
       mergeRequests: result.data.map(mergeRequest => ({
         externalId: mergeRequest.id,
         mergeRequestId: mergeRequest.number,
-        repositoryId: externalRepositoryId, // todo: rename column to state it is external ?
+        repositoryId: externalRepositoryId, // todo: wait until drizzle fixes returning clause
       })),
       pagination
     }
