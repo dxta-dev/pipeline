@@ -16,7 +16,7 @@ let db: ReturnType<typeof drizzle>;
 let context: Context<GetRepositorySourceControl, GetRepositoryEntities>;
 let fetchRepository: jest.Mock<Promise<{
   repository: NewRepository,
-  namespace: NewNamespace
+  namespace?: NewNamespace
 }>>
 const databaseName = 'get-repository.db';
 
@@ -30,7 +30,7 @@ beforeAll(() => {
     switch (externalRepositoryId) {
       case 1000:
         return Promise.resolve({
-          repository: { externalId: 1000 },
+          repository: { externalId: 1000, name: 'repo' },
           namespace: { externalId: 2000, name: 'gengar' }
         });
       default:
@@ -58,7 +58,7 @@ afterAll(async () => {
 describe('get-repository', () => {
   describe('getRepository', () => {
     test('should insert values into db', async () => {
-      const { namespace, repository } = await getRepository({ externalRepositoryId: 1000 }, context);
+      const { namespace, repository } = await getRepository({ externalRepositoryId: 1000, namespaceName: '', repositoryName: '' }, context);
 
       expect(namespace).not.toBeNull();
       expect(repository).toBeDefined();

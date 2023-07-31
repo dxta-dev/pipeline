@@ -15,9 +15,7 @@
     "@gitbeaker/core": "^39.8.0",
     "@gitbeaker/rest": "^39.8.0",
     "@octokit/rest": "^20.0.1",
+    "@types/parse-link-header": "^2.0.1",
     "parse-link-header": "^2.0.0"
-  },
-  "devDependencies": {
-    "@types/parse-link-header": "^2.0.1"
   }
 }

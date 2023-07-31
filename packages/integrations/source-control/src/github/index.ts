@@ -1,9 +1,9 @@
 import type { SourceControl } from '..';
 import { Octokit } from '@octokit/rest';
-import parseLinkHeader from 'parse-link-header'
+import parseLinkHeader from "parse-link-header";
 
-import type { NewRepository, NewNamespace } from "@acme/extract-schema";
-import type { Pagination, RepositoryWithNamespace } from '../source-control';
+import type { NewRepository, NewNamespace, NewMergeRequest } from "@acme/extract-schema";
+import type { Pagination } from '../source-control';
 
 export class GitHubSourceControl implements SourceControl {
 
@@ -15,40 +15,52 @@ export class GitHubSourceControl implements SourceControl {
     })
   }
 
-  async fetchRepositoriesWithNamespaces(perPage?: number, page?: number): Promise<{ repositoriesAndNamespaces: RepositoryWithNamespace[]; pagination: Pagination }> {
-    const repos = await this.api.repos.listForAuthenticatedUser({
-      per_page: perPage || 30,
-      page: page || 1
-    })
-
-    const linkHeader = parseLinkHeader(repos.headers.link) || { next: { per_page: perPage } };
-
-    // what is responsePerPage, need more than 100 repos to test if per_page response is clamped down to limit
-    const responsePerPage = ('next' in linkHeader) ? Number(linkHeader.next?.per_page) : Number(linkHeader.prev?.per_page);
-    const totalPages = (!('last' in linkHeader) ? page : Number(linkHeader.last?.page)) || 1;
+  async fetchRepository(externalRepositoryId: number, namespaceName: string, repositoryName: string): Promise<{ repository: NewRepository; namespace?: NewNamespace }> {
+    const result = await this.api.repos.get({
+      owner: namespaceName,
+      repo: repositoryName
+    });
 
     return {
-      repositoriesAndNamespaces: repos.data.map(repo => ({
-        repository: {
-          externalId: repo.id,
-          name: repo.name,
-        },
-        namespace: {
-          externalId: repo.owner.id,
-          name: repo.owner.login
-        }
-      })),
-      pagination: {
-        page: page || 1,
-        perPage: responsePerPage,
-        totalPages: totalPages
-      } satisfies Pagination
+      repository: {
+        externalId: result.data.id,
+        name: result.data.name,
+      },
+      namespace: {
+        externalId: result.data.owner.id,
+        name: result.data.owner.login
+      }
     }
   }
 
-  fetchRepository(externalRepositoryId: number): Promise<{ repository: NewRepository; namespace?: NewNamespace; }> {
-    throw new Error('Method not implemented.' + externalRepositoryId.toString());
-  }
+  async fetchMergeRequests(externalRepositoryId: number, namespaceName: string, repositoryName: string, page?: number, perPage?: number): Promise<{ mergeRequests: NewMergeRequest[]; pagination: Pagination; }> {
+    page = page || 1;
+    perPage = perPage || 30;
 
+    const result = await this.api.pulls.list({
+      owner: namespaceName,
+      repo: repositoryName,
+      page: page,
+      per_page: perPage,
+      state: "all"
+    });
+
+    const linkHeader = parseLinkHeader(result.headers.link) || { next: { per_page: perPage } };
+
+    const pagination = {
+      page,
+      perPage: ('next' in linkHeader) ? Number(linkHeader.next?.per_page) : Number(linkHeader.prev?.per_page),
+      totalPages: (!('last' in linkHeader)) ? page : Number(linkHeader.last?.page)
+    } satisfies Pagination;
+
+    return {
+      mergeRequests: result.data.map(mergeRequest => ({
+        externalId: mergeRequest.id,
+        mergeRequestId: mergeRequest.number,
+        repositoryId: externalRepositoryId, // todo: rename column to state it is external ?
+      })),
+      pagination
+    }
+  }
 
 }
