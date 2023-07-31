@@ -9,7 +9,7 @@ export class GitlabSourceControl implements SourceControl {
   constructor(token: string) {
     this.api = new Gitlab({
       token,
-      camelize: true,
+      // camelize: true
     });
   }
 
@@ -32,6 +32,24 @@ export class GitlabSourceControl implements SourceControl {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/require-await
   async fetchMergeRequests(externalRepositoryId: number, namespaceName: string, repositoryName: string, page?: number, perPage?: number): Promise<{ mergeRequests: NewMergeRequest[], pagination: Pagination }> {
-    throw new Error('Method not implemented.');
+    const { data, paginationInfo } = await this.api.MergeRequests.all({
+      projectId: externalRepositoryId,
+      page, 
+      perPage,
+      pagination: 'offset',
+      showExpanded: true
+    });
+    return {
+      mergeRequests: data.map((mr) => ({
+        externalId: mr.id,
+        mergeRequestId: mr.iid,
+        repositoryId: externalRepositoryId
+      })),
+      pagination: {
+        page: paginationInfo.current,
+        perPage: paginationInfo.perPage,
+        totalPages: paginationInfo.totalPages
+      }
+    }
   }
 }
