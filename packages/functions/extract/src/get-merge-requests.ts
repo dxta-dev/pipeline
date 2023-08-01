@@ -1,4 +1,4 @@
-import type { NewMergeRequest } from "@acme/extract-schema";
+import type { MergeRequest } from "@acme/extract-schema";
 import type { ExtractFunction, Entities } from "./config";
 import type { Pagination, SourceControl } from "@acme/source-control";
 
@@ -11,7 +11,7 @@ export type GetMergeRequestsInput = {
 };
 
 export type GetMergeRequestsOutput = {
-  mergeRequests: NewMergeRequest[];
+  mergeRequests: MergeRequest[];
   paginationInfo: Pagination;
 };
 
@@ -26,12 +26,12 @@ export const getMergeRequests: GetMergeRequestsFunction  = async (
 ) => {
     const { mergeRequests, pagination } = await integrations.sourceControl.fetchMergeRequests(externalRepositoryId, namespaceName, repositoryName);
 
-    await db.insert(entities.mergeRequests).values(mergeRequests)
-      .onConflictDoNothing({ target: entities.mergeRequests.externalId })
-      .run();
-
+    const mrRequest = await db.insert(entities.mergeRequests).values(mergeRequests)
+      .onConflictDoNothing({ target: entities.mergeRequests.externalId }).returning()
+      .all();
+      
     return {
-      mergeRequests,
+      mergeRequests: mrRequest,
       paginationInfo: pagination,
     };
   };

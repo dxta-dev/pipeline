@@ -70,18 +70,19 @@ afterAll(async () => {
 describe('get-merge-request:', () => {
   describe('getMergeRequests', () => {
     test('should create insert merge request data in the database', async () => {
-      const { mergeRequests, paginationInfo } = await getMergeRequests({ externalRepositoryId: 1000, namespaceName: '', repositoryName: ''}, context);
+      const { mergeRequests, paginationInfo } = await getMergeRequests({ externalRepositoryId: 2000, namespaceName: '', repositoryName: ''}, context);
 
       expect(mergeRequests).toBeDefined();
       expect(paginationInfo).toBeDefined();
       expect(fetchMergeRequests).toHaveBeenCalledTimes(1);
 
       const mergeRequestData = db.select().from(context.entities.mergeRequests).all();
-
+      // console.log(mergeRequestData)
       expect(mergeRequestData.length).toEqual(mergeRequests.length);
-
+      
       for (const mergeRequest of mergeRequestData) {
         expect(mergeRequests.find(mr => mr.externalId === mergeRequest.externalId)).toBeDefined();
+        expect(mergeRequests.find(mr => mr.id === mergeRequest.id)).toBeDefined();
       }
     });
   });
