@@ -1,5 +1,6 @@
 import type { InferModel } from 'drizzle-orm';
 import { sqliteTable, integer,text, uniqueIndex } from 'drizzle-orm/sqlite-core';
+import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 
 export const repositories = sqliteTable('repositories', {
   id: integer('id').primaryKey(),
@@ -11,3 +12,5 @@ export const repositories = sqliteTable('repositories', {
 
 export type Repository = InferModel<typeof repositories>;
 export type NewRepository = InferModel<typeof repositories, 'insert'>;
+export const NewRepositorySchema = createInsertSchema(repositories);
+export const RepositorySchema = createSelectSchema(repositories);

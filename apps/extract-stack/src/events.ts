@@ -1,7 +1,8 @@
 import { createEventBuilder } from "sst/node/event-bus";
 import { z } from "zod";
+import { RepositorySchema } from "@acme/extract-schema";
 
-export const eventBuilder = createEventBuilder({
+const eventBuilder = createEventBuilder({
   // wtf?
   bus: "extract-bus" as never,
   metadata: z.object({
@@ -12,9 +13,15 @@ export const eventBuilder = createEventBuilder({
 });
 
 export const extractRepositoryEvent = {
-  schema: z.object({
-    repository: z.string(),
-  }),
+  schemaShape: RepositorySchema.shape,
   source: 'extract',
   detailType: 'repository',
 };
+
+export function defineEvent<EventSchemaShape extends z.ZodRawShape>(p: {
+  source: string;
+  detailType: string;
+  schemaShape: EventSchemaShape;
+}) {
+  return eventBuilder(`${p.source}.${p.detailType}`, p.schemaShape);
+}

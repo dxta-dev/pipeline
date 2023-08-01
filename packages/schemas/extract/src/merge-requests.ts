@@ -14,3 +14,4 @@ export const mergeRequests = sqliteTable('merge_requests', {
 
 export type MergeRequest = InferModel<typeof mergeRequests>;
 export type NewMergeRequest = InferModel<typeof mergeRequests, 'insert'>;
+

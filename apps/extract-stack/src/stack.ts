@@ -27,5 +27,9 @@ export function ExtractStack({ stack }: StackContext) {
   stack.addOutputs({
     ApiEndpoint: api.url,
   });
+
+  return {
+    ExtractBus: bus,
+  };
 }
 

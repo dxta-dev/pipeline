@@ -18,6 +18,8 @@
     "@acme/extract-functions": "^1.0.0",
     "@acme/extract-schema": "^1.0.0",
     "@acme/source-control": "^1.0.0",
+    "@libsql/client": "^0.3.1",
+    "drizzle-orm": "^0.27.2",
     "zod": "^3.21.4"
   }
 }
