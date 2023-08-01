@@ -10,6 +10,7 @@ import { mergeRequests } from '@acme/extract-schema';
 import type { Context } from './config';
 import type { GetMergeRequestsSourceControl, GetMergeRequestsEntities } from './get-merge-requests';
 import type { SourceControl } from '@acme/source-control';
+import { TimePeriod } from '@acme/source-control/src/source-control';
 
 let betterSqlite: ReturnType<typeof Database>;
 let db: ReturnType<typeof drizzle>;
@@ -24,7 +25,7 @@ beforeAll(() => {
 
   migrate(db, { migrationsFolder: "../../../migrations/extract" });
 
-  fetchMergeRequests = jest.fn((externalRepositoryId: number, namespaceName:string, repositoryName: string, repositoryId: number, page?: number, perPage?: number) => {
+  fetchMergeRequests = jest.fn((externalRepositoryId: number, namespaceName:string, repositoryName: string, repositoryId: number, creationPeriod?: TimePeriod, page?: number, perPage?: number) => {
 
     switch (externalRepositoryId) {
       case 1000:
