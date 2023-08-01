@@ -9,8 +9,7 @@ import Database from "better-sqlite3";
 import { mergeRequests } from '@acme/extract-schema';
 import type { Context } from './config';
 import type { GetMergeRequestsSourceControl, GetMergeRequestsEntities } from './get-merge-requests';
-import type { SourceControl } from '@acme/source-control';
-import { TimePeriod } from '@acme/source-control/src/source-control';
+import type { SourceControl, TimePeriod } from '@acme/source-control';
 
 let betterSqlite: ReturnType<typeof Database>;
 let db: ReturnType<typeof drizzle>;
