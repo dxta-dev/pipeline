@@ -5,7 +5,7 @@ import { NamespaceSchema } from "@acme/extract-schema/src/namespaces";
 
 const eventBuilder = createEventBuilder({
   // wtf?
-  bus: "extract-bus" as never,
+  bus: "ExtractBus" as never,
   metadata: z.object({
     version: z.number(),
     timestamp: z.number(),
@@ -23,8 +23,6 @@ export const extractRepositoryEvent = {
   source: 'extract',
   detailType: 'repository',
 };
-
-type test = z.infer<typeof extractRepositoryEventSchema>;
 
 export function defineEvent<EventSchemaShape extends z.ZodRawShape>(p: {
   source: string;

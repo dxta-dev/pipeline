@@ -9,7 +9,15 @@ import type { APIGatewayProxyHandlerV2 } from "aws-lambda";
 import { z } from "zod";
 import { Config } from "sst/node/config";
 
-const client = createClient({ url: Config.DATABASE_URL, authToken: Config.DATABASE_AUTH_TOKEN });
+const configSchema = z.object({
+  DATABASE_URL: z.string(),
+  DATABASE_AUTH_TOKEN: z.string(),
+  GITLAB_TOKEN: z.string(),
+});
+
+const config = configSchema.parse(Config);
+
+const client = createClient({ url: config.DATABASE_URL, authToken: config.DATABASE_AUTH_TOKEN });
 
 const db = drizzle(client);
 
@@ -22,7 +30,7 @@ const context: Context<GetRepositorySourceControl, GetRepositoryEntities> = {
     namespaces,
   },
   integrations: {
-    sourceControl: new GitlabSourceControl(Config.GITLAB_TOKEN),
+    sourceControl: new GitlabSourceControl(config.GITLAB_TOKEN),
   },
   db,
 };
