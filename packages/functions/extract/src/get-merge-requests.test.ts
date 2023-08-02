@@ -77,7 +77,6 @@ describe('get-merge-request:', () => {
       expect(fetchMergeRequests).toHaveBeenCalledTimes(1);
 
       const mergeRequestData = db.select().from(context.entities.mergeRequests).all();
-      // console.log(mergeRequestData)
       expect(mergeRequestData.length).toEqual(mergeRequests.length);
       
       for (const mergeRequest of mergeRequestData) {
