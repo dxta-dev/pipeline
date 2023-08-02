@@ -7,8 +7,9 @@ import { createClient } from '@libsql/client';
 import { drizzle } from 'drizzle-orm/libsql';
 import type { APIGatewayProxyHandlerV2 } from "aws-lambda";
 import { z } from "zod";
+import { Config } from "sst/node/config";
 
-const client = createClient({ url: 'DATABASE_URL', authToken: 'DATABASE_AUTH_TOKEN' });
+const client = createClient({ url: Config.DATABASE_URL, authToken: Config.DATABASE_AUTH_TOKEN });
 
 const db = drizzle(client);
 
@@ -21,24 +22,24 @@ const context: Context<GetRepositorySourceControl, GetRepositoryEntities> = {
     namespaces,
   },
   integrations: {
-    sourceControl: new GitlabSourceControl('aaa'),
+    sourceControl: new GitlabSourceControl(Config.GITLAB_TOKEN),
   },
   db,
 };
 
 const inputSchema = z.object({
-  pathParameters: z.object({
-    repositoryId: z.number(),
-    repositoryName: z.string(),
-    namespaceName: z.string(),
-  }),
+  repositoryId: z.number(),
+  repositoryName: z.string(),
+  namespaceName: z.string(),
 });
 
 type Input = z.infer<typeof inputSchema>;
 
 export const handler: APIGatewayProxyHandlerV2 = async (apiGatewayEvent) => {
-  
-  let input: Input; 
+
+  let input: Input;
+
+  console.log(apiGatewayEvent);
 
   try {
     input = inputSchema.parse(apiGatewayEvent);
@@ -49,7 +50,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (apiGatewayEvent) => {
     };
   }
 
-  const { repositoryId, repositoryName, namespaceName } = input.pathParameters;
+  const { repositoryId, repositoryName, namespaceName } = input;
 
   const { repository, namespace } = await getRepository({ externalRepositoryId: repositoryId, repositoryName, namespaceName }, context);
 
