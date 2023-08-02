@@ -27,12 +27,12 @@ export const getMergeRequests: GetMergeRequestsFunction  = async (
 ) => {
     const { mergeRequests, pagination } = await integrations.sourceControl.fetchMergeRequests(externalRepositoryId, namespaceName, repositoryName, repositoryId);
 
-    const mrRequest = await db.insert(entities.mergeRequests).values(mergeRequests)
+    const insertedMergeRequests = await db.insert(entities.mergeRequests).values(mergeRequests)
       .onConflictDoNothing({ target: entities.mergeRequests.externalId }).returning()
       .all();
       
     return {
-      mergeRequests: mrRequest,
+      mergeRequests: insertedMergeRequests,
       paginationInfo: pagination,
     };
   };
