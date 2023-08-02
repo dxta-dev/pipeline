@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "type-check": "tsc --noEmit && echo \"✔ No TypeScript warnings or errors\"",
+    "test": "echo \"Warning: no test specified\"",
+    "lint": "eslint . && echo \"✔ No ESLint warnings or errors\""
   },
   "author": "",
   "license": "ISC",
