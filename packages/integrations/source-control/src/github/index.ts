@@ -33,6 +33,7 @@ export class GitHubSourceControl implements SourceControl {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async fetchMergeRequests(externalRepositoryId: number, namespaceName: string, repositoryName: string, repositoryId: number, creationPeriod: TimePeriod = {}, page?: number, perPage?: number): Promise<{ mergeRequests: NewMergeRequest[]; pagination: Pagination; }> {
     page = page || 1;
     perPage = perPage || 30;
@@ -54,12 +55,8 @@ export class GitHubSourceControl implements SourceControl {
       totalPages: (!('last' in linkHeader)) ? page : Number(linkHeader.last?.page)
     } satisfies Pagination;
 
-    const createdAfter = creationPeriod.from || new Date(0);
-    const createdBefore = creationPeriod.to || new Date();
-
     return {
       mergeRequests: result.data
-        .filter((mergeRequest => new Date(mergeRequest.created_at) > createdAfter && new Date(mergeRequest.created_at) < createdBefore))
         .map(mergeRequest => ({
           externalId: mergeRequest.id,
           mergeRequestId: mergeRequest.number,
