@@ -1,5 +1,6 @@
 import { extractRepositoryEvent, defineEvent } from "./events";
-import { getRepository, Context, GetRepositorySourceControl, GetRepositoryEntities } from "@acme/extract-functions";
+import { getRepository } from "@acme/extract-functions";
+import type { Context, GetRepositorySourceControl, GetRepositoryEntities } from "@acme/extract-functions";
 import { GitlabSourceControl } from "@acme/source-control";
 import { repositories, namespaces } from "@acme/extract-schema";
 import { createClient } from '@libsql/client';
@@ -28,6 +29,6 @@ export async function handler() {
 
   const { repository, namespace } = await getRepository({ externalRepositoryId: 1, repositoryName: 'bar', namespaceName: 'foo' }, context);
 
-  await event.publish({ ...repository, id: 1 }, { caller: 'extract-repository', timestamp: new Date().getTime(), version: 1 });
+  await event.publish({ repository: { ...repository, id: 1 }, namespace: { ...namespace, id: 1 } }, { caller: 'extract-repository', timestamp: new Date().getTime(), version: 1 });
 
 }

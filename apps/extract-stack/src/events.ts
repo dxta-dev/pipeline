@@ -1,6 +1,7 @@
 import { createEventBuilder } from "sst/node/event-bus";
 import { z } from "zod";
 import { RepositorySchema } from "@acme/extract-schema";
+import { NamespaceSchema } from "@acme/extract-schema/src/namespaces";
 
 const eventBuilder = createEventBuilder({
   // wtf?
@@ -12,11 +13,18 @@ const eventBuilder = createEventBuilder({
   }).shape,
 });
 
+const extractRepositoryEventSchema = z.object({
+  repository: RepositorySchema,
+  namespace: z.nullable(NamespaceSchema),
+});
+
 export const extractRepositoryEvent = {
-  schemaShape: RepositorySchema.shape,
+  schemaShape: extractRepositoryEventSchema.shape,
   source: 'extract',
   detailType: 'repository',
 };
+
+type test = z.infer<typeof extractRepositoryEventSchema>;
 
 export function defineEvent<EventSchemaShape extends z.ZodRawShape>(p: {
   source: string;
