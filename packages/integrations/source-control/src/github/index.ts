@@ -33,7 +33,7 @@ export class GitHubSourceControl implements SourceControl {
     }
   }
 
-  async fetchMergeRequests(externalRepositoryId: number, namespaceName: string, repositoryName: string, page?: number, perPage?: number): Promise<{ mergeRequests: NewMergeRequest[]; pagination: Pagination; }> {
+  async fetchMergeRequests(externalRepositoryId: number, namespaceName: string, repositoryName: string, repositoryId: number, page?: number, perPage?: number): Promise<{ mergeRequests: NewMergeRequest[]; pagination: Pagination; }> {
     page = page || 1;
     perPage = perPage || 30;
 
@@ -57,7 +57,7 @@ export class GitHubSourceControl implements SourceControl {
       mergeRequests: result.data.map(mergeRequest => ({
         externalId: mergeRequest.id,
         mergeRequestId: mergeRequest.number,
-        repositoryId: externalRepositoryId, // todo: wait until drizzle fixes returning clause
+        repositoryId
       })),
       pagination
     }
