@@ -6,6 +6,7 @@ export type GetMergeRequestsInput = {
   externalRepositoryId: number;
   namespaceName: string;
   repositoryName: string;
+  repositoryId: number;
   page?: number;
   perPage?: number;
 };
@@ -21,10 +22,10 @@ export type GetMergeRequestsEntities = Pick<Entities, "mergeRequests">;
 export type GetMergeRequestsFunction = ExtractFunction<GetMergeRequestsInput, GetMergeRequestsOutput, GetMergeRequestsSourceControl, GetMergeRequestsEntities>;
 
 export const getMergeRequests: GetMergeRequestsFunction  = async (
-  { externalRepositoryId, namespaceName, repositoryName },
+  { externalRepositoryId, namespaceName, repositoryName, repositoryId },
   { integrations, db, entities }
 ) => {
-    const { mergeRequests, pagination } = await integrations.sourceControl.fetchMergeRequests(externalRepositoryId, namespaceName, repositoryName);
+    const { mergeRequests, pagination } = await integrations.sourceControl.fetchMergeRequests(externalRepositoryId, namespaceName, repositoryName, repositoryId);
 
     const mrRequest = await db.insert(entities.mergeRequests).values(mergeRequests)
       .onConflictDoNothing({ target: entities.mergeRequests.externalId }).returning()

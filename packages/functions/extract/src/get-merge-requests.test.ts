@@ -24,7 +24,7 @@ beforeAll(() => {
 
   migrate(db, { migrationsFolder: "../../../migrations/extract" });
 
-  fetchMergeRequests = jest.fn((externalRepositoryId: number, namespaceName:string, repositoryName: string, page?: number, perPage?: number) => {
+  fetchMergeRequests = jest.fn((externalRepositoryId: number, namespaceName:string, repositoryName: string, repositoryId: number, page?: number, perPage?: number) => {
 
     switch (externalRepositoryId) {
       case 1000:
@@ -70,7 +70,7 @@ afterAll(async () => {
 describe('get-merge-request:', () => {
   describe('getMergeRequests', () => {
     test('should create insert merge request data in the database', async () => {
-      const { mergeRequests, paginationInfo } = await getMergeRequests({ externalRepositoryId: 2000, namespaceName: '', repositoryName: ''}, context);
+      const { mergeRequests, paginationInfo } = await getMergeRequests({ externalRepositoryId: 2000, namespaceName: '', repositoryName: '', repositoryId: 2000}, context);
 
       expect(mergeRequests).toBeDefined();
       expect(paginationInfo).toBeDefined();
