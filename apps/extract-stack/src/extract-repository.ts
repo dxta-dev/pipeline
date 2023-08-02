@@ -5,6 +5,8 @@ import { GitlabSourceControl } from "@acme/source-control";
 import { repositories, namespaces } from "@acme/extract-schema";
 import { createClient } from '@libsql/client';
 import { drizzle } from 'drizzle-orm/libsql';
+import type { APIGatewayProxyHandlerV2 } from "aws-lambda";
+import { z } from "zod";
 
 const client = createClient({ url: 'DATABASE_URL', authToken: 'DATABASE_AUTH_TOKEN' });
 
@@ -24,11 +26,37 @@ const context: Context<GetRepositorySourceControl, GetRepositoryEntities> = {
   db,
 };
 
+const inputSchema = z.object({
+  pathParameters: z.object({
+    repositoryId: z.number(),
+    repositoryName: z.string(),
+    namespaceName: z.string(),
+  }),
+});
 
-export async function handler() {
+type Input = z.infer<typeof inputSchema>;
 
-  const { repository, namespace } = await getRepository({ externalRepositoryId: 1, repositoryName: 'bar', namespaceName: 'foo' }, context);
+export const handler: APIGatewayProxyHandlerV2 = async (apiGatewayEvent) => {
+  
+  let input: Input; 
 
-  await event.publish({ repository: { ...repository, id: 1 }, namespace: { ...namespace, id: 1 } }, { caller: 'extract-repository', timestamp: new Date().getTime(), version: 1 });
+  try {
+    input = inputSchema.parse(apiGatewayEvent);
+  } catch (error) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ error: (error as Error).message }),
+    };
+  }
 
+  const { repositoryId, repositoryName, namespaceName } = input.pathParameters;
+
+  const { repository, namespace } = await getRepository({ externalRepositoryId: repositoryId, repositoryName, namespaceName }, context);
+
+  await event.publish({ repository, namespace }, { caller: 'extract-repository', timestamp: new Date().getTime(), version: 1 });
+
+  return {
+    statusCode: 200,
+    body: JSON.stringify({})
+  };
 }

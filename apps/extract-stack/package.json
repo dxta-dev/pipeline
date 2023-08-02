@@ -10,18 +10,20 @@
   },
   "author": "",
   "license": "ISC",
-  "devDependencies": {
-    "@tsconfig/node16": "^16.1.0",
-    "aws-cdk-lib": "2.84.0",
-    "constructs": "10.1.156",
-    "sst": "2.20.1"
-  },
   "dependencies": {
     "@acme/extract-functions": "^1.0.0",
     "@acme/extract-schema": "^1.0.0",
     "@acme/source-control": "^1.0.0",
     "@libsql/client": "^0.3.1",
+    "@tsconfig/node16": "^16.1.0",
+    "aws-cdk-lib": "2.84.0",
+    "aws-lambda": "^1.0.7",
+    "constructs": "10.1.156",
     "drizzle-orm": "^0.27.2",
+    "sst": "2.20.1",
     "zod": "^3.21.4"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.119"
   }
 }
