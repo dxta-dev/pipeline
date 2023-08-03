@@ -1,2 +1,3 @@
-.sst
+.sst/*
+!.sst/types/index.ts
 

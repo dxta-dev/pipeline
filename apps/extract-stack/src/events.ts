@@ -4,8 +4,7 @@ import { RepositorySchema } from "@acme/extract-schema";
 import { NamespaceSchema } from "@acme/extract-schema/src/namespaces";
 
 const eventBuilder = createEventBuilder({
-  // wtf?
-  bus: "ExtractBus" as never,
+  bus: "ExtractBus",
   metadata: z.object({
     version: z.number(),
     timestamp: z.number(),

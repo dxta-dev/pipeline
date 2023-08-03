@@ -9,13 +9,7 @@ import type { APIGatewayProxyHandlerV2 } from "aws-lambda";
 import { z } from "zod";
 import { Config } from "sst/node/config";
 
-type ENV = {
-  DATABASE_URL: string;
-  DATABASE_AUTH_TOKEN: string;
-  GITLAB_TOKEN: string;
-};
-
-const client = createClient({ url: (Config as ENV).DATABASE_URL, authToken: (Config as ENV).DATABASE_AUTH_TOKEN });
+const client = createClient({ url: Config.DATABASE_URL, authToken: Config.DATABASE_AUTH_TOKEN });
 
 const db = drizzle(client);
 
@@ -28,7 +22,7 @@ const context: Context<GetRepositorySourceControl, GetRepositoryEntities> = {
     namespaces,
   },
   integrations: {
-    sourceControl: new GitlabSourceControl((Config as ENV).GITLAB_TOKEN),
+    sourceControl: new GitlabSourceControl(Config.GITLAB_TOKEN),
   },
   db,
 };
@@ -45,8 +39,6 @@ export const handler: APIGatewayProxyHandlerV2 = async (apiGatewayEvent) => {
 
   let input: Input;
 
-  console.log(apiGatewayEvent);
-
   try {
     input = inputSchema.parse(apiGatewayEvent);
   } catch (error) {
@@ -59,8 +51,6 @@ export const handler: APIGatewayProxyHandlerV2 = async (apiGatewayEvent) => {
   const { repositoryId, repositoryName, namespaceName } = input;
 
   const { repository, namespace } = await getRepository({ externalRepositoryId: repositoryId, repositoryName, namespaceName }, context);
-
-  console.log(repository, namespace);
 
   await event.publish({ repository, namespace }, { caller: 'extract-repository', timestamp: new Date().getTime(), version: 1 });
 
