@@ -22,12 +22,14 @@ export const getRepository: GetRepositoryFunction = async (
   { externalRepositoryId, namespaceName, repositoryName },
   { integrations, db, entities }
 ) => {
-  
+
   const { repository, namespace } = await integrations.sourceControl.fetchRepository(externalRepositoryId, namespaceName, repositoryName);
 
   const insertedRepository = await db.insert(entities.repositories).values(repository)
-    .onConflictDoNothing({ target: entities.repositories.externalId }).returning()
+    .onConflictDoUpdate({ target: entities.repositories.externalId, set: { name: repository.name } }).returning()
     .get();
+
+  console.log('insertedRepo', insertedRepository);
   if (!namespace) {
     return {
       repository: insertedRepository,
@@ -35,9 +37,9 @@ export const getRepository: GetRepositoryFunction = async (
     }
   }
   const insertedNamespace = await db.insert(entities.namespaces).values(namespace)
-      .onConflictDoUpdate({ target: entities.namespaces.externalId, set: { name: namespace.name } }).returning()
-      .get();
-  
+    .onConflictDoUpdate({ target: entities.namespaces.externalId, set: { name: namespace.name } }).returning()
+    .get();
+
   return {
     repository: insertedRepository,
     namespace: insertedNamespace,

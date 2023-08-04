@@ -2,7 +2,7 @@
   "name": "@acme/extract-functions",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "src/index.ts",
   "scripts": {
     "type-check": "tsc --noEmit && echo \"✔ No TypeScript warnings or errors\"",
     "test": "jest",
@@ -13,7 +13,9 @@
   "dependencies": {
     "@acme/extract-schema": "^1.0.0",
     "@acme/source-control": "^1.0.0",
-    "drizzle-orm": "^0.27.2"
+    "drizzle-orm": "^0.27.2",
+    "drizzle-zod": "^0.4.4",
+    "zod": "^3.21.4"
   },
   "devDependencies": {
     "@jest/globals": "^29.6.1",
