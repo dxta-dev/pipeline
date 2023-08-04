@@ -3,7 +3,7 @@ import { Octokit } from '@octokit/rest';
 import parseLinkHeader from "parse-link-header";
 
 import type { NewRepository, NewNamespace, NewMergeRequest } from "@acme/extract-schema";
-import type { Pagination } from '../source-control';
+import type { Pagination, TimePeriod } from '../source-control';
 
 export class GitHubSourceControl implements SourceControl {
 
@@ -33,7 +33,8 @@ export class GitHubSourceControl implements SourceControl {
     }
   }
 
-  async fetchMergeRequests(externalRepositoryId: number, namespaceName: string, repositoryName: string, repositoryId: number, page?: number, perPage?: number): Promise<{ mergeRequests: NewMergeRequest[]; pagination: Pagination; }> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async fetchMergeRequests(externalRepositoryId: number, namespaceName: string, repositoryName: string, repositoryId: number, creationPeriod: TimePeriod = {}, page?: number, perPage?: number): Promise<{ mergeRequests: NewMergeRequest[]; pagination: Pagination; }> {
     page = page || 1;
     perPage = perPage || 30;
 
@@ -42,7 +43,8 @@ export class GitHubSourceControl implements SourceControl {
       repo: repositoryName,
       page: page,
       per_page: perPage,
-      state: "all"
+      state: "all",
+      sort: "created",
     });
 
     const linkHeader = parseLinkHeader(result.headers.link) || { next: { per_page: perPage } };
@@ -54,11 +56,12 @@ export class GitHubSourceControl implements SourceControl {
     } satisfies Pagination;
 
     return {
-      mergeRequests: result.data.map(mergeRequest => ({
-        externalId: mergeRequest.id,
-        mergeRequestId: mergeRequest.number,
-        repositoryId
-      })),
+      mergeRequests: result.data
+        .map(mergeRequest => ({
+          externalId: mergeRequest.id,
+          mergeRequestId: mergeRequest.number,
+          repositoryId
+        })),
       pagination
     }
   }

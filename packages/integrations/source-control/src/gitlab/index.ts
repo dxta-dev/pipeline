@@ -1,4 +1,4 @@
-import type { SourceControl, Pagination } from "../source-control";
+import type { SourceControl, Pagination, TimePeriod } from "../source-control";
 import type { Gitlab as GitlabType } from '@gitbeaker/core';
 import type { NewRepository, NewNamespace, NewMergeRequest } from "@acme/extract-schema";
 import { Gitlab } from '@gitbeaker/rest';
@@ -31,13 +31,15 @@ export class GitlabSourceControl implements SourceControl {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/require-await
-  async fetchMergeRequests(externalRepositoryId: number, namespaceName = '', repositoryName = '', repositoryId: number, page?: number, perPage?: number): Promise<{ mergeRequests: NewMergeRequest[], pagination: Pagination }> {
+  async fetchMergeRequests(externalRepositoryId: number, namespaceName = '', repositoryName = '', repositoryId: number, creationPeriod: TimePeriod = {}, page?: number, perPage?: number): Promise<{ mergeRequests: NewMergeRequest[], pagination: Pagination }> {
     const { data, paginationInfo } = await this.api.MergeRequests.all({
       projectId: externalRepositoryId,
-      page, 
+      page,
       perPage,
       pagination: 'offset',
-      showExpanded: true
+      showExpanded: true,
+      createdAfter: creationPeriod.from?.toISOString(),
+      createdBefore: creationPeriod.to?.toISOString(),
     });
     return {
       mergeRequests: data.map((mr) => ({
