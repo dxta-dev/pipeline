@@ -9,6 +9,10 @@ import type { APIGatewayProxyHandlerV2 } from "aws-lambda";
 import { z } from "zod";
 import { Config } from "sst/node/config";
 
+import { Clerk } from "@clerk/clerk-sdk-node";
+import type { OAuthProvider } from "@clerk/clerk-sdk-node";
+
+const clerkClient = Clerk({secretKey: Config.CLERK_SECRET_KEY});
 const client = createClient({ url: Config.DATABASE_URL, authToken: Config.DATABASE_AUTH_TOKEN });
 
 const db = drizzle(client);
@@ -16,16 +20,25 @@ const db = drizzle(client);
 const event = defineEvent(extractRepositoryEvent);
 
 
-const context: Context<GetRepositorySourceControl, GetRepositoryEntities> = {
-  entities: {
-    repositories,
-    namespaces,
-  },
-  integrations: {
-    sourceControl: new GitlabSourceControl(Config.GITLAB_TOKEN),
-  },
-  db,
-};
+const initContext = async (userId: string, provider: `oauth_${OAuthProvider}`): Promise<Context<GetRepositorySourceControl, GetRepositoryEntities>> => {
+  const [userOauthAccessTokenPayload, ...rest] = await clerkClient.users.getUserOauthAccessToken(userId, provider);
+
+  if (!userOauthAccessTokenPayload) throw new Error("Failed to get token");
+  if (rest.length !== 0) throw new Error("wtf ?");
+
+  return {
+    entities: {
+      repositories,
+      namespaces,
+    },
+    integrations: {
+      sourceControl: new GitlabSourceControl(userOauthAccessTokenPayload.token),
+    },
+    db,
+
+  }
+}
+const lazyContext = initContext('user_2TVwyW6xEViigMUomoCx96I4rQb', 'oauth_gitlab');
 
 const inputSchema = z.object({
   repositoryId: z.number(),
@@ -36,8 +49,8 @@ const inputSchema = z.object({
 type Input = z.infer<typeof inputSchema>;
 
 export const handler: APIGatewayProxyHandlerV2 = async (apiGatewayEvent) => {
-
   let input: Input;
+  let context: Context<GetRepositorySourceControl, GetRepositoryEntities>;
 
   try {
     input = inputSchema.parse(apiGatewayEvent);
@@ -46,6 +59,14 @@ export const handler: APIGatewayProxyHandlerV2 = async (apiGatewayEvent) => {
       statusCode: 400,
       body: JSON.stringify({ error: (error as Error).message }),
     };
+  }
+  try {
+    context = await lazyContext;
+  } catch (error) {
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: (error as Error).message }),
+    }
   }
 
   const { repositoryId, repositoryName, namespaceName } = input;

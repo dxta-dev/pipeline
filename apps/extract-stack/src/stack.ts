@@ -12,11 +12,12 @@ export function ExtractStack({ stack }: StackContext) {
   const DATABASE_URL = new Config.Secret(stack, "DATABASE_URL");
   const DATABASE_AUTH_TOKEN = new Config.Secret(stack, "DATABASE_AUTH_TOKEN");
   const GITLAB_TOKEN = new Config.Secret(stack, "GITLAB_TOKEN");
+  const CLERK_SECRET_KEY = new Config.Secret(stack, "CLERK_SECRET_KEY");
 
   const api = new Api(stack, "ExtractApi", {
     defaults: {
       function: {
-        bind: [bus, DATABASE_URL, DATABASE_AUTH_TOKEN, GITLAB_TOKEN],
+        bind: [bus, DATABASE_URL, DATABASE_AUTH_TOKEN, GITLAB_TOKEN, CLERK_SECRET_KEY],
       },
     },
     routes: {

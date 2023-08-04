@@ -8,7 +8,7 @@ export class GitlabSourceControl implements SourceControl {
 
   constructor(token: string) {
     this.api = new Gitlab({
-      token,
+      oauthToken: token,
       // camelize: true
     });
   }
