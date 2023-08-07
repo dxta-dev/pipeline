@@ -10,35 +10,21 @@ import { z } from "zod";
 import { Config } from "sst/node/config";
 
 import { Clerk } from "@clerk/clerk-sdk-node";
-import type { OAuthProvider } from "@clerk/clerk-sdk-node";
 
-const clerkClient = Clerk({secretKey: Config.CLERK_SECRET_KEY});
+const clerkClient = Clerk({ secretKey: Config.CLERK_SECRET_KEY });
 const client = createClient({ url: Config.DATABASE_URL, authToken: Config.DATABASE_AUTH_TOKEN });
 
 const db = drizzle(client);
 
 const event = defineEvent(extractRepositoryEvent);
 
-
-const initContext = async (userId: string, provider: `oauth_${OAuthProvider}`): Promise<Context<GetRepositorySourceControl, GetRepositoryEntities>> => {
-  const [userOauthAccessTokenPayload, ...rest] = await clerkClient.users.getUserOauthAccessToken(userId, provider);
-
+const fetchGitForgeryAccessToken = async (userId: string, forgeryIdProvider: 'oauth_github' | 'oauth_gitlab') => {
+  const [userOauthAccessTokenPayload, ...rest] = await clerkClient.users.getUserOauthAccessToken(userId, forgeryIdProvider);
   if (!userOauthAccessTokenPayload) throw new Error("Failed to get token");
   if (rest.length !== 0) throw new Error("wtf ?");
 
-  return {
-    entities: {
-      repositories,
-      namespaces,
-    },
-    integrations: {
-      sourceControl: new GitlabSourceControl(userOauthAccessTokenPayload.token),
-    },
-    db,
-
-  }
+  return userOauthAccessTokenPayload.token;
 }
-const lazyContext = initContext('user_2TVwyW6xEViigMUomoCx96I4rQb', 'oauth_gitlab');
 
 const inputSchema = z.object({
   repositoryId: z.number(),
@@ -50,7 +36,7 @@ type Input = z.infer<typeof inputSchema>;
 
 export const handler: APIGatewayProxyHandlerV2 = async (apiGatewayEvent) => {
   let input: Input;
-  let context: Context<GetRepositorySourceControl, GetRepositoryEntities>;
+  let gitForgeryAccessToken: string;
 
   try {
     input = inputSchema.parse(apiGatewayEvent);
@@ -61,7 +47,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (apiGatewayEvent) => {
     };
   }
   try {
-    context = await lazyContext;
+    gitForgeryAccessToken = await fetchGitForgeryAccessToken('', 'oauth_gitlab');
   } catch (error) {
     return {
       statusCode: 500,
@@ -70,6 +56,16 @@ export const handler: APIGatewayProxyHandlerV2 = async (apiGatewayEvent) => {
   }
 
   const { repositoryId, repositoryName, namespaceName } = input;
+  const context: Context<GetRepositorySourceControl, GetRepositoryEntities> = {
+    entities: {
+      repositories,
+      namespaces,
+    },
+    integrations: {
+      sourceControl: new GitlabSourceControl(gitForgeryAccessToken)
+    },
+    db,
+  }
 
   const { repository, namespace } = await getRepository({ externalRepositoryId: repositoryId, repositoryName, namespaceName }, context);
 
