@@ -85,8 +85,6 @@ export const handler: APIGatewayProxyHandlerV2 = async (ev, ctx) => {
 
   const { sub } = lambdaContext.authorizer.jwt.claims;
 
-  console.log({ sub });
-
   const { repositoryId, repositoryName, namespaceName, sourceControl } = input;
 
   try {
@@ -106,7 +104,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (ev, ctx) => {
 
   const { repository, namespace } = await getRepository({ externalRepositoryId: repositoryId, repositoryName, namespaceName }, context);
 
-  await event.publish({ repository, namespace }, { caller: 'extract-repository', timestamp: new Date().getTime(), version: 1 });
+  await event.publish({ repository, namespace }, { caller: 'extract-repository', timestamp: new Date().getTime(), version: 1, sourceControl, userId: sub });
 
   return {
     statusCode: 200,
