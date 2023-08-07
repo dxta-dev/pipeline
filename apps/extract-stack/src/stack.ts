@@ -1,6 +1,7 @@
 import { Api, EventBus } from "sst/constructs";
 import type { StackContext } from "sst/constructs";
 import { Config } from "sst/constructs";
+import { z } from "zod";
 
 export function ExtractStack({ stack }: StackContext) {
   const bus = new EventBus(stack, "ExtractBus", {
@@ -14,10 +15,28 @@ export function ExtractStack({ stack }: StackContext) {
   const GITLAB_TOKEN = new Config.Secret(stack, "GITLAB_TOKEN");
   const CLERK_SECRET_KEY = new Config.Secret(stack, "CLERK_SECRET_KEY");
 
+  const ENVSchema = z.object({ 
+    CLERK_JWT_ISSUER: z.string(),
+    CLERK_JWT_AUDIENCE: z.string(),
+  });
+
+  const ENV = ENVSchema.parse(process.env);
+
   const api = new Api(stack, "ExtractApi", {
     defaults: {
+      authorizer: 'JwtAuthorizer',
       function: {
         bind: [bus, DATABASE_URL, DATABASE_AUTH_TOKEN, GITLAB_TOKEN, CLERK_SECRET_KEY],
+      },
+    },
+    authorizers: {
+      JwtAuthorizer: {
+        type: "jwt",
+        identitySource: ["$request.header.Authorization"],
+        jwt: {
+          issuer: ENV.CLERK_JWT_ISSUER,
+          audience: [ENV.CLERK_JWT_AUDIENCE],
+        },
       },
     },
     routes: {

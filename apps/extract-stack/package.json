@@ -7,11 +7,12 @@
     "type-check": "tsc --noEmit && echo \"✔ No TypeScript warnings or errors\"",
     "test": "echo \"Warning: no test specified\"",
     "lint": "eslint . && echo \"✔ No ESLint warnings or errors\"",
-    "dev": "sst dev",
+    "dev": "npm run with-env sst dev",
     "build": "sst build",
     "deploy": "sst deploy",
     "remove": "sst remove",
-    "console": "sst console"
+    "console": "sst console",
+    "with-env": "dotenv -e ../../.env --"
   },
   "author": "",
   "license": "ISC",
@@ -30,6 +31,7 @@
     "zod": "^3.21.4"
   },
   "devDependencies": {
-    "@types/aws-lambda": "^8.10.119"
+    "@types/aws-lambda": "^8.10.119",
+    "dotenv-cli": "^7.2.1"
   }
 }

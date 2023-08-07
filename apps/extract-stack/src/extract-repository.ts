@@ -26,6 +26,29 @@ const fetchGitForgeryAccessToken = async (userId: string, forgeryIdProvider: 'oa
   return userOauthAccessTokenPayload.token;
 }
 
+const context: Context<GetRepositorySourceControl, GetRepositoryEntities> = {
+  entities: {
+    repositories,
+    namespaces,
+  },
+  integrations: {
+    sourceControl: new GitlabSourceControl(""),
+  },
+  db,
+};
+
+const contextSchema = z.object({
+  authorizer: z.object({
+    jwt: z.object({
+      claims: z.object({
+        sub: z.string(),
+      }),
+    }),
+  }),
+});
+
+type CTX = z.infer<typeof contextSchema>;
+
 const inputSchema = z.object({
   repositoryId: z.number(),
   repositoryName: z.string(),
@@ -34,12 +57,24 @@ const inputSchema = z.object({
 
 type Input = z.infer<typeof inputSchema>;
 
-export const handler: APIGatewayProxyHandlerV2 = async (apiGatewayEvent) => {
+export const handler: APIGatewayProxyHandlerV2 = async (ev, ctx) => {
+
+  let lambdaContext: CTX; 
+
+  try {
+    lambdaContext = contextSchema.parse(ctx);
+  } catch (error) {
+    return {
+      statusCode: 403,
+      body: JSON.stringify({ error: (error as Error).message }),
+    };
+  }
+
   let input: Input;
   let gitForgeryAccessToken: string;
 
   try {
-    input = inputSchema.parse(apiGatewayEvent);
+    input = inputSchema.parse(ev);
   } catch (error) {
     return {
       statusCode: 400,
@@ -54,6 +89,8 @@ export const handler: APIGatewayProxyHandlerV2 = async (apiGatewayEvent) => {
       body: JSON.stringify({ error: (error as Error).message }),
     }
   }
+
+  const { sub } = lambdaContext.authorizer.jwt.claims;
 
   const { repositoryId, repositoryName, namespaceName } = input;
   const context: Context<GetRepositorySourceControl, GetRepositoryEntities> = {
