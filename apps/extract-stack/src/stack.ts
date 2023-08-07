@@ -40,7 +40,7 @@ export function ExtractStack({ stack }: StackContext) {
       },
     },
     routes: {
-      "POST /gitlab": "src/extract-repository.handler",
+      "POST /start": "src/extract-repository.handler",
     },
   });
 

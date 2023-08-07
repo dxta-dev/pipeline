@@ -1,7 +1,7 @@
 import { extractRepositoryEvent, defineEvent } from "./events";
 import { getRepository } from "@acme/extract-functions";
 import type { Context, GetRepositorySourceControl, GetRepositoryEntities } from "@acme/extract-functions";
-import { GitlabSourceControl } from "@acme/source-control";
+import { GitlabSourceControl, GitHubSourceControl } from "@acme/source-control";
 import { repositories, namespaces } from "@acme/extract-schema";
 import { createClient } from '@libsql/client';
 import { drizzle } from 'drizzle-orm/libsql';
@@ -53,6 +53,7 @@ const inputSchema = z.object({
   repositoryId: z.number(),
   repositoryName: z.string(),
   namespaceName: z.string(),
+  sourceControl: z.literal("gitlab").or(z.literal("github")),
 });
 
 type Input = z.infer<typeof inputSchema>;
@@ -65,7 +66,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (ev, ctx) => {
     lambdaContext = contextSchema.parse(ctx);
   } catch (error) {
     return {
-      statusCode: 403,
+      statusCode: 401,
       body: JSON.stringify({ error: (error as Error).message }),
     };
   }
@@ -81,8 +82,15 @@ export const handler: APIGatewayProxyHandlerV2 = async (ev, ctx) => {
       body: JSON.stringify({ error: (error as Error).message }),
     };
   }
+
+  const { sub } = lambdaContext.authorizer.jwt.claims;
+
+  console.log({ sub });
+
+  const { repositoryId, repositoryName, namespaceName, sourceControl } = input;
+
   try {
-    gitForgeryAccessToken = await fetchGitForgeryAccessToken('', 'oauth_gitlab');
+    gitForgeryAccessToken = await fetchGitForgeryAccessToken(sub, `oauth_${sourceControl}`);
   } catch (error) {
     return {
       statusCode: 500,
@@ -90,18 +98,10 @@ export const handler: APIGatewayProxyHandlerV2 = async (ev, ctx) => {
     }
   }
 
-  const { sub } = lambdaContext.authorizer.jwt.claims;
-
-  const { repositoryId, repositoryName, namespaceName } = input;
-  const context: Context<GetRepositorySourceControl, GetRepositoryEntities> = {
-    entities: {
-      repositories,
-      namespaces,
-    },
-    integrations: {
-      sourceControl: new GitlabSourceControl(gitForgeryAccessToken)
-    },
-    db,
+  if (sourceControl === "gitlab") {
+    context.integrations.sourceControl = new GitlabSourceControl(gitForgeryAccessToken);
+  } else if (sourceControl === "github") {
+    context.integrations.sourceControl = new GitHubSourceControl(gitForgeryAccessToken);
   }
 
   const { repository, namespace } = await getRepository({ externalRepositoryId: repositoryId, repositoryName, namespaceName }, context);
