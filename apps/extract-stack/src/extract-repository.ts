@@ -32,7 +32,7 @@ const context: Context<GetRepositorySourceControl, GetRepositoryEntities> = {
     namespaces,
   },
   integrations: {
-    sourceControl: new GitlabSourceControl(""),
+    sourceControl: null,
   },
   db,
 };
@@ -84,6 +84,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (ev, ctx) => {
   }
 
   const { sub } = lambdaContext.authorizer.jwt.claims;
+
 
   const { repositoryId, repositoryName, namespaceName, sourceControl } = input;
 

@@ -23,6 +23,10 @@ export const getRepository: GetRepositoryFunction = async (
   { integrations, db, entities }
 ) => {
 
+  if(!integrations.sourceControl) {
+    throw new Error("Source control integration not configured");
+  } 
+
   const { repository, namespace } = await integrations.sourceControl.fetchRepository(externalRepositoryId, namespaceName, repositoryName);
 
   const insertedRepository = await db.insert(entities.repositories).values(repository)
