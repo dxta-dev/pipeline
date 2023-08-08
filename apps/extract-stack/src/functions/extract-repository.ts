@@ -1,4 +1,3 @@
-import { extractRepositoryEvent, defineEvent } from "./events";
 import { getRepository } from "@acme/extract-functions";
 import type { Context, GetRepositorySourceControl, GetRepositoryEntities } from "@acme/extract-functions";
 import { GitlabSourceControl, GitHubSourceControl } from "@acme/source-control";
@@ -9,13 +8,12 @@ import { z } from "zod";
 import { Config } from "sst/node/config";
 import { Clerk } from "@clerk/clerk-sdk-node";
 import { ApiHandler, useJsonBody } from 'sst/node/api';
+import { ExtractRepositoryEvent } from "src/events/extract-repository-event";
 
 const clerkClient = Clerk({ secretKey: Config.CLERK_SECRET_KEY });
 const client = createClient({ url: Config.DATABASE_URL, authToken: Config.DATABASE_AUTH_TOKEN });
 
 const db = drizzle(client);
-
-const event = defineEvent(extractRepositoryEvent);
 
 const fetchSourceControlAccessToken = async (userId: string, forgeryIdProvider: 'oauth_github' | 'oauth_gitlab') => {
   const [userOauthAccessTokenPayload, ...rest] = await clerkClient.users.getUserOauthAccessToken(userId, forgeryIdProvider);
@@ -58,7 +56,6 @@ const inputSchema = z.object({
 type Input = z.infer<typeof inputSchema>;
 
 export const handler = ApiHandler(async (ev) => {
-
   const body = useJsonBody() as unknown;
 
   let lambdaContext: CTX;
@@ -77,7 +74,7 @@ export const handler = ApiHandler(async (ev) => {
 
   try {
     input = inputSchema.parse(body);
-    
+
   } catch (error) {
     return {
       statusCode: 400,
@@ -107,7 +104,7 @@ export const handler = ApiHandler(async (ev) => {
 
   const { repository, namespace } = await getRepository({ externalRepositoryId: repositoryId, repositoryName, namespaceName }, context);
 
-  await event.publish({ repository, namespace }, { caller: 'extract-repository', timestamp: new Date().getTime(), version: 1, sourceControl, userId: sub });
+  await ExtractRepositoryEvent.publish({ repository, namespace }, { caller: 'extract-repository', timestamp: new Date().getTime(), version: 1, sourceControl, userId: sub });
 
   return {
     statusCode: 200,

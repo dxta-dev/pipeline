@@ -44,7 +44,7 @@ export function ExtractStack({ stack }: StackContext) {
       },
     },
     routes: {
-      "POST /start": "src/extract-repository.handler",
+      "POST /start": "src/functions/extract-repository.handler",
     },
   });
 
