@@ -1,4 +1,4 @@
-import { Api, EventBus } from "sst/constructs";
+import { Api, EventBus, Queue } from "sst/constructs";
 import type { StackContext } from "sst/constructs";
 import { Config } from "sst/constructs";
 import { z } from "zod";
@@ -8,6 +8,10 @@ export function ExtractStack({ stack }: StackContext) {
     defaults: {
       retries: 10,
     },
+  });
+
+  const queue = new Queue(stack, "MRQueue", {
+    // consumer: func.handler,
   });
 
   const DATABASE_URL = new Config.Secret(stack, "DATABASE_URL");
@@ -26,7 +30,7 @@ export function ExtractStack({ stack }: StackContext) {
     defaults: {
       authorizer: 'JwtAuthorizer',
       function: {
-        bind: [bus, DATABASE_URL, DATABASE_AUTH_TOKEN, GITLAB_TOKEN, CLERK_SECRET_KEY],
+        bind: [bus, DATABASE_URL, DATABASE_AUTH_TOKEN, GITLAB_TOKEN, CLERK_SECRET_KEY, queue],
       },
     },
     authorizers: {

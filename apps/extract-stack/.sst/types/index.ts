@@ -11,6 +11,13 @@ declare module "sst/node/event-bus" {
       eventBusName: string;
     }
   }
+}import "sst/node/queue";
+declare module "sst/node/queue" {
+  export interface QueueResources {
+    "MRQueue": {
+      queueUrl: string;
+    }
+  }
 }import "sst/node/config";
 declare module "sst/node/config" {
   export interface SecretResources {
