@@ -11,7 +11,7 @@ export function GenerateToken() {
 
 
   return (
-    <button onClick={() => { handleClick() }}>
+    <button onClick={() => { handleClick().catch(console.log) }}>
       Generate Token
     </button>
   );
