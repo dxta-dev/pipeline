@@ -3,13 +3,17 @@ import { useAuth } from '@clerk/nextjs';
 
 
 export function GenerateToken() {
-const { getToken } = useAuth();
+  const { getToken } = useAuth();
+  const handleClick = async () => {
+    const token = await getToken({ template: 'dashboard' });
+    console.log(token);
+  };
 
 
-return (
-  <button onClick={async () => console.log(await getToken({template: 'dashboard'}))}>
-    Generate Token
-  </button>
-);
+  return (
+    <button onClick={handleClick}>
+      Generate Token
+    </button>
+  );
 
 }
