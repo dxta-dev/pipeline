@@ -25,6 +25,11 @@ export const getMergeRequests: GetMergeRequestsFunction  = async (
   { externalRepositoryId, namespaceName, repositoryName, repositoryId },
   { integrations, db, entities }
 ) => {
+    
+    if(!integrations.sourceControl) {
+      throw new Error("Source control integration not configured");
+    }
+
     const { mergeRequests, pagination } = await integrations.sourceControl.fetchMergeRequests(externalRepositoryId, namespaceName, repositoryName, repositoryId);
 
     const insertedMergeRequests = await db.insert(entities.mergeRequests).values(mergeRequests)

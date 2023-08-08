@@ -9,6 +9,8 @@ const eventBuilder = createEventBuilder({
     version: z.number(),
     timestamp: z.number(),
     caller: z.string(),
+    sourceControl: z.literal("github").or(z.literal("gitlab")),
+    userId: z.string(),
   }).shape,
 });
 

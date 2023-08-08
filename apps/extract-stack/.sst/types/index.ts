@@ -39,6 +39,13 @@ declare module "sst/node/config" {
       value: string;
     }
   }
+}import "sst/node/config";
+declare module "sst/node/config" {
+  export interface SecretResources {
+    "CLERK_SECRET_KEY": {
+      value: string;
+    }
+  }
 }import "sst/node/api";
 declare module "sst/node/api" {
   export interface ApiResources {

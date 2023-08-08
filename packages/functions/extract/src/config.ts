@@ -13,7 +13,7 @@ export type Entities = {
 
 export type Context<SC extends Partial<SourceControl>, E extends Partial<Entities>> = {
   integrations: {
-    sourceControl: SC;
+    sourceControl: SC | null;
   };
   db: Database;
   entities: E;
