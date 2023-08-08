@@ -5,6 +5,7 @@
   },
   "exclude": [],
   "include": [
+    ".sst/types/index.ts",
     "sst.config.ts",
     "src/**/*.ts",
     "src/**/*.ts",
