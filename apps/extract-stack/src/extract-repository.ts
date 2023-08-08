@@ -5,11 +5,10 @@ import { GitlabSourceControl, GitHubSourceControl } from "@acme/source-control";
 import { repositories, namespaces } from "@acme/extract-schema";
 import { createClient } from '@libsql/client';
 import { drizzle } from 'drizzle-orm/libsql';
-import type { APIGatewayProxyHandlerV2 } from "aws-lambda";
 import { z } from "zod";
 import { Config } from "sst/node/config";
-
 import { Clerk } from "@clerk/clerk-sdk-node";
+import { ApiHandler, useJsonBody } from 'sst/node/api';
 
 const clerkClient = Clerk({ secretKey: Config.CLERK_SECRET_KEY });
 const client = createClient({ url: Config.DATABASE_URL, authToken: Config.DATABASE_AUTH_TOKEN });
@@ -18,7 +17,7 @@ const db = drizzle(client);
 
 const event = defineEvent(extractRepositoryEvent);
 
-const fetchGitForgeryAccessToken = async (userId: string, forgeryIdProvider: 'oauth_github' | 'oauth_gitlab') => {
+const fetchSourceControlAccessToken = async (userId: string, forgeryIdProvider: 'oauth_github' | 'oauth_gitlab') => {
   const [userOauthAccessTokenPayload, ...rest] = await clerkClient.users.getUserOauthAccessToken(userId, forgeryIdProvider);
   if (!userOauthAccessTokenPayload) throw new Error("Failed to get token");
   if (rest.length !== 0) throw new Error("wtf ?");
@@ -58,12 +57,14 @@ const inputSchema = z.object({
 
 type Input = z.infer<typeof inputSchema>;
 
-export const handler: APIGatewayProxyHandlerV2 = async (ev, ctx) => {
+export const handler = ApiHandler(async (ev) => {
 
-  let lambdaContext: CTX; 
+  const body = useJsonBody() as unknown;
+
+  let lambdaContext: CTX;
 
   try {
-    lambdaContext = contextSchema.parse(ctx);
+    lambdaContext = contextSchema.parse(ev.requestContext);
   } catch (error) {
     return {
       statusCode: 401,
@@ -72,10 +73,11 @@ export const handler: APIGatewayProxyHandlerV2 = async (ev, ctx) => {
   }
 
   let input: Input;
-  let gitForgeryAccessToken: string;
+  let sourceControlAccessToken: string;
 
   try {
-    input = inputSchema.parse(ev);
+    input = inputSchema.parse(body);
+    
   } catch (error) {
     return {
       statusCode: 400,
@@ -89,7 +91,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (ev, ctx) => {
   const { repositoryId, repositoryName, namespaceName, sourceControl } = input;
 
   try {
-    gitForgeryAccessToken = await fetchGitForgeryAccessToken(sub, `oauth_${sourceControl}`);
+    sourceControlAccessToken = await fetchSourceControlAccessToken(sub, `oauth_${sourceControl}`);
   } catch (error) {
     return {
       statusCode: 500,
@@ -98,9 +100,9 @@ export const handler: APIGatewayProxyHandlerV2 = async (ev, ctx) => {
   }
 
   if (sourceControl === "gitlab") {
-    context.integrations.sourceControl = new GitlabSourceControl(gitForgeryAccessToken);
+    context.integrations.sourceControl = new GitlabSourceControl(sourceControlAccessToken);
   } else if (sourceControl === "github") {
-    context.integrations.sourceControl = new GitHubSourceControl(gitForgeryAccessToken);
+    context.integrations.sourceControl = new GitHubSourceControl(sourceControlAccessToken);
   }
 
   const { repository, namespace } = await getRepository({ externalRepositoryId: repositoryId, repositoryName, namespaceName }, context);
@@ -111,4 +113,4 @@ export const handler: APIGatewayProxyHandlerV2 = async (ev, ctx) => {
     statusCode: 200,
     body: JSON.stringify({})
   };
-}
+});
