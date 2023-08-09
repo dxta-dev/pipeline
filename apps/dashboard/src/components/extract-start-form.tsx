@@ -6,7 +6,7 @@ import type { ChangeEvent, Dispatch, SetStateAction } from 'react';
 
 export function ExtractStartForm() {
   const { getToken } = useAuth();
-  const [repositoryId, setRepositoryId] = useState(48246006);
+  const [repositoryId, setRepositoryId] = useState(0);
   const [repositoryName, setRepositoryName] = useState('');
   const [namespaceName, setNamespaceName] = useState('');
   const [sourceControl, setSourceControl] = useState('gitlab');
