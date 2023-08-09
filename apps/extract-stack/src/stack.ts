@@ -1,7 +1,12 @@
-import { Api, EventBus, Queue } from "sst/constructs";
-import type { StackContext } from "sst/constructs";
-import { Config } from "sst/constructs";
+import {
+  Api,
+  Config,
+  EventBus,
+  Queue,
+  type StackContext,
+} from "sst/constructs";
 import { z } from "zod";
+
 
 export function ExtractStack({ stack }: StackContext) {
   const DATABASE_URL = new Config.Secret(stack, "DATABASE_URL");
@@ -56,7 +61,7 @@ export function ExtractStack({ stack }: StackContext) {
 
   const api = new Api(stack, "ExtractApi", {
     defaults: {
-      authorizer: 'JwtAuthorizer',
+      authorizer: "JwtAuthorizer",
       function: {
         bind: [bus, DATABASE_URL, DATABASE_AUTH_TOKEN, CLERK_SECRET_KEY, queue],
         runtime: "nodejs18.x",
@@ -85,4 +90,3 @@ export function ExtractStack({ stack }: StackContext) {
     ExtractBus: bus,
   };
 }
-
