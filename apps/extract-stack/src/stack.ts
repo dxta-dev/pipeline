@@ -4,9 +4,13 @@ import { Config } from "sst/constructs";
 import { z } from "zod";
 
 export function ExtractStack({ stack }: StackContext) {
+
   const bus = new EventBus(stack, "ExtractBus", {
     defaults: {
       retries: 10,
+      function: {
+        runtime: "nodejs18.x",
+      },
     },
   });
 
@@ -16,10 +20,9 @@ export function ExtractStack({ stack }: StackContext) {
 
   const DATABASE_URL = new Config.Secret(stack, "DATABASE_URL");
   const DATABASE_AUTH_TOKEN = new Config.Secret(stack, "DATABASE_AUTH_TOKEN");
-  const GITLAB_TOKEN = new Config.Secret(stack, "GITLAB_TOKEN");
   const CLERK_SECRET_KEY = new Config.Secret(stack, "CLERK_SECRET_KEY");
 
-  const ENVSchema = z.object({ 
+  const ENVSchema = z.object({
     CLERK_JWT_ISSUER: z.string(),
     CLERK_JWT_AUDIENCE: z.string(),
   });
@@ -30,7 +33,8 @@ export function ExtractStack({ stack }: StackContext) {
     defaults: {
       authorizer: 'JwtAuthorizer',
       function: {
-        bind: [bus, DATABASE_URL, DATABASE_AUTH_TOKEN, GITLAB_TOKEN, CLERK_SECRET_KEY, queue],
+        bind: [bus, DATABASE_URL, DATABASE_AUTH_TOKEN, CLERK_SECRET_KEY, queue],
+        runtime: "nodejs18.x",
       },
     },
     authorizers: {
