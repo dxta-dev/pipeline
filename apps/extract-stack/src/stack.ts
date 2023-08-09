@@ -6,6 +6,17 @@ import { z } from "zod";
 export function ExtractStack({ stack }: StackContext) {
 
   const bus = new EventBus(stack, "ExtractBus", {
+    rules: {
+      extractRepository: {
+        pattern: {
+          // source: ["extract"],
+          detailType: ["extract.repository"]
+        },
+        targets: {
+          extractMember: 'src/extract-member.busHandler'
+        }
+      }
+    },
     defaults: {
       retries: 10,
       function: {
