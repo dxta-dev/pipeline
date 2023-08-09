@@ -19,6 +19,7 @@ export const env = createEnv({
     NEXT_PUBLIC_CLERK_SIGN_UP_URL: z.string().nonempty(),
     NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL: z.string().nonempty(),
     NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL: z.string().nonempty(),
+    NEXT_PUBLIC_EXTRACT_API_URL: z.string().nonempty(),
   },
   /**
    * Destructure all variables from `process.env` to make sure they aren't tree-shaken away.
@@ -30,6 +31,7 @@ export const env = createEnv({
     NEXT_PUBLIC_CLERK_SIGN_UP_URL: process.env.NEXT_PUBLIC_CLERK_SIGN_UP_URL,
     NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL: process.env.NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL,
     NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL: process.env.NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL,
+    NEXT_PUBLIC_EXTRACT_API_URL: process.env.NEXT_PUBLIC_EXTRACT_API_URL,
   },
   skipValidation: !!process.env.CI || !!process.env.SKIP_ENV_VALIDATION,
 });
