@@ -45,37 +45,15 @@ const fetchSourceControlAccessToken = async (
 };
 
 export async function handler(e, c) {
-  console.log("e,c", e, c);
+  let sourceControlAccessToken: string;
 
   const { sourceControl, repositoryId, repositoryName, namespaceName } = e;
 
   try {
-    const sourceControlAccessToken = await fetchSourceControlAccessToken(
+    sourceControlAccessToken = await fetchSourceControlAccessToken(
       "user_2TVx14PlsjNKHdBBSa2OYbEMv0S",
       "oauth_gitlab",
     );
-    console.log("TEST", sourceControlAccessToken);
-    if (sourceControl === "gitlab") {
-      context.integrations.sourceControl = new GitlabSourceControl(
-        sourceControlAccessToken,
-      );
-    } else if (sourceControl === "github") {
-      context.integrations.sourceControl = new GitHubSourceControl(
-        sourceControlAccessToken,
-      );
-    }
-
-    const { mergeRequests } = await getMergeRequests(
-      {
-        externalRepositoryId: repositoryId,
-        namespaceName: namespaceName,
-        repositoryName: repositoryName,
-        repositoryId: repositoryId,
-      },
-      context,
-    );
-
-    console.log("MR", mergeRequests);
   } catch (error) {
     return {
       statusCode: 500,
@@ -83,5 +61,24 @@ export async function handler(e, c) {
     };
   }
 
+  if (sourceControl === "gitlab") {
+    context.integrations.sourceControl = new GitlabSourceControl(
+      sourceControlAccessToken,
+    );
+  } else if (sourceControl === "github") {
+    context.integrations.sourceControl = new GitHubSourceControl(
+      sourceControlAccessToken,
+    );
+  }
+
+  const { mergeRequests } = await getMergeRequests(
+    {
+      externalRepositoryId: repositoryId,
+      namespaceName: namespaceName,
+      repositoryName: repositoryName,
+      repositoryId: repositoryId,
+    },
+    context,
+  );
   return {};
 }
