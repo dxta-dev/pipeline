@@ -1,4 +1,4 @@
-import { extractRepositoryEvent, defineEvent } from "./events";
+import { extractRepositoryEvent } from "./events";
 import { getRepository } from "@acme/extract-functions";
 import type { Context, GetRepositorySourceControl, GetRepositoryEntities } from "@acme/extract-functions";
 import { GitlabSourceControl, GitHubSourceControl } from "@acme/source-control";
@@ -15,7 +15,6 @@ const client = createClient({ url: Config.DATABASE_URL, authToken: Config.DATABA
 
 const db = drizzle(client);
 
-const event = defineEvent(extractRepositoryEvent);
 
 const fetchSourceControlAccessToken = async (userId: string, forgeryIdProvider: 'oauth_github' | 'oauth_gitlab') => {
   const [userOauthAccessTokenPayload, ...rest] = await clerkClient.users.getUserOauthAccessToken(userId, forgeryIdProvider);
@@ -107,7 +106,7 @@ export const handler = ApiHandler(async (ev) => {
 
   const { repository, namespace } = await getRepository({ externalRepositoryId: repositoryId, repositoryName, namespaceName }, context);
 
-  await event.publish({ repository, namespace }, { caller: 'extract-repository', timestamp: new Date().getTime(), version: 1, sourceControl, userId: sub });
+  await extractRepositoryEvent.publish({ repository, namespace }, { caller: 'extract-repository', timestamp: new Date().getTime(), version: 1, sourceControl, userId: sub });
 
   return {
     statusCode: 200,

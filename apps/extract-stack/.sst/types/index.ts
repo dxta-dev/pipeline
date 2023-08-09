@@ -35,13 +35,6 @@ declare module "sst/node/config" {
 }import "sst/node/config";
 declare module "sst/node/config" {
   export interface SecretResources {
-    "GITLAB_TOKEN": {
-      value: string;
-    }
-  }
-}import "sst/node/config";
-declare module "sst/node/config" {
-  export interface SecretResources {
     "CLERK_SECRET_KEY": {
       value: string;
     }
