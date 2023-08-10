@@ -59,6 +59,11 @@ export function createEvent<
     publish,
     source,
     type,
+    shape: {
+      properties: propertiesShape,
+      metadata: metadataShape,
+      metadataFn: undefined,
+    },
   };
 }
 
