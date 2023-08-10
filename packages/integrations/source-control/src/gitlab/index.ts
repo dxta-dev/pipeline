@@ -32,6 +32,7 @@ export class GitlabSourceControl implements SourceControl {
 
   async fetchMembers(externalRepositoryId: number, namespaceName: string, repositoryName: string, page?: number, perPage?: number): Promise<{ members: NewMember[], pagination: Pagination }> {
     const { data, paginationInfo } = await this.api.ProjectMembers.all(externalRepositoryId, {
+      includeInherited: true,
       perPage,
       page,
       pagination: 'offset',
@@ -39,12 +40,16 @@ export class GitlabSourceControl implements SourceControl {
     });
 
     return {
-      members: data.map(member => ({ externalId: member.id, name: member.name, username: member.username })),
+      members: data.map(member => ({
+        externalId: member.id, 
+        name: member.name, 
+        username: member.username
+      } satisfies NewMember)),
       pagination: {
         page: paginationInfo.current,
         perPage: paginationInfo.perPage,
-        totalPages: paginationInfo.totalPages        
-      }
+        totalPages: paginationInfo.totalPages
+      } satisfies Pagination
     }
   }
 
