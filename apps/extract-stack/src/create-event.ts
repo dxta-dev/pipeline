@@ -46,7 +46,7 @@ export function createEvent<
         Source: source,
         DetailType: type,
         Detail: JSON.stringify({
-          propteries: propertiesSchema.parse(properties),
+          properties: propertiesSchema.parse(properties),
           metadata: metadataSchema.parse(metadata),
         }),
       }],
@@ -57,6 +57,11 @@ export function createEvent<
     publish,
     source,
     type,
+    shape: {
+      properties: {} as Properties<Shape>,
+      metadata: {} as Parameters<Publish<Shape, MetadataShape>>[1],
+      metadataFn: undefined,
+    },
   };
 }
 
