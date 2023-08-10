@@ -60,8 +60,8 @@ export function createEvent<
     source,
     type,
     shape: {
-      properties: propertiesShape,
-      metadata: metadataShape,
+      properties: {} as Properties<Shape>,
+      metadata: {} as Parameters<Publish<Shape, MetadataShape>>[1],
       metadataFn: undefined,
     },
   };
