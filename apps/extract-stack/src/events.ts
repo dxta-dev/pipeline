@@ -21,6 +21,6 @@ export const extractRepositoryEvent = createEvent({
   source: "extract",
   type: "repository",
   propertiesShape: extractRepositoryEventSchema.shape,
-  bus: EventBus.ExtractBus.eventBusName,
+  eventBusName: EventBus.ExtractBus.eventBusName,
   metadataShape: metadataSchema.shape,
 });
