@@ -36,12 +36,11 @@ export const getMembers: GetMembersFunction = async (
 
   // TODO: Deki is a wizard
   const insertedMembers = await (db as (LibSQLDatabase & BetterSQLite3Database)).transaction(async (tx) => {
-    return Promise.all(members.map(member => (console.log(member),
+    return Promise.all(members.map(member =>
       tx.insert(entities.members).values(member)
         .onConflictDoUpdate({ target: entities.members.externalId, set: { name: member.name } })
         .returning()
         .get()
-    )
     ));
   })
 
