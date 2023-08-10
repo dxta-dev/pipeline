@@ -1,6 +1,8 @@
 import type { Member } from "@acme/extract-schema";
 import type { ExtractFunction, Entities } from "./config";
 import type { Pagination, SourceControl } from "@acme/source-control";
+import type { LibSQLDatabase } from "drizzle-orm/libsql";
+import type { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
 
 export type GetMembersInput = {
   externalRepositoryId: number;
@@ -22,7 +24,7 @@ export type GetMembersEntities = Pick<Entities, "members" | "repositoriesToMembe
 export type GetMembersFunction = ExtractFunction<GetMembersInput, GetMembersOutput, GetMembersSourceControl, GetMembersEntities>;
 
 export const getMembers: GetMembersFunction = async (
-  { externalRepositoryId, namespaceName, repositoryName, repositoryId },
+  { externalRepositoryId, namespaceName, repositoryName, repositoryId, perPage, page },
   { integrations, db, entities }
 ) => {
 
@@ -30,11 +32,18 @@ export const getMembers: GetMembersFunction = async (
     throw new Error("Source control integration not configured");
   }
 
-  const { members, pagination } = await integrations.sourceControl.fetchMembers(externalRepositoryId, namespaceName, repositoryName);
+  const { members, pagination } = await integrations.sourceControl.fetchMembers(externalRepositoryId, namespaceName, repositoryName, page, perPage);
 
-  const insertedMembers = await db.insert(entities.members).values(members)
-    .onConflictDoNothing({ target: entities.members.externalId }).returning()
-    .all();
+  // TODO: Deki is a wizard
+  const insertedMembers = await (db as (LibSQLDatabase & BetterSQLite3Database)).transaction(async (tx) => {
+    return Promise.all(members.map(member => (console.log(member),
+      tx.insert(entities.members).values(member)
+        .onConflictDoUpdate({ target: entities.members.externalId, set: { name: member.name } })
+        .returning()
+        .get()
+    )
+    ));
+  })
 
   // Issue: no way to know if passed repositoryId is correct
   await db.insert(entities.repositoriesToMembers)
