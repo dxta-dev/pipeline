@@ -48,7 +48,7 @@ export function createEvent<
         Source: source,
         DetailType: type,
         Detail: JSON.stringify({
-          propteries: propertiesSchema.parse(properties),
+          properties: propertiesSchema.parse(properties),
           metadata: metadataSchema.parse(metadata),
         }),
       }],
