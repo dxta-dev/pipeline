@@ -18,9 +18,9 @@ export function ExtractStack({ stack }: StackContext) {
       extractRepository: {
         pattern: {
           source: ["extract"],
-          detailType: ["repository"]
-        }
-      }
+          detailType: ["repository"],
+        },
+      },
     },
     defaults: {
       retries: 10,
@@ -47,6 +47,12 @@ export function ExtractStack({ stack }: StackContext) {
       }
     }
   });
+  
+
+  bus.addTargets(stack, 'repository', {mergeRequests: { function: {
+    bind: [bus], 
+    handler: "src/extract-merge-requests.handler"
+  }}} )
 
   const queue = new Queue(stack, "MRQueue", {
     // consumer: func.handler,

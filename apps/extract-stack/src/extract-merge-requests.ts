@@ -2,6 +2,8 @@ import { Clerk } from "@clerk/clerk-sdk-node";
 import { createClient } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
 import { Config } from "sst/node/config";
+import { EventHandler } from "sst/node/event-bus";
+import { extractRepositoryEvent } from "./events";
 
 import {
   getMergeRequests,
@@ -44,21 +46,25 @@ const fetchSourceControlAccessToken = async (
   return userOauthAccessTokenPayload.token;
 };
 
-export async function handler(e, c) {
+export const handler = EventHandler (extractRepositoryEvent, async (evt) => 
+ {
   let sourceControlAccessToken: string;
 
-  const { sourceControl, repositoryId, repositoryName, namespaceName } = e;
+  const externalRepositoryId = evt.properties.repository.externalId;
+  const repositoryName = evt.properties.repository.name;
+  const namespaceName = evt.properties.namespace?.name;
+  const sourceControl = evt.metadata.sourceControl;
+  const repositoryId = evt.properties.repository.id;
 
   try {
     sourceControlAccessToken = await fetchSourceControlAccessToken(
-      "user_2TVx14PlsjNKHdBBSa2OYbEMv0S",
-      "oauth_gitlab",
+      evt.metadata.userId,
+    `oauth_${evt.metadata.sourceControl}`,
     );
   } catch (error) {
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: (error as Error).message }),
-    };
+    console.log(error);
+
+    return
   }
 
   if (sourceControl === "gitlab") {
@@ -73,12 +79,23 @@ export async function handler(e, c) {
 
   const { mergeRequests } = await getMergeRequests(
     {
-      externalRepositoryId: repositoryId,
-      namespaceName: namespaceName,
+      externalRepositoryId: externalRepositoryId,
+      namespaceName: namespaceName || "",
       repositoryName: repositoryName,
       repositoryId: repositoryId,
     },
     context,
   );
-  return {};
+
+  console.log("m", mergeRequests)
 }
+)
+
+// import { EventHandler } from "sst/node/event-bus";
+
+// const repositoryEvent = defineEvent(extractRepositoryEvent);
+// console.log(repositoryEvent)
+
+// export const handler = EventHandler(repositoryEvent, async (evt) => {
+//   console.log("Todo created", evt);
+// });
