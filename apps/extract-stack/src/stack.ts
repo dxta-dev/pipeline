@@ -4,34 +4,40 @@ import { Config } from "sst/constructs";
 import { z } from "zod";
 
 export function ExtractStack({ stack }: StackContext) {
+  const DATABASE_URL = new Config.Secret(stack, "DATABASE_URL");
+  const DATABASE_AUTH_TOKEN = new Config.Secret(stack, "DATABASE_AUTH_TOKEN");
+  const CLERK_SECRET_KEY = new Config.Secret(stack, "CLERK_SECRET_KEY");
 
   const bus = new EventBus(stack, "ExtractBus", {
     rules: {
       extractRepository: {
         pattern: {
-          // source: ["extract"],
-          detailType: ["extract.repository"]
-        },
-        targets: {
-          extractMember: 'src/extract-member.busHandler'
+          source: ["extract"],
+          detailType: ["repository"]
         }
       }
     },
     defaults: {
       retries: 10,
       function: {
-        runtime: "nodejs18.x",
-      },
+        bind: [DATABASE_URL, CLERK_SECRET_KEY, DATABASE_AUTH_TOKEN],
+        runtime: 'nodejs18.x'
+      }
     },
+  });
+
+  bus.addTargets(stack, 'extractRepository', {
+    'extractMember': {
+      function: {
+        bind: [bus],
+        handler: 'src/extract-member.busHandler'
+      }
+    }
   });
 
   const queue = new Queue(stack, "MRQueue", {
     // consumer: func.handler,
   });
-
-  const DATABASE_URL = new Config.Secret(stack, "DATABASE_URL");
-  const DATABASE_AUTH_TOKEN = new Config.Secret(stack, "DATABASE_AUTH_TOKEN");
-  const CLERK_SECRET_KEY = new Config.Secret(stack, "CLERK_SECRET_KEY");
 
   const ENVSchema = z.object({
     CLERK_JWT_ISSUER: z.string(),
