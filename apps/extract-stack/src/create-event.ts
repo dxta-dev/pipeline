@@ -5,7 +5,6 @@ import {
 import { z } from "zod";
 import type { ZodRawShape, ZodAny, ZodObject } from "zod";
 
-
 const client = new EventBridgeClient({});
 
 type Properties<Shape extends ZodRawShape> = z.infer<ZodObject<Shape, "strip", ZodAny>>
@@ -19,10 +18,9 @@ type EventProps<Bus extends string, Source extends string, Type extends string, 
   source: Source;
   type: Type;
   propertiesShape: Shape;
-  bus: Bus;
+  eventBusName: Bus;
   metadataShape: MetadataShape;
 };
-
 
 export function createEvent<
   Bus extends string,
@@ -34,7 +32,7 @@ export function createEvent<
   source,
   type,
   propertiesShape,
-  bus,
+  eventBusName,
   metadataShape,
 }: EventProps<Bus, Source, Type, Shape, MetadataShape>) {
   const propertiesSchema = z.object(propertiesShape);
@@ -44,7 +42,7 @@ export function createEvent<
     console.log("publishing", { source, type, properties, metadata });
     await client.send(new PutEventsCommand({
       Entries: [{
-        EventBusName: bus,
+        EventBusName: eventBusName,
         Source: source,
         DetailType: type,
         Detail: JSON.stringify({
