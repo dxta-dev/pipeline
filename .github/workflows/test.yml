@@ -23,8 +23,5 @@ jobs:
       - name: Install dependecies
         run: npm ci
 
-      - name: Generate migrations
-        run: npm run db:generate
-
       - name: Run tests
         run: npm run test
