@@ -1,6 +1,7 @@
 import AWS from "aws-sdk";
 import { z } from "zod";
 import type { ZodRawShape, ZodAny, ZodObject } from "zod";
+import { nanoid } from "nanoid";
 
 const sqs = new AWS.SQS();
 
@@ -38,7 +39,7 @@ export function createBatchMessage<QueueUrl extends string, Shape extends ZodRaw
     await sqs.sendMessageBatch({
       QueueUrl: queueUrl,
       Entries: content.map((c) => ({
-        Id: ,
+        Id: nanoid(),
         MessageBody: JSON.stringify(messageSchema.parse({ content: c, metadata })),
       })),
     }).promise();
