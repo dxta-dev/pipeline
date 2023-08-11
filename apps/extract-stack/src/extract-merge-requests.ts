@@ -3,16 +3,18 @@ import { createClient } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
 import { Config } from "sst/node/config";
 import { EventHandler } from "sst/node/event-bus";
-import { extractRepositoryEvent } from "./events";
 
 import {
   getMergeRequests,
+  getPaginationData,
   type Context,
   type GetMergeRequestsEntities,
   type GetMergeRequestsSourceControl,
 } from "@acme/extract-functions";
 import { mergeRequests } from "@acme/extract-schema";
 import { GitHubSourceControl, GitlabSourceControl } from "@acme/source-control";
+
+import { extractRepositoryEvent } from "./events";
 
 const clerkClient = Clerk({ secretKey: Config.CLERK_SECRET_KEY });
 const client = createClient({
@@ -46,8 +48,7 @@ const fetchSourceControlAccessToken = async (
   return userOauthAccessTokenPayload.token;
 };
 
-export const handler = EventHandler (extractRepositoryEvent, async (evt) => 
- {
+export const handler = EventHandler(extractRepositoryEvent, async (evt) => {
   let sourceControlAccessToken: string;
 
   const externalRepositoryId = evt.properties.repository.externalId;
@@ -59,12 +60,12 @@ export const handler = EventHandler (extractRepositoryEvent, async (evt) =>
   try {
     sourceControlAccessToken = await fetchSourceControlAccessToken(
       evt.metadata.userId,
-    `oauth_${evt.metadata.sourceControl}`,
+      `oauth_${evt.metadata.sourceControl}`,
     );
   } catch (error) {
     console.log(error);
 
-    return
+    return;
   }
 
   if (sourceControl === "gitlab") {
@@ -77,7 +78,7 @@ export const handler = EventHandler (extractRepositoryEvent, async (evt) =>
     );
   }
 
-  const { mergeRequests } = await getMergeRequests(
+  const { paginationInfo } = await getPaginationData(
     {
       externalRepositoryId: externalRepositoryId,
       namespaceName: namespaceName || "",
@@ -87,9 +88,21 @@ export const handler = EventHandler (extractRepositoryEvent, async (evt) =>
     context,
   );
 
-  console.log("m", mergeRequests)
-}
-)
+  const { mergeRequests } = await getMergeRequests(
+    {
+      externalRepositoryId: externalRepositoryId,
+      namespaceName: namespaceName || "",
+      repositoryName: repositoryName,
+      repositoryId: repositoryId,
+      page: paginationInfo.page,
+      perPage: paginationInfo.perPage,
+    },
+    context,
+  );
+
+  console.log("PI", paginationInfo);
+  console.log("MR", mergeRequests);
+});
 
 // import { EventHandler } from "sst/node/event-bus";
 
