@@ -88,27 +88,18 @@ export const handler = EventHandler(extractRepositoryEvent, async (evt) => {
     context,
   );
 
-  const { mergeRequests } = await getMergeRequests(
-    {
-      externalRepositoryId: externalRepositoryId,
-      namespaceName: namespaceName || "",
-      repositoryName: repositoryName,
-      repositoryId: repositoryId,
-      page: paginationInfo.page,
-      perPage: paginationInfo.perPage,
-    },
-    context,
-  );
-
-  console.log("PI", paginationInfo);
-  console.log("MR", mergeRequests);
+  for (let index = 1; index <= paginationInfo.totalPages; index++) {
+    const { mergeRequests } = await getMergeRequests(
+      {
+        externalRepositoryId: externalRepositoryId,
+        namespaceName: namespaceName || "",
+        repositoryName: repositoryName,
+        repositoryId: repositoryId,
+        page: index,
+        perPage: paginationInfo.perPage,
+      },
+      context,
+    );
+    console.log("MR", mergeRequests);
+  }
 });
-
-// import { EventHandler } from "sst/node/event-bus";
-
-// const repositoryEvent = defineEvent(extractRepositoryEvent);
-// console.log(repositoryEvent)
-
-// export const handler = EventHandler(repositoryEvent, async (evt) => {
-//   console.log("Todo created", evt);
-// });
