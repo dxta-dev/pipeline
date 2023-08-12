@@ -48,7 +48,7 @@ export const getMembers: GetMembersFunction = async (
   await db.insert(entities.repositoriesToMembers)
     .values(insertedMembers.map(member => ({ memberId: member.id, repositoryId })))
     .onConflictDoNothing()
-    .all();
+    .run();
 
   return {
     members: insertedMembers,
