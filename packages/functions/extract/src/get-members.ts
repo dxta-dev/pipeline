@@ -42,7 +42,9 @@ export const getMembers: GetMembersFunction = async (
         .returning()
         .get()
     ));
-  })
+  });
+
+  console.log('insertedMembers', ...insertedMembers);
 
   // Issue: no way to know if passed repositoryId is correct
   await db.insert(entities.repositoriesToMembers)

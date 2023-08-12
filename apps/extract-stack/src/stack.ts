@@ -26,11 +26,19 @@ export function ExtractStack({ stack }: StackContext) {
     },
   });
 
+  const membersQueue = new Queue(stack, "ExtractMemberPageQueue");
+  membersQueue.addConsumer(stack, {
+    function: {
+      bind: [bus, membersQueue, DATABASE_URL, CLERK_SECRET_KEY, DATABASE_AUTH_TOKEN], // Issue: need to bind bus because same file
+      handler: 'src/extract-member.queueHandler'
+    }
+  })
+
   bus.addTargets(stack, 'extractRepository', {
     'extractMember': {
       function: {
-        bind: [bus],
-        handler: 'src/extract-member.busHandler'
+        bind: [bus, membersQueue],
+        handler: 'src/extract-member.eventHandler'
       }
     }
   });
@@ -38,7 +46,7 @@ export function ExtractStack({ stack }: StackContext) {
   const queue = new Queue(stack, "MRQueue", {
     // consumer: func.handler,
   });
-
+  
   const ENVSchema = z.object({
     CLERK_JWT_ISSUER: z.string(),
     CLERK_JWT_AUDIENCE: z.string(),

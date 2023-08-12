@@ -35,6 +35,13 @@ declare module "sst/node/event-bus" {
 }import "sst/node/queue";
 declare module "sst/node/queue" {
   export interface QueueResources {
+    "ExtractMemberPageQueue": {
+      queueUrl: string;
+    }
+  }
+}import "sst/node/queue";
+declare module "sst/node/queue" {
+  export interface QueueResources {
     "MRQueue": {
       queueUrl: string;
     }
