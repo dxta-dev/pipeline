@@ -91,7 +91,7 @@ type MessagePayload<Shape extends ZodRawShape, MetadataShape extends ZodRawShape
 export function QueueHandler<Shape extends ZodRawShape, MetadataShape extends ZodRawShape>(
   _sender: Sender<Shape, MetadataShape> | BatchSender<Shape, MetadataShape>,
   cb: (
-    evt: MessagePayload<Shape, MetadataShape>[]
+    message: MessagePayload<Shape, MetadataShape>
   ) => Promise<void>
 ) {
   /**
@@ -100,6 +100,9 @@ export function QueueHandler<Shape extends ZodRawShape, MetadataShape extends Zo
    * - How handle processing failures ?
    */
   return async (event: SQSEvent) => {
-    await cb(event.Records.map((record) => JSON.parse(record.body) as MessagePayload<Shape, MetadataShape>))
+    if (event.Records.length > 1) console.warn('WARNING: QueueHandler should process 1 message but got', event.Records.length);
+    for (const record of event.Records) {
+      await cb(JSON.parse(record.body) as MessagePayload<Shape, MetadataShape>);
+    }
   }
 }
