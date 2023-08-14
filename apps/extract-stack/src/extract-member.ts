@@ -12,7 +12,6 @@ import type { Pagination } from "@acme/source-control";
 import { Config } from "sst/node/config";
 import { extractMemberPageBatchMessage } from "./messages";
 
-import type { SQSHandler } from "aws-lambda";
 import { QueueHandler } from "./create-message";
 
 const clerkClient = Clerk({ secretKey: Config.CLERK_SECRET_KEY });

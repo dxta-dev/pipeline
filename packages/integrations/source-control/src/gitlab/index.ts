@@ -53,7 +53,7 @@ export class GitlabSourceControl implements SourceControl {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/require-await
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async fetchMergeRequests(externalRepositoryId: number, namespaceName = '', repositoryName = '', repositoryId: number, creationPeriod: TimePeriod = {}, page?: number, perPage?: number): Promise<{ mergeRequests: NewMergeRequest[], pagination: Pagination }> {
     const { data, paginationInfo } = await this.api.MergeRequests.all({
       projectId: externalRepositoryId,
