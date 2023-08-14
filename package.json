@@ -28,7 +28,7 @@
     "next-themes": "^0.2.1",
     "prettier": "^2.8.8",
     "prettier-plugin-tailwindcss": "^0.3.0",
-    "turbo": "^1.10.3",
+    "turbo": "^1.10.12",
     "typescript": "^5.1.6"
   },
   "packageManager": "npm@9.5.1",
