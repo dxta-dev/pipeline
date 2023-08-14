@@ -15,6 +15,8 @@ import { mergeRequests } from "@acme/extract-schema";
 import { GitHubSourceControl, GitlabSourceControl } from "@acme/source-control";
 
 import { extractRepositoryEvent } from "./events";
+import { extractMergeRequestMessage } from "./messages";
+import { QueueHandler } from "./create-message";
 
 const clerkClient = Clerk({ secretKey: Config.CLERK_SECRET_KEY });
 const client = createClient({
@@ -48,40 +50,33 @@ const fetchSourceControlAccessToken = async (
   return userOauthAccessTokenPayload.token;
 };
 
-export const handler = EventHandler(extractRepositoryEvent, async (evt) => {
-  let sourceControlAccessToken: string;
+const initSourceControl = async (userId: string, sourceControl: 'github' | 'gitlab') => {
+  const accessToken = await fetchSourceControlAccessToken(userId, `oauth_${sourceControl}`);
+  if (sourceControl === 'github') return new GitHubSourceControl(accessToken);
+  if (sourceControl === 'gitlab') return new GitlabSourceControl(accessToken);
+  return null;
+}
+
+export const eventHandler = EventHandler(extractRepositoryEvent, async (evt) => {
 
   const externalRepositoryId = evt.properties.repository.externalId;
   const repositoryName = evt.properties.repository.name;
-  const namespaceName = evt.properties.namespace?.name;
+  const namespace = evt.properties.namespace;
   const sourceControl = evt.metadata.sourceControl;
   const repositoryId = evt.properties.repository.id;
 
   try {
-    sourceControlAccessToken = await fetchSourceControlAccessToken(
-      evt.metadata.userId,
-      `oauth_${evt.metadata.sourceControl}`,
-    );
-  } catch (error) {
+    context.integrations.sourceControl = await initSourceControl(evt.metadata.userId, sourceControl)
+    } catch (error) {
     console.log(error);
-
     return;
   }
 
-  if (sourceControl === "gitlab") {
-    context.integrations.sourceControl = new GitlabSourceControl(
-      sourceControlAccessToken,
-    );
-  } else if (sourceControl === "github") {
-    context.integrations.sourceControl = new GitHubSourceControl(
-      sourceControlAccessToken,
-    );
-  }
 
   const { paginationInfo } = await getPaginationData(
     {
       externalRepositoryId: externalRepositoryId,
-      namespaceName: namespaceName || "",
+      namespaceName: namespace?.name || "",
       repositoryName: repositoryName,
       repositoryId: repositoryId,
     },
@@ -89,17 +84,49 @@ export const handler = EventHandler(extractRepositoryEvent, async (evt) => {
   );
 
   for (let index = 1; index <= paginationInfo.totalPages; index++) {
-    const { mergeRequests } = await getMergeRequests(
-      {
-        externalRepositoryId: externalRepositoryId,
-        namespaceName: namespaceName || "",
-        repositoryName: repositoryName,
-        repositoryId: repositoryId,
+
+    await extractMergeRequestMessage.send({
+      repository: {
+        id: repositoryId,
+        externalId: externalRepositoryId,
+        name: repositoryName
+      },
+      namespace: namespace,
+      pagination: {
         page: index,
         perPage: paginationInfo.perPage,
-      },
-      context,
-    );
-    console.log("MR", mergeRequests);
+        totalPages: paginationInfo.totalPages
+      }
+    }, { caller: 'extract-merge-requests', timestamp: new Date().getTime(), version: 1, sourceControl, userId: evt.metadata.userId });
   }
 });
+
+export const queueHandler = QueueHandler(extractMergeRequestMessage, async (messages) => {
+  const message = messages[0];
+  if(!message) return;
+
+  try {
+    context.integrations.sourceControl = await initSourceControl(message.metadata.userId, message.metadata.sourceControl)
+    } catch (error) {
+    console.log(error);
+    return;
+  }
+  
+  const {namespace, pagination, repository} = message.content
+  context.integrations.sourceControl 
+
+  const { mergeRequests } = await getMergeRequests(
+    {
+      externalRepositoryId: repository.externalId,
+      namespaceName: namespace?.name || "",
+      repositoryName: repository.name,
+      repositoryId: repository.id,
+      page: pagination.page,
+      perPage: pagination.perPage,
+    },
+    context,
+  );
+  console.log("MR", mergeRequests);
+
+
+})
