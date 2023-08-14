@@ -66,8 +66,10 @@ describe('get-repository', () => {
 
       const repositoryRow = db.select().from(repositories)
         .where(eq(repositories.externalId, repository.externalId)).get();
-      expect(repositoryRow.externalId).toEqual(repository.externalId);
-      expect(repositoryRow.id).toEqual(repository.id);
+
+      expect(repositoryRow).toBeDefined();
+      expect(repositoryRow?.externalId).toEqual(repository.externalId);
+      expect(repositoryRow?.id).toEqual(repository.id);
 
       if (!namespace) {
         throw new Error('namespace should not be null');
@@ -75,8 +77,9 @@ describe('get-repository', () => {
 
       const namespaceRow = db.select().from(namespaces)
         .where(eq(namespaces.externalId, namespace.externalId)).get();
-      expect(namespaceRow.externalId).toEqual(namespace.externalId);
-      expect(namespaceRow.id).toEqual(namespace.id);
+      expect(namespaceRow).toBeDefined();
+      expect(namespaceRow?.externalId).toEqual(namespace.externalId);
+      expect(namespaceRow?.id).toEqual(namespace.id);
     });
   });
 });
