@@ -4,20 +4,6 @@ declare module "sst/node/config" {
     APP: string;
     STAGE: string;
   }
-}import "sst/node/event-bus";
-declare module "sst/node/event-bus" {
-  export interface EventBusResources {
-    "ExtractBus": {
-      eventBusName: string;
-    }
-  }
-}import "sst/node/queue";
-declare module "sst/node/queue" {
-  export interface QueueResources {
-    "MRQueue": {
-      queueUrl: string;
-    }
-  }
 }import "sst/node/config";
 declare module "sst/node/config" {
   export interface SecretResources {
@@ -37,6 +23,27 @@ declare module "sst/node/config" {
   export interface SecretResources {
     "CLERK_SECRET_KEY": {
       value: string;
+    }
+  }
+}import "sst/node/event-bus";
+declare module "sst/node/event-bus" {
+  export interface EventBusResources {
+    "ExtractBus": {
+      eventBusName: string;
+    }
+  }
+}import "sst/node/queue";
+declare module "sst/node/queue" {
+  export interface QueueResources {
+    "ExtractMemberPageQueue": {
+      queueUrl: string;
+    }
+  }
+}import "sst/node/queue";
+declare module "sst/node/queue" {
+  export interface QueueResources {
+    "MRQueue": {
+      queueUrl: string;
     }
   }
 }import "sst/node/api";

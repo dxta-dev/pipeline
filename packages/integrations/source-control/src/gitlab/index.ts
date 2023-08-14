@@ -1,6 +1,6 @@
 import type { SourceControl, Pagination, TimePeriod } from "../source-control";
 import type { Gitlab as GitlabType } from '@gitbeaker/core';
-import type { NewRepository, NewNamespace, NewMergeRequest } from "@acme/extract-schema";
+import type { NewRepository, NewNamespace, NewMergeRequest, NewMember } from "@acme/extract-schema";
 import { Gitlab } from '@gitbeaker/rest';
 
 export class GitlabSourceControl implements SourceControl {
@@ -30,7 +30,30 @@ export class GitlabSourceControl implements SourceControl {
     };
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/require-await
+  async fetchMembers(externalRepositoryId: number, namespaceName: string, repositoryName: string, page?: number, perPage?: number): Promise<{ members: NewMember[], pagination: Pagination }> {
+    const { data, paginationInfo } = await this.api.ProjectMembers.all(externalRepositoryId, {
+      includeInherited: true,
+      perPage,
+      page,
+      pagination: 'offset',
+      showExpanded: true,
+    });
+
+    return {
+      members: data.map(member => ({
+        externalId: member.id, 
+        name: member.name, 
+        username: member.username
+      } satisfies NewMember)),
+      pagination: {
+        page: paginationInfo.current,
+        perPage: paginationInfo.perPage,
+        totalPages: paginationInfo.totalPages
+      } satisfies Pagination
+    }
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async fetchMergeRequests(externalRepositoryId: number, namespaceName = '', repositoryName = '', repositoryId: number, creationPeriod: TimePeriod = {}, page?: number, perPage?: number): Promise<{ mergeRequests: NewMergeRequest[], pagination: Pagination }> {
     const { data, paginationInfo } = await this.api.MergeRequests.all({
       projectId: externalRepositoryId,

@@ -8,7 +8,7 @@ export { mergeRequestDiffs } from './merge-request-diffs';
 export type { MergeRequestDiff, NewMergeRequestDiff } from './merge-request-diffs';
 export { mergeRequestCommits } from './merge-request-commits';
 export type { MergeRequestCommit, NewMergeRequestCommit } from './merge-request-commits';
-export { members } from './members';
+export { members, MemberSchema, NewMemberSchema } from './members';
 export type { Member, NewMember } from './members';
 export { repositoriesToMembers } from './repositories-to-members';
 export type { RepositoryToMember, NewRepositoryToMember } from './repositories-to-members';
