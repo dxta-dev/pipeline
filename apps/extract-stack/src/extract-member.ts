@@ -10,7 +10,7 @@ import type { Namespace, Repository } from "@acme/extract-schema";
 import { GitHubSourceControl, GitlabSourceControl } from "@acme/source-control";
 import type { Pagination } from "@acme/source-control";
 import { Config } from "sst/node/config";
-import { extractMemberPageBatchMessage } from "./messages";
+import { extractMemberPageMessage } from "./messages";
 
 import { QueueHandler } from "./create-message";
 
@@ -61,7 +61,7 @@ const extractMembersPage = async ({ namespace, repository, sourceControl, userId
     context.integrations.sourceControl = await initSourceControl(userId, sourceControl);
   } catch (error) {
     console.error(error);
-    return;
+    throw error;
   }
 
   const { paginationInfo: resultPaginationInfo } = await getMembers({
@@ -76,11 +76,7 @@ const extractMembersPage = async ({ namespace, repository, sourceControl, userId
   return resultPaginationInfo;
 };
 
-const range = (a: number, b: number) => Array.apply(0, { length: b - a + 1 } as number[]).map((_, index) => index + a);
-const chunks = <T>(array: Array<T>, size: number) => Array.apply(0, { length: Math.ceil(array.length / size) } as unknown[]).map((_, index) => array.slice(index * size, (index + 1) * size));
-
 export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
-
   const pagination = await extractMembersPage({
     namespace: ev.properties.namespace,
     repository: ev.properties.repository,
@@ -89,32 +85,30 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
     paginationInfo: { page: 1, perPage: 2, totalPages: 1000 },
   });
 
-  if (!pagination) return;
-
-  const remainingMemberPages = range(2, pagination.totalPages)
-    .map(page => ({
-      page,
-      perPage: pagination.perPage,
-      totalPages: pagination.totalPages
-    } satisfies Pagination));
-
-  const batchedPages = chunks(remainingMemberPages, 10);
-
-  await Promise.all(batchedPages.map(batch => extractMemberPageBatchMessage.send(
-    batch.map(page => ({
+  const extractMemberPageContents: { repository: Repository, namespace: Namespace | null, pagination: Pagination }[] = [];
+  for (let i = 2; i <= pagination.totalPages; i++) {
+    extractMemberPageContents.push({
       namespace: ev.properties.namespace,
       repository: ev.properties.repository,
-      pagination: page
-    })), {
+      pagination: {
+        page: i,
+        perPage: pagination.perPage,
+        totalPages: pagination.totalPages
+      }
+    })
+  }
+  
+  await extractMemberPageMessage.sendAll(extractMemberPageContents, {
     version: 1,
     caller: 'extract-member',
     sourceControl: ev.metadata.sourceControl,
     userId: ev.metadata.userId,
     timestamp: new Date().getTime(),
-  })));
+  })
+
 });
 
-export const queueHandler = QueueHandler(extractMemberPageBatchMessage, async (message) => {
+export const queueHandler = QueueHandler(extractMemberPageMessage, async (message) => {
   await extractMembersPage({
     namespace: message.content.namespace,
     paginationInfo: message.content.pagination,
