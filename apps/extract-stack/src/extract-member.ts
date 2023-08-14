@@ -64,15 +64,13 @@ const extractMembersPage = async ({ namespace, repository, sourceControl, userId
     return;
   }
 
-  console.log('processing page', paginationInfo?.page, 'perPage', paginationInfo?.perPage);
-
   const { paginationInfo: resultPaginationInfo } = await getMembers({
     externalRepositoryId: repository.externalId,
     namespaceName: namespace?.name || "",
     repositoryId: repository.id,
     repositoryName: repository.name,
-    perPage: page,
-    page: perPage
+    perPage: perPage,
+    page: page
   }, context);
 
   return resultPaginationInfo;
@@ -116,14 +114,12 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
   })));
 });
 
-export const queueHandler = QueueHandler(extractMemberPageBatchMessage, async (messages) => {
-  console.log('CONSUMER BARRIER',messages.length)
-  // TODO: partial retries ?
-  await Promise.all(messages.map(message => extractMembersPage({
+export const queueHandler = QueueHandler(extractMemberPageBatchMessage, async (message) => {
+  await extractMembersPage({
     namespace: message.content.namespace,
     paginationInfo: message.content.pagination,
     repository: message.content.repository,
     sourceControl: message.metadata.sourceControl,
     userId: message.metadata.userId
-  })))
-})
+  });
+});
