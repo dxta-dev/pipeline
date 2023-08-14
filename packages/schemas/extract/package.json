@@ -10,8 +10,8 @@
     "lint": "eslint . && echo \"✔ No ESLint warnings or errors\""
   },
   "dependencies": {
-    "drizzle-zod": "^0.5.0",
     "drizzle-orm": "^0.28.2",
+    "drizzle-zod": "^0.5.0",
     "zod": "^3.21.4"
   },
   "devDependencies": {
