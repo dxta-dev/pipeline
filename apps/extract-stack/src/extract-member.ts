@@ -85,9 +85,9 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
     paginationInfo: { page: 1, perPage: 2, totalPages: 1000 },
   });
 
-  const extractMemberPageContents: { repository: Repository, namespace: Namespace | null, pagination: Pagination }[] = [];
+  const arrayOfExtractMemberPageMessageContent: { repository: Repository, namespace: Namespace | null, pagination: Pagination }[] = [];
   for (let i = 2; i <= pagination.totalPages; i++) {
-    extractMemberPageContents.push({
+    arrayOfExtractMemberPageMessageContent.push({
       namespace: ev.properties.namespace,
       repository: ev.properties.repository,
       pagination: {
@@ -98,7 +98,7 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
     })
   }
   
-  await extractMemberPageMessage.sendAll(extractMemberPageContents, {
+  await extractMemberPageMessage.sendAll(arrayOfExtractMemberPageMessageContent, {
     version: 1,
     caller: 'extract-member',
     sourceControl: ev.metadata.sourceControl,
