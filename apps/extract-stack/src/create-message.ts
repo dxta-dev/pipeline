@@ -24,33 +24,6 @@ type MessageProps<QueueUrl extends string, Shape extends ZodRawShape, MetadataSh
   metadataShape: MetadataShape;
 };
 
-export function createBatchMessage<QueueUrl extends string, Shape extends ZodRawShape, MetadataShape extends ZodRawShape>({
-  queueUrl,
-  contentShape,
-  metadataShape,
-}: MessageProps<QueueUrl, Shape, MetadataShape>) {
-
-  const messageSchema = z.object({
-    content: z.object(contentShape),
-    metadata: z.object(metadataShape),
-  });
-
-  const send: BatchSend<Shape, MetadataShape> = async (content, metadata) => {
-    console.log("sending", { content, metadata });
-    await sqs.sendMessageBatch({
-      QueueUrl: queueUrl,
-      Entries: content.map((c) => ({
-        Id: nanoid(),
-        MessageBody: JSON.stringify(messageSchema.parse({ content: c, metadata })),
-      })),
-    }).promise();
-  }
-
-  return {
-    send,
-  }
-}
-
 export function createMessage<QueueUrl extends string, Shape extends ZodRawShape, MetadataShape extends ZodRawShape>({
   queueUrl,
   contentShape,
@@ -70,17 +43,36 @@ export function createMessage<QueueUrl extends string, Shape extends ZodRawShape
     }).promise();
   }
 
+  const sendAll: BatchSend<Shape, MetadataShape> = async (contentArray, metadata) => {
+    for (let i = 0; i < contentArray.length; i += 10) {
+      const contentBatch = contentArray.slice(i, i + 10);
+      const Entries = contentBatch.map(content => JSON.stringify(messageSchema.parse({ content, metadata })))
+        .map(MessageBody => ({
+          Id: nanoid(),
+          MessageBody
+        }));
+      console.log("sending batch", Entries);
+      try {
+        await sqs.sendMessageBatch({
+          QueueUrl: queueUrl,
+          Entries
+        }).promise();
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+  }
+
   return {
     send,
+    sendAll
   }
 }
 
 type Sender<Shape extends ZodRawShape, MetadataShape extends ZodRawShape> = {
   send: Send<Shape, MetadataShape>;
-}
-
-type BatchSender<Shape extends ZodRawShape, MetadataShape extends ZodRawShape> = {
-  send: BatchSend<Shape, MetadataShape>
+  sendAll: BatchSend<Shape, MetadataShape>
 }
 
 type MessagePayload<Shape extends ZodRawShape, MetadataShape extends ZodRawShape> = {
@@ -89,7 +81,7 @@ type MessagePayload<Shape extends ZodRawShape, MetadataShape extends ZodRawShape
 }
 
 export function QueueHandler<Shape extends ZodRawShape, MetadataShape extends ZodRawShape>(
-  _sender: Sender<Shape, MetadataShape> | BatchSender<Shape, MetadataShape>,
+  _sender: Sender<Shape, MetadataShape>,
   cb: (
     message: MessagePayload<Shape, MetadataShape>
   ) => Promise<void>

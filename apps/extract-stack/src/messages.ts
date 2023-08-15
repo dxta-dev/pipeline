@@ -24,7 +24,7 @@ const metadataSchema = z.object({
   userId: z.string(),
 });
 
-export const extractMemberPageBatchMessage = createBatchMessage({
+export const extractMemberPageMessage = createMessage({
   metadataShape: metadataSchema.shape,
   contentShape: extractRepositoryDataSchema.shape,
   queueUrl: Queue.ExtractMemberPageQueue.queueUrl
