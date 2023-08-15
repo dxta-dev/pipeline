@@ -33,6 +33,12 @@ export function ExtractStack({ stack }: StackContext) {
   const mergeRequestQueue = new Queue(stack, "MRQueue")
   const membersQueue = new Queue(stack, "ExtractMemberPageQueue");
   membersQueue.addConsumer(stack, {
+    cdk: {
+      eventSource: {
+        batchSize: 1,
+        maxConcurrency: 20
+      }
+    },
     function: {
       bind: [bus, membersQueue, mergeRequestQueue, DATABASE_URL, CLERK_SECRET_KEY, DATABASE_AUTH_TOKEN], // Issue: need to bind bus because same file
       handler: 'src/extract-member.queueHandler'
