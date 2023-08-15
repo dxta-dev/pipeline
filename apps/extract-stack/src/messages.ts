@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { RepositorySchema } from "@acme/extract-schema";
 import { NamespaceSchema } from "@acme/extract-schema/src/namespaces";
-import { createBatchMessage } from "./create-message";
+import { createMessage } from "./create-message";
 import { Queue } from 'sst/node/queue'
 
 const paginationSchema = z.object({
@@ -24,7 +24,7 @@ const metadataSchema = z.object({
   userId: z.string(),
 });
 
-export const extractMemberPageBatchMessage = createBatchMessage({
+export const extractMemberPageMessage = createMessage({
   metadataShape: metadataSchema.shape,
   contentShape: extractMemberPageMessageSchema.shape,
   queueUrl: Queue.ExtractMemberPageQueue.queueUrl
