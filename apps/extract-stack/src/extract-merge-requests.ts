@@ -65,13 +65,7 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (evt) => 
   const sourceControl = evt.metadata.sourceControl;
   const repositoryId = evt.properties.repository.id;
 
-  try {
-    context.integrations.sourceControl = await initSourceControl(evt.metadata.userId, sourceControl)
-    } catch (error) {
-    console.log(error);
-    return;
-  }
-
+  context.integrations.sourceControl = await initSourceControl(evt.metadata.userId, sourceControl)
 
   const { paginationInfo } = await getPaginationData(
     {
@@ -101,20 +95,18 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (evt) => 
   }
 });
 
-export const queueHandler = QueueHandler(extractMergeRequestMessage, async (messages) => {
-  const message = messages[0];
-  if(!message) return;
-
-  try {
-    context.integrations.sourceControl = await initSourceControl(message.metadata.userId, message.metadata.sourceControl)
-    } catch (error) {
-    console.log(error);
+export const queueHandler = QueueHandler(extractMergeRequestMessage, async (message) => {
+  
+  if(!message){
+    console.warn("Expected message to have content,but get empty")
     return;
   }
-  
-  const {namespace, pagination, repository} = message.content
-  context.integrations.sourceControl 
 
+  context.integrations.sourceControl = await initSourceControl(message.metadata.userId, message.metadata.sourceControl);
+  
+  const {namespace, pagination, repository} = message.content;
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars  
   const { mergeRequests } = await getMergeRequests(
     {
       externalRepositoryId: repository.externalId,
@@ -126,7 +118,4 @@ export const queueHandler = QueueHandler(extractMergeRequestMessage, async (mess
     },
     context,
   );
-  console.log("MR", mergeRequests);
-
-
 })

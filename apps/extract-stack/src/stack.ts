@@ -7,7 +7,6 @@ import {
 } from "sst/constructs";
 import { z } from "zod";
 
-
 export function ExtractStack({ stack }: StackContext) {
   const DATABASE_URL = new Config.Secret(stack, "DATABASE_URL");
   const DATABASE_AUTH_TOKEN = new Config.Secret(stack, "DATABASE_AUTH_TOKEN");
@@ -26,48 +25,64 @@ export function ExtractStack({ stack }: StackContext) {
       retries: 10,
       function: {
         bind: [DATABASE_URL, CLERK_SECRET_KEY, DATABASE_AUTH_TOKEN],
-        runtime: 'nodejs18.x'
-      }
+        runtime: "nodejs18.x",
+      },
     },
   });
-  const mergeRequestQueue = new Queue(stack, "MRQueue")
+  const mergeRequestQueue = new Queue(stack, "MRQueue");
   const membersQueue = new Queue(stack, "ExtractMemberPageQueue");
   membersQueue.addConsumer(stack, {
     cdk: {
       eventSource: {
         batchSize: 1,
-        maxConcurrency: 20
-      }
+        maxConcurrency: 20,
+      },
     },
     function: {
-      bind: [bus, membersQueue, mergeRequestQueue, DATABASE_URL, CLERK_SECRET_KEY, DATABASE_AUTH_TOKEN], // Issue: need to bind bus because same file
-      handler: 'src/extract-member.queueHandler'
-    }
-  })
+      bind: [
+        bus,
+        membersQueue,
+        mergeRequestQueue,
+        DATABASE_URL,
+        CLERK_SECRET_KEY,
+        DATABASE_AUTH_TOKEN,
+      ], // Issue: need to bind bus because same file
+      handler: "src/extract-member.queueHandler",
+    },
+  });
 
-  bus.addTargets(stack, 'repository', {
-    'extractMember': {
+  bus.addTargets(stack, "repository", {
+    extractMember: {
       function: {
         bind: [bus, membersQueue, mergeRequestQueue],
-        handler: 'src/extract-member.eventHandler'
-      }
-    }
+        handler: "src/extract-member.eventHandler",
+      },
+    },
   });
-  
 
-  bus.addTargets(stack, 'repository', {mergeRequests: { function: {
-    bind: [bus, mergeRequestQueue, membersQueue], 
-    handler: "src/extract-merge-requests.eventHandler"
-  }}} )
+  bus.addTargets(stack, "repository", {
+    mergeRequests: {
+      function: {
+        bind: [bus, mergeRequestQueue, membersQueue],
+        handler: "src/extract-merge-requests.eventHandler",
+      },
+    },
+  });
 
   mergeRequestQueue.addConsumer(stack, {
     function: {
-      bind:[bus, mergeRequestQueue, membersQueue, DATABASE_URL, CLERK_SECRET_KEY, DATABASE_AUTH_TOKEN],
-      handler: 'src/extract-merge-requests.queueHandler'
-    }
-  })    
+      bind: [
+        bus,
+        mergeRequestQueue,
+        membersQueue,
+        DATABASE_URL,
+        CLERK_SECRET_KEY,
+        DATABASE_AUTH_TOKEN,
+      ],
+      handler: "src/extract-merge-requests.queueHandler",
+    },
+  });
 
-  
   const ENVSchema = z.object({
     CLERK_JWT_ISSUER: z.string(),
     CLERK_JWT_AUDIENCE: z.string(),
