@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { RepositorySchema } from "@acme/extract-schema";
 import { NamespaceSchema } from "@acme/extract-schema/src/namespaces";
-import { createMessage } from "./create-message";
+import { createBatchMessage, createMessage } from "./create-message";
 import { Queue } from 'sst/node/queue'
 
 const paginationSchema = z.object({
@@ -10,7 +10,7 @@ const paginationSchema = z.object({
   totalPages: z.number(),
 });
 
-const extractMemberPageMessageSchema = z.object({
+const extractRepositoryDataSchema = z.object({
   repository: RepositorySchema,
   namespace: z.nullable(NamespaceSchema),
   pagination: paginationSchema
@@ -26,6 +26,12 @@ const metadataSchema = z.object({
 
 export const extractMemberPageMessage = createMessage({
   metadataShape: metadataSchema.shape,
-  contentShape: extractMemberPageMessageSchema.shape,
+  contentShape: extractRepositoryDataSchema.shape,
   queueUrl: Queue.ExtractMemberPageQueue.queueUrl
+});
+
+export const extractMergeRequestMessage = createMessage({
+  metadataShape: metadataSchema.shape,
+  contentShape: extractRepositoryDataSchema.shape,
+  queueUrl: Queue.MRQueue.queueUrl
 });

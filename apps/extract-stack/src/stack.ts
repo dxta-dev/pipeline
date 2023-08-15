@@ -1,6 +1,10 @@
-import { Api, EventBus, Queue } from "sst/constructs";
-import type { StackContext } from "sst/constructs";
-import { Config } from "sst/constructs";
+import {
+  Api,
+  Config,
+  EventBus,
+  Queue,
+  type StackContext,
+} from "sst/constructs";
 import { z } from "zod";
 
 export function ExtractStack({ stack }: StackContext) {
@@ -10,49 +14,75 @@ export function ExtractStack({ stack }: StackContext) {
 
   const bus = new EventBus(stack, "ExtractBus", {
     rules: {
-      extractRepository: {
+      repository: {
         pattern: {
           source: ["extract"],
-          detailType: ["repository"]
-        }
-      }
+          detailType: ["repository"],
+        },
+      },
     },
     defaults: {
       retries: 10,
       function: {
         bind: [DATABASE_URL, CLERK_SECRET_KEY, DATABASE_AUTH_TOKEN],
-        runtime: 'nodejs18.x'
-      }
+        runtime: "nodejs18.x",
+      },
     },
   });
-
+  const mergeRequestQueue = new Queue(stack, "MRQueue");
   const membersQueue = new Queue(stack, "ExtractMemberPageQueue");
   membersQueue.addConsumer(stack, {
     cdk: {
       eventSource: {
         batchSize: 1,
-        maxConcurrency: 20
-      }
+        maxConcurrency: 20,
+      },
     },
     function: {
-      bind: [bus, membersQueue, DATABASE_URL, CLERK_SECRET_KEY, DATABASE_AUTH_TOKEN], // Issue: need to bind bus because same file
-      handler: 'src/extract-member.queueHandler',
-    }
-  })
+      bind: [
+        bus,
+        membersQueue,
+        mergeRequestQueue,
+        DATABASE_URL,
+        CLERK_SECRET_KEY,
+        DATABASE_AUTH_TOKEN,
+      ], // Issue: need to bind bus because same file
+      handler: "src/extract-member.queueHandler",
+    },
+  });
 
-  bus.addTargets(stack, 'extractRepository', {
-    'extractMember': {
+  bus.addTargets(stack, "repository", {
+    extractMember: {
       function: {
-        bind: [bus, membersQueue],
-        handler: 'src/extract-member.eventHandler'
-      }
-    }
+        bind: [bus, membersQueue, mergeRequestQueue],
+        handler: "src/extract-member.eventHandler",
+      },
+    },
   });
 
-  const queue = new Queue(stack, "MRQueue", {
-    // consumer: func.handler,
+  bus.addTargets(stack, "repository", {
+    mergeRequests: {
+      function: {
+        bind: [bus, mergeRequestQueue, membersQueue],
+        handler: "src/extract-merge-requests.eventHandler",
+      },
+    },
   });
-  
+
+  mergeRequestQueue.addConsumer(stack, {
+    function: {
+      bind: [
+        bus,
+        mergeRequestQueue,
+        membersQueue,
+        DATABASE_URL,
+        CLERK_SECRET_KEY,
+        DATABASE_AUTH_TOKEN,
+      ],
+      handler: "src/extract-merge-requests.queueHandler",
+    },
+  });
+
   const ENVSchema = z.object({
     CLERK_JWT_ISSUER: z.string(),
     CLERK_JWT_AUDIENCE: z.string(),
@@ -62,9 +92,9 @@ export function ExtractStack({ stack }: StackContext) {
 
   const api = new Api(stack, "ExtractApi", {
     defaults: {
-      authorizer: 'JwtAuthorizer',
+      authorizer: "JwtAuthorizer",
       function: {
-        bind: [bus, DATABASE_URL, DATABASE_AUTH_TOKEN, CLERK_SECRET_KEY, queue],
+        bind: [bus, DATABASE_URL, DATABASE_AUTH_TOKEN, CLERK_SECRET_KEY],
         runtime: "nodejs18.x",
       },
     },
@@ -91,4 +121,3 @@ export function ExtractStack({ stack }: StackContext) {
     ExtractBus: bus,
   };
 }
-

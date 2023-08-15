@@ -16,26 +16,53 @@ export type GetMergeRequestsOutput = {
   paginationInfo: Pagination;
 };
 
+export type GetPaginationDataOutput = {
+  paginationInfo: Pagination;
+};
+
 export type GetMergeRequestsSourceControl = Pick<SourceControl, "fetchMergeRequests">;
 export type GetMergeRequestsEntities = Pick<Entities, "mergeRequests">;
 
 export type GetMergeRequestsFunction = ExtractFunction<GetMergeRequestsInput, GetMergeRequestsOutput, GetMergeRequestsSourceControl, GetMergeRequestsEntities>;
 
-export const getMergeRequests: GetMergeRequestsFunction  = async (
-  { externalRepositoryId, namespaceName, repositoryName, repositoryId },
-  { integrations, db, entities }
-) => {
-    
-    if(!integrations.sourceControl) {
-      throw new Error("Source control integration not configured");
-    }
+export type GetPaginationDataFunction = ExtractFunction<GetMergeRequestsInput, GetPaginationDataOutput, GetMergeRequestsSourceControl, GetMergeRequestsEntities>;
 
-    const { mergeRequests, pagination } = await integrations.sourceControl.fetchMergeRequests(externalRepositoryId, namespaceName, repositoryName, repositoryId);
+export const getPaginationData: GetPaginationDataFunction = async (
+  { externalRepositoryId, namespaceName, repositoryName, repositoryId },
+  { integrations },
+) => {
+  if (!integrations.sourceControl) {
+    throw new Error("Source control integration not configured");
+  }
+
+  const { pagination } = await integrations.sourceControl.fetchMergeRequests(
+    externalRepositoryId,
+    namespaceName,
+    repositoryName,
+    repositoryId,
+    {},
+  );
+
+  return {
+    paginationInfo: pagination,
+  };
+};
+
+export const getMergeRequests: GetMergeRequestsFunction = async (
+  { externalRepositoryId, namespaceName, repositoryName, repositoryId, page, perPage},
+  { integrations, db, entities },
+) => {
+
+  if(!integrations.sourceControl) {
+    throw new Error("Source control integration not configured");
+  }
+
+  const { mergeRequests, pagination } = await integrations.sourceControl.fetchMergeRequests(externalRepositoryId, namespaceName, repositoryName, repositoryId, {}, page, perPage);
 
     const insertedMergeRequests = await db.insert(entities.mergeRequests).values(mergeRequests)
       .onConflictDoNothing({ target: entities.mergeRequests.externalId }).returning()
       .all();
-      
+
     return {
       mergeRequests: insertedMergeRequests,
       paginationInfo: pagination,
