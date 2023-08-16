@@ -3,7 +3,6 @@ import { z } from "zod";
 import type { ZodRawShape, ZodAny, ZodObject } from "zod";
 import { nanoid } from "nanoid";
 import type { SQSEvent } from "aws-lambda";
-import type { SendMessageBatchRequestEntryList } from "aws-sdk/clients/sqs";
 
 const sqs = new AWS.SQS();
 
