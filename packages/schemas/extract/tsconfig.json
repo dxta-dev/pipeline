@@ -6,6 +6,7 @@
   "exclude": [],
   "include": [
     "drizzle.config.ts",
+    "turso.config.ts",
     "src/**/*.ts",
     "src/**/*.ts",
     "src/**/*.cjs",
