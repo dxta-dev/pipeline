@@ -30,14 +30,11 @@ export class GitlabSourceControl implements SourceControl {
     };
   }
 
-  async fetchMembers(externalRepositoryId: number, namespaceName: string, repositoryName: string, page?: number, perPage?: number): Promise<{ members: NewMember[], pagination: Pagination }> {
-    const isFirstPage = page === undefined && perPage === undefined;
-    
+  async fetchMembers(externalRepositoryId: number, namespaceName: string, repositoryName: string, page?: number, perPage?: number): Promise<{ members: NewMember[], pagination: Pagination }> {    
     const { data, paginationInfo } = await this.api.ProjectMembers.all(externalRepositoryId, {
       includeInherited: true,
       perPage,
-      page,
-      maxPages: isFirstPage ? 1 : undefined,
+      page: page || 1,
       pagination: 'offset',
       showExpanded: true,
     });
