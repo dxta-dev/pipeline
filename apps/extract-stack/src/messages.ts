@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { RepositorySchema } from "@acme/extract-schema";
 import { NamespaceSchema } from "@acme/extract-schema/src/namespaces";
-import { createBatchMessage, createMessage } from "./create-message";
+import { createMessage } from "./create-message";
 import { Queue } from 'sst/node/queue'
 
 const paginationSchema = z.object({
