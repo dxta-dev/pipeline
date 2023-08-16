@@ -50,19 +50,14 @@ type ExtractMembersPageInput = {
   repository: Repository;
   sourceControl: "github" | "gitlab";
   userId: string;
-  paginationInfo: Pagination | null;
+  paginationInfo?: Pagination;
 }
 
 const extractMembersPage = async ({ namespace, repository, sourceControl, userId, paginationInfo }: ExtractMembersPageInput) => {
   const page = paginationInfo?.page;
   const perPage = paginationInfo?.perPage;
 
-  try {
-    context.integrations.sourceControl = await initSourceControl(userId, sourceControl);
-  } catch (error) {
-    console.error(error);
-    throw error;
-  }
+  context.integrations.sourceControl = await initSourceControl(userId, sourceControl);
 
   const { paginationInfo: resultPaginationInfo } = await getMembers({
     externalRepositoryId: repository.externalId,
@@ -82,7 +77,6 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
     repository: ev.properties.repository,
     sourceControl: ev.metadata.sourceControl,
     userId: ev.metadata.userId,
-    paginationInfo: { page: 1, perPage: 2, totalPages: 1000 },
   });
 
   const arrayOfExtractMemberPageMessageContent: { repository: Repository, namespace: Namespace | null, pagination: Pagination }[] = [];
@@ -97,7 +91,7 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
       }
     })
   }
-  
+
   if (arrayOfExtractMemberPageMessageContent.length === 0) return console.log("No more pages left, no need to enqueue");
 
   await extractMemberPageMessage.sendAll(arrayOfExtractMemberPageMessageContent, {

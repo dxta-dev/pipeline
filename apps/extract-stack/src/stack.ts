@@ -47,7 +47,7 @@ export function ExtractStack({ stack }: StackContext) {
         CLERK_SECRET_KEY,
         DATABASE_AUTH_TOKEN,
       ], // Issue: need to bind bus because same file
-      handler: "src/extract-member.queueHandler",
+      handler: "src/extract-members.queueHandler",
     },
   });
 
@@ -55,7 +55,7 @@ export function ExtractStack({ stack }: StackContext) {
     extractMember: {
       function: {
         bind: [bus, membersQueue, mergeRequestQueue],
-        handler: "src/extract-member.eventHandler",
+        handler: "src/extract-members.eventHandler",
       },
     },
   });
