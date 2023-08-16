@@ -25,28 +25,6 @@ export type GetMergeRequestsEntities = Pick<Entities, "mergeRequests">;
 
 export type GetMergeRequestsFunction = ExtractFunction<GetMergeRequestsInput, GetMergeRequestsOutput, GetMergeRequestsSourceControl, GetMergeRequestsEntities>;
 
-export type GetPaginationDataFunction = ExtractFunction<GetMergeRequestsInput, GetPaginationDataOutput, GetMergeRequestsSourceControl, GetMergeRequestsEntities>;
-
-export const getPaginationData: GetPaginationDataFunction = async (
-  { externalRepositoryId, namespaceName, repositoryName, repositoryId },
-  { integrations },
-) => {
-  if (!integrations.sourceControl) {
-    throw new Error("Source control integration not configured");
-  }
-
-  const { pagination } = await integrations.sourceControl.fetchMergeRequests(
-    externalRepositoryId,
-    namespaceName,
-    repositoryName,
-    repositoryId,
-    {},
-  );
-
-  return {
-    paginationInfo: pagination,
-  };
-};
 
 export const getMergeRequests: GetMergeRequestsFunction = async (
   { externalRepositoryId, namespaceName, repositoryName, repositoryId, page, perPage},

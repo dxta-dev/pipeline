@@ -20,11 +20,13 @@ const extractMergeRequestEventSchema = z.object({
   mergeRequests: z.array(MergeRequestSchema),
 });
 
-export const extractMergeRequestsEvent = {
-  schemaShape: extractMergeRequestEventSchema.shape,
+export const extractMergeRequestsEvent = createEvent({
   source: "extract",
-  detailType: "mergeRequest",
-};
+  type: "mergeRequest",
+  propertiesShape: extractMergeRequestEventSchema.shape,
+  eventBusName: EventBus.ExtractBus.eventBusName,
+  metadataShape: metadataSchema.shape,
+});
 
 export const extractRepositoryEvent = createEvent({
   source: "extract",

@@ -6,7 +6,6 @@ import { EventHandler } from "sst/node/event-bus";
 
 import {
   getMergeRequests,
-  getPaginationData,
   type Context,
   type GetMergeRequestsEntities,
   type GetMergeRequestsSourceControl,
@@ -68,28 +67,29 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (evt) => 
 
   context.integrations.sourceControl = await initSourceControl(evt.metadata.userId, sourceControl)
 
-  const { paginationInfo } = await getPaginationData(
-    {
-      externalRepositoryId: externalRepositoryId,
-      namespaceName: namespace?.name || "",
-      repositoryName: repositoryName,
-      repositoryId: repositoryId,
-    },
-    context,
-  );
-
-  for (let index = 1; index <= paginationInfo.totalPages; index++) {
+    const { mergeRequest, paginationInfo } = await getMergeRequests(
+      {
+        externalRepositoryId,
+        namespaceName: namespace?.name || "",
+        repositoryName,
+        repositoryId,
+        page: 1,
+        perPage: 10,
+      }, context,
+    )
 
     await extractMergeRequestMessage.send({
       repository,
       namespace,
       pagination: {
-        page: index,
+        page: paginationInfo.page,
         perPage: paginationInfo.perPage,
         totalPages: paginationInfo.totalPages
       }
     }, { caller: 'extract-merge-requests', timestamp: new Date().getTime(), version: 1, sourceControl, userId: evt.metadata.userId });
-  }
+
+    // await extractMergeRequestsEvent.publish({  }, { caller: 'extract-merge-requests', timestamp: new Date().getTime(), version: 1, sourceControl, userId: evt.metadata.userId })
+  
 });
 
 export const queueHandler = QueueHandler(extractMergeRequestMessage, async (message) => {
@@ -102,6 +102,7 @@ export const queueHandler = QueueHandler(extractMergeRequestMessage, async (mess
   context.integrations.sourceControl = await initSourceControl(message.metadata.userId, message.metadata.sourceControl);
   
   const {namespace, pagination, repository} = message.content;
+
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars  
   const { mergeRequests } = await getMergeRequests(
