@@ -50,7 +50,7 @@ type ExtractMembersPageInput = {
   repository: Repository;
   sourceControl: "github" | "gitlab";
   userId: string;
-  paginationInfo: Pagination | null;
+  paginationInfo: Pagination | undefined;
 }
 
 const extractMembersPage = async ({ namespace, repository, sourceControl, userId, paginationInfo }: ExtractMembersPageInput) => {
@@ -77,7 +77,6 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
     repository: ev.properties.repository,
     sourceControl: ev.metadata.sourceControl,
     userId: ev.metadata.userId,
-    paginationInfo: null,
   });
 
   const arrayOfExtractMemberPageMessageContent: { repository: Repository, namespace: Namespace | null, pagination: Pagination }[] = [];
