@@ -50,7 +50,7 @@ type ExtractMembersPageInput = {
   repository: Repository;
   sourceControl: "github" | "gitlab";
   userId: string;
-  paginationInfo: Pagination | undefined;
+  paginationInfo?: Pagination;
 }
 
 const extractMembersPage = async ({ namespace, repository, sourceControl, userId, paginationInfo }: ExtractMembersPageInput) => {
