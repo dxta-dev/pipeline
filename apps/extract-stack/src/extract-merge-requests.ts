@@ -12,6 +12,8 @@ import {
 } from "@acme/extract-functions";
 import { mergeRequests } from "@acme/extract-schema";
 import { GitHubSourceControl, GitlabSourceControl } from "@acme/source-control";
+import type { Namespace, Repository } from "@acme/extract-schema";
+import type { Pagination } from "@acme/source-control";
 
 import { extractRepositoryEvent } from "./events";
 import { extractMergeRequestMessage } from "./messages";
@@ -58,38 +60,43 @@ const initSourceControl = async (userId: string, sourceControl: 'github' | 'gitl
 
 export const eventHandler = EventHandler(extractRepositoryEvent, async (evt) => {
 
-  const externalRepositoryId = evt.properties.repository.externalId;
-  const repositoryName = evt.properties.repository.name;
   const namespace = evt.properties.namespace;
   const repository = evt.properties.repository;
   const sourceControl = evt.metadata.sourceControl;
-  const repositoryId = evt.properties.repository.id;
 
   context.integrations.sourceControl = await initSourceControl(evt.metadata.userId, sourceControl)
 
-    const { mergeRequest, paginationInfo } = await getMergeRequests(
+    const { paginationInfo } = await getMergeRequests(
       {
-        externalRepositoryId,
+        externalRepositoryId: repository.externalId,
         namespaceName: namespace?.name || "",
-        repositoryName,
-        repositoryId,
+        repositoryName: repository.name,
+        repositoryId: repository.id,
         page: 1,
         perPage: 10,
       }, context,
-    )
+    );
 
-    await extractMergeRequestMessage.send({
-      repository,
-      namespace,
-      pagination: {
-        page: paginationInfo.page,
-        perPage: paginationInfo.perPage,
-        totalPages: paginationInfo.totalPages
-      }
-    }, { caller: 'extract-merge-requests', timestamp: new Date().getTime(), version: 1, sourceControl, userId: evt.metadata.userId });
+    const arrayOfExtractMergeRequests: { repository: Repository, namespace: Namespace | null, pagination: Pagination }[] = [];
+    for(let i = 2; i <= paginationInfo.totalPages; i++ ) {
+      arrayOfExtractMergeRequests.push({
+        repository,
+        namespace: namespace,
+        pagination: {
+          page: i,
+          perPage: paginationInfo.perPage,
+          totalPages: paginationInfo.totalPages
+        }
+      });
+    }
+    await extractMergeRequestMessage.sendAll(arrayOfExtractMergeRequests, { 
+      version: 1,
+      caller: 'extract-merge-requests',
+      sourceControl,
+      userId: evt.metadata.userId,
+      timestamp: new Date().getTime(),
+    });
 
-    // await extractMergeRequestsEvent.publish({  }, { caller: 'extract-merge-requests', timestamp: new Date().getTime(), version: 1, sourceControl, userId: evt.metadata.userId })
-  
 });
 
 export const queueHandler = QueueHandler(extractMergeRequestMessage, async (message) => {
@@ -103,9 +110,7 @@ export const queueHandler = QueueHandler(extractMergeRequestMessage, async (mess
   
   const {namespace, pagination, repository} = message.content;
 
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars  
-  const { mergeRequests } = await getMergeRequests(
+  await getMergeRequests(
     {
       externalRepositoryId: repository.externalId,
       namespaceName: namespace?.name || "",
