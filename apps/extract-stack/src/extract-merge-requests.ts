@@ -17,6 +17,7 @@ import type { Pagination } from "@acme/source-control";
 
 import { extractRepositoryEvent } from "./events";
 import { extractMergeRequestMessage } from "./messages";
+import type { extractRepositoryData } from "./messages";
 import { QueueHandler } from "./create-message";
 
 const clerkClient = Clerk({ secretKey: Config.CLERK_SECRET_KEY });
@@ -77,7 +78,7 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (evt) => 
       }, context,
     );
 
-    const arrayOfExtractMergeRequests: { repository: Repository, namespace: Namespace | null, pagination: Pagination }[] = [];
+    const arrayOfExtractMergeRequests: extractRepositoryData[] = [];
     for(let i = 2; i <= paginationInfo.totalPages; i++ ) {
       arrayOfExtractMergeRequests.push({
         repository,
@@ -89,6 +90,9 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (evt) => 
         }
       });
     }
+     
+
+
     await extractMergeRequestMessage.sendAll(arrayOfExtractMergeRequests, { 
       version: 1,
       caller: 'extract-merge-requests',

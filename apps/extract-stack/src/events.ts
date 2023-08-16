@@ -20,6 +20,8 @@ const extractMergeRequestEventSchema = z.object({
   mergeRequests: z.array(MergeRequestSchema),
 });
 
+export type extractMergeRequestsEventMessage = z.infer<typeof extractMergeRequestEventSchema>;
+
 export const extractMergeRequestsEvent = createEvent({
   source: "extract",
   type: "mergeRequest",
