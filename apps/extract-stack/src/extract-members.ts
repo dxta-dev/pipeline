@@ -77,7 +77,7 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
     repository: ev.properties.repository,
     sourceControl: ev.metadata.sourceControl,
     userId: ev.metadata.userId,
-    paginationInfo: { page: 1, perPage: 2, totalPages: 1000 },
+    paginationInfo: null,
   });
 
   const arrayOfExtractMemberPageMessageContent: { repository: Repository, namespace: Namespace | null, pagination: Pagination }[] = [];
