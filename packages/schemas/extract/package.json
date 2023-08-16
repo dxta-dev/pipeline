@@ -1,13 +1,15 @@
 {
   "name": "@acme/extract-schema",
   "version": "1.0.0",
-  "type": "module",
   "main": "src/index.ts",
+  "type": "module",
   "scripts": {
     "db:generate": "drizzle-kit generate:sqlite",
     "type-check": "tsc --noEmit && echo \"✔ No TypeScript warnings or errors\"",
     "test": "echo \"Warning: no test specified\"",
-    "lint": "eslint . && echo \"✔ No ESLint warnings or errors\""
+    "lint": "eslint . && echo \"✔ No ESLint warnings or errors\"",
+    "studio:turso": "npm run with-env drizzle-kit studio -- --config turso.config.ts",
+    "with-env": "dotenv -e ../../../.env --"
   },
   "dependencies": {
     "drizzle-orm": "^0.28.2",
@@ -15,6 +17,7 @@
     "zod": "^3.21.4"
   },
   "devDependencies": {
+    "dotenv-cli": "^7.2.1",
     "drizzle-kit": "^0.19.11"
   }
 }
