@@ -29,6 +29,13 @@
       "when": 1692188575436,
       "tag": "0003_public_franklin_storm",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1692189756877,
+      "tag": "0004_fat_silver_sable",
+      "breakpoints": true
     }
   ]
 }
