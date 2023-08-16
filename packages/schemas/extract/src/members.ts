@@ -1,4 +1,5 @@
 import type { InferModel } from 'drizzle-orm';
+import { sql } from 'drizzle-orm';
 import { sqliteTable, text, integer, uniqueIndex } from 'drizzle-orm/sqlite-core';
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 
@@ -7,8 +8,8 @@ export const members = sqliteTable('members', {
   externalId: integer('external_id').notNull(),
   name: text('name').notNull(),
   username: text('username').notNull(),
-  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
-  updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull()
+  createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).default(sql`CURRENT_TIMESTAMP`),
 }, (members) => ({
   uniqueGitlabId: uniqueIndex('members_external_id_idx').on(members.externalId),
 }));
