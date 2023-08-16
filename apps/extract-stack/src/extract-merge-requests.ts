@@ -12,8 +12,6 @@ import {
 } from "@acme/extract-functions";
 import { mergeRequests } from "@acme/extract-schema";
 import { GitHubSourceControl, GitlabSourceControl } from "@acme/source-control";
-import type { Namespace, Repository } from "@acme/extract-schema";
-import type { Pagination } from "@acme/source-control";
 
 import { extractRepositoryEvent } from "./events";
 import { extractMergeRequestMessage } from "./messages";
