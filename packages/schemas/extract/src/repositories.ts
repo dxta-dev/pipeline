@@ -6,6 +6,8 @@ export const repositories = sqliteTable('repositories', {
   id: integer('id').primaryKey(),
   externalId: integer('external_id').notNull(),
   name: text('name').notNull(),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull()
 }, (projects) => ({
   uniqueExternalId: uniqueIndex('repositories_external_id_idx').on(projects.externalId),
 }));

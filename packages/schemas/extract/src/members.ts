@@ -7,6 +7,8 @@ export const members = sqliteTable('members', {
   externalId: integer('external_id').notNull(),
   name: text('name').notNull(),
   username: text('username').notNull(),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull()
 }, (members) => ({
   uniqueGitlabId: uniqueIndex('members_external_id_idx').on(members.externalId),
 }));

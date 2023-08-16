@@ -6,6 +6,8 @@ export const namespaces = sqliteTable('namespaces', {
   id: integer('id').primaryKey(),
   externalId: integer('external_id').notNull(),
   name: text('name').notNull(),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull()
 }, (namespaces) => ({
   uniqueExternalId: uniqueIndex('namespaces_external_id_idx').on(namespaces.externalId),
 }));

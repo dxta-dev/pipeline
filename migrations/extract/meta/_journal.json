@@ -22,6 +22,13 @@
       "when": 1690804131705,
       "tag": "0002_even_marvel_boy",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1692188575436,
+      "tag": "0003_public_franklin_storm",
+      "breakpoints": true
     }
   ]
 }

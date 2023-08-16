@@ -6,7 +6,7 @@ export const mergeRequestCommits = sqliteTable('merge_request_commits', {
   /* Gitlab -> iid */
   mergeRequestId: integer('merge_request_id').notNull(),
   externalId: text('external_id').notNull(),
-  createdAt: text('created_at').notNull(),
+  mergeRequestCreatedAt: text('merge_request_created_at').notNull(),
   authoredDate: text('authored_date'),
   committedDate: text('committed_date'),
   title: text('title').notNull(),
@@ -15,6 +15,8 @@ export const mergeRequestCommits = sqliteTable('merge_request_commits', {
   authorEmail: text('author_email').notNull(),
   committerName: text('committer_name'),
   committerEmail: text('committer_email'),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull()
 }, (commits) => ({
   uniqueExternalId: uniqueIndex('merge_request_commits_external_id_idx').on(commits.externalId),
 }));

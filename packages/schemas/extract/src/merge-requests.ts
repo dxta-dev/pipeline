@@ -11,6 +11,8 @@ export const mergeRequests = sqliteTable(
     /* Gitlab -> iid, GitHub -> number */
     mergeRequestId: integer("merge_request_id").notNull(),
     repositoryId: integer("repository_id").notNull(),
+    createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+    updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull()
   },
   (mergeRequests) => ({
     uniqueExternalId: uniqueIndex("merge_requests_external_id_idx").on(
