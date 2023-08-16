@@ -34,7 +34,7 @@ export class GitlabSourceControl implements SourceControl {
     const { data, paginationInfo } = await this.api.ProjectMembers.all(externalRepositoryId, {
       includeInherited: true,
       perPage,
-      page,
+      page: page || 1,
       pagination: 'offset',
       showExpanded: true,
     });
