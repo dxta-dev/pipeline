@@ -62,6 +62,7 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (evt) => 
   const externalRepositoryId = evt.properties.repository.externalId;
   const repositoryName = evt.properties.repository.name;
   const namespace = evt.properties.namespace;
+  const repository = evt.properties.repository;
   const sourceControl = evt.metadata.sourceControl;
   const repositoryId = evt.properties.repository.id;
 
@@ -80,12 +81,8 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (evt) => 
   for (let index = 1; index <= paginationInfo.totalPages; index++) {
 
     await extractMergeRequestMessage.send({
-      repository: {
-        id: repositoryId,
-        externalId: externalRepositoryId,
-        name: repositoryName
-      },
-      namespace: namespace,
+      repository,
+      namespace,
       pagination: {
         page: index,
         perPage: paginationInfo.perPage,
