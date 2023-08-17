@@ -2,6 +2,7 @@ import type { InferModel } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
 import { sqliteTable, text, integer, uniqueIndex } from 'drizzle-orm/sqlite-core';
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
+import { z } from 'zod';
 
 export const members = sqliteTable('members', {
   id: integer('id').primaryKey(),
@@ -16,5 +17,11 @@ export const members = sqliteTable('members', {
 
 export type Member = InferModel<typeof members>;
 export type NewMember = InferModel<typeof members, 'insert'>;
-export const MemberSchema = createSelectSchema(members);
-export const NewMemberSchema = createInsertSchema(members);
+export const MemberSchema = createSelectSchema(members, {
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+});
+export const NewMemberSchema = createInsertSchema(members, {
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+});
