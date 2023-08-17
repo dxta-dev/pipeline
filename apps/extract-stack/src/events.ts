@@ -17,7 +17,7 @@ const metadataSchema = z.object({
   userId: z.string(),
 });
 const extractMergeRequestEventSchema = z.object({
-  mergeRequests: z.array(MergeRequestSchema),
+  mergeRequestIds: z.array(MergeRequestSchema.shape.id),
 });
 
 export type extractMergeRequestsEventMessage = z.infer<typeof extractMergeRequestEventSchema>;

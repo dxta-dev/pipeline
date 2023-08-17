@@ -13,7 +13,7 @@ import {
 import { mergeRequests, namespaces, repositories } from "@acme/extract-schema";
 import { GitHubSourceControl, GitlabSourceControl } from "@acme/source-control";
 
-import { extractRepositoryEvent } from "./events";
+import { extractMergeRequestsEvent, extractRepositoryEvent } from "./events";
 import { extractMergeRequestMessage } from "./messages";
 import type { extractRepositoryData } from "./messages";
 import { QueueHandler } from "./create-message";
@@ -71,7 +71,7 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (evt) => 
 
   context.integrations.sourceControl = await initSourceControl(evt.metadata.userId, sourceControl)
 
-    const { paginationInfo } = await getMergeRequests(
+    const { mergeRequests, paginationInfo } = await getMergeRequests(
       {
         externalRepositoryId: repository.externalId,
         namespaceName: namespace?.name || "",
@@ -80,6 +80,14 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (evt) => 
         perPage: 10,
       }, context,
     );
+
+    await extractMergeRequestsEvent.publish({mergeRequestIds: mergeRequests.map(mr => mr.id)}, {
+      version: 1,
+      caller: 'extract-merge-requests',
+      sourceControl,
+      userId: evt.metadata.userId,
+      timestamp: new Date().getTime(),
+    });
 
     const arrayOfExtractMergeRequests: extractRepositoryData[] = [];
     for(let i = 2; i <= paginationInfo.totalPages; i++ ) {
@@ -115,7 +123,7 @@ export const queueHandler = QueueHandler(extractMergeRequestMessage, async (mess
   
   const {namespace, pagination, repository} = message.content;
 
-  await getMergeRequests(
+  const {mergeRequests} = await getMergeRequests(
     {
       externalRepositoryId: repository.externalId,
       namespaceName: namespace?.name || "",
@@ -126,4 +134,13 @@ export const queueHandler = QueueHandler(extractMergeRequestMessage, async (mess
     },
     context,
   );
+
+  await extractMergeRequestsEvent.publish({mergeRequestIds: mergeRequests.map(mr => mr.id)}, {
+    version: 1,
+    caller: 'extract-merge-requests',
+    sourceControl: message.metadata.sourceControl,
+    userId: message.metadata.userId,
+    timestamp: new Date().getTime(),
+  });
+
 })
