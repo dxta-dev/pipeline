@@ -8,8 +8,8 @@ export const members = sqliteTable('members', {
   externalId: integer('external_id').notNull(),
   name: text('name').notNull(),
   username: text('username').notNull(),
-  createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`CURRENT_TIMESTAMP`),
-  updatedAt: integer('updated_at', { mode: 'timestamp' }).default(sql`CURRENT_TIMESTAMP`),
+  createdAt: integer('created_at', { mode: 'timestamp_ms' }).default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: integer('updated_at', { mode: 'timestamp_ms' }).default(sql`CURRENT_TIMESTAMP`),
 }, (members) => ({
   uniqueGitlabId: uniqueIndex('members_external_id_idx').on(members.externalId),
 }));
