@@ -66,13 +66,18 @@ export function createMessage<QueueUrl extends string, Shape extends ZodRawShape
 
   return {
     send,
-    sendAll
+    sendAll,
+    shapes: {
+      contentShape,
+      metadataShape,
+    }
   }
 }
 
 type Sender<Shape extends ZodRawShape, MetadataShape extends ZodRawShape> = {
   send: Send<Shape, MetadataShape>;
   sendAll: BatchSend<Shape, MetadataShape>
+  shapes: { contentShape: Shape, metadataShape: MetadataShape };
 }
 
 type MessagePayload<Shape extends ZodRawShape, MetadataShape extends ZodRawShape> = {
@@ -86,6 +91,10 @@ export function QueueHandler<Shape extends ZodRawShape, MetadataShape extends Zo
     message: MessagePayload<Shape, MetadataShape>
   ) => Promise<void>
 ) {
+  const schema = z.object({
+    content: z.object(_sender.shapes.contentShape),
+    metadata: z.object(_sender.shapes.metadataShape)
+  });
   /**
    * TODO:
    * - Do consumers always recieve batches ?
@@ -94,7 +103,11 @@ export function QueueHandler<Shape extends ZodRawShape, MetadataShape extends Zo
   return async (event: SQSEvent) => {
     if (event.Records.length > 1) console.warn('WARNING: QueueHandler should process 1 message but got', event.Records.length);
     for (const record of event.Records) {
-      await cb(JSON.parse(record.body) as MessagePayload<Shape, MetadataShape>);
+      const parsed = schema.parse(JSON.parse(record.body) as unknown) as MessagePayload<Shape, MetadataShape>;
+      console.log('??????????????????????')
+      console.log(parsed);
+      console.log('??????????????????????')
+      await cb(parsed);
     }
   }
 }
