@@ -7,8 +7,8 @@ export const namespaces = sqliteTable('namespaces', {
   id: integer('id').primaryKey(),
   externalId: integer('external_id').notNull(),
   name: text('name').notNull(),
-  createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`CURRENT_TIMESTAMP`),
-  updatedAt: integer('updated_at', { mode: 'timestamp' }).default(sql`CURRENT_TIMESTAMP`),
+  createdAt: integer('created_at', { mode: 'timestamp_ms' }).default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: integer('updated_at', { mode: 'timestamp_ms' }).default(sql`CURRENT_TIMESTAMP`),
 }, (namespaces) => ({
   uniqueExternalId: uniqueIndex('namespaces_external_id_idx').on(namespaces.externalId),
 }));
