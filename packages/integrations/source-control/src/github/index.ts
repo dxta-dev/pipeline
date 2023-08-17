@@ -2,7 +2,7 @@ import type { SourceControl } from '..';
 import { Octokit } from '@octokit/rest';
 import parseLinkHeader from "parse-link-header";
 
-import type { NewRepository, NewNamespace, NewMergeRequest, NewMember } from "@acme/extract-schema";
+import type { NewRepository, NewNamespace, NewMergeRequest, NewMember, NewMergeRequestDiff } from "@acme/extract-schema";
 import type { Pagination, TimePeriod } from '../source-control';
 
 export class GitHubSourceControl implements SourceControl {
@@ -54,7 +54,7 @@ export class GitHubSourceControl implements SourceControl {
     } satisfies Pagination;
 
     return {
-      members: result.data.map(member=>({
+      members: result.data.map(member => ({
         externalId: member.id,
         name: member.name || member.login,
         username: member.login
@@ -104,6 +104,18 @@ export class GitHubSourceControl implements SourceControl {
         } satisfies NewMergeRequest)),
       pagination
     }
+  }
+
+  fetchMergeRequestDiffs(externalRepositoryId: number, namespaceName: string, repositoryName: string, mergeRequestNumber: number, page?: number, perPage?: number): Promise<{ mergeRequestDiffs: NewMergeRequestDiff[], pagination: Pagination }> {
+    // const result = await this.api.pulls.listFiles({
+    //   owner: namespaceName,
+    //   repo: repositoryName,
+    //   page: page,
+    //   per_page: perPage,
+    //   pull_number: mergeRequestNumber,
+    // });
+
+    // result.data[0]?.deletions
   }
 
 }
