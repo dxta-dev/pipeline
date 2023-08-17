@@ -14,8 +14,8 @@ export const mergeRequestDiffs = sqliteTable('merge_request_diffs', {
   renamedFile: integer('renamed_file', { mode: 'boolean' }).notNull(),
   deletedFile: integer('deleted_file', { mode: 'boolean' }).notNull(),
   diff: text('diff').notNull(),
-  createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`CURRENT_TIMESTAMP`),
-  updatedAt: integer('updated_at', { mode: 'timestamp' }).default(sql`CURRENT_TIMESTAMP`),
+  createdAt: integer('created_at', { mode: 'timestamp_ms' }).default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: integer('updated_at', { mode: 'timestamp_ms' }).default(sql`CURRENT_TIMESTAMP`),
 }, (diffs) => ({
   uniqueMergeRequestId: uniqueIndex('diffs_merge_request_id_newPath_idx').on(diffs.mergeRequestId, diffs.newPath),
 }));
