@@ -1,14 +1,12 @@
 import { EventBus } from "sst/node/event-bus";
 import { z } from "zod";
 
-import { RepositorySchema } from "@acme/extract-schema";
 import { MergeRequestSchema } from "@acme/extract-schema/src/merge-requests";
-import { NamespaceSchema } from "@acme/extract-schema/src/namespaces";
 import { createEvent } from "./create-event";
 
 const extractRepositoryEventSchema = z.object({
-  repository: RepositorySchema,
-  namespace: z.nullable(NamespaceSchema),
+  repositoryId: z.number(),
+  namespaceId: z.nullable(z.number()),
 });
 
 const metadataSchema = z.object({

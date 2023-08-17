@@ -2,6 +2,7 @@ import type { InferModel } from "drizzle-orm";
 import { sql } from "drizzle-orm";
 import { integer, sqliteTable, uniqueIndex } from "drizzle-orm/sqlite-core";
 import { createInsertSchema } from "drizzle-zod";
+import { z } from "zod";
 
 export const mergeRequests = sqliteTable(
   "merge_requests",
@@ -24,5 +25,11 @@ export const mergeRequests = sqliteTable(
 
 export type MergeRequest = InferModel<typeof mergeRequests>;
 export type NewMergeRequest = InferModel<typeof mergeRequests, "insert">;
-export const MergeRequestSchema = createInsertSchema(mergeRequests);
-export const NewMergeRequestSchema = createInsertSchema(mergeRequests);
+export const MergeRequestSchema = createInsertSchema(mergeRequests, {
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+});
+export const NewMergeRequestSchema = createInsertSchema(mergeRequests, {
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+});
