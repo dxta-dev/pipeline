@@ -1,6 +1,8 @@
 import type { MergeRequest } from "@acme/extract-schema";
 import type { ExtractFunction, Entities } from "./config";
 import type { Pagination, SourceControl } from "@acme/source-control";
+import type { LibSQLDatabase } from "drizzle-orm/libsql";
+import type { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
 
 export type GetMergeRequestsInput = {
   externalRepositoryId: number;
@@ -37,9 +39,14 @@ export const getMergeRequests: GetMergeRequestsFunction = async (
 
   const { mergeRequests, pagination } = await integrations.sourceControl.fetchMergeRequests(externalRepositoryId, namespaceName, repositoryName, repositoryId, {}, page, perPage);
 
-    const insertedMergeRequests = await db.insert(entities.mergeRequests).values(mergeRequests)
-      .onConflictDoNothing({ target: entities.mergeRequests.externalId }).returning()
-      .all();
+  const insertedMergeRequests = await (db as (LibSQLDatabase & BetterSQLite3Database)).transaction(async (tx) => {
+    return Promise.all(mergeRequests.map(mergeRequest =>
+      tx.insert(entities.mergeRequests).values(mergeRequest)
+        .onConflictDoUpdate({ target: entities.mergeRequests.externalId, set: { updatedAt: new Date() } })
+        .returning()
+        .get()
+    ));
+  });
 
     return {
       mergeRequests: insertedMergeRequests,

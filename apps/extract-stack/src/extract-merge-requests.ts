@@ -10,13 +10,14 @@ import {
   type GetMergeRequestsEntities,
   type GetMergeRequestsSourceControl,
 } from "@acme/extract-functions";
-import { mergeRequests } from "@acme/extract-schema";
+import { mergeRequests, namespaces, repositories } from "@acme/extract-schema";
 import { GitHubSourceControl, GitlabSourceControl } from "@acme/source-control";
 
 import { extractRepositoryEvent } from "./events";
 import { extractMergeRequestMessage } from "./messages";
 import type { extractRepositoryData } from "./messages";
 import { QueueHandler } from "./create-message";
+import { eq } from "drizzle-orm";
 
 const clerkClient = Clerk({ secretKey: Config.CLERK_SECRET_KEY });
 const client = createClient({
@@ -58,9 +59,14 @@ const initSourceControl = async (userId: string, sourceControl: 'github' | 'gitl
 }
 
 export const eventHandler = EventHandler(extractRepositoryEvent, async (evt) => {
+  if (!evt.properties.namespaceId) throw new Error("Missing namespaceId");
 
-  const namespace = evt.properties.namespace;
-  const repository = evt.properties.repository;
+  const repository = await db.select().from(repositories).where(eq(repositories.id, evt.properties.repositoryId)).get();
+  const namespace = await db.select().from(namespaces).where(eq(namespaces.id, evt.properties.namespaceId)).get();
+
+  if (!repository) throw new Error("invalid repo id");
+  if (!namespace) throw new Error("Invalid namespace id");
+
   const sourceControl = evt.metadata.sourceControl;
 
   context.integrations.sourceControl = await initSourceControl(evt.metadata.userId, sourceControl)
@@ -71,7 +77,6 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (evt) => 
         namespaceName: namespace?.name || "",
         repositoryName: repository.name,
         repositoryId: repository.id,
-        page: 1,
         perPage: 10,
       }, context,
     );
@@ -89,8 +94,6 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (evt) => 
       });
     }
      
-
-
     await extractMergeRequestMessage.sendAll(arrayOfExtractMergeRequests, { 
       version: 1,
       caller: 'extract-merge-requests',

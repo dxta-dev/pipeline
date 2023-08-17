@@ -57,7 +57,7 @@ export class GitlabSourceControl implements SourceControl {
   async fetchMergeRequests(externalRepositoryId: number, namespaceName = '', repositoryName = '', repositoryId: number, creationPeriod: TimePeriod = {}, page?: number, perPage?: number): Promise<{ mergeRequests: NewMergeRequest[], pagination: Pagination }> {
     const { data, paginationInfo } = await this.api.MergeRequests.all({
       projectId: externalRepositoryId,
-      page,
+      page: page || 1,
       perPage,
       pagination: 'offset',
       showExpanded: true,

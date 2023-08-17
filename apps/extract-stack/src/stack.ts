@@ -70,6 +70,12 @@ export function ExtractStack({ stack }: StackContext) {
   });
 
   mergeRequestQueue.addConsumer(stack, {
+    cdk: {
+      eventSource: {
+        batchSize: 1,
+        maxConcurrency: 20,
+      },
+    },
     function: {
       bind: [
         bus,
