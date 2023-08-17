@@ -16,6 +16,8 @@ const extractRepositoryDataSchema = z.object({
   pagination: paginationSchema
 });
 
+export type extractRepositoryData = z.infer<typeof extractRepositoryDataSchema>;
+
 const metadataSchema = z.object({
   version: z.number(),
   timestamp: z.number(),

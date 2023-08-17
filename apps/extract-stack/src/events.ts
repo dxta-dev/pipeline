@@ -17,14 +17,18 @@ const metadataSchema = z.object({
   userId: z.string(),
 });
 const extractMergeRequestEventSchema = z.object({
-  mergeRequests: z.array(MergeRequestSchema),
+  mergeRequestIds: z.array(MergeRequestSchema.shape.id),
 });
 
-export const extractMergeRequestsEvent = {
-  schemaShape: extractMergeRequestEventSchema.shape,
+export type extractMergeRequestsEventMessage = z.infer<typeof extractMergeRequestEventSchema>;
+
+export const extractMergeRequestsEvent = createEvent({
   source: "extract",
-  detailType: "mergeRequest",
-};
+  type: "mergeRequest",
+  propertiesShape: extractMergeRequestEventSchema.shape,
+  eventBusName: EventBus.ExtractBus.eventBusName,
+  metadataShape: metadataSchema.shape,
+});
 
 export const extractRepositoryEvent = createEvent({
   source: "extract",
