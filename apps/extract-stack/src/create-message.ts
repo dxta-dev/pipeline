@@ -44,6 +44,7 @@ export function createMessage<QueueUrl extends string, Shape extends ZodRawShape
   }
 
   const sendAll: BatchSend<Shape, MetadataShape> = async (contentArray, metadata) => {
+    const batches: { Id: string, MessageBody: string }[][] = [];
     for (let i = 0; i < contentArray.length; i += 10) {
       const contentBatch = contentArray.slice(i, i + 10);
       const Entries = contentBatch.map(content => JSON.stringify(messageSchema.parse({ content, metadata })))
@@ -52,15 +53,18 @@ export function createMessage<QueueUrl extends string, Shape extends ZodRawShape
           MessageBody
         }));
       console.log("sending batch", Entries);
-      try {
-        await sqs.sendMessageBatch({
-          QueueUrl: queueUrl,
-          Entries
-        }).promise();
-      } catch (error) {
-        console.error(error);
-      }
+      batches.push(Entries);
     }
+    const result = await Promise.allSettled(batches.map(batch => sqs.sendMessageBatch({
+      QueueUrl: queueUrl,
+      Entries: batch,
+    }).promise()));
+
+    result.forEach((r, i) => {
+      if (r.status === 'rejected') {
+        console.error('batch failed', r.reason, batches[i]);
+      }
+    });
 
   }
 
