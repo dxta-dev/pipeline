@@ -104,9 +104,6 @@ export function QueueHandler<Shape extends ZodRawShape, MetadataShape extends Zo
     if (event.Records.length > 1) console.warn('WARNING: QueueHandler should process 1 message but got', event.Records.length);
     for (const record of event.Records) {
       const parsed = schema.parse(JSON.parse(record.body) as unknown) as MessagePayload<Shape, MetadataShape>;
-      console.log('??????????????????????')
-      console.log(parsed);
-      console.log('??????????????????????')
       await cb(parsed);
     }
   }
