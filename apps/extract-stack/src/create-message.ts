@@ -36,7 +36,6 @@ export function createMessage<QueueUrl extends string, Shape extends ZodRawShape
   });
 
   const send: Send<Shape, MetadataShape> = async (content, metadata) => {
-    console.log("sending", { content, metadata });
     await sqs.sendMessage({
       QueueUrl: queueUrl,
       MessageBody: JSON.stringify(messageSchema.parse({ content, metadata })),
@@ -52,7 +51,6 @@ export function createMessage<QueueUrl extends string, Shape extends ZodRawShape
           Id: nanoid(),
           MessageBody
         }));
-      console.log("sending batch", Entries);
       batches.push(Entries);
     }
     const result = await Promise.allSettled(batches.map(batch => sqs.sendMessageBatch({

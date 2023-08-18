@@ -39,7 +39,6 @@ export function createEvent<
   const metadataSchema = z.object(metadataShape);
 
   const publish: Publish<Shape, MetadataShape> = async (properties, metadata) => {
-    console.log("publishing", { source, type, properties, metadata });
     await client.send(new PutEventsCommand({
       Entries: [{
         EventBusName: eventBusName,

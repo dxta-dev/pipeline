@@ -33,7 +33,6 @@ export const getRepository: GetRepositoryFunction = async (
     .onConflictDoUpdate({ target: entities.repositories.externalId, set: { name: repository.name } }).returning()
     .get();
 
-  console.log('insertedRepo', insertedRepository);
   if (!namespace) {
     return {
       repository: insertedRepository,
