@@ -5,6 +5,51 @@ import parseLinkHeader from "parse-link-header";
 import type { NewRepository, NewNamespace, NewMergeRequest, NewMember, NewMergeRequestDiff } from "@acme/extract-schema";
 import type { Pagination, TimePeriod } from '../source-control';
 
+const FILE_STATUS_FLAGS_MAPPING: Record<
+      "added"
+      | "removed"
+      | "modified"
+      | "renamed"
+      | "copied"
+      | "changed"
+      | "unchanged", Pick<NewMergeRequestDiff, "newFile" | "renamedFile" | "deletedFile">> = {
+      "modified": {
+        newFile: false,
+        renamedFile: false,
+        deletedFile: false,
+      },
+      "renamed": {
+        newFile: false,
+        renamedFile: true,
+        deletedFile: false,
+      },
+      "added": {
+        newFile: false,
+        renamedFile: false,
+        deletedFile: false,
+      },
+      "changed": {
+        newFile: false,
+        deletedFile: false,
+        renamedFile: false,
+      },
+      "copied": {
+        newFile: false,
+        deletedFile: false,
+        renamedFile: false,
+      },
+      "removed": {
+        newFile: false,
+        deletedFile: true,
+        renamedFile: false,
+      },
+      "unchanged": {
+        newFile: false,
+        deletedFile: false,
+        renamedFile: false,
+      }
+    }
+
 export class GitHubSourceControl implements SourceControl {
 
   private api: Octokit;
@@ -106,15 +151,38 @@ export class GitHubSourceControl implements SourceControl {
     }
   }
 
-  fetchMergeRequestDiffs(externalRepositoryId: number, namespaceName: string, repositoryName: string, mergeRequestNumber: number, page?: number, perPage?: number): Promise<{ mergeRequestDiffs: NewMergeRequestDiff[], pagination: Pagination }> {
-    // const result = await this.api.pulls.listFiles({
-    //   owner: namespaceName,
-    //   repo: repositoryName,
-    //   page: page,
-    //   per_page: perPage,
-    //   pull_number: mergeRequestNumber,
-    // });
+  async fetchMergeRequestDiffs(externalRepositoryId: number, namespaceName: string, repositoryName: string, mergeRequestNumber: number, page?: number, perPage?: number): Promise<{ mergeRequestDiffs: NewMergeRequestDiff[], pagination: Pagination }> {
+    page = page || 1;
+    page = page || 30;
 
+    const result = await this.api.pulls.listFiles({
+      owner: namespaceName,
+      repo: repositoryName,
+      page: page,
+      per_page: perPage,
+      pull_number: mergeRequestNumber,
+    });
+
+    const linkHeader = parseLinkHeader(result.headers.link) || { next: { per_page: perPage } };
+
+    const pagination = {
+      page,
+      perPage: ('next' in linkHeader) ? Number(linkHeader.next?.per_page) : Number(linkHeader.prev?.per_page),
+      totalPages: (!('last' in linkHeader)) ? page : Number(linkHeader.last?.page)
+    } satisfies Pagination;
+
+    return {
+      mergeRequestDiffs: result.data.map(mergeRequestFile => ({
+        mergeRequestId: mergeRequestNumber,
+        diff: mergeRequestFile.patch || "",
+        newPath: mergeRequestFile.filename,
+        oldPath: mergeRequestFile.previous_filename || mergeRequestFile.filename,
+        aMode: "",
+        bMode: "",
+        ...FILE_STATUS_FLAGS_MAPPING[mergeRequestFile.status],
+      })),
+      pagination
+    }
     // result.data[0]?.deletions
   }
 
