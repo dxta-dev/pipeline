@@ -98,15 +98,15 @@ export class GitlabSourceControl implements SourceControl {
 
     return {
       mergeRequestDiffs: data.map(mergeRequestDiff => ({
-        aMode: mergeRequestDiff.aMode,
-        bMode: mergeRequestDiff.bMode,
-        deletedFile: mergeRequestDiff.deletedFile,
-        diff: mergeRequestDiff.diff,
         mergeRequestId: mergeRequestNumber,
-        newFile: mergeRequestDiff.newFile,
+        diff: mergeRequestDiff.diff,
         newPath: mergeRequestDiff.newPath,
         oldPath: mergeRequestDiff.oldPath,
+        aMode: mergeRequestDiff.aMode,
+        bMode: mergeRequestDiff.bMode,
+        newFile: mergeRequestDiff.newFile,
         renamedFile: mergeRequestDiff.renamedFile,
+        deletedFile: mergeRequestDiff.deletedFile,
       })),
       pagination: {
         page: paginationInfo.current,
