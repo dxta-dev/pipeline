@@ -44,8 +44,6 @@ export const getMembers: GetMembersFunction = async (
     ));
   });
 
-  console.log('insertedMembers', ...insertedMembers);
-
   // Issue: no way to know if passed repositoryId is correct
   await db.insert(entities.repositoriesToMembers)
     .values(insertedMembers.map(member => ({ memberId: member.id, repositoryId })))

@@ -101,7 +101,8 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
     })
   }
 
-  if (arrayOfExtractMemberPageMessageContent.length === 0) return console.log("No more pages left, no need to enqueue");
+  if (arrayOfExtractMemberPageMessageContent.length === 0) 
+    return;
 
   await extractMemberPageMessage.sendAll(arrayOfExtractMemberPageMessageContent, {
     version: 1,
