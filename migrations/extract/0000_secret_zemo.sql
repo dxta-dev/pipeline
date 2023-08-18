@@ -50,6 +50,10 @@ CREATE TABLE `merge_requests` (
 	`updated_at` integer,
 	`merged_at` integer,
 	`closed_at` integer,
+	`author_external_id` integer,
+	`state` text,
+	`target_branch` text,
+	`source_branch` text,
 	`__created_at` integer DEFAULT CURRENT_TIMESTAMP,
 	`__updated_at` integer DEFAULT CURRENT_TIMESTAMP
 );

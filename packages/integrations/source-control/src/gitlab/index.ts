@@ -68,8 +68,19 @@ export class GitlabSourceControl implements SourceControl {
       mergeRequests: data.map((mr) => ({
         externalId: mr.id,
         mergeRequestId: mr.iid,
-        repositoryId
-      })),
+        repositoryId,
+        title: mr.title,
+        webUrl: mr.webUrl,
+        createdAt: new Date(mr.createdAt),
+        updatedAt: new Date(mr.updatedAt),
+        mergedAt: mr.mergedAt ? new Date(mr.mergedAt) : undefined,
+        // issue with typings -> closedAt: mr.closedAt ? new Date(mr.closedAt) : undefined,
+        closedAt: undefined,
+        authorExternalId: mr.author?.id,
+        state: mr.state,
+        targetBranch: mr.targetBranch,
+        sourceBranch: mr.sourceBranch,
+      } satisfies NewMergeRequest)),
       pagination: {
         page: paginationInfo.current,
         perPage: paginationInfo.perPage,

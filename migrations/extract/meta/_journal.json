@@ -5,15 +5,8 @@
     {
       "idx": 0,
       "version": "5",
-      "when": 1692388563329,
-      "tag": "0000_clean_gwen_stacy",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "5",
-      "when": 1692388931933,
-      "tag": "0001_daily_joseph",
+      "when": 1692389803661,
+      "tag": "0000_secret_zemo",
       "breakpoints": true
     }
   ]

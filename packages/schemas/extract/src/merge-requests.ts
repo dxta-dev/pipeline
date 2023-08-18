@@ -17,8 +17,8 @@ export const mergeRequests = sqliteTable(
     webUrl: text("web_url").notNull(),
     createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),
     updatedAt: integer('updated_at', { mode: 'timestamp_ms' }),
-    merged_at: integer('merged_at', { mode: 'timestamp_ms' }),
-    closed_at: integer('closed_at', { mode: 'timestamp_ms' }),
+    mergedAt: integer('merged_at', { mode: 'timestamp_ms' }),
+    closedAt: integer('closed_at', { mode: 'timestamp_ms' }),
     authorExternalId: integer('author_external_id'),
     state: text('state'),
     targetBranch: text('target_branch'),
@@ -38,16 +38,16 @@ export type NewMergeRequest = InferModel<typeof mergeRequests, "insert">;
 export const MergeRequestSchema = createInsertSchema(mergeRequests, {
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
-  merged_at: z.coerce.date(),
-  closed_at: z.coerce.date(),
+  mergedAt: z.coerce.date(),
+  closedAt: z.coerce.date(),
   _createdAt: z.coerce.date(),
   _updatedAt: z.coerce.date(),
 });
 export const NewMergeRequestSchema = createInsertSchema(mergeRequests, {
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
-  merged_at: z.coerce.date(),
-  closed_at: z.coerce.date(),
+  mergedAt: z.coerce.date(),
+  closedAt: z.coerce.date(),
   _createdAt: z.coerce.date(),
   _updatedAt: z.coerce.date(),
 });
