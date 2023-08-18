@@ -1,8 +1,8 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "29bb8303-1ad8-430d-9f62-218a01021dda",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "0efa0632-c825-484a-b56c-e782c3c8d8d7",
+  "prevId": "29bb8303-1ad8-430d-9f62-218a01021dda",
   "tables": {
     "members": {
       "name": "members",
@@ -355,6 +355,34 @@
         "closed_at": {
           "name": "closed_at",
           "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "author_external_id": {
+          "name": "author_external_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "state": {
+          "name": "state",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "target_branch": {
+          "name": "target_branch",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "source_branch": {
+          "name": "source_branch",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
