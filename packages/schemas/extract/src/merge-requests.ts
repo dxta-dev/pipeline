@@ -2,6 +2,7 @@ import type { InferModel } from "drizzle-orm";
 import { sql } from "drizzle-orm";
 import { integer, sqliteTable, uniqueIndex } from "drizzle-orm/sqlite-core";
 import { createInsertSchema } from "drizzle-zod";
+import { z } from "zod";
 
 export const mergeRequests = sqliteTable(
   "merge_requests",
@@ -12,8 +13,8 @@ export const mergeRequests = sqliteTable(
     /* Gitlab -> iid, GitHub -> number */
     mergeRequestId: integer("merge_request_id").notNull(),
     repositoryId: integer("repository_id").notNull(),
-  createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`CURRENT_TIMESTAMP`),
-  updatedAt: integer('updated_at', { mode: 'timestamp' }).default(sql`CURRENT_TIMESTAMP`),
+  createdAt: integer('created_at', { mode: 'timestamp_ms' }).default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: integer('updated_at', { mode: 'timestamp_ms' }).default(sql`CURRENT_TIMESTAMP`),
   },
   (mergeRequests) => ({
     uniqueExternalId: uniqueIndex("merge_requests_external_id_idx").on(
@@ -24,5 +25,11 @@ export const mergeRequests = sqliteTable(
 
 export type MergeRequest = InferModel<typeof mergeRequests>;
 export type NewMergeRequest = InferModel<typeof mergeRequests, "insert">;
-export const MergeRequestSchema = createInsertSchema(mergeRequests);
-export const NewMergeRequestSchema = createInsertSchema(mergeRequests);
+export const MergeRequestSchema = createInsertSchema(mergeRequests, {
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+});
+export const NewMergeRequestSchema = createInsertSchema(mergeRequests, {
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+});

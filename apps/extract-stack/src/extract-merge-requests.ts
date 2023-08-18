@@ -6,17 +6,18 @@ import { EventHandler } from "sst/node/event-bus";
 
 import {
   getMergeRequests,
-  getPaginationData,
   type Context,
   type GetMergeRequestsEntities,
   type GetMergeRequestsSourceControl,
 } from "@acme/extract-functions";
-import { mergeRequests } from "@acme/extract-schema";
+import { mergeRequests, namespaces, repositories } from "@acme/extract-schema";
 import { GitHubSourceControl, GitlabSourceControl } from "@acme/source-control";
 
-import { extractRepositoryEvent } from "./events";
+import { extractMergeRequestsEvent, extractRepositoryEvent } from "./events";
 import { extractMergeRequestMessage } from "./messages";
+import type { extractRepositoryData } from "./messages";
 import { QueueHandler } from "./create-message";
+import { eq } from "drizzle-orm";
 
 const clerkClient = Clerk({ secretKey: Config.CLERK_SECRET_KEY });
 const client = createClient({
@@ -58,38 +59,57 @@ const initSourceControl = async (userId: string, sourceControl: 'github' | 'gitl
 }
 
 export const eventHandler = EventHandler(extractRepositoryEvent, async (evt) => {
+  if (!evt.properties.namespaceId) throw new Error("Missing namespaceId");
 
-  const externalRepositoryId = evt.properties.repository.externalId;
-  const repositoryName = evt.properties.repository.name;
-  const namespace = evt.properties.namespace;
-  const repository = evt.properties.repository;
+  const repository = await db.select().from(repositories).where(eq(repositories.id, evt.properties.repositoryId)).get();
+  const namespace = await db.select().from(namespaces).where(eq(namespaces.id, evt.properties.namespaceId)).get();
+
+  if (!repository) throw new Error("invalid repo id");
+  if (!namespace) throw new Error("Invalid namespace id");
+
   const sourceControl = evt.metadata.sourceControl;
-  const repositoryId = evt.properties.repository.id;
 
   context.integrations.sourceControl = await initSourceControl(evt.metadata.userId, sourceControl)
 
-  const { paginationInfo } = await getPaginationData(
-    {
-      externalRepositoryId: externalRepositoryId,
-      namespaceName: namespace?.name || "",
-      repositoryName: repositoryName,
-      repositoryId: repositoryId,
-    },
-    context,
-  );
+    const { mergeRequests, paginationInfo } = await getMergeRequests(
+      {
+        externalRepositoryId: repository.externalId,
+        namespaceName: namespace?.name || "",
+        repositoryName: repository.name,
+        repositoryId: repository.id,
+        perPage: 10,
+      }, context,
+    );
 
-  for (let index = 1; index <= paginationInfo.totalPages; index++) {
+    await extractMergeRequestsEvent.publish({mergeRequestIds: mergeRequests.map(mr => mr.id)}, {
+      version: 1,
+      caller: 'extract-merge-requests',
+      sourceControl,
+      userId: evt.metadata.userId,
+      timestamp: new Date().getTime(),
+    });
 
-    await extractMergeRequestMessage.send({
-      repository,
-      namespace,
-      pagination: {
-        page: index,
-        perPage: paginationInfo.perPage,
-        totalPages: paginationInfo.totalPages
-      }
-    }, { caller: 'extract-merge-requests', timestamp: new Date().getTime(), version: 1, sourceControl, userId: evt.metadata.userId });
-  }
+    const arrayOfExtractMergeRequests: extractRepositoryData[] = [];
+    for(let i = 2; i <= paginationInfo.totalPages; i++ ) {
+      arrayOfExtractMergeRequests.push({
+        repository,
+        namespace: namespace,
+        pagination: {
+          page: i,
+          perPage: paginationInfo.perPage,
+          totalPages: paginationInfo.totalPages
+        }
+      });
+    }
+     
+    await extractMergeRequestMessage.sendAll(arrayOfExtractMergeRequests, { 
+      version: 1,
+      caller: 'extract-merge-requests',
+      sourceControl,
+      userId: evt.metadata.userId,
+      timestamp: new Date().getTime(),
+    });
+
 });
 
 export const queueHandler = QueueHandler(extractMergeRequestMessage, async (message) => {
@@ -103,8 +123,7 @@ export const queueHandler = QueueHandler(extractMergeRequestMessage, async (mess
   
   const {namespace, pagination, repository} = message.content;
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars  
-  const { mergeRequests } = await getMergeRequests(
+  const {mergeRequests} = await getMergeRequests(
     {
       externalRepositoryId: repository.externalId,
       namespaceName: namespace?.name || "",
@@ -115,4 +134,13 @@ export const queueHandler = QueueHandler(extractMergeRequestMessage, async (mess
     },
     context,
   );
+
+  await extractMergeRequestsEvent.publish({mergeRequestIds: mergeRequests.map(mr => mr.id)}, {
+    version: 1,
+    caller: 'extract-merge-requests',
+    sourceControl: message.metadata.sourceControl,
+    userId: message.metadata.userId,
+    timestamp: new Date().getTime(),
+  });
+
 })

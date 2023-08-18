@@ -36,7 +36,6 @@ export function createMessage<QueueUrl extends string, Shape extends ZodRawShape
   });
 
   const send: Send<Shape, MetadataShape> = async (content, metadata) => {
-    console.log("sending", { content, metadata });
     await sqs.sendMessage({
       QueueUrl: queueUrl,
       MessageBody: JSON.stringify(messageSchema.parse({ content, metadata })),
@@ -44,6 +43,7 @@ export function createMessage<QueueUrl extends string, Shape extends ZodRawShape
   }
 
   const sendAll: BatchSend<Shape, MetadataShape> = async (contentArray, metadata) => {
+    const batches: { Id: string, MessageBody: string }[][] = [];
     for (let i = 0; i < contentArray.length; i += 10) {
       const contentBatch = contentArray.slice(i, i + 10);
       const Entries = contentBatch.map(content => JSON.stringify(messageSchema.parse({ content, metadata })))
@@ -51,28 +51,35 @@ export function createMessage<QueueUrl extends string, Shape extends ZodRawShape
           Id: nanoid(),
           MessageBody
         }));
-      console.log("sending batch", Entries);
-      try {
-        await sqs.sendMessageBatch({
-          QueueUrl: queueUrl,
-          Entries
-        }).promise();
-      } catch (error) {
-        console.error(error);
-      }
+      batches.push(Entries);
     }
+    const result = await Promise.allSettled(batches.map(batch => sqs.sendMessageBatch({
+      QueueUrl: queueUrl,
+      Entries: batch,
+    }).promise()));
+
+    result.forEach((r, i) => {
+      if (r.status === 'rejected') {
+        console.error('batch failed', r.reason, batches[i]);
+      }
+    });
 
   }
 
   return {
     send,
-    sendAll
+    sendAll,
+    shapes: {
+      contentShape,
+      metadataShape,
+    }
   }
 }
 
 type Sender<Shape extends ZodRawShape, MetadataShape extends ZodRawShape> = {
   send: Send<Shape, MetadataShape>;
   sendAll: BatchSend<Shape, MetadataShape>
+  shapes: { contentShape: Shape, metadataShape: MetadataShape };
 }
 
 type MessagePayload<Shape extends ZodRawShape, MetadataShape extends ZodRawShape> = {
@@ -86,6 +93,10 @@ export function QueueHandler<Shape extends ZodRawShape, MetadataShape extends Zo
     message: MessagePayload<Shape, MetadataShape>
   ) => Promise<void>
 ) {
+  const schema = z.object({
+    content: z.object(_sender.shapes.contentShape),
+    metadata: z.object(_sender.shapes.metadataShape)
+  });
   /**
    * TODO:
    * - Do consumers always recieve batches ?
@@ -94,7 +105,8 @@ export function QueueHandler<Shape extends ZodRawShape, MetadataShape extends Zo
   return async (event: SQSEvent) => {
     if (event.Records.length > 1) console.warn('WARNING: QueueHandler should process 1 message but got', event.Records.length);
     for (const record of event.Records) {
-      await cb(JSON.parse(record.body) as MessagePayload<Shape, MetadataShape>);
+      const parsed = schema.parse(JSON.parse(record.body) as unknown) as MessagePayload<Shape, MetadataShape>;
+      await cb(parsed);
     }
   }
 }

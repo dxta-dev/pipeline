@@ -5,7 +5,7 @@ import { createClient } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
 import { getMembers } from "@acme/extract-functions";
 import type { Context, GetMembersEntities, GetMembersSourceControl } from "@acme/extract-functions";
-import { members, repositoriesToMembers } from "@acme/extract-schema";
+import { members, namespaces, repositories, repositoriesToMembers } from "@acme/extract-schema";
 import type { Namespace, Repository } from "@acme/extract-schema";
 import { GitHubSourceControl, GitlabSourceControl } from "@acme/source-control";
 import type { Pagination } from "@acme/source-control";
@@ -13,6 +13,7 @@ import { Config } from "sst/node/config";
 import { extractMemberPageMessage } from "./messages";
 
 import { QueueHandler } from "./create-message";
+import { eq } from "drizzle-orm";
 
 const clerkClient = Clerk({ secretKey: Config.CLERK_SECRET_KEY });
 const client = createClient({ url: Config.DATABASE_URL, authToken: Config.DATABASE_AUTH_TOKEN });
@@ -72,9 +73,17 @@ const extractMembersPage = async ({ namespace, repository, sourceControl, userId
 };
 
 export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
+  if (!ev.properties.namespaceId) throw new Error("Missing namespaceId");
+
+  const repository = await db.select().from(repositories).where(eq(repositories.id, ev.properties.repositoryId)).get();
+  const namespace = await db.select().from(namespaces).where(eq(namespaces.id, ev.properties.namespaceId)).get();
+  
+  if (!repository) throw new Error("invalid repo id");
+  if (!namespace) throw new Error("Invalid namespace id");
+
   const pagination = await extractMembersPage({
-    namespace: ev.properties.namespace,
-    repository: ev.properties.repository,
+    namespace: namespace,
+    repository: repository,
     sourceControl: ev.metadata.sourceControl,
     userId: ev.metadata.userId,
   });
@@ -82,8 +91,8 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
   const arrayOfExtractMemberPageMessageContent: { repository: Repository, namespace: Namespace | null, pagination: Pagination }[] = [];
   for (let i = 2; i <= pagination.totalPages; i++) {
     arrayOfExtractMemberPageMessageContent.push({
-      namespace: ev.properties.namespace,
-      repository: ev.properties.repository,
+      namespace: namespace,
+      repository: repository,
       pagination: {
         page: i,
         perPage: pagination.perPage,
@@ -92,7 +101,8 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
     })
   }
 
-  if (arrayOfExtractMemberPageMessageContent.length === 0) return console.log("No more pages left, no need to enqueue");
+  if (arrayOfExtractMemberPageMessageContent.length === 0) 
+    return;
 
   await extractMemberPageMessage.sendAll(arrayOfExtractMemberPageMessageContent, {
     version: 1,
