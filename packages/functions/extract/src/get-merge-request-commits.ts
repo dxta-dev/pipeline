@@ -1,6 +1,6 @@
 import type { SourceControl } from "@acme/source-control";
 import type { Entities, ExtractFunction } from "./config"
-import { type MergeRequestCommit } from "@acme/extract-schema";
+import type { MergeRequestCommit } from "@acme/extract-schema";
 import type { LibSQLDatabase } from "drizzle-orm/libsql";
 import type{ BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
 

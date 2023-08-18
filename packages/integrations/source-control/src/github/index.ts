@@ -208,5 +208,6 @@ export class GitHubSourceControl implements SourceControl {
       })),
     }
   }
+  async fetchMergeRequestCommits(externalRepositoryId: number, namespaceName: string, repositoryName: string, mergerequestIId: number, creationPeriod: TimePeriod = {}, page?: number, perPage?: number): Promise<{ mergeRequestCommits: NewMergeRequestCommit[]; pagination: Pagination; }> {}
 
 }
