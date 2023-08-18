@@ -10,8 +10,8 @@ export const users = sqliteTable('users', {
   gitUserId: integer('git_user_id').references(() => gitUsers.id),
   forgeUserId: integer('forge_user_id').references(() => forgeUsers.id),
   isOnboarded: integer('is_onboarded', { mode: 'boolean' }).notNull().default(false),
-  createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`CURRENT_TIMESTAMP`),
-  updatedAt: integer('updated_at', { mode: 'timestamp' }).default(sql`CURRENT_TIMESTAMP`),
+  createdAt: integer('created_at', { mode: 'timestamp_ms' }).default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: integer('updated_at', { mode: 'timestamp_ms' }).default(sql`CURRENT_TIMESTAMP`),
 });
 
 export type User = InferModel<typeof users>;

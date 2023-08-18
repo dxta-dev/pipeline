@@ -9,8 +9,8 @@ export const repositories = sqliteTable('repositories', {
   name: text('name').notNull(),
   projectId: integer('projectId').notNull().references(() => projects.id),
   organizationId: integer('organizationId').notNull().references(() => organizations.id),
-  createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`CURRENT_TIMESTAMP`),
-  updatedAt: integer('updated_at', { mode: 'timestamp' }).default(sql`CURRENT_TIMESTAMP`),
+  createdAt: integer('created_at', { mode: 'timestamp_ms' }).default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: integer('updated_at', { mode: 'timestamp_ms' }).default(sql`CURRENT_TIMESTAMP`),
 });
 
 export type Repository = InferModel<typeof repositories>;
