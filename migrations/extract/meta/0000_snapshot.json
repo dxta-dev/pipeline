@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "83ddc107-aba5-47ae-a63c-d5ed38ff1b3e",
+  "id": "2e46018e-4b6a-4271-a5d1-9e79ec0e46c0",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "members": {
@@ -84,30 +84,30 @@
         },
         "external_id": {
           "name": "external_id",
-          "type": "text",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
         "created_at": {
           "name": "created_at",
-          "type": "text",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
         "authored_date": {
           "name": "authored_date",
-          "type": "text",
+          "type": "integer",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false
         },
         "committed_date": {
           "name": "committed_date",
-          "type": "text",
+          "type": "integer",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false
         },
         "title": {
