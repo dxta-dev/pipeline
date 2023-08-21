@@ -24,7 +24,7 @@ const FILE_STATUS_FLAGS_MAPPING: Record<
         deletedFile: false,
       },
       "added": {
-        newFile: false,
+        newFile: true,
         renamedFile: false,
         deletedFile: false,
       },
@@ -153,7 +153,7 @@ export class GitHubSourceControl implements SourceControl {
 
   async fetchMergeRequestDiffs(externalRepositoryId: number, namespaceName: string, repositoryName: string, mergeRequestNumber: number, page?: number, perPage?: number): Promise<{ mergeRequestDiffs: NewMergeRequestDiff[], pagination: Pagination }> {
     page = page || 1;
-    page = page || 30;
+    perPage = perPage || 30;
 
     const result = await this.api.pulls.listFiles({
       owner: namespaceName,
