@@ -1,5 +1,5 @@
 import type { SourceControl, Pagination, TimePeriod } from "../source-control";
-import type { Gitlab as GitlabType, ShowExpanded, Sudo, MergeRequestDiffSchema, Camelize, OffsetPagination } from '@gitbeaker/core';
+import type { Gitlab as GitlabType, ShowExpanded, Sudo, MergeRequestDiffSchema, OffsetPagination } from '@gitbeaker/core';
 import type { NewRepository, NewNamespace, NewMergeRequest, NewMember, NewMergeRequestDiff } from "@acme/extract-schema";
 import { Gitlab } from '@gitbeaker/rest';
 
@@ -94,19 +94,19 @@ export class GitlabSourceControl implements SourceControl {
       page: page || 1,
       perPage,
       pagination: 'offset'
-    } as Sudo & ShowExpanded<true>)) as unknown) as { data: Camelize<MergeRequestDiffSchema>[], paginationInfo: OffsetPagination };
+    } as Sudo & ShowExpanded<true>)) as unknown) as { data: MergeRequestDiffSchema[], paginationInfo: OffsetPagination };
 
     return {
       mergeRequestDiffs: data.map(mergeRequestDiff => ({
         mergeRequestId: mergeRequestNumber,
         diff: mergeRequestDiff.diff,
-        newPath: mergeRequestDiff.newPath,
-        oldPath: mergeRequestDiff.oldPath,
-        aMode: mergeRequestDiff.aMode,
-        bMode: mergeRequestDiff.bMode,
-        newFile: mergeRequestDiff.newFile,
-        renamedFile: mergeRequestDiff.renamedFile,
-        deletedFile: mergeRequestDiff.deletedFile,
+        newPath: mergeRequestDiff.new_path,
+        oldPath: mergeRequestDiff.old_path,
+        aMode: mergeRequestDiff.a_mode,
+        bMode: mergeRequestDiff.b_mode,
+        newFile: mergeRequestDiff.new_file,
+        renamedFile: mergeRequestDiff.renamed_file,
+        deletedFile: mergeRequestDiff.deleted_file,
       })),
       pagination: {
         page: paginationInfo.current,
