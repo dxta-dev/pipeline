@@ -90,8 +90,18 @@ export class GitHubSourceControl implements SourceControl {
         .map(mergeRequest => ({
           externalId: mergeRequest.id,
           mergeRequestId: mergeRequest.number,
-          repositoryId
-        })),
+          repositoryId,
+          title: mergeRequest.title,
+          webUrl: mergeRequest.url,
+          createdAt: new Date(mergeRequest.created_at),
+          updatedAt: new Date(mergeRequest.updated_at),
+          mergedAt: mergeRequest.merged_at ? new Date(mergeRequest.merged_at) : undefined,
+          closedAt: mergeRequest.closed_at ? new Date(mergeRequest.closed_at) : undefined,
+          authorExternalId: mergeRequest.user?.id,
+          state: mergeRequest.state,
+          targetBranch: mergeRequest.base.ref,
+          sourceBranch: mergeRequest.head.ref,
+        } satisfies NewMergeRequest)),
       pagination
     }
   }

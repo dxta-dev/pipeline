@@ -1,6 +1,6 @@
 import type { InferModel } from "drizzle-orm";
 import { sql } from "drizzle-orm";
-import { integer, sqliteTable, uniqueIndex } from "drizzle-orm/sqlite-core";
+import { integer, sqliteTable, uniqueIndex, text } from "drizzle-orm/sqlite-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -13,8 +13,18 @@ export const mergeRequests = sqliteTable(
     /* Gitlab -> iid, GitHub -> number */
     mergeRequestId: integer("merge_request_id").notNull(),
     repositoryId: integer("repository_id").notNull(),
-  createdAt: integer('created_at', { mode: 'timestamp_ms' }).default(sql`CURRENT_TIMESTAMP`),
-  updatedAt: integer('updated_at', { mode: 'timestamp_ms' }).default(sql`CURRENT_TIMESTAMP`),
+    title: text("title").notNull(),
+    webUrl: text("web_url").notNull(),
+    createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),
+    updatedAt: integer('updated_at', { mode: 'timestamp_ms' }),
+    mergedAt: integer('merged_at', { mode: 'timestamp_ms' }),
+    closedAt: integer('closed_at', { mode: 'timestamp_ms' }),
+    authorExternalId: integer('author_external_id'),
+    state: text('state'),
+    targetBranch: text('target_branch'),
+    sourceBranch: text('source_branch'),
+    _createdAt: integer('__created_at', { mode: 'timestamp_ms' }).default(sql`CURRENT_TIMESTAMP`),
+    _updatedAt: integer('__updated_at', { mode: 'timestamp_ms' }).default(sql`CURRENT_TIMESTAMP`),
   },
   (mergeRequests) => ({
     uniqueExternalId: uniqueIndex("merge_requests_external_id_idx").on(
@@ -28,8 +38,16 @@ export type NewMergeRequest = InferModel<typeof mergeRequests, "insert">;
 export const MergeRequestSchema = createInsertSchema(mergeRequests, {
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
+  mergedAt: z.coerce.date(),
+  closedAt: z.coerce.date(),
+  _createdAt: z.coerce.date(),
+  _updatedAt: z.coerce.date(),
 });
 export const NewMergeRequestSchema = createInsertSchema(mergeRequests, {
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
+  mergedAt: z.coerce.date(),
+  closedAt: z.coerce.date(),
+  _createdAt: z.coerce.date(),
+  _updatedAt: z.coerce.date(),
 });

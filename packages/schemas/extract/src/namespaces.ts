@@ -8,8 +8,8 @@ export const namespaces = sqliteTable('namespaces', {
   id: integer('id').primaryKey(),
   externalId: integer('external_id').notNull(),
   name: text('name').notNull(),
-  createdAt: integer('created_at', { mode: 'timestamp_ms' }).default(sql`CURRENT_TIMESTAMP`),
-  updatedAt: integer('updated_at', { mode: 'timestamp_ms' }).default(sql`CURRENT_TIMESTAMP`),
+  _createdAt: integer('__created_at', { mode: 'timestamp_ms' }).default(sql`CURRENT_TIMESTAMP`),
+  _updatedAt: integer('__updated_at', { mode: 'timestamp_ms' }).default(sql`CURRENT_TIMESTAMP`),
 }, (namespaces) => ({
   uniqueExternalId: uniqueIndex('namespaces_external_id_idx').on(namespaces.externalId),
 }));
@@ -17,10 +17,10 @@ export const namespaces = sqliteTable('namespaces', {
 export type Namespace = InferModel<typeof namespaces>;
 export type NewNamespace = InferModel<typeof namespaces, 'insert'>;
 export const NewNamespaceSchema = createInsertSchema(namespaces, {
-  createdAt: z.coerce.date(),
-  updatedAt: z.coerce.date(),
+  _createdAt: z.coerce.date(),
+  _updatedAt: z.coerce.date(),
 });
 export const NamespaceSchema = createSelectSchema(namespaces, {
-  createdAt: z.coerce.date(),
-  updatedAt: z.coerce.date(),
+  _createdAt: z.coerce.date(),
+  _updatedAt: z.coerce.date(),
 });

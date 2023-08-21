@@ -4,12 +4,11 @@ import type { NewRepository, NewNamespace, NewMergeRequest, NewMember } from "@a
 import { Gitlab } from '@gitbeaker/rest';
 
 export class GitlabSourceControl implements SourceControl {
-  private api: GitlabType<true>;
+  private api: GitlabType<false>;
 
   constructor(token: string) {
     this.api = new Gitlab({
       oauthToken: token,
-      // camelize: true
     });
   }
 
@@ -68,8 +67,18 @@ export class GitlabSourceControl implements SourceControl {
       mergeRequests: data.map((mr) => ({
         externalId: mr.id,
         mergeRequestId: mr.iid,
-        repositoryId
-      })),
+        repositoryId,
+        title: mr.title,
+        webUrl: mr.web_url,
+        createdAt: new Date(mr.created_at),
+        updatedAt: mr.updated_at ? new Date(mr.updated_at): undefined,
+        mergedAt: mr.merged_at ? new Date(mr.merged_at) : undefined,
+        closedAt: mr.closed_at ? new Date(mr.closed_at as unknown as string) : undefined,
+        authorExternalId: mr.author?.id,
+        state: mr.state,
+        targetBranch: mr.target_branch,
+        sourceBranch: mr.source_branch,
+      } satisfies NewMergeRequest)),
       pagination: {
         page: paginationInfo.current,
         perPage: paginationInfo.perPage,
