@@ -27,12 +27,15 @@ export const getMergeRequestsDiffs: GetMergeRequestDiffsFunction = async (
   { mergeRequestId, namespaceId, repositoryId, page, perPage },
   { db, entities, integrations }
 ) => {
+  //eslint-disable-next-line @typescript-eslint/await-thenable
   const namespace = await db.select().from(entities.namespaces).where(eq(entities.namespaces.id, namespaceId)).get();
   if (!namespace) throw new Error(`Invalid namespace: ${namespaceId}`);
 
+  //eslint-disable-next-line @typescript-eslint/await-thenable
   const repository = await db.select().from(entities.repositories).where(eq(entities.repositories.id, repositoryId)).get();
   if (!repository) throw new Error(`Invalid repository: ${repositoryId}`);
 
+  //eslint-disable-next-line @typescript-eslint/await-thenable
   const mergeRequest = await db.select().from(entities.mergeRequests).where(eq(entities.mergeRequests.id, mergeRequestId)).get();
   if (!mergeRequest) throw new Error(`Invalid mergeRequest: ${mergeRequestId}`);
 
