@@ -1,6 +1,6 @@
 import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
 import type { LibSQLDatabase } from 'drizzle-orm/libsql';
-import type { repositories, namespaces, mergeRequests, members, repositoriesToMembers } from '@acme/extract-schema';
+import type { repositories, namespaces, mergeRequests, members, repositoriesToMembers, mergeRequestDiffs } from '@acme/extract-schema';
 import type { SourceControl } from '@acme/source-control';
 
 export type Database = BetterSQLite3Database | LibSQLDatabase;
@@ -9,6 +9,7 @@ export type Entities = {
   repositories: typeof repositories;
   namespaces: typeof namespaces;
   mergeRequests: typeof mergeRequests;
+  mergeRequestDiffs: typeof mergeRequestDiffs;
   members: typeof members;
   repositoriesToMembers: typeof repositoriesToMembers;
 };
