@@ -1,6 +1,6 @@
 import type { SourceControl, Pagination, TimePeriod } from "../source-control";
-import type { Gitlab as GitlabType } from '@gitbeaker/core';
-import type { NewRepository, NewNamespace, NewMergeRequest, NewMember } from "@acme/extract-schema";
+import type { Gitlab as GitlabType, ShowExpanded, Sudo, MergeRequestDiffSchema, OffsetPagination } from '@gitbeaker/core';
+import type { NewRepository, NewNamespace, NewMergeRequest, NewMember, NewMergeRequestDiff } from "@acme/extract-schema";
 import { Gitlab } from '@gitbeaker/rest';
 
 export class GitlabSourceControl implements SourceControl {
@@ -29,7 +29,7 @@ export class GitlabSourceControl implements SourceControl {
     };
   }
 
-  async fetchMembers(externalRepositoryId: number, namespaceName: string, repositoryName: string, page?: number, perPage?: number): Promise<{ members: NewMember[], pagination: Pagination }> {    
+  async fetchMembers(externalRepositoryId: number, namespaceName: string, repositoryName: string, page?: number, perPage?: number): Promise<{ members: NewMember[], pagination: Pagination }> {
     const { data, paginationInfo } = await this.api.ProjectMembers.all(externalRepositoryId, {
       includeInherited: true,
       perPage,
@@ -40,8 +40,8 @@ export class GitlabSourceControl implements SourceControl {
 
     return {
       members: data.map(member => ({
-        externalId: member.id, 
-        name: member.name, 
+        externalId: member.id,
+        name: member.name,
         username: member.username
       } satisfies NewMember)),
       pagination: {
@@ -86,4 +86,34 @@ export class GitlabSourceControl implements SourceControl {
       }
     }
   }
+
+  async fetchMergeRequestDiffs(externalRepositoryId: number, namespaceName: string, repositoryName: string, mergeRequestNumber: number, page?: number, perPage?: number): Promise<{ mergeRequestDiffs: NewMergeRequestDiff[], pagination: Pagination }> {
+    // TODO: wait until gitbeaker fixes this
+    const { data, paginationInfo } = ((await this.api.MergeRequests.allDiffs(externalRepositoryId, mergeRequestNumber, {
+      showExpanded: true,
+      page: page || 1,
+      perPage,
+      pagination: 'offset'
+    } as Sudo & ShowExpanded<true>)) as unknown) as { data: MergeRequestDiffSchema[], paginationInfo: OffsetPagination };
+
+    return {
+      mergeRequestDiffs: data.map(mergeRequestDiff => ({
+        mergeRequestId: mergeRequestNumber,
+        diff: mergeRequestDiff.diff,
+        newPath: mergeRequestDiff.new_path,
+        oldPath: mergeRequestDiff.old_path,
+        aMode: mergeRequestDiff.a_mode,
+        bMode: mergeRequestDiff.b_mode,
+        newFile: mergeRequestDiff.new_file,
+        renamedFile: mergeRequestDiff.renamed_file,
+        deletedFile: mergeRequestDiff.deleted_file,
+      })),
+      pagination: {
+        page: paginationInfo.current,
+        perPage: paginationInfo.perPage,
+        totalPages: paginationInfo.totalPages
+      }
+    }
+  }
+
 }
