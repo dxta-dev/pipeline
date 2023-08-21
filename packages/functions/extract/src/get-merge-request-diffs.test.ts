@@ -102,7 +102,7 @@ describe('get-merge-request-diffs:', () => {
       expect(fetchMergeRequestDiffs).toHaveBeenCalledTimes(1);
 
       const mergeRequestDiffRows = db.select().from(context.entities.mergeRequestDiffs).all();
-      expect(mergeRequestDiffRows).toHaveLength(1);
+      expect(mergeRequestDiffRows).toHaveLength(2);
 
       for (const mergeRequestDiffRow of mergeRequestDiffRows) {
         const extractedMergeRequestDiff = mergeRequestDiffs.find((mergeRequestDiff) =>
