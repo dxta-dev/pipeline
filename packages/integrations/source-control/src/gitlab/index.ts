@@ -1,6 +1,6 @@
 import type { SourceControl, Pagination, TimePeriod } from "../source-control";
 import type { Gitlab as GitlabType, ShowExpanded, Sudo, MergeRequestDiffSchema, OffsetPagination } from '@gitbeaker/core';
-import type { NewRepository, NewNamespace, NewMergeRequest, NewMember, NewMergeRequestDiff } from "@acme/extract-schema";
+import type { NewRepository, NewNamespace, NewMergeRequest, NewMember, NewMergeRequestDiff, Repository, Namespace, MergeRequest } from "@acme/extract-schema";
 import { Gitlab } from '@gitbeaker/rest';
 
 export class GitlabSourceControl implements SourceControl {
@@ -71,7 +71,7 @@ export class GitlabSourceControl implements SourceControl {
         title: mr.title,
         webUrl: mr.web_url,
         createdAt: new Date(mr.created_at),
-        updatedAt: mr.updated_at ? new Date(mr.updated_at): undefined,
+        updatedAt: mr.updated_at ? new Date(mr.updated_at) : undefined,
         mergedAt: mr.merged_at ? new Date(mr.merged_at) : undefined,
         closedAt: mr.closed_at ? new Date(mr.closed_at as unknown as string) : undefined,
         authorExternalId: mr.author?.id,
@@ -87,9 +87,9 @@ export class GitlabSourceControl implements SourceControl {
     }
   }
 
-  async fetchMergeRequestDiffs(externalRepositoryId: number, namespaceName: string, repositoryName: string, mergeRequestNumber: number, page?: number, perPage?: number): Promise<{ mergeRequestDiffs: NewMergeRequestDiff[], pagination: Pagination }> {
+  async fetchMergeRequestDiffs(repository: Repository, namespace: Namespace, mergeRequest: MergeRequest, page?: number, perPage?: number): Promise<{ mergeRequestDiffs: NewMergeRequestDiff[], pagination: Pagination }> {
     // TODO: wait until gitbeaker fixes this
-    const { data, paginationInfo } = ((await this.api.MergeRequests.allDiffs(externalRepositoryId, mergeRequestNumber, {
+    const { data, paginationInfo } = ((await this.api.MergeRequests.allDiffs(repository.externalId, mergeRequest.mergeRequestId, {
       showExpanded: true,
       page: page || 1,
       perPage,
@@ -98,7 +98,7 @@ export class GitlabSourceControl implements SourceControl {
 
     return {
       mergeRequestDiffs: data.map(mergeRequestDiff => ({
-        mergeRequestId: mergeRequestNumber,
+        mergeRequestId: mergeRequest.mergeRequestId,
         diff: mergeRequestDiff.diff,
         newPath: mergeRequestDiff.new_path,
         oldPath: mergeRequestDiff.old_path,

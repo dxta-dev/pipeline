@@ -2,7 +2,7 @@ import type { SourceControl } from '..';
 import { Octokit } from '@octokit/rest';
 import parseLinkHeader from "parse-link-header";
 
-import type { NewRepository, NewNamespace, NewMergeRequest, NewMember, NewMergeRequestDiff } from "@acme/extract-schema";
+import type { NewRepository, NewNamespace, NewMergeRequest, NewMember, NewMergeRequestDiff, Repository, Namespace, MergeRequest } from "@acme/extract-schema";
 import type { Pagination, TimePeriod } from '../source-control';
 
 const FILE_STATUS_FLAGS_MAPPING: Record<
@@ -151,16 +151,16 @@ export class GitHubSourceControl implements SourceControl {
     }
   }
 
-  async fetchMergeRequestDiffs(externalRepositoryId: number, namespaceName: string, repositoryName: string, mergeRequestNumber: number, page?: number, perPage?: number): Promise<{ mergeRequestDiffs: NewMergeRequestDiff[], pagination: Pagination }> {
+  async fetchMergeRequestDiffs(repository: Repository, namespace: Namespace, mergeRequest: MergeRequest, page?: number, perPage?: number): Promise<{ mergeRequestDiffs: NewMergeRequestDiff[], pagination: Pagination }> {
     page = page || 1;
     perPage = perPage || 30;
 
     const result = await this.api.pulls.listFiles({
-      owner: namespaceName,
-      repo: repositoryName,
+      owner: namespace.name,
+      repo: repository.name,
       page: page,
       per_page: perPage,
-      pull_number: mergeRequestNumber,
+      pull_number: mergeRequest.mergeRequestId,
     });
 
     const linkHeader = parseLinkHeader(result.headers.link) || { next: { per_page: perPage } };
@@ -173,7 +173,7 @@ export class GitHubSourceControl implements SourceControl {
 
     return {
       mergeRequestDiffs: result.data.map(mergeRequestFile => ({
-        mergeRequestId: mergeRequestNumber,
+        mergeRequestId: mergeRequest.mergeRequestId,
         diff: mergeRequestFile.patch || "",
         newPath: mergeRequestFile.filename,
         oldPath: mergeRequestFile.previous_filename || mergeRequestFile.filename,
@@ -183,7 +183,6 @@ export class GitHubSourceControl implements SourceControl {
       })),
       pagination
     }
-    // result.data[0]?.deletions
   }
 
 }
