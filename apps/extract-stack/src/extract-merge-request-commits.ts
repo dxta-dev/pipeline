@@ -14,9 +14,6 @@ const client = createClient({
   url: Config.DATABASE_URL,
   authToken: Config.DATABASE_AUTH_TOKEN,
 });
-console.log('DBU', Config.DATABASE_URL);
-console.log('DAT', Config.DATABASE_AUTH_TOKEN);
-
 const db = drizzle(client);
 
 const context: Context<
@@ -65,13 +62,12 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (evt) => 
 
   context.integrations.sourceControl = await initSourceControl(evt.metadata.userId, sourceControl)
 
-  const { mergeRequestCommits, paginationInfo} = await getMergeRequestCommits({
+  const { mergeRequestCommits} = await getMergeRequestCommits({
     externalRepositoryId: repository.externalId,
     namespaceName: namespace?.name,
     repositoryName: repository.name,
-    mergerequestIId: 29,
+    mergerequestIId: 4,
   }, context);
 
   console.log('MRC', mergeRequestCommits);
-  console.log('PI', paginationInfo);
 });
