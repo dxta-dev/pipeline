@@ -1,6 +1,6 @@
 import type { SourceControl, Pagination, TimePeriod } from "../source-control";
 import type { Gitlab as GitlabType, ShowExpanded, Sudo, MergeRequestDiffSchema, OffsetPagination } from '@gitbeaker/core';
-import type { NewRepository, NewNamespace, NewMergeRequest, NewMember, NewMergeRequestDiff, Repository, Namespace, MergeRequest } from "@acme/extract-schema";
+import type { NewRepository, NewNamespace, NewMergeRequest, NewMember, NewMergeRequestDiff, Repository, Namespace, MergeRequest, NewMergeRequestCommit } from "@acme/extract-schema";
 import { Gitlab } from '@gitbeaker/rest';
 
 export class GitlabSourceControl implements SourceControl {
@@ -113,6 +113,31 @@ export class GitlabSourceControl implements SourceControl {
         perPage: paginationInfo.perPage,
         totalPages: paginationInfo.totalPages
       }
+    }
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async fetchMergeRequestCommits(externalRepositoryId: number, namespaceName: string, repositoryName: string, mergerequestIId: number, creationPeriod: TimePeriod = {}): Promise<{ mergeRequestCommits: NewMergeRequestCommit[] }> {
+    const { data } = await this.api.MergeRequests.allCommits(
+      externalRepositoryId,
+      mergerequestIId,
+      {
+        showExpanded: true,
+      }
+    );
+
+    return {
+      mergeRequestCommits: data.map((mrc) => ({
+        mergeRequestId: mergerequestIId,
+        externalId: mrc.id,
+        createdAt: new Date(mrc.created_at),
+        authoredDate: new Date(mrc.authored_date || ''),
+        committedDate: new Date(mrc.committed_date || ''),
+        title: mrc.title,
+        message: mrc.message,
+        authorName: mrc.author_name || '',
+        authorEmail: mrc.author_email || '',
+      })),
     }
   }
 

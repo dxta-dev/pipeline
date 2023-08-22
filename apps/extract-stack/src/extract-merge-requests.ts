@@ -81,8 +81,6 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (evt) => 
     }, context,
   );
 
-  console.log("mergeRequests", mergeRequests);
-
   await extractMergeRequestsEvent.publish({ mergeRequestIds: mergeRequests.map(mr => mr.id) }, {
     version: 1,
     caller: 'extract-merge-requests',

@@ -2,7 +2,7 @@ import type { SourceControl } from '..';
 import { Octokit } from '@octokit/rest';
 import parseLinkHeader from "parse-link-header";
 
-import type { NewRepository, NewNamespace, NewMergeRequest, NewMember, NewMergeRequestDiff, Repository, Namespace, MergeRequest } from "@acme/extract-schema";
+import type { NewRepository, NewNamespace, NewMergeRequest, NewMember, NewMergeRequestDiff, Repository, Namespace, MergeRequest, NewMergeRequestCommit } from "@acme/extract-schema";
 import type { Pagination, TimePeriod } from '../source-control';
 
 const FILE_STATUS_FLAGS_MAPPING: Record<
@@ -182,6 +182,30 @@ export class GitHubSourceControl implements SourceControl {
         ...FILE_STATUS_FLAGS_MAPPING[mergeRequestFile.status],
       })),
       pagination
+    }
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async fetchMergeRequestCommits(externalRepositoryId: number, namespaceName: string, repositoryName: string, mergerequestIId: number, creationPeriod: TimePeriod = {}): Promise<{ mergeRequestCommits: NewMergeRequestCommit[] }> {
+    
+    const response = await this.api.pulls.listCommits({
+      owner: namespaceName,
+      repo: repositoryName,
+      pull_number: mergerequestIId,
+    });
+
+    return {
+      mergeRequestCommits: response.data.map((mrc) => ({
+        mergeRequestId: mergerequestIId,
+        externalId: mrc.sha,
+        createdAt: new Date(mrc.commit.committer?.date || ''),
+        authoredDate: new Date(mrc.commit.author?.date || ''),
+        committedDate: new Date(mrc.commit.committer?.date || ''),
+        title: mrc.commit.message,
+        message: mrc.commit.message,
+        authorName: mrc.commit.author?.name || '',
+        authorEmail: mrc.commit.author?.email || '',
+      })),
     }
   }
 
