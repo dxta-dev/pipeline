@@ -3,11 +3,13 @@ import { createClient } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
 import { GitHubSourceControl, GitlabSourceControl } from "@acme/source-control";
 import { Config } from "sst/node/config";
-import { getMergeRequestsDiffs, type Context, type GetMergeRequestDiffsEntities, type GetMergeRequestDiffsSourceControl } from "@acme/extract-functions";
+import type { Context, GetMergeRequestDiffsEntities, GetMergeRequestDiffsSourceControl } from "@acme/extract-functions";
+import { getMergeRequestsDiffs } from "@acme/extract-functions";
 import { mergeRequestDiffs, mergeRequests, repositories, namespaces } from "@acme/extract-schema";
 import { EventHandler } from "sst/node/event-bus";
 import { extractMergeRequestsEvent } from "./events";
-import { extractMergeRequestData, extractMergeRequestDiffMessage } from "./messages";
+import { extractMergeRequestDiffMessage } from "./messages";
+import type { extractMergeRequestData } from "./messages";
 import { QueueHandler } from "./create-message";
 
 const clerkClient = Clerk({ secretKey: Config.CLERK_SECRET_KEY });
@@ -47,7 +49,7 @@ export const queueHandler = QueueHandler(extractMergeRequestDiffMessage, async (
   const { sourceControl, userId } = message.metadata;
   const { mergeRequestId, repositoryId, namespaceId } = message.content;
 
-  context.integrations.sourceControl = await initSourceControl(userId,sourceControl);
+  context.integrations.sourceControl = await initSourceControl(userId, sourceControl);
 
   await getMergeRequestsDiffs({
     mergeRequestId,

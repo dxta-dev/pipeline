@@ -18,7 +18,7 @@ const extractRepositoryDataSchema = z.object({
 });
 
 const extractMergeRequestDataSchema = z.object({
-  mergeRequestId: z.number(),// why undefined ? MergeRequestSchema.shape.id,
+  mergeRequestId: MergeRequestSchema.shape.id,
   repositoryId: RepositorySchema.shape.id,
   namespaceId: NamespaceSchema.shape.id,
 })
