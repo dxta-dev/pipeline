@@ -185,6 +185,7 @@ export class GitHubSourceControl implements SourceControl {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async fetchMergeRequestCommits(externalRepositoryId: number, namespaceName: string, repositoryName: string, mergerequestIId: number, creationPeriod: TimePeriod = {}): Promise<{ mergeRequestCommits: NewMergeRequestCommit[] }> {
     
     const response = await this.api.pulls.listCommits({
