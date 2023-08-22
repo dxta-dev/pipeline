@@ -67,8 +67,6 @@ export const getMergeRequestsDiffs: GetMergeRequestDiffsFunction = async (
     ));
   });
 
-  console.log('insertedMergeRequestDiffs', ...mergeRequestDiffs);
-
   return {
     mergeRequestDiffs: insertedMergeRequestDiffs,
     paginationInfo: pagination
