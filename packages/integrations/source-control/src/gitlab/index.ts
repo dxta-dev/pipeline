@@ -115,9 +115,9 @@ export class GitlabSourceControl implements SourceControl {
       }
     }
   }
-  
+
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async fetchMergeRequestCommits(externalRepositoryId: number, namespaceName: string, repositoryName: string, mergerequestIId: number, creationPeriod: TimePeriod = {}): Promise<{ mergeRequestCommits: NewMergeRequestCommit[]}> {
+  async fetchMergeRequestCommits(externalRepositoryId: number, namespaceName: string, repositoryName: string, mergerequestIId: number, creationPeriod: TimePeriod = {}): Promise<{ mergeRequestCommits: NewMergeRequestCommit[] }> {
     const { data } = await this.api.MergeRequests.allCommits(
       externalRepositoryId,
       mergerequestIId,
@@ -125,7 +125,7 @@ export class GitlabSourceControl implements SourceControl {
         showExpanded: true,
       }
     );
-    console.log('DATA', data);
+
     return {
       mergeRequestCommits: data.map((mrc) => ({
         mergeRequestId: mergerequestIId,
