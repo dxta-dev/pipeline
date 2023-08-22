@@ -186,22 +186,25 @@ export class GitHubSourceControl implements SourceControl {
   }
 
   async fetchMergeRequestCommits(externalRepositoryId: number, namespaceName: string, repositoryName: string, mergerequestIId: number, creationPeriod: TimePeriod = {}): Promise<{ mergeRequestCommits: NewMergeRequestCommit[] }> {
-    console.log('nn', namespaceName);
-    console.log('rn', repositoryName);
-    console.log('mriid', mergerequestIId);
     
     const response = await this.api.pulls.listCommits({
       owner: namespaceName,
       repo: repositoryName,
       pull_number: mergerequestIId,
     });
-    response.data.map((commitData) => {
-      console.log('COMMIT', commitData.commit);
-      console.log('AUTHOR', commitData.author);
-      console.log('COMMITTER', commitData.committer);
-    })
+
     return {
-      mergeRequestCommits: [],
+      mergeRequestCommits: response.data.map((mrc) => ({
+        mergeRequestId: mergerequestIId,
+        externalId: mrc.sha,
+        createdAt: new Date(mrc.commit.committer?.date || ''),
+        authoredDate: new Date(mrc.commit.author?.date || ''),
+        committedDate: new Date(mrc.commit.committer?.date || ''),
+        title: mrc.commit.message,
+        message: mrc.commit.message,
+        authorName: mrc.commit.author?.name || '',
+        authorEmail: mrc.commit.author?.email || '',
+      })),
     }
   }
 

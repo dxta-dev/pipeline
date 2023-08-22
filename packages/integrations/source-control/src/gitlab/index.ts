@@ -134,8 +134,8 @@ export class GitlabSourceControl implements SourceControl {
         committedDate: new Date(mrc.committed_date || ''),
         title: mrc.title,
         message: mrc.message,
-        authorName: mrc.author_name,
-        authorEmail: mrc.author_email,
+        authorName: mrc.author_name || '',
+        authorEmail: mrc.author_email || '',
       })),
     }
   }
