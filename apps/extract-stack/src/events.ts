@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { MergeRequestSchema } from "@acme/extract-schema/src/merge-requests";
 import { createEvent } from "./create-event";
+import { NamespaceSchema, RepositorySchema } from "@acme/extract-schema";
 
 const extractRepositoryEventSchema = z.object({
   repositoryId: z.number(),
@@ -18,6 +19,8 @@ const metadataSchema = z.object({
 });
 const extractMergeRequestEventSchema = z.object({
   mergeRequestIds: z.array(MergeRequestSchema.shape.id),
+  repositoryId: RepositorySchema.shape.id,
+  namespaceId: NamespaceSchema.shape.id
 });
 
 export type extractMergeRequestsEventMessage = z.infer<typeof extractMergeRequestEventSchema>;
