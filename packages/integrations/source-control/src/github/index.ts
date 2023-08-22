@@ -2,7 +2,7 @@ import type { SourceControl } from '..';
 import { Octokit } from '@octokit/rest';
 import parseLinkHeader from "parse-link-header";
 
-import type { NewRepository, NewNamespace, NewMergeRequest, NewMember, NewMergeRequestDiff, Repository, Namespace, MergeRequest } from "@acme/extract-schema";
+import type { NewRepository, NewNamespace, NewMergeRequest, NewMember, NewMergeRequestDiff, Repository, Namespace, MergeRequest, NewMergeRequestCommit } from "@acme/extract-schema";
 import type { Pagination, TimePeriod } from '../source-control';
 
 const FILE_STATUS_FLAGS_MAPPING: Record<
@@ -182,6 +182,26 @@ export class GitHubSourceControl implements SourceControl {
         ...FILE_STATUS_FLAGS_MAPPING[mergeRequestFile.status],
       })),
       pagination
+    }
+  }
+
+  async fetchMergeRequestCommits(externalRepositoryId: number, namespaceName: string, repositoryName: string, mergerequestIId: number, creationPeriod: TimePeriod = {}): Promise<{ mergeRequestCommits: NewMergeRequestCommit[] }> {
+    console.log('nn', namespaceName);
+    console.log('rn', repositoryName);
+    console.log('mriid', mergerequestIId);
+    
+    const response = await this.api.pulls.listCommits({
+      owner: namespaceName,
+      repo: repositoryName,
+      pull_number: mergerequestIId,
+    });
+    response.data.map((commitData) => {
+      console.log('COMMIT', commitData.commit);
+      console.log('AUTHOR', commitData.author);
+      console.log('COMMITTER', commitData.committer);
+    })
+    return {
+      mergeRequestCommits: [],
     }
   }
 
