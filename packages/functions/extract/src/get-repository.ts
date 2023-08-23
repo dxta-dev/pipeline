@@ -10,7 +10,7 @@ export type GetRepositoryInput = {
 
 export type GetRepositoryOutput = {
   repository: Repository;
-  namespace: Namespace | null;
+  namespace: Namespace;
 };
 
 export type GetRepositorySourceControl = Pick<SourceControl, "fetchRepository">;
@@ -33,12 +33,6 @@ export const getRepository: GetRepositoryFunction = async (
     .onConflictDoUpdate({ target: entities.repositories.externalId, set: { name: repository.name } }).returning()
     .get();
 
-  if (!namespace) {
-    return {
-      repository: insertedRepository,
-      namespace: null,
-    }
-  }
   const insertedNamespace = await db.insert(entities.namespaces).values(namespace)
     .onConflictDoUpdate({ target: entities.namespaces.externalId, set: { name: namespace.name } }).returning()
     .get();
