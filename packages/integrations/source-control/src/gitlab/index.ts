@@ -125,7 +125,6 @@ export class GitlabSourceControl implements SourceControl {
         showExpanded: true,
       }
     );
-
     return {
       mergeRequestCommits: data.map((mrc) => ({
         mergeRequestId: mergerequestIId,
