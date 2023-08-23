@@ -59,8 +59,6 @@ const initSourceControl = async (userId: string, sourceControl: 'github' | 'gitl
 }
 
 export const eventHandler = EventHandler(extractRepositoryEvent, async (evt) => {
-  if (!evt.properties.namespaceId) throw new Error("Missing namespaceId");
-
   const repository = await db.select().from(repositories).where(eq(repositories.id, evt.properties.repositoryId)).get();
   const namespace = await db.select().from(namespaces).where(eq(namespaces.id, evt.properties.namespaceId)).get();
 
@@ -74,7 +72,7 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (evt) => 
   const { mergeRequests, paginationInfo } = await getMergeRequests(
     {
       externalRepositoryId: repository.externalId,
-      namespaceName: namespace?.name || "",
+      namespaceName: namespace.name,
       repositoryName: repository.name,
       repositoryId: repository.id,
       perPage: 10,
@@ -126,7 +124,7 @@ export const queueHandler = QueueHandler(extractMergeRequestMessage, async (mess
   const { mergeRequests } = await getMergeRequests(
     {
       externalRepositoryId: repository.externalId,
-      namespaceName: namespace?.name || "",
+      namespaceName: namespace.name,
       repositoryName: repository.name,
       repositoryId: repository.id,
       page: pagination.page,

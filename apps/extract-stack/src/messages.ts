@@ -13,7 +13,7 @@ const paginationSchema = z.object({
 
 const extractRepositoryDataSchema = z.object({
   repository: RepositorySchema,
-  namespace: z.nullable(NamespaceSchema),
+  namespace: NamespaceSchema,
   pagination: paginationSchema
 });
 
