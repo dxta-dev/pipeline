@@ -47,26 +47,32 @@ const context: Context<GetMergeRequestDiffsSourceControl, GetMergeRequestDiffsEn
 
 export const queueHandler = QueueHandler(extractMergeRequestDiffMessage, async (message) => {
   const { sourceControl, userId } = message.metadata;
-  const { mergeRequestId, repositoryId, namespaceId } = message.content;
+  const { mergeRequestIds, repositoryId, namespaceId } = message.content;
 
   context.integrations.sourceControl = await initSourceControl(userId, sourceControl);
-
-  await getMergeRequestsDiffs({
+  const results = await Promise.allSettled(mergeRequestIds.map(mergeRequestId => getMergeRequestsDiffs({
     mergeRequestId,
     repositoryId,
     namespaceId
-  }, context);
+  }, context)));
+
+  results.forEach((result, i) => {
+    if (result.status === 'rejected') console.error('ERROR: extract diff of merge-request:', mergeRequestIds[i], 'failed, reason:', result.reason);
+  })
 })
 
 export const eventHandler = EventHandler(extractMergeRequestsEvent, async (ev) => {
   const { sourceControl, userId } = ev.metadata;
-  const { mergeRequestIds, repositoryId, namespaceId } = ev.properties; // TODO: mrId -> repoId -> nsId ?
+  const { mergeRequestIds, repositoryId, namespaceId } = ev.properties;
 
-  const arrayOfExtractMergeRequestData: extractMergeRequestData[] = mergeRequestIds.map((mergeRequestId) => ({
-    namespaceId,
-    repositoryId,
-    mergeRequestId,
-  }));
+  const arrayOfExtractMergeRequestData: extractMergeRequestData[] = [];
+  for (let i = 0; i < mergeRequestIds.length; i += 5) {
+    arrayOfExtractMergeRequestData.push({
+      mergeRequestIds: mergeRequestIds.slice(i, i + 5),
+      namespaceId,
+      repositoryId,
+    })
+  }
 
   await extractMergeRequestDiffMessage.sendAll(arrayOfExtractMergeRequestData, {
     version: 1,

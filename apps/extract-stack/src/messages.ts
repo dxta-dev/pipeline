@@ -18,7 +18,7 @@ const extractRepositoryDataSchema = z.object({
 });
 
 const extractMergeRequestDataSchema = z.object({
-  mergeRequestId: MergeRequestSchema.shape.id,
+  mergeRequestIds: z.array(MergeRequestSchema.shape.id),
   repositoryId: RepositorySchema.shape.id,
   namespaceId: NamespaceSchema.shape.id,
 })
