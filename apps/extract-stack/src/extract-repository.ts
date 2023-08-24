@@ -106,7 +106,7 @@ export const handler = ApiHandler(async (ev) => {
 
   const { repository, namespace } = await getRepository({ externalRepositoryId: repositoryId, repositoryName, namespaceName }, context);
 
-  await extractRepositoryEvent.publish({ repositoryId: repository.id, namespaceId: namespace?.id || null }, { caller: 'extract-repository', timestamp: new Date().getTime(), version: 1, sourceControl, userId: sub });
+  await extractRepositoryEvent.publish({ repositoryId: repository.id, namespaceId: namespace.id }, { caller: 'extract-repository', timestamp: new Date().getTime(), version: 1, sourceControl, userId: sub });
 
   return {
     statusCode: 200,

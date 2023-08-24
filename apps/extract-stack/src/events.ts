@@ -7,7 +7,7 @@ import { NamespaceSchema, RepositorySchema } from "@acme/extract-schema";
 
 const extractRepositoryEventSchema = z.object({
   repositoryId: z.number(),
-  namespaceId: z.nullable(z.number()),
+  namespaceId: z.number(),
 });
 
 const metadataSchema = z.object({

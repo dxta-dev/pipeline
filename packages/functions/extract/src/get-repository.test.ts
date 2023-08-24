@@ -16,7 +16,7 @@ let db: ReturnType<typeof drizzle>;
 let context: Context<GetRepositorySourceControl, GetRepositoryEntities>;
 let fetchRepository: jest.Mock<Promise<{
   repository: NewRepository,
-  namespace?: NewNamespace
+  namespace: NewNamespace
 }>>
 const databaseName = 'get-repository.db';
 
@@ -60,7 +60,7 @@ describe('get-repository', () => {
     test('should insert values into db', async () => {
       const { namespace, repository } = await getRepository({ externalRepositoryId: 1000, namespaceName: '', repositoryName: '' }, context);
 
-      expect(namespace).not.toBeNull();
+      expect(namespace).toBeDefined();
       expect(repository).toBeDefined();
       expect(fetchRepository).toHaveBeenCalledTimes(1);
 
@@ -71,12 +71,9 @@ describe('get-repository', () => {
       expect(repositoryRow?.externalId).toEqual(repository.externalId);
       expect(repositoryRow?.id).toEqual(repository.id);
 
-      if (!namespace) {
-        throw new Error('namespace should not be null');
-      }
-
       const namespaceRow = db.select().from(namespaces)
         .where(eq(namespaces.externalId, namespace.externalId)).get();
+        
       expect(namespaceRow).toBeDefined();
       expect(namespaceRow?.externalId).toEqual(namespace.externalId);
       expect(namespaceRow?.id).toEqual(namespace.id);
