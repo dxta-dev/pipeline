@@ -4,10 +4,11 @@ import { Clerk } from "@clerk/clerk-sdk-node";
 import { createClient } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
 import { Config } from "sst/node/config";
-import { mergeRequestCommits, namespaces, repositories } from "@acme/extract-schema";
+import { mergeRequestCommits, namespaces, repositories, mergeRequests } from "@acme/extract-schema";
 import { EventHandler } from "sst/node/event-bus";
-import { extractRepositoryEvent } from "./events";
-import { eq } from "drizzle-orm";
+import { extractMergeRequestsEvent } from "./events";
+import { QueueHandler } from "./create-message";
+import { extractMergeRequestCommitMessage, type extractMergeRequestData } from "./messages";
 
 const clerkClient = Clerk({ secretKey: Config.CLERK_SECRET_KEY });
 const client = createClient({
@@ -22,6 +23,9 @@ const context: Context<
 > = {
   entities: {
     mergeRequestCommits,
+    namespaces,
+    repositories,
+    mergeRequests,
   },
   integrations: {
     sourceControl: null,
@@ -47,27 +51,47 @@ const initSourceControl = async (userId: string, sourceControl: 'github' | 'gitl
   return null;
 }
 
-export const eventHandler = EventHandler(extractRepositoryEvent, async (evt) => {
-  if (!evt.properties.namespaceId) throw new Error("Missing namespaceId");
+export const eventHandler = EventHandler(extractMergeRequestsEvent, async (evt) => {
+  const { mergeRequestIds, namespaceId, repositoryId} = evt.properties;
 
-  console.log('EVT', evt);
+  const { sourceControl, userId } = evt.metadata;
 
-  const repository = await db.select().from(repositories).where(eq(repositories.id, evt.properties.repositoryId)).get();
-  const namespace = await db.select().from(namespaces).where(eq(namespaces.id, evt.properties.namespaceId)).get();
+  const numberOfMrsPerMessage = 5;
 
-  if (!repository) throw new Error("invalid repo id");
-  if (!namespace) throw new Error("Invalid namespace id");
+  const arrayOfExtractMergeRequestData: extractMergeRequestData[] = [];
+  for (let i = 0; i < mergeRequestIds.length; i += numberOfMrsPerMessage) {
+    arrayOfExtractMergeRequestData.push({
+      mergeRequestIds: mergeRequestIds.slice(i, i + numberOfMrsPerMessage),
+      namespaceId,
+      repositoryId,
+    })
+  }
 
-  const sourceControl = evt.metadata.sourceControl;
+  await extractMergeRequestCommitMessage.sendAll(arrayOfExtractMergeRequestData, {
+    version: 1,
+    caller: 'extract-merge-request-commits',
+    sourceControl,
+    userId,
+    timestamp: new Date().getTime(),
+  }) 
 
-  context.integrations.sourceControl = await initSourceControl(evt.metadata.userId, sourceControl)
-
-  const { mergeRequestCommits} = await getMergeRequestCommits({
-    externalRepositoryId: repository.externalId,
-    namespaceName: namespace?.name,
-    repositoryName: repository.name,
-    mergerequestIId: 4,
-  }, context);
-
-  console.log('MRC', mergeRequestCommits);
 });
+
+export const queueHandler = QueueHandler(extractMergeRequestCommitMessage, async (message) => {
+  if (!message) {
+    console.warn("Expected message to have content,but get empty")
+    return;
+  }
+
+  context.integrations.sourceControl = await initSourceControl(message.metadata.userId, message.metadata.sourceControl);
+
+  const { mergeRequestIds, namespaceId, repositoryId } = message.content;
+
+  await Promise.allSettled(mergeRequestIds.map(mergeRequestId => 
+    getMergeRequestCommits({
+      mergeRequestId,
+      namespaceId,
+      repositoryId
+    }, context)
+  ));
+})

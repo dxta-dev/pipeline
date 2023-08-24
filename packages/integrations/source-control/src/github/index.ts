@@ -186,17 +186,16 @@ export class GitHubSourceControl implements SourceControl {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async fetchMergeRequestCommits(externalRepositoryId: number, namespaceName: string, repositoryName: string, mergerequestIId: number, creationPeriod: TimePeriod = {}): Promise<{ mergeRequestCommits: NewMergeRequestCommit[] }> {
-    
+  async fetchMergeRequestCommits(repository: Repository, namespace: Namespace, mergeRequest: MergeRequest, creationPeriod: TimePeriod = {}): Promise<{ mergeRequestCommits: NewMergeRequestCommit[] }> {
     const response = await this.api.pulls.listCommits({
-      owner: namespaceName,
-      repo: repositoryName,
-      pull_number: mergerequestIId,
+      owner: namespace.name,
+      repo: repository.name,
+      pull_number: mergeRequest.mergeRequestId,
     });
 
     return {
       mergeRequestCommits: response.data.map((mrc) => ({
-        mergeRequestId: mergerequestIId,
+        mergeRequestId: mergeRequest.mergeRequestId,
         externalId: mrc.sha,
         createdAt: new Date(mrc.commit.committer?.date || ''),
         authoredDate: new Date(mrc.commit.author?.date || ''),
@@ -208,6 +207,4 @@ export class GitHubSourceControl implements SourceControl {
       })),
     }
   }
-  async fetchMergeRequestCommits(externalRepositoryId: number, namespaceName: string, repositoryName: string, mergerequestIId: number, creationPeriod: TimePeriod = {}, page?: number, perPage?: number): Promise<{ mergeRequestCommits: NewMergeRequestCommit[]; pagination: Pagination; }> {}
-
 }

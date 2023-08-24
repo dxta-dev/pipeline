@@ -123,6 +123,8 @@ export const queueHandler = QueueHandler(extractMergeRequestMessage, async (mess
 
   const { namespace, pagination, repository } = message.content;
 
+  if (!namespace) throw new Error("Invalid namespace id");
+
   const { mergeRequests } = await getMergeRequests(
     {
       externalRepositoryId: repository.externalId,
@@ -135,7 +137,7 @@ export const queueHandler = QueueHandler(extractMergeRequestMessage, async (mess
     context,
   );
 
-  await extractMergeRequestsEvent.publish({ mergeRequestIds: mergeRequests.map(mr => mr.id), namespaceId: namespace?.id || 0, repositoryId: repository.id }, {
+  await extractMergeRequestsEvent.publish({ mergeRequestIds: mergeRequests.map(mr => mr.id), namespaceId: namespace.id || 0, repositoryId: repository.id }, {
     version: 1,
     caller: 'extract-merge-requests',
     sourceControl: message.metadata.sourceControl,
