@@ -41,6 +41,29 @@ export type Hunk = {
 }
 
 const firstLineRegex = /^@@\s+-([0-9]+)(,([0-9]+))?\s+\+([0-9]+)(,([0-9]+))?/;
+const ADCRegex = /n*d*i*/g;
+
+const countLetters = (str: string) => {
+  const array = [...str];
+  const d = array.filter(c => c === 'd').length;
+  const i = array.filter(c => c === 'i').length;
+
+  const c = Math.min(d, i);
+
+  return {
+    d: d - c,
+    i: i - c,
+    c,
+  }
+}
+
+type Count = {
+  d: number;
+  i: number;
+  c: number;
+}
+
+
 
 export function parseHunks(stringifiedHunks: string): Hunk[] {
   if (stringifiedHunks === '') return [];
@@ -129,7 +152,25 @@ export function parseHunks(stringifiedHunks: string): Hunk[] {
       currentHunk.changes.push(change);
     }
   }
-  console.log(hunks.map(h => h.changes.map(c => c.type.slice(0, 1)).join('')));
+
+
+  for (const hunk of hunks) {
+    const changeString = hunk.changes.map(c => c.type.slice(0, 1)).join('');
+    const matches = changeString.matchAll(ADCRegex);
+
+    const { d, i, c } = [...matches].map(m => countLetters(m.at(0) as string)).reduce((acc: Count, curr: Count) => {
+      return {
+        d: acc.d + curr.d,
+        i: acc.i + curr.i,
+        c: acc.c + curr.c,
+      }
+    }, { d: 0, i: 0, c: 0 });
+    hunk.added = i;
+    hunk.deleted = d;
+    hunk.changed = c;
+  }
+
+  //console.log(hunks.map(h => [...h.changes.map(c => c.type.slice(0, 1)).join('').matchAll(ADCRegex)].map(i => countLetters(i.at(0) as string))));
 
   return hunks;
 

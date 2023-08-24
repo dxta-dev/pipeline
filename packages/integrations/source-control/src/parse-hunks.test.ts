@@ -63,6 +63,38 @@ const deletionMultipleHunks = `@@ -3,7 +3,6 @@ import { z } from "zod";
 
  export type extractMergeRequestsEventMessage = z.infer<typeof extractMergeRequestEventSchema>;`;
 
+const complexHunks = `@@ -12,19 +13,26 @@ let db: ReturnType<typeof drizzle>;
+ let context: Context<GetMergeRequestCommitsSourceControl, GetMergeRequestCommitsEntities>;
+ let fetchMergeRequestCommits: jest.MockedFunction<GetMergeRequestCommitsSourceControl['fetchMergeRequestCommits']>;
+
++const TEST_REPO_1 = { id: 1, externalId: 1000, name: 'TEST_REPO_NAME' } satisfies NewRepository;
++const TEST_NAMESPACE_1 = { id: 1, externalId: 2000, name: 'TEST_NAMESPACE_NAME' } satisfies NewNamespace;
++const TEST_MERGE_REQUEST_1 = { id: 1, externalId: 3000, createdAt: new Date(), mergeRequestId: 1, repositoryId: 1, title: "TEST_MR", webUrl: "localhost" } satisfies NewMergeRequest;
++
+ beforeAll(() => {
+   betterSqlite = new Database(databaseName);
+   db = drizzle(betterSqlite);
+
+   migrate(db, { migrationsFolder: "../../../migrations/extract" });
++  db.insert(repositories).values([TEST_REPO_1]).run();
++  db.insert(namespaces).values([TEST_NAMESPACE_1]).run();
++  db.insert(mergeRequests).values([TEST_MERGE_REQUEST_1]).run();
+
+-  fetchMergeRequestCommits = jest.fn((externalRepositoryId: number, namespaceName: string, repositoryName: string, mergerequestIId: number): ReturnType<GetMergeRequestCommitsSourceControl['fetchMergeRequestCommits']> => {
+-    switch (mergerequestIId) {
+-      case 1000:
++  fetchMergeRequestCommits = jest.fn((repository: Repository, namespace: Namespace, mergeRequest: MergeRequest): ReturnType<GetMergeRequestCommitsSourceControl['fetchMergeRequestCommits']> => {
++    switch (mergeRequest.externalId) {
++      case 3000:
+         return Promise.resolve({
+           mergeRequestCommits: [
+             {
+-              mergeRequestId: mergerequestIId,
++              mergeRequestId: mergeRequest.mergeRequestId,
+               externalId: '4b14eb1cb5cdb1937f17e0aafaa697f1f943f546',
+               createdAt: new Date('2023-01-02'),
+               authoredDate: new Date('2023-01-02'),`;
+
 describe('parse-hunks:', () => {
   describe('parseHunk', () => {
     test('should parse empty hunk', () => {
@@ -80,6 +112,9 @@ describe('parse-hunks:', () => {
           newLines: 4,
           additions: 2,
           deletions: 1,
+          added: 2,
+          deleted: 1,
+          changed: 0,
           changes: [
             {
               content: 'This is the first line.',
@@ -130,6 +165,9 @@ describe('parse-hunks:', () => {
             newLines: 10,
             deletions: 2,
             additions: 2,
+            added: 0,
+            deleted: 0,
+            changed: 2,
             changes: [
               {
                 content: "import AWS from \"aws-sdk\";",
@@ -209,6 +247,9 @@ describe('parse-hunks:', () => {
             newLines: 10,
             additions: 2,
             deletions: 2,
+            added: 0,
+            deleted: 0,
+            changed: 2,
             changes: [
               {
                 content: "  });",
@@ -288,6 +329,9 @@ describe('parse-hunks:', () => {
             newLines: 10,
             additions: 2,
             deletions: 2,
+            added: 0,
+            deleted: 0,
+            changed: 2,
             changes: [
               {
                 content: "        }));",
@@ -373,6 +417,9 @@ describe('parse-hunks:', () => {
             newLines: 6,
             additions: 0,
             deletions: 1,
+            added: 0,
+            deleted: 1,
+            changed: 0,
             changes: [
               {
                 content: "",
@@ -425,6 +472,9 @@ describe('parse-hunks:', () => {
             newLines: 6,
             additions: 0,
             deletions: 2,
+            added: 0,
+            deleted: 2,
+            changed: 0,
             changes: [
               {
                 content: "});",
@@ -476,6 +526,191 @@ describe('parse-hunks:', () => {
           }
         ]
       );
+
+    });
+    test('should parse complex hunks', () => {
+      const result = parseHunks(complexHunks);
+      expect(result).toEqual([
+        {
+          content: "@@ -12,19 +13,26 @@ let db: ReturnType<typeof drizzle>;\n let context: Context<GetMergeRequestCommitsSourceControl, GetMergeRequestCommitsEntities>;\n let fetchMergeRequestCommits: jest.MockedFunction<GetMergeRequestCommitsSourceControl['fetchMergeRequestCommits']>;\n\n+const TEST_REPO_1 = { id: 1, externalId: 1000, name: 'TEST_REPO_NAME' } satisfies NewRepository;\n+const TEST_NAMESPACE_1 = { id: 1, externalId: 2000, name: 'TEST_NAMESPACE_NAME' } satisfies NewNamespace;\n+const TEST_MERGE_REQUEST_1 = { id: 1, externalId: 3000, createdAt: new Date(), mergeRequestId: 1, repositoryId: 1, title: \"TEST_MR\", webUrl: \"localhost\" } satisfies NewMergeRequest;\n+\n beforeAll(() => {\n   betterSqlite = new Database(databaseName);\n   db = drizzle(betterSqlite);\n\n   migrate(db, { migrationsFolder: \"../../../migrations/extract\" });\n+  db.insert(repositories).values([TEST_REPO_1]).run();\n+  db.insert(namespaces).values([TEST_NAMESPACE_1]).run();\n+  db.insert(mergeRequests).values([TEST_MERGE_REQUEST_1]).run();\n\n-  fetchMergeRequestCommits = jest.fn((externalRepositoryId: number, namespaceName: string, repositoryName: string, mergerequestIId: number): ReturnType<GetMergeRequestCommitsSourceControl['fetchMergeRequestCommits']> => {\n-    switch (mergerequestIId) {\n-      case 1000:\n+  fetchMergeRequestCommits = jest.fn((repository: Repository, namespace: Namespace, mergeRequest: MergeRequest): ReturnType<GetMergeRequestCommitsSourceControl['fetchMergeRequestCommits']> => {\n+    switch (mergeRequest.externalId) {\n+      case 3000:\n         return Promise.resolve({\n           mergeRequestCommits: [\n             {\n-              mergeRequestId: mergerequestIId,\n+              mergeRequestId: mergeRequest.mergeRequestId,\n               externalId: '4b14eb1cb5cdb1937f17e0aafaa697f1f943f546',\n               createdAt: new Date('2023-01-02'),\n               authoredDate: new Date('2023-01-02'),",
+          oldStart: 12,
+          newStart: 13,
+          oldLines: 19,
+          newLines: 26,
+          additions: 11,
+          deletions: 4,
+          added: 7,
+          deleted: 0,
+          changed: 4,
+          changes: [
+            {
+              content: "let context: Context<GetMergeRequestCommitsSourceControl, GetMergeRequestCommitsEntities>;",
+              type: "normal",
+              oldLineNumber: 12,
+              newLineNumber: 13
+            },
+            {
+              content: "let fetchMergeRequestCommits: jest.MockedFunction<GetMergeRequestCommitsSourceControl['fetchMergeRequestCommits']>;",
+              type: "normal",
+              oldLineNumber: 13,
+              newLineNumber: 14
+            },
+            {
+              content: "",
+              type: "normal",
+              oldLineNumber: 14,
+              newLineNumber: 15
+            },
+            {
+              content: "const TEST_REPO_1 = { id: 1, externalId: 1000, name: 'TEST_REPO_NAME' } satisfies NewRepository;",
+              type: "insert",
+              lineNumber: 16
+            },
+            {
+              content: "const TEST_NAMESPACE_1 = { id: 1, externalId: 2000, name: 'TEST_NAMESPACE_NAME' } satisfies NewNamespace;",
+              type: "insert",
+              lineNumber: 17
+            },
+            {
+              content: "const TEST_MERGE_REQUEST_1 = { id: 1, externalId: 3000, createdAt: new Date(), mergeRequestId: 1, repositoryId: 1, title: \"TEST_MR\", webUrl: \"localhost\" } satisfies NewMergeRequest;",
+              type: "insert",
+              lineNumber: 18
+            },
+            {
+              content: "",
+              type: "insert",
+              lineNumber: 19
+            },
+            {
+              content: "beforeAll(() => {",
+              type: "normal",
+              oldLineNumber: 15,
+              newLineNumber: 20
+            },
+            {
+              content: "  betterSqlite = new Database(databaseName);",
+              type: "normal",
+              oldLineNumber: 16,
+              newLineNumber: 21
+            },
+            {
+              content: "  db = drizzle(betterSqlite);",
+              type: "normal",
+              oldLineNumber: 17,
+              newLineNumber: 22
+            },
+            {
+              content: "",
+              type: "normal",
+              oldLineNumber: 18,
+              newLineNumber: 23
+            },
+            {
+              content: "  migrate(db, { migrationsFolder: \"../../../migrations/extract\" });",
+              type: "normal",
+              oldLineNumber: 19,
+              newLineNumber: 24
+            },
+            {
+              content: "  db.insert(repositories).values([TEST_REPO_1]).run();",
+              type: "insert",
+              lineNumber: 25
+            },
+            {
+              content: "  db.insert(namespaces).values([TEST_NAMESPACE_1]).run();",
+              type: "insert",
+              lineNumber: 26
+            },
+            {
+              content: "  db.insert(mergeRequests).values([TEST_MERGE_REQUEST_1]).run();",
+              type: "insert",
+              lineNumber: 27
+            },
+            {
+              content: "",
+              type: "normal",
+              oldLineNumber: 20,
+              newLineNumber: 28
+            },
+            {
+              content: "  fetchMergeRequestCommits = jest.fn((externalRepositoryId: number, namespaceName: string, repositoryName: string, mergerequestIId: number): ReturnType<GetMergeRequestCommitsSourceControl['fetchMergeRequestCommits']> => {",
+              type: "delete",
+              lineNumber: 21
+            },
+            {
+              content: "    switch (mergerequestIId) {",
+              type: "delete",
+              lineNumber: 22
+            },
+            {
+              content: "      case 1000:",
+              type: "delete",
+              lineNumber: 23
+            },
+            {
+              content: "  fetchMergeRequestCommits = jest.fn((repository: Repository, namespace: Namespace, mergeRequest: MergeRequest): ReturnType<GetMergeRequestCommitsSourceControl['fetchMergeRequestCommits']> => {",
+              type: "insert",
+              lineNumber: 29
+            },
+            {
+              content: "    switch (mergeRequest.externalId) {",
+              type: "insert",
+              lineNumber: 30
+            },
+            {
+              content: "      case 3000:",
+              type: "insert",
+              lineNumber: 31
+            },
+            {
+              content: "        return Promise.resolve({",
+              type: "normal",
+              oldLineNumber: 24,
+              newLineNumber: 32
+            },
+            {
+              content: "          mergeRequestCommits: [",
+              type: "normal",
+              oldLineNumber: 25,
+              newLineNumber: 33
+            },
+            {
+              content: "            {",
+              type: "normal",
+              oldLineNumber: 26,
+              newLineNumber: 34
+            },
+            {
+              content: "              mergeRequestId: mergerequestIId,",
+              type: "delete",
+              lineNumber: 27
+            },
+            {
+              content: "              mergeRequestId: mergeRequest.mergeRequestId,",
+              type: "insert",
+              lineNumber: 35
+            },
+            {
+              content: "              externalId: '4b14eb1cb5cdb1937f17e0aafaa697f1f943f546',",
+              type: "normal",
+              oldLineNumber: 28,
+              newLineNumber: 36
+            },
+            {
+              content: "              createdAt: new Date('2023-01-02'),",
+              type: "normal",
+              oldLineNumber: 29,
+              newLineNumber: 37
+            },
+            {
+              content: "              authoredDate: new Date('2023-01-02'),",
+              type: "normal",
+              oldLineNumber: 30,
+              newLineNumber: 38
+            }
+          ]
+        }
+      ]);
     });
 
   });
