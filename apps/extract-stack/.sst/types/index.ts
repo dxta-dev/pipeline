@@ -46,6 +46,13 @@ declare module "sst/node/queue" {
       queueUrl: string;
     }
   }
+}import "sst/node/queue";
+declare module "sst/node/queue" {
+  export interface QueueResources {
+    "ExtractMergeRequestDiffsQueue": {
+      queueUrl: string;
+    }
+  }
 }import "sst/node/api";
 declare module "sst/node/api" {
   export interface ApiResources {
