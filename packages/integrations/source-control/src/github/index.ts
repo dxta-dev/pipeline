@@ -60,7 +60,7 @@ export class GitHubSourceControl implements SourceControl {
     })
   }
 
-  async fetchRepository(externalRepositoryId: number, namespaceName: string, repositoryName: string): Promise<{ repository: NewRepository; namespace?: NewNamespace }> {
+  async fetchRepository(externalRepositoryId: number, namespaceName: string, repositoryName: string): Promise<{ repository: NewRepository; namespace: NewNamespace }> {
     const result = await this.api.repos.get({
       owner: namespaceName,
       repo: repositoryName
