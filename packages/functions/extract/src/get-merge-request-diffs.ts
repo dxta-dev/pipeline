@@ -45,8 +45,6 @@ export const getMergeRequestsDiffs: GetMergeRequestDiffsFunction = async (
 
   const { mergeRequestDiffs, pagination } = await integrations.sourceControl.fetchMergeRequestDiffs(repository, namespace, mergeRequest, page, perPage);
 
-  console.log('mergeRequestDiffs', ...mergeRequestDiffs);
-
   const insertedMergeRequestDiffs = await (db as (LibSQLDatabase & BetterSQLite3Database)).transaction(async (tx) => {
     return Promise.all(mergeRequestDiffs.map(mergeRequestDiff =>
       tx.insert(entities.mergeRequestDiffs).values(mergeRequestDiff)
