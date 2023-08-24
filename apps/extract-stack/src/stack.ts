@@ -89,7 +89,7 @@ export function ExtractStack({ stack }: StackContext) {
   })
 
   bus.addTargets(stack, "mergeRequests", {
-    extractMergeRequestDiffs:{
+    extractMergeRequestCommits:{
       function: {
         bind: [bus, membersQueue, mergeRequestDiffQueue, mergeRequestQueue, mergeRequestCommitQueue],
         handler: "src/extract-merge-request-commits.eventHandler",
@@ -159,7 +159,7 @@ export function ExtractStack({ stack }: StackContext) {
         CLERK_SECRET_KEY,
         DATABASE_AUTH_TOKEN,
       ],
-      handler: "src/extract-merge-request-diffs.queueHandler",
+      handler: "src/extract-merge-request-commits.queueHandler",
     },
   })
 
