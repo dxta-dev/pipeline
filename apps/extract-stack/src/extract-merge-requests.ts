@@ -133,7 +133,7 @@ export const queueHandler = QueueHandler(extractMergeRequestMessage, async (mess
     context,
   );
 
-  await extractMergeRequestsEvent.publish({ mergeRequestIds: mergeRequests.map(mr => mr.id), namespaceId: namespace?.id || 0, repositoryId: repository.id }, {
+  await extractMergeRequestsEvent.publish({ mergeRequestIds: mergeRequests.map(mr => mr.id), namespaceId: namespace.id, repositoryId: repository.id }, {
     version: 1,
     caller: 'extract-merge-requests',
     sourceControl: message.metadata.sourceControl,
