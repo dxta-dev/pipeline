@@ -78,6 +78,8 @@ describe('parse-hunks:', () => {
           newStart: 1,
           oldLines: 3,
           newLines: 4,
+          additions: 2,
+          deletions: 1,
           changes: [
             {
               content: 'This is the first line.',
@@ -126,6 +128,8 @@ describe('parse-hunks:', () => {
             newStart: 1,
             oldLines: 10,
             newLines: 10,
+            deletions: 2,
+            additions: 2,
             changes: [
               {
                 content: "import AWS from \"aws-sdk\";",
@@ -203,6 +207,8 @@ describe('parse-hunks:', () => {
             newStart: 36,
             oldLines: 10,
             newLines: 10,
+            additions: 2,
+            deletions: 2,
             changes: [
               {
                 content: "  });",
@@ -280,6 +286,8 @@ describe('parse-hunks:', () => {
             newStart: 53,
             oldLines: 10,
             newLines: 10,
+            additions: 2,
+            deletions: 2,
             changes: [
               {
                 content: "        }));",
@@ -363,12 +371,14 @@ describe('parse-hunks:', () => {
             newStart: 3,
             oldLines: 7,
             newLines: 6,
+            additions: 0,
+            deletions: 1,
             changes: [
               {
                 content: "",
                 type: "normal",
                 oldLineNumber: 3,
-                newLineNumber: 3
+                newLineNumber: 3,
               },
               {
                 content: "import { MergeRequestSchema } from \"@acme/extract-schema/src/merge-requests\";",
@@ -413,6 +423,8 @@ describe('parse-hunks:', () => {
             newStart: 18,
             oldLines: 8,
             newLines: 6,
+            additions: 0,
+            deletions: 2,
             changes: [
               {
                 content: "});",

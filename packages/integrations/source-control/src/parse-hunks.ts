@@ -32,6 +32,11 @@ export type Hunk = {
   newStart: number;
   oldLines: number;
   newLines: number;
+  additions: number;
+  deletions: number;
+  added: number;
+  deleted: number;
+  changed: number;
   changes: Change[];
 }
 
@@ -61,6 +66,11 @@ export function parseHunks(stringifiedHunks: string): Hunk[] {
         newStart: Number(newStart),
         oldLines: Number(oldLines) || 1,
         newLines: Number(newLines) || 1,
+        additions: 0,
+        deletions: 0,
+        added: 0,
+        deleted: 0,
+        changed: 0,
         changes: []
       };
 
@@ -68,6 +78,7 @@ export function parseHunks(stringifiedHunks: string): Hunk[] {
       changeOldLine = currentHunk.oldStart;
       changeNewLine = currentHunk.newStart;
     } else {
+      if (!currentHunk) break;
       const typeChar = line.slice(0, 1);
       let change: Change;
       switch (typeChar) {
@@ -78,6 +89,7 @@ export function parseHunks(stringifiedHunks: string): Hunk[] {
             lineNumber: changeOldLine
           };
           changeOldLine++;
+          currentHunk.deletions++;
           break;
         case '+':
           change = {
@@ -86,6 +98,7 @@ export function parseHunks(stringifiedHunks: string): Hunk[] {
             lineNumber: changeNewLine
           };
           changeNewLine++;
+          currentHunk.additions++;
           break;
         case '':
         case ' ':
@@ -111,12 +124,12 @@ export function parseHunks(stringifiedHunks: string): Hunk[] {
           changeNewLine++;
           break;
       }
-      if(!currentHunk) throw new Error('No current hunk');
+      if (!currentHunk) throw new Error('No current hunk');
       currentHunk.content += '\n' + line;
       currentHunk.changes.push(change);
-
     }
   }
+  console.log(hunks.map(h => h.changes.map(c => c.type.slice(0, 1)).join('')));
 
   return hunks;
 
