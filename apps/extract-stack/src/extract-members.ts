@@ -47,7 +47,7 @@ const context: Context<GetMembersSourceControl, GetMembersEntities> = {
 };
 
 type ExtractMembersPageInput = {
-  namespace: Namespace | null;
+  namespace: Namespace;
   repository: Repository;
   sourceControl: "github" | "gitlab";
   userId: string;
@@ -62,7 +62,7 @@ const extractMembersPage = async ({ namespace, repository, sourceControl, userId
 
   const { paginationInfo: resultPaginationInfo } = await getMembers({
     externalRepositoryId: repository.externalId,
-    namespaceName: namespace?.name || "",
+    namespaceName: namespace.name,
     repositoryId: repository.id,
     repositoryName: repository.name,
     perPage: perPage,
@@ -73,11 +73,9 @@ const extractMembersPage = async ({ namespace, repository, sourceControl, userId
 };
 
 export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
-  if (!ev.properties.namespaceId) throw new Error("Missing namespaceId");
-
   const repository = await db.select().from(repositories).where(eq(repositories.id, ev.properties.repositoryId)).get();
   const namespace = await db.select().from(namespaces).where(eq(namespaces.id, ev.properties.namespaceId)).get();
-  
+
   if (!repository) throw new Error("invalid repo id");
   if (!namespace) throw new Error("Invalid namespace id");
 
@@ -88,7 +86,7 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
     userId: ev.metadata.userId,
   });
 
-  const arrayOfExtractMemberPageMessageContent: { repository: Repository, namespace: Namespace | null, pagination: Pagination }[] = [];
+  const arrayOfExtractMemberPageMessageContent: { repository: Repository, namespace: Namespace, pagination: Pagination }[] = [];
   for (let i = 2; i <= pagination.totalPages; i++) {
     arrayOfExtractMemberPageMessageContent.push({
       namespace: namespace,
@@ -101,7 +99,7 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
     })
   }
 
-  if (arrayOfExtractMemberPageMessageContent.length === 0) 
+  if (arrayOfExtractMemberPageMessageContent.length === 0)
     return;
 
   await extractMemberPageMessage.sendAll(arrayOfExtractMemberPageMessageContent, {
