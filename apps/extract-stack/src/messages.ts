@@ -51,3 +51,9 @@ export const extractMergeRequestDiffMessage = createMessage({
   contentShape: extractMergeRequestDataSchema.shape,
   queueUrl: Queue.ExtractMergeRequestDiffsQueue.queueUrl
 });
+
+export const extractMergeRequestCommitMessage = createMessage({
+  metadataShape: metadataSchema.shape,
+  contentShape: extractMergeRequestDataSchema.shape,
+  queueUrl: Queue.ExtractMergeRequestCommitsQueue.queueUrl
+});
