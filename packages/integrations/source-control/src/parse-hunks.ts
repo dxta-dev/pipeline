@@ -34,11 +34,7 @@ export type Hunk = {
   newLines: number;
   additions: number;
   deletions: number;
-  internals: {
-    c: number;
-    d: number;
-    i: number;
-  }
+  internals: DIC;
   changes: Change[];
 }
 
