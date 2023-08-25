@@ -38,6 +38,7 @@ export function ExtractStack({ stack }: StackContext) {
   const mergeRequestQueue = new Queue(stack, "MRQueue");
   const membersQueue = new Queue(stack, "ExtractMemberPageQueue");
   const mergeRequestDiffQueue = new Queue(stack, "ExtractMergeRequestDiffsQueue");
+  const mergeRequestCommitQueue = new Queue(stack, "ExtractMergeRequestCommitsQueue");
   membersQueue.addConsumer(stack, {
     cdk: {
       eventSource: {
@@ -51,6 +52,7 @@ export function ExtractStack({ stack }: StackContext) {
         membersQueue,
         mergeRequestQueue,
         mergeRequestDiffQueue,
+        mergeRequestCommitQueue,
         DATABASE_URL,
         CLERK_SECRET_KEY,
         DATABASE_AUTH_TOKEN,
@@ -62,7 +64,7 @@ export function ExtractStack({ stack }: StackContext) {
   bus.addTargets(stack, "repository", {
     extractMember: {
       function: {
-        bind: [bus, membersQueue, mergeRequestQueue, mergeRequestDiffQueue],
+        bind: [bus, membersQueue, mergeRequestQueue, mergeRequestDiffQueue, mergeRequestCommitQueue],
         handler: "src/extract-members.eventHandler",
       },
     },
@@ -71,7 +73,7 @@ export function ExtractStack({ stack }: StackContext) {
   bus.addTargets(stack, "repository", {
     mergeRequests: {
       function: {
-        bind: [bus, mergeRequestQueue, membersQueue, mergeRequestDiffQueue],
+        bind: [bus, mergeRequestQueue, membersQueue, mergeRequestDiffQueue, mergeRequestCommitQueue],
         handler: "src/extract-merge-requests.eventHandler",
       },
     },
@@ -80,8 +82,17 @@ export function ExtractStack({ stack }: StackContext) {
   bus.addTargets(stack, "mergeRequests", {
     extractMergeRequestDiffs:{
       function: {
-        bind: [bus, membersQueue, mergeRequestDiffQueue, mergeRequestQueue],
+        bind: [bus, membersQueue, mergeRequestDiffQueue, mergeRequestQueue, mergeRequestCommitQueue],
         handler: "src/extract-merge-request-diffs.eventHandler",
+      }
+    } 
+  })
+
+  bus.addTargets(stack, "mergeRequests", {
+    extractMergeRequestCommits:{
+      function: {
+        bind: [bus, membersQueue, mergeRequestDiffQueue, mergeRequestQueue, mergeRequestCommitQueue],
+        handler: "src/extract-merge-request-commits.eventHandler",
       }
     } 
   })
@@ -99,6 +110,7 @@ export function ExtractStack({ stack }: StackContext) {
         mergeRequestQueue,
         mergeRequestDiffQueue,
         membersQueue,
+        mergeRequestCommitQueue,
         DATABASE_URL,
         CLERK_SECRET_KEY,
         DATABASE_AUTH_TOKEN,
@@ -119,12 +131,35 @@ export function ExtractStack({ stack }: StackContext) {
         bus,
         mergeRequestQueue,
         mergeRequestDiffQueue,
+        mergeRequestCommitQueue,
         membersQueue,
         DATABASE_URL,
         CLERK_SECRET_KEY,
         DATABASE_AUTH_TOKEN,
       ],
       handler: "src/extract-merge-request-diffs.queueHandler",
+    },
+  })
+
+  mergeRequestCommitQueue.addConsumer(stack, {
+    cdk: {
+      eventSource: {
+        batchSize: 1,
+        maxConcurrency: 20,
+      },
+    },
+    function: {
+      bind: [
+        bus,
+        mergeRequestQueue,
+        mergeRequestDiffQueue,
+        mergeRequestCommitQueue,
+        membersQueue,
+        DATABASE_URL,
+        CLERK_SECRET_KEY,
+        DATABASE_AUTH_TOKEN,
+      ],
+      handler: "src/extract-merge-request-commits.queueHandler",
     },
   })
 
