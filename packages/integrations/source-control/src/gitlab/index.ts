@@ -125,6 +125,12 @@ export class GitlabSourceControl implements SourceControl {
         showExpanded: true,
       }
     );
+
+    data.map(da => {
+      console.log("OVO GLEDAMO", da)
+      console.log("AUTHOR", da.committer_name)      
+    })
+
     return {
       mergeRequestCommits: data.map((mrc) => ({
         mergeRequestId: mergeRequest.mergeRequestId,
@@ -136,6 +142,8 @@ export class GitlabSourceControl implements SourceControl {
         message: mrc.message,
         authorName: mrc.author_name || '',
         authorEmail: mrc.author_email || '',
+        committerName: mrc.committer_name || '',
+        committerEmail: mrc.committer_email || ''
       })),
     }
   }
