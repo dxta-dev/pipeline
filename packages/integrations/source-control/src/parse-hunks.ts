@@ -34,9 +34,11 @@ export type Hunk = {
   newLines: number;
   additions: number;
   deletions: number;
-  added: number;
-  deleted: number;
-  changed: number;
+  internals: {
+    c: number;
+    d: number;
+    i: number;
+  }
   changes: Change[];
 }
 
@@ -57,7 +59,7 @@ const countLetters = (str: string) => {
   }
 }
 
-type Count = {
+type DIC = {
   d: number;
   i: number;
   c: number;
@@ -91,9 +93,11 @@ export function parseHunks(stringifiedHunks: string): Hunk[] {
         newLines: Number(newLines) || 1,
         additions: 0,
         deletions: 0,
-        added: 0,
-        deleted: 0,
-        changed: 0,
+        internals: {
+          c: 0,
+          d: 0,
+          i: 0,
+        },
         changes: []
       };
 
@@ -153,24 +157,19 @@ export function parseHunks(stringifiedHunks: string): Hunk[] {
     }
   }
 
-
   for (const hunk of hunks) {
     const changeString = hunk.changes.map(c => c.type.slice(0, 1)).join('');
     const matches = changeString.matchAll(ADCRegex);
 
-    const { d, i, c } = [...matches].map(m => countLetters(m.at(0) as string)).reduce((acc: Count, curr: Count) => {
+    const { d, i, c } = [...matches].map(m => countLetters(m.at(0) as string)).reduce((acc: DIC, curr: DIC) => {
       return {
         d: acc.d + curr.d,
         i: acc.i + curr.i,
         c: acc.c + curr.c,
       }
     }, { d: 0, i: 0, c: 0 });
-    hunk.added = i;
-    hunk.deleted = d;
-    hunk.changed = c;
+    hunk.internals = { d, i, c };
   }
-
-  //console.log(hunks.map(h => [...h.changes.map(c => c.type.slice(0, 1)).join('').matchAll(ADCRegex)].map(i => countLetters(i.at(0) as string))));
 
   return hunks;
 

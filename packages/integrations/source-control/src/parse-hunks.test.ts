@@ -112,9 +112,11 @@ describe('parse-hunks:', () => {
           newLines: 4,
           additions: 2,
           deletions: 1,
-          added: 2,
-          deleted: 1,
-          changed: 0,
+          internals: {
+            d: 1,
+            i: 2,
+            c: 0,
+          },
           changes: [
             {
               content: 'This is the first line.',
@@ -165,9 +167,11 @@ describe('parse-hunks:', () => {
             newLines: 10,
             deletions: 2,
             additions: 2,
-            added: 0,
-            deleted: 0,
-            changed: 2,
+            internals: {
+              d: 0,
+              i: 0,
+              c: 2,
+            },
             changes: [
               {
                 content: "import AWS from \"aws-sdk\";",
@@ -247,9 +251,11 @@ describe('parse-hunks:', () => {
             newLines: 10,
             additions: 2,
             deletions: 2,
-            added: 0,
-            deleted: 0,
-            changed: 2,
+            internals: {
+              d: 0,
+              i: 0,
+              c: 2,
+            },
             changes: [
               {
                 content: "  });",
@@ -329,9 +335,11 @@ describe('parse-hunks:', () => {
             newLines: 10,
             additions: 2,
             deletions: 2,
-            added: 0,
-            deleted: 0,
-            changed: 2,
+            internals: {
+              d: 0,
+              i: 0,
+              c: 2,
+            },
             changes: [
               {
                 content: "        }));",
@@ -417,9 +425,11 @@ describe('parse-hunks:', () => {
             newLines: 6,
             additions: 0,
             deletions: 1,
-            added: 0,
-            deleted: 1,
-            changed: 0,
+            internals: {
+              d: 1,
+              i: 0,
+              c: 0,
+            },
             changes: [
               {
                 content: "",
@@ -472,9 +482,11 @@ describe('parse-hunks:', () => {
             newLines: 6,
             additions: 0,
             deletions: 2,
-            added: 0,
-            deleted: 2,
-            changed: 0,
+            internals: {
+              d: 2,
+              i: 0,
+              c: 0,
+            },
             changes: [
               {
                 content: "});",
@@ -539,9 +551,11 @@ describe('parse-hunks:', () => {
           newLines: 26,
           additions: 11,
           deletions: 4,
-          added: 7,
-          deleted: 0,
-          changed: 4,
+          internals: {
+            c: 4,
+            d: 0,
+            i: 7,
+          },
           changes: [
             {
               content: "let context: Context<GetMergeRequestCommitsSourceControl, GetMergeRequestCommitsEntities>;",
