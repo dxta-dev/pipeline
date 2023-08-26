@@ -204,6 +204,8 @@ export class GitHubSourceControl implements SourceControl {
         message: mrc.commit.message,
         authorName: mrc.commit.author?.name || '',
         authorEmail: mrc.commit.author?.email || '',
+        committerName: mrc.commit.committer?.name || '',
+        committerEmail: mrc.commit.committer?.email || '',
       })),
     }
   }
