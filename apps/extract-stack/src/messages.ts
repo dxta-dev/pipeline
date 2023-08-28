@@ -5,6 +5,10 @@ import { createMessage } from "./create-message";
 import { Queue } from 'sst/node/queue'
 import { MergeRequestSchema } from "@acme/extract-schema/src/merge-requests";
 
+const messageTypeSchema = z.literal("member").or(z.literal("merge-request")).or(z.literal("merge-request-diff")).or(z.literal("merge-request-commit"));
+
+export type messageType = z.infer<typeof messageTypeSchema>;
+
 const paginationSchema = z.object({
   page: z.number(),
   perPage: z.number(),
