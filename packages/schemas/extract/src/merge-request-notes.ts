@@ -1,6 +1,6 @@
 import type { InferModel } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
-import { sqliteTable, text, integer, uniqueIndex } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, integer, uniqueIndex } from 'drizzle-orm/sqlite-core';
 
 export const mergeRequestNotes = sqliteTable('merge_request_notes', {
   id: integer('id').primaryKey(),
@@ -10,8 +10,6 @@ export const mergeRequestNotes = sqliteTable('merge_request_notes', {
   updatedAt: integer('updated_at', { mode: 'timestamp_ms' }).notNull(),
   authorUsername: integer('author_username').notNull(),
   authorExternalId: integer('author_external_id').notNull(),
-  body: text('body').notNull(),
-  isSystemNote: integer('system_note', { mode: 'boolean' }).notNull(),
   _createdAt: integer('__created_at', { mode: 'timestamp_ms' }).default(sql`CURRENT_TIMESTAMP`),
   _updatedAt: integer('__updated_at', { mode: 'timestamp_ms' }).default(sql`CURRENT_TIMESTAMP`),
 }, (notes)=>({
