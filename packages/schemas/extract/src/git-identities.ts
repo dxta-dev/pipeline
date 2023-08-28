@@ -1,15 +1,18 @@
 import type { InferModel } from "drizzle-orm";
 import { sql } from 'drizzle-orm';
-import { sqliteTable, text, integer, primaryKey } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer, uniqueIndex } from 'drizzle-orm/sqlite-core';
 
 export const gitIdentities = sqliteTable('git_identities', {
+    id: integer('id').primaryKey(),
     memberId: integer('member_id').notNull(),
-    authorEmail: text('author_email').notNull(), // -> ToDo -> check for adding repo_id
+    repositoryId: integer('repository_id').notNull(),
+    email: text('email').notNull(), 
+    name: text('name').notNull(),
     _createdAt: integer('__created_at', { mode: 'timestamp_ms' }).default(sql`CURRENT_TIMESTAMP`),
     _updatedAt: integer('__updated_at', { mode: 'timestamp_ms' }).default(sql`CURRENT_TIMESTAMP`),
   }, (gitIdentities) => ({
-    pk: primaryKey(gitIdentities.memberId, gitIdentities.authorEmail)
+    uniqueRepositoryIdEmailName: uniqueIndex('repository_id_email_name_idx').on(gitIdentities.repositoryId, gitIdentities.email, gitIdentities.name),
   }));
     
-  export type GitlabIdentities = InferModel<typeof gitIdentities>;
-  export type NewGitlabIdentities = InferModel<typeof gitIdentities, 'insert'>;
+  export type GitIdentities = InferModel<typeof gitIdentities>;
+  export type NewGitIdentities = InferModel<typeof gitIdentities, 'insert'>;

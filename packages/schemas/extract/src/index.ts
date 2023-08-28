@@ -14,3 +14,5 @@ export { repositoriesToMembers } from './repositories-to-members';
 export type { RepositoryToMember, NewRepositoryToMember } from './repositories-to-members';
 export { mergeRequestNotes } from './merge-request-notes';
 export type { MergeRequestNote, NewMergeRequestNote } from './merge-request-notes';
+export { gitIdentities } from './git-identities';
+export type { GitIdentities, NewGitIdentities } from './git-identities';
