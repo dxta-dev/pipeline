@@ -3,10 +3,11 @@ import { z } from "zod";
 
 import { MergeRequestSchema } from "@acme/extract-schema/src/merge-requests";
 import { createEvent } from "./create-event";
+import { NamespaceSchema, RepositorySchema } from "@acme/extract-schema";
 
 const extractRepositoryEventSchema = z.object({
   repositoryId: z.number(),
-  namespaceId: z.nullable(z.number()),
+  namespaceId: z.number(),
 });
 
 const metadataSchema = z.object({
@@ -16,8 +17,11 @@ const metadataSchema = z.object({
   sourceControl: z.literal("github").or(z.literal("gitlab")),
   userId: z.string(),
 });
+
 const extractMergeRequestEventSchema = z.object({
   mergeRequestIds: z.array(MergeRequestSchema.shape.id),
+  repositoryId: RepositorySchema.shape.id,
+  namespaceId: NamespaceSchema.shape.id
 });
 
 export type extractMergeRequestsEventMessage = z.infer<typeof extractMergeRequestEventSchema>;

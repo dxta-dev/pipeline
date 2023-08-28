@@ -18,10 +18,6 @@ export type GetMergeRequestsOutput = {
   paginationInfo: Pagination;
 };
 
-export type GetPaginationDataOutput = {
-  paginationInfo: Pagination;
-};
-
 export type GetMergeRequestsSourceControl = Pick<SourceControl, "fetchMergeRequests">;
 export type GetMergeRequestsEntities = Pick<Entities, "mergeRequests">;
 

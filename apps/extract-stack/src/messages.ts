@@ -3,6 +3,7 @@ import { RepositorySchema } from "@acme/extract-schema";
 import { NamespaceSchema } from "@acme/extract-schema/src/namespaces";
 import { createMessage } from "./create-message";
 import { Queue } from 'sst/node/queue'
+import { MergeRequestSchema } from "@acme/extract-schema/src/merge-requests";
 
 const paginationSchema = z.object({
   page: z.number(),
@@ -12,11 +13,18 @@ const paginationSchema = z.object({
 
 const extractRepositoryDataSchema = z.object({
   repository: RepositorySchema,
-  namespace: z.nullable(NamespaceSchema),
+  namespace: NamespaceSchema,
   pagination: paginationSchema
 });
 
+const extractMergeRequestDataSchema = z.object({
+  mergeRequestIds: z.array(MergeRequestSchema.shape.id),
+  repositoryId: RepositorySchema.shape.id,
+  namespaceId: NamespaceSchema.shape.id,
+})
+
 export type extractRepositoryData = z.infer<typeof extractRepositoryDataSchema>;
+export type extractMergeRequestData = z.infer<typeof extractMergeRequestDataSchema>;
 
 const metadataSchema = z.object({
   version: z.number(),
@@ -36,4 +44,16 @@ export const extractMergeRequestMessage = createMessage({
   metadataShape: metadataSchema.shape,
   contentShape: extractRepositoryDataSchema.shape,
   queueUrl: Queue.MRQueue.queueUrl
+});
+
+export const extractMergeRequestDiffMessage = createMessage({
+  metadataShape: metadataSchema.shape,
+  contentShape: extractMergeRequestDataSchema.shape,
+  queueUrl: Queue.ExtractMergeRequestDiffsQueue.queueUrl
+});
+
+export const extractMergeRequestCommitMessage = createMessage({
+  metadataShape: metadataSchema.shape,
+  contentShape: extractMergeRequestDataSchema.shape,
+  queueUrl: Queue.ExtractMergeRequestCommitsQueue.queueUrl
 });

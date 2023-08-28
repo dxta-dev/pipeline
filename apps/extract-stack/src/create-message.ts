@@ -1,10 +1,10 @@
-import AWS from "aws-sdk";
+import { SQSClient, SendMessageCommand, SendMessageBatchCommand } from "@aws-sdk/client-sqs";
 import { z } from "zod";
 import type { ZodRawShape, ZodAny, ZodObject } from "zod";
 import { nanoid } from "nanoid";
 import type { SQSEvent } from "aws-lambda";
 
-const sqs = new AWS.SQS();
+const sqs = new SQSClient();
 
 type Content<Shape extends ZodRawShape> = z.infer<ZodObject<Shape, "strip", ZodAny>>
 
@@ -36,10 +36,10 @@ export function createMessage<QueueUrl extends string, Shape extends ZodRawShape
   });
 
   const send: Send<Shape, MetadataShape> = async (content, metadata) => {
-    await sqs.sendMessage({
+    await sqs.send(new SendMessageCommand({
       QueueUrl: queueUrl,
       MessageBody: JSON.stringify(messageSchema.parse({ content, metadata })),
-    }).promise();
+    }))
   }
 
   const sendAll: BatchSend<Shape, MetadataShape> = async (contentArray, metadata) => {
@@ -53,10 +53,10 @@ export function createMessage<QueueUrl extends string, Shape extends ZodRawShape
         }));
       batches.push(Entries);
     }
-    const result = await Promise.allSettled(batches.map(batch => sqs.sendMessageBatch({
+    const result = await Promise.allSettled(batches.map(batch => sqs.send(new SendMessageBatchCommand({
       QueueUrl: queueUrl,
       Entries: batch,
-    }).promise()));
+    }))));
 
     result.forEach((r, i) => {
       if (r.status === 'rejected') {

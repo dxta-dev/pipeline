@@ -1,4 +1,5 @@
-import type { NewRepository, NewNamespace, NewMergeRequest, NewMember } from "@acme/extract-schema";
+import type { NewRepository, NewNamespace, NewMergeRequest, NewMember, NewMergeRequestDiff, NewMergeRequestCommit } from "@acme/extract-schema";
+import type { Repository, Namespace, MergeRequest } from "@acme/extract-schema";
 
 export type Pagination = {
   page: number;
@@ -12,7 +13,9 @@ export type TimePeriod = {
 }
 
 export interface SourceControl {
-  fetchRepository(externalRepositoryId: number, namespaceName: string, repositoryName: string): Promise<{ repository: NewRepository, namespace?: NewNamespace }>;
+  fetchRepository(externalRepositoryId: number, namespaceName: string, repositoryName: string): Promise<{ repository: NewRepository, namespace: NewNamespace }>;
   fetchMembers(externalRepositoryId: number, namespaceName: string, repositoryName: string, page?: number, perPage?: number): Promise<{ members: NewMember[], pagination: Pagination }>;
   fetchMergeRequests(externalRepositoryId: number, namespaceName: string, repositoryName: string, repositoryId: number, creationPeriod?: TimePeriod, page?: number, perPage?: number): Promise<{ mergeRequests: NewMergeRequest[], pagination: Pagination }>;
+  fetchMergeRequestDiffs(repository: Repository, namespace: Namespace, mergeRequest: MergeRequest, page?: number, perPage?: number): Promise<{ mergeRequestDiffs: NewMergeRequestDiff[], pagination: Pagination }>;
+  fetchMergeRequestCommits(repository: Repository, namespace: Namespace, mergeRequest: MergeRequest, creationPeriod?: TimePeriod): Promise<{ mergeRequestCommits: NewMergeRequestCommit[]}>;
 }

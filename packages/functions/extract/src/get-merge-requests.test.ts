@@ -29,7 +29,15 @@ beforeAll(() => {
     switch (externalRepositoryId) {
       case 1000:
         return Promise.resolve({
-          mergeRequests: [{ externalId: 1000, mergeRequestId: 1000, repositoryId: 1000 }],
+          mergeRequests: [{ 
+            externalId: 1000,
+            mergeRequestId: 1000,
+            repositoryId: 1000,
+            createdAt: new Date('2021-01-01'),
+            state: 'open',
+            title: 'Merge Request 1000',
+            webUrl: 'https://gitlab.com/acme/merge-requests/1000',
+          }],
           pagination: {
             page: page || 1,
             perPage: perPage || 40,
@@ -38,7 +46,23 @@ beforeAll(() => {
         }) satisfies ReturnType<SourceControl['fetchMergeRequests']>;
       case 2000:
         return Promise.resolve({
-          mergeRequests: [{ externalId: 2000, mergeRequestId: 2000, repositoryId: 2000 }, { externalId: 2001, mergeRequestId: 2001, repositoryId: 2000 }],
+          mergeRequests: [{ 
+            externalId: 2000, 
+            mergeRequestId: 2000, 
+            repositoryId: 2000,
+            createdAt: new Date('2021-01-01'),
+            state: 'open',
+            title: 'Merge Request 2000',
+            webUrl: 'https://gitlab.com/acme/merge-requests/2000',
+          }, { 
+            externalId: 2001, 
+            mergeRequestId: 2001, 
+            repositoryId: 2000,
+            createdAt: new Date('2021-01-02'),
+            state: 'open',
+            title: 'Merge Request 2001',
+            webUrl: 'https://gitlab.com/acme/merge-requests/2001',
+          }],
           pagination: {
             page: page || 1,
             perPage: perPage || 40,

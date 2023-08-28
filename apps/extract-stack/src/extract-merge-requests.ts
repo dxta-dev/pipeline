@@ -59,8 +59,6 @@ const initSourceControl = async (userId: string, sourceControl: 'github' | 'gitl
 }
 
 export const eventHandler = EventHandler(extractRepositoryEvent, async (evt) => {
-  if (!evt.properties.namespaceId) throw new Error("Missing namespaceId");
-
   const repository = await db.select().from(repositories).where(eq(repositories.id, evt.properties.repositoryId)).get();
   const namespace = await db.select().from(namespaces).where(eq(namespaces.id, evt.properties.namespaceId)).get();
 
@@ -71,62 +69,64 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (evt) => 
 
   context.integrations.sourceControl = await initSourceControl(evt.metadata.userId, sourceControl)
 
-    const { mergeRequests, paginationInfo } = await getMergeRequests(
-      {
-        externalRepositoryId: repository.externalId,
-        namespaceName: namespace?.name || "",
-        repositoryName: repository.name,
-        repositoryId: repository.id,
-        perPage: 10,
-      }, context,
-    );
+  const { mergeRequests, paginationInfo } = await getMergeRequests(
+    {
+      externalRepositoryId: repository.externalId,
+      namespaceName: namespace.name,
+      repositoryName: repository.name,
+      repositoryId: repository.id,
+      perPage: 10,
+    }, context,
+  );
 
-    await extractMergeRequestsEvent.publish({mergeRequestIds: mergeRequests.map(mr => mr.id)}, {
-      version: 1,
-      caller: 'extract-merge-requests',
-      sourceControl,
-      userId: evt.metadata.userId,
-      timestamp: new Date().getTime(),
-    });
+  await extractMergeRequestsEvent.publish({ mergeRequestIds: mergeRequests.map(mr => mr.id), namespaceId: namespace.id, repositoryId: repository.id }, {
+    version: 1,
+    caller: 'extract-merge-requests',
+    sourceControl,
+    userId: evt.metadata.userId,
+    timestamp: new Date().getTime(),
+  });
 
-    const arrayOfExtractMergeRequests: extractRepositoryData[] = [];
-    for(let i = 2; i <= paginationInfo.totalPages; i++ ) {
-      arrayOfExtractMergeRequests.push({
-        repository,
-        namespace: namespace,
-        pagination: {
-          page: i,
-          perPage: paginationInfo.perPage,
-          totalPages: paginationInfo.totalPages
-        }
-      });
-    }
-     
-    await extractMergeRequestMessage.sendAll(arrayOfExtractMergeRequests, { 
-      version: 1,
-      caller: 'extract-merge-requests',
-      sourceControl,
-      userId: evt.metadata.userId,
-      timestamp: new Date().getTime(),
+  const arrayOfExtractMergeRequests: extractRepositoryData[] = [];
+  for (let i = 2; i <= paginationInfo.totalPages; i++) {
+    arrayOfExtractMergeRequests.push({
+      repository,
+      namespace: namespace,
+      pagination: {
+        page: i,
+        perPage: paginationInfo.perPage,
+        totalPages: paginationInfo.totalPages
+      }
     });
+  }
+
+  await extractMergeRequestMessage.sendAll(arrayOfExtractMergeRequests, {
+    version: 1,
+    caller: 'extract-merge-requests',
+    sourceControl,
+    userId: evt.metadata.userId,
+    timestamp: new Date().getTime(),
+  });
 
 });
 
 export const queueHandler = QueueHandler(extractMergeRequestMessage, async (message) => {
-  
-  if(!message){
+
+  if (!message) {
     console.warn("Expected message to have content,but get empty")
     return;
   }
 
   context.integrations.sourceControl = await initSourceControl(message.metadata.userId, message.metadata.sourceControl);
-  
-  const {namespace, pagination, repository} = message.content;
 
-  const {mergeRequests} = await getMergeRequests(
+  const { namespace, pagination, repository } = message.content;
+
+  if (!namespace) throw new Error("Invalid namespace id");
+
+  const { mergeRequests } = await getMergeRequests(
     {
       externalRepositoryId: repository.externalId,
-      namespaceName: namespace?.name || "",
+      namespaceName: namespace.name,
       repositoryName: repository.name,
       repositoryId: repository.id,
       page: pagination.page,
@@ -135,7 +135,7 @@ export const queueHandler = QueueHandler(extractMergeRequestMessage, async (mess
     context,
   );
 
-  await extractMergeRequestsEvent.publish({mergeRequestIds: mergeRequests.map(mr => mr.id)}, {
+  await extractMergeRequestsEvent.publish({ mergeRequestIds: mergeRequests.map(mr => mr.id), namespaceId: namespace.id, repositoryId: repository.id }, {
     version: 1,
     caller: 'extract-merge-requests',
     sourceControl: message.metadata.sourceControl,

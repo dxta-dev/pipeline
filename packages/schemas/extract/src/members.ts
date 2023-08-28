@@ -9,8 +9,8 @@ export const members = sqliteTable('members', {
   externalId: integer('external_id').notNull(),
   name: text('name').notNull(),
   username: text('username').notNull(),
-  createdAt: integer('created_at', { mode: 'timestamp_ms' }).default(sql`CURRENT_TIMESTAMP`),
-  updatedAt: integer('updated_at', { mode: 'timestamp_ms' }).default(sql`CURRENT_TIMESTAMP`),
+  _createdAt: integer('__created_at', { mode: 'timestamp_ms' }).default(sql`CURRENT_TIMESTAMP`),
+  _updatedAt: integer('__updated_at', { mode: 'timestamp_ms' }).default(sql`CURRENT_TIMESTAMP`),
 }, (members) => ({
   uniqueGitlabId: uniqueIndex('members_external_id_idx').on(members.externalId),
 }));
@@ -18,10 +18,10 @@ export const members = sqliteTable('members', {
 export type Member = InferModel<typeof members>;
 export type NewMember = InferModel<typeof members, 'insert'>;
 export const MemberSchema = createSelectSchema(members, {
-  createdAt: z.coerce.date(),
-  updatedAt: z.coerce.date(),
+  _createdAt: z.coerce.date(),
+  _updatedAt: z.coerce.date(),
 });
 export const NewMemberSchema = createInsertSchema(members, {
-  createdAt: z.coerce.date(),
-  updatedAt: z.coerce.date(),
+  _createdAt: z.coerce.date(),
+  _updatedAt: z.coerce.date(),
 });
