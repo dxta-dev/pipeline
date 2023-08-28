@@ -5,22 +5,8 @@
     {
       "idx": 0,
       "version": "5",
-      "when": 1692699126102,
-      "tag": "0000_robust_scorpion",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "5",
-      "when": 1693210439750,
-      "tag": "0001_misty_tusk",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "5",
-      "when": 1693222725395,
-      "tag": "0002_right_jane_foster",
+      "when": 1693223065569,
+      "tag": "0000_mighty_lily_hollister",
       "breakpoints": true
     }
   ]
