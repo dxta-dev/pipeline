@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "921f96eb-ef6a-48d6-8339-c61aa635fae4",
+  "id": "6d87997c-b754-43dd-8359-6ff6f456ceb9",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "git_identities": {
@@ -396,7 +396,7 @@
         },
         "author_username": {
           "name": "author_username",
-          "type": "integer",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false

@@ -55,7 +55,7 @@ CREATE TABLE `merge_request_notes` (
 	`merge_request_id` integer NOT NULL,
 	`created_at` integer NOT NULL,
 	`updated_at` integer NOT NULL,
-	`author_username` integer NOT NULL,
+	`author_username` text NOT NULL,
 	`author_external_id` integer NOT NULL,
 	`__created_at` integer DEFAULT CURRENT_TIMESTAMP,
 	`__updated_at` integer DEFAULT CURRENT_TIMESTAMP
