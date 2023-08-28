@@ -96,7 +96,6 @@ type MessagePayload<Shape extends ZodRawShape, MetadataShape extends ZodRawShape
   kind: string;
 }
 
-type MessageKindMap = Map<string, { sender: Sender<ZodRawShape, ZodRawShape>, handler: (message: MessagePayload<ZodRawShape, ZodRawShape>) => Promise<void> }>;
 
 export function QueueHandler(map: MessageKindMap) {
 
@@ -123,6 +122,13 @@ export function QueueHandler(map: MessageKindMap) {
       await handler(validatedEvent);
     }
   }
+} 
+
+export type MessageKindMap = Map<string, SenderHandler<ZodRawShape, ZodRawShape>>;
+
+export type SenderHandler<Shape extends ZodRawShape, MetadataShape extends ZodRawShape> = {
+  sender: Sender<Shape, MetadataShape>;
+  handler: (message: MessagePayload<Shape, MetadataShape>) => Promise<void>;
 }
 
 /*export function QueueHandler<Shape extends ZodRawShape, MetadataShape extends ZodRawShape>(
