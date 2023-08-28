@@ -4,6 +4,9 @@ import type { ZodRawShape, ZodAny, ZodObject } from "zod";
 import { nanoid } from "nanoid";
 import type { SQSEvent } from "aws-lambda";
 
+
+import { Queue } from 'sst/node/queue'
+
 const sqs = new SQSClient();
 
 type Content<Shape extends ZodRawShape> = z.infer<ZodObject<Shape, "strip", ZodAny>>
@@ -18,19 +21,22 @@ type BatchSend<Shape extends ZodRawShape, MetadataShape extends ZodRawShape> = (
   metadata: Content<MetadataShape>
 ) => Promise<void>;
 
-type MessageProps<QueueUrl extends string, Shape extends ZodRawShape, MetadataShape extends ZodRawShape> = {
-  queueUrl: QueueUrl;
+type MessageProps<Shape extends ZodRawShape, MetadataShape extends ZodRawShape, Kind extends string> = {
   contentShape: Shape;
   metadataShape: MetadataShape;
+  kind: Kind;
 };
 
-export function createMessage<QueueUrl extends string, Shape extends ZodRawShape, MetadataShape extends ZodRawShape>({
-  queueUrl,
+export function createMessage<Shape extends ZodRawShape, MetadataShape extends ZodRawShape, Kind extends string>({
+  kind,
   contentShape,
   metadataShape,
-}: MessageProps<QueueUrl, Shape, MetadataShape>) {
+}: MessageProps<Shape, MetadataShape, Kind>) {
+
+  const queueUrl = Queue.ExtractQueue.queueUrl;
 
   const messageSchema = z.object({
+    kind: z.literal(kind),
     content: z.object(contentShape),
     metadata: z.object(metadataShape),
   });
@@ -67,6 +73,7 @@ export function createMessage<QueueUrl extends string, Shape extends ZodRawShape
   }
 
   return {
+    kind,
     send,
     sendAll,
     shapes: {
@@ -80,28 +87,55 @@ type Sender<Shape extends ZodRawShape, MetadataShape extends ZodRawShape> = {
   send: Send<Shape, MetadataShape>;
   sendAll: BatchSend<Shape, MetadataShape>
   shapes: { contentShape: Shape, metadataShape: MetadataShape };
+  kind: string;
 }
 
 type MessagePayload<Shape extends ZodRawShape, MetadataShape extends ZodRawShape> = {
   content: Content<Shape>;
   metadata: Content<MetadataShape>;
+  kind: string;
 }
 
-export function QueueHandler<Shape extends ZodRawShape, MetadataShape extends ZodRawShape>(
-  _sender: Sender<Shape, MetadataShape>,
+type MessageKindMap = Map<string, { sender: Sender<ZodRawShape, ZodRawShape>, handler: (message: MessagePayload<ZodRawShape, ZodRawShape>) => Promise<void> }>;
+
+export function QueueHandler(map: MessageKindMap) {
+
+  return async (event: SQSEvent) => {
+    if (event.Records.length > 1) console.warn('WARNING: QueueHandler should process 1 message but got', event.Records.length);
+    for (const record of event.Records) {
+      const parsedEvent = JSON.parse(record.body) as unknown as MessagePayload<ZodRawShape, ZodRawShape>;
+
+      const { sender, handler } = map.get(parsedEvent.kind) ?? { sender: null, handler: null };
+
+      if (!sender || !handler) {
+        console.error('No handler for message kind', parsedEvent.kind);
+        break;
+      }
+
+      const schema = z.object({
+        content: z.object(sender.shapes.contentShape),
+        metadata: z.object(sender.shapes.metadataShape),
+        kind: z.literal(sender.kind),
+      });
+
+      const validatedEvent = schema.parse(parsedEvent);
+
+      await handler(validatedEvent);
+    }
+  }
+}
+
+/*export function QueueHandler<Shape extends ZodRawShape, MetadataShape extends ZodRawShape>(
+  sender: Sender<Shape, MetadataShape>,
   cb: (
     message: MessagePayload<Shape, MetadataShape>
   ) => Promise<void>
 ) {
   const schema = z.object({
-    content: z.object(_sender.shapes.contentShape),
-    metadata: z.object(_sender.shapes.metadataShape)
+    content: z.object(sender.shapes.contentShape),
+    metadata: z.object(sender.shapes.metadataShape),
+    kind: z.literal(sender.kind),
   });
-  /**
-   * TODO:
-   * - Do consumers always recieve batches ?
-   * - How handle processing failures ?
-   */
   return async (event: SQSEvent) => {
     if (event.Records.length > 1) console.warn('WARNING: QueueHandler should process 1 message but got', event.Records.length);
     for (const record of event.Records) {
@@ -109,4 +143,4 @@ export function QueueHandler<Shape extends ZodRawShape, MetadataShape extends Zo
       await cb(parsed);
     }
   }
-}
+} */

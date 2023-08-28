@@ -38,26 +38,34 @@ const metadataSchema = z.object({
   userId: z.string(),
 });
 
+enum MessageKind {
+  Member = "member",
+  MergeRequest = "merge-request",
+  MergeRequestDiff = "merge-request-diff",
+  MergeRequestCommit = "merge-request-commit",
+};
+
+
 export const extractMemberPageMessage = createMessage({
+  kind: MessageKind.Member,
   metadataShape: metadataSchema.shape,
   contentShape: extractRepositoryDataSchema.shape,
-  queueUrl: Queue.ExtractMemberPageQueue.queueUrl
 });
 
 export const extractMergeRequestMessage = createMessage({
+  kind: MessageKind.MergeRequest,
   metadataShape: metadataSchema.shape,
   contentShape: extractRepositoryDataSchema.shape,
-  queueUrl: Queue.MRQueue.queueUrl
 });
 
 export const extractMergeRequestDiffMessage = createMessage({
+  kind: MessageKind.MergeRequestDiff,
   metadataShape: metadataSchema.shape,
   contentShape: extractMergeRequestDataSchema.shape,
-  queueUrl: Queue.ExtractMergeRequestDiffsQueue.queueUrl
 });
 
 export const extractMergeRequestCommitMessage = createMessage({
+  kind: MessageKind.MergeRequestCommit,
   metadataShape: metadataSchema.shape,
   contentShape: extractMergeRequestDataSchema.shape,
-  queueUrl: Queue.ExtractMergeRequestCommitsQueue.queueUrl
 });
