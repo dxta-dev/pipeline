@@ -15,6 +15,13 @@
       "when": 1693210439750,
       "tag": "0001_misty_tusk",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1693222725395,
+      "tag": "0002_right_jane_foster",
+      "breakpoints": true
     }
   ]
 }
