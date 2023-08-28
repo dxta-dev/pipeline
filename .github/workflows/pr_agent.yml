@@ -1,5 +1,9 @@
 on:
   pull_request:
+    branches:
+      - 'feat/**'
+      - 'chore/**'
+      - 'fix/**'
   issue_comment:
 jobs:
   pr_agent_job:
