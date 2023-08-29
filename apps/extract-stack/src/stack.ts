@@ -51,7 +51,7 @@ export function ExtractStack({ stack }: StackContext) {
         CLERK_SECRET_KEY,
         DATABASE_AUTH_TOKEN,
       ], // Issue: need to bind bus because same file
-      handler: "src/messages.handleMessage",
+      handler: "src/queue.handler",
     },
   });
 

@@ -11,7 +11,7 @@ import { createMessageHandler } from "./create-message";
 import { MessageKind, metadataSchema } from "./messages";
 import { z } from "zod";
 
-const mergeRequestCommitSenderHandler = createMessageHandler({
+export const mrcsh = createMessageHandler({
   kind: MessageKind.MergeRequestCommit,
   metadataShape: metadataSchema.shape,
   contentShape: z.object({
@@ -40,7 +40,7 @@ const mergeRequestCommitSenderHandler = createMessageHandler({
   }
 });
 
-const { sender } = mergeRequestCommitSenderHandler;
+const { sender } = mrcsh;
 
   const clerkClient = Clerk({ secretKey: Config.CLERK_SECRET_KEY });
   const client = createClient({

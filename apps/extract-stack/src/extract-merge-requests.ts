@@ -20,7 +20,7 @@ import { z } from "zod";
 import { createMessageHandler } from "./create-message";
 
 
-const mergeRequestSenderHandler = createMessageHandler({
+export const mergeRequestSenderHandler = createMessageHandler({
   kind: MessageKind.MergeRequest,
   metadataShape: metadataSchema.shape,
   contentShape: z.object({

@@ -1,8 +1,4 @@
 import { z } from "zod";
-import { QueueHandler } from "./create-message";
-import { memberSenderHandler } from "./extract-members";
-import { mergeRequestCommitSenderHandler } from "./extract-merge-request-commits";
-import { mergeRequestDiffSenderHandler } from "./extract-merge-request-diffs";
 
 export const paginationSchema = z.object({
   page: z.number(),
@@ -25,14 +21,3 @@ export enum MessageKind {
   MergeRequestCommit = "merge-request-commit",
 };
 
-const messageHandlers = new Map<string, unknown>();
-
-messageHandlers.set(MessageKind.MergeRequest, mergeRequestDiffSenderHandler);
-
-messageHandlers.set(MessageKind.MergeRequestDiff, mergeRequestDiffSenderHandler);
-
-messageHandlers.set(MessageKind.MergeRequestCommit, mergeRequestCommitSenderHandler);
-
-messageHandlers.set(MessageKind.Member, memberSenderHandler);
-
-export const handleMessage = QueueHandler(messageHandlers);
