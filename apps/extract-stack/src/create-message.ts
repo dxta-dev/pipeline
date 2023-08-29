@@ -43,7 +43,7 @@ export function createMessage<Shape extends ZodRawShape, MetadataShape extends Z
   const send: Send<Shape, MetadataShape> = async (content, metadata) => {
     await sqs.send(new SendMessageCommand({
       QueueUrl: queueUrl,
-      MessageBody: JSON.stringify(messageSchema.parse({ content, metadata })),
+      MessageBody: JSON.stringify(messageSchema.parse({ content, metadata, kind })),
     }))
   }
 
@@ -51,7 +51,7 @@ export function createMessage<Shape extends ZodRawShape, MetadataShape extends Z
     const batches: { Id: string, MessageBody: string }[][] = [];
     for (let i = 0; i < contentArray.length; i += 10) {
       const contentBatch = contentArray.slice(i, i + 10);
-      const Entries = contentBatch.map(content => JSON.stringify(messageSchema.parse({ content, metadata })))
+      const Entries = contentBatch.map(content => JSON.stringify(messageSchema.parse({ content, metadata, kind })))
         .map(MessageBody => ({
           Id: nanoid(),
           MessageBody
@@ -106,7 +106,7 @@ export function QueueHandler(map: Map<string, unknown>) {
       const schema = z.object({
         content: z.object(sender.shapes.contentShape),
         metadata: z.object(sender.shapes.metadataShape),
-        kind: z.literal(sender.kind),
+        kind: z.string(),
       });
 
       const validatedEvent = schema.parse(parsedEvent);

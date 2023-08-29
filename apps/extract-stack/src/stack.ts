@@ -40,7 +40,7 @@ export function ExtractStack({ stack }: StackContext) {
     cdk: {
       eventSource: {
         batchSize: 1,
-        maxConcurrency: 20,
+        maxConcurrency: 2,
       },
     },
     function: {
