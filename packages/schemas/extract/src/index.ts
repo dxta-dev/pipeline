@@ -2,7 +2,7 @@ export { repositories, NewRepositorySchema, RepositorySchema } from './repositor
 export type { Repository, NewRepository } from './repositories';
 export { namespaces, NewNamespaceSchema, NamespaceSchema } from './namespaces';
 export type { Namespace, NewNamespace } from './namespaces';
-export { mergeRequests } from './merge-requests';
+export { mergeRequests, MergeRequestSchema, NewMergeRequestSchema } from './merge-requests';
 export type { MergeRequest, NewMergeRequest } from './merge-requests';
 export { mergeRequestDiffs } from './merge-request-diffs';
 export type { MergeRequestDiff, NewMergeRequestDiff } from './merge-request-diffs';

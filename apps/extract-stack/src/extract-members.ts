@@ -5,15 +5,37 @@ import { createClient } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
 import { getMembers } from "@acme/extract-functions";
 import type { Context, GetMembersEntities, GetMembersSourceControl } from "@acme/extract-functions";
-import { members, namespaces, repositories, repositoriesToMembers } from "@acme/extract-schema";
+import { members, namespaces, repositories, repositoriesToMembers, NamespaceSchema, RepositorySchema } from "@acme/extract-schema";
 import type { Namespace, Repository } from "@acme/extract-schema";
 import { GitHubSourceControl, GitlabSourceControl } from "@acme/source-control";
 import type { Pagination } from "@acme/source-control";
 import { Config } from "sst/node/config";
-import { extractMemberPageMessage } from "./messages";
 
-import { QueueHandler } from "./create-message";
+import { createMessageHandler } from "./create-message";
 import { eq } from "drizzle-orm";
+import { metadataSchema, paginationSchema, MessageKind } from "./messages";
+import { z } from 'zod';
+
+export const memberSenderHandler = createMessageHandler({
+  kind: MessageKind.Member,
+  metadataShape: metadataSchema.shape,
+  contentShape: z.object({
+    repository: RepositorySchema,
+    namespace: NamespaceSchema,
+    pagination: paginationSchema,
+  }).shape,
+  handler: async (message) => {
+    await extractMembersPage({
+      namespace: message.content.namespace,
+      paginationInfo: message.content.pagination,
+      repository: message.content.repository,
+      sourceControl: message.metadata.sourceControl,
+      userId: message.metadata.userId
+    });
+  }
+});
+
+const { sender } = memberSenderHandler;
 
 const clerkClient = Clerk({ secretKey: Config.CLERK_SECRET_KEY });
 const client = createClient({ url: Config.DATABASE_URL, authToken: Config.DATABASE_AUTH_TOKEN });
@@ -102,22 +124,11 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
   if (arrayOfExtractMemberPageMessageContent.length === 0)
     return;
 
-  await extractMemberPageMessage.sendAll(arrayOfExtractMemberPageMessageContent, {
+  await sender.sendAll(arrayOfExtractMemberPageMessageContent, {
     version: 1,
     caller: 'extract-member',
     sourceControl: ev.metadata.sourceControl,
     userId: ev.metadata.userId,
     timestamp: new Date().getTime(),
   })
-
-});
-
-export const queueHandler = QueueHandler(extractMemberPageMessage, async (message) => {
-  await extractMembersPage({
-    namespace: message.content.namespace,
-    paginationInfo: message.content.pagination,
-    repository: message.content.repository,
-    sourceControl: message.metadata.sourceControl,
-    userId: message.metadata.userId
-  });
 });

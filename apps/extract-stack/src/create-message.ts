@@ -4,34 +4,33 @@ import type { ZodRawShape, ZodAny, ZodObject } from "zod";
 import { nanoid } from "nanoid";
 import type { SQSEvent } from "aws-lambda";
 
-
 import { Queue } from 'sst/node/queue'
 
 const sqs = new SQSClient();
 
-type Content<Shape extends ZodRawShape> = z.infer<ZodObject<Shape, "strip", ZodAny>>
+type Content<Shape extends ZodRawShape> = z.infer<ZodObject<Shape, "strip", ZodAny>>;
 
 type Send<Shape extends ZodRawShape, MetadataShape extends ZodRawShape> = (
   content: Content<Shape>,
-  metadata: Content<MetadataShape>
+  metadata: Content<MetadataShape>,
 ) => Promise<void>;
 
 type BatchSend<Shape extends ZodRawShape, MetadataShape extends ZodRawShape> = (
   content: Content<Shape>[],
-  metadata: Content<MetadataShape>
+  metadata: Content<MetadataShape>,
 ) => Promise<void>;
 
-type MessageProps<Shape extends ZodRawShape, MetadataShape extends ZodRawShape, Kind extends string> = {
+type MessageProps<Shape extends ZodRawShape, MetadataShape extends ZodRawShape> = {
   contentShape: Shape;
   metadataShape: MetadataShape;
-  kind: Kind;
+  kind: string;
 };
 
-export function createMessage<Shape extends ZodRawShape, MetadataShape extends ZodRawShape, Kind extends string>({
+export function createMessage<Shape extends ZodRawShape, MetadataShape extends ZodRawShape>({
   kind,
   contentShape,
   metadataShape,
-}: MessageProps<Shape, MetadataShape, Kind>) {
+}: MessageProps<Shape, MetadataShape>) {
 
   const queueUrl = Queue.ExtractQueue.queueUrl;
 
@@ -83,13 +82,6 @@ export function createMessage<Shape extends ZodRawShape, MetadataShape extends Z
   }
 }
 
-type Sender<Shape extends ZodRawShape, MetadataShape extends ZodRawShape> = {
-  send: Send<Shape, MetadataShape>;
-  sendAll: BatchSend<Shape, MetadataShape>
-  shapes: { contentShape: Shape, metadataShape: MetadataShape };
-  kind: string;
-}
-
 type MessagePayload<Shape extends ZodRawShape, MetadataShape extends ZodRawShape> = {
   content: Content<Shape>;
   metadata: Content<MetadataShape>;
@@ -97,14 +89,14 @@ type MessagePayload<Shape extends ZodRawShape, MetadataShape extends ZodRawShape
 }
 
 
-export function QueueHandler(map: MessageKindMap) {
+export function QueueHandler(map: Map<string, unknown>) {
 
   return async (event: SQSEvent) => {
     if (event.Records.length > 1) console.warn('WARNING: QueueHandler should process 1 message but got', event.Records.length);
     for (const record of event.Records) {
       const parsedEvent = JSON.parse(record.body) as unknown as MessagePayload<ZodRawShape, ZodRawShape>;
 
-      const { sender, handler } = map.get(parsedEvent.kind) ?? { sender: null, handler: null };
+      const { sender, handler } = (map as MessageKindMap).get(parsedEvent.kind) ?? { sender: null, handler: null };
 
       if (!sender || !handler) {
         console.error('No handler for message kind', parsedEvent.kind);
@@ -124,29 +116,24 @@ export function QueueHandler(map: MessageKindMap) {
   }
 } 
 
-export type MessageKindMap = Map<string, SenderHandler<ZodRawShape, ZodRawShape>>;
+export type MessageKindMap = Map<string, ReturnType<typeof createMessageHandler>>;
 
-export type SenderHandler<Shape extends ZodRawShape, MetadataShape extends ZodRawShape> = {
-  sender: Sender<Shape, MetadataShape>;
-  handler: (message: MessagePayload<Shape, MetadataShape>) => Promise<void>;
+type CreateMassageHandlerProps<Shape extends ZodRawShape, MetadataShape extends ZodRawShape> = {
+  contentShape: Shape;
+  metadataShape: MetadataShape;
+  kind: string;
+  handler: (message: MessagePayload<Shape, MetadataShape>) => Promise<void> | Promise<unknown>;
+};
+
+export function createMessageHandler<Shape extends ZodRawShape, MetadataShape extends ZodRawShape>({
+  kind,
+  contentShape,
+  metadataShape,
+  handler,
+}: CreateMassageHandlerProps<Shape, MetadataShape>) {
+  const sender = createMessage({ kind, contentShape, metadataShape });
+  return {
+    sender,
+    handler,
+  };
 }
-
-/*export function QueueHandler<Shape extends ZodRawShape, MetadataShape extends ZodRawShape>(
-  sender: Sender<Shape, MetadataShape>,
-  cb: (
-    message: MessagePayload<Shape, MetadataShape>
-  ) => Promise<void>
-) {
-  const schema = z.object({
-    content: z.object(sender.shapes.contentShape),
-    metadata: z.object(sender.shapes.metadataShape),
-    kind: z.literal(sender.kind),
-  });
-  return async (event: SQSEvent) => {
-    if (event.Records.length > 1) console.warn('WARNING: QueueHandler should process 1 message but got', event.Records.length);
-    for (const record of event.Records) {
-      const parsed = schema.parse(JSON.parse(record.body) as unknown) as MessagePayload<Shape, MetadataShape>;
-      await cb(parsed);
-    }
-  }
-} */

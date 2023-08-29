@@ -4,23 +4,55 @@ import { Clerk } from "@clerk/clerk-sdk-node";
 import { createClient } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
 import { Config } from "sst/node/config";
-import { mergeRequestCommits, namespaces, repositories, mergeRequests } from "@acme/extract-schema";
+import { mergeRequestCommits, namespaces, repositories, mergeRequests, RepositorySchema, NamespaceSchema, MergeRequestSchema } from "@acme/extract-schema";
 import { EventHandler } from "sst/node/event-bus";
 import { extractMergeRequestsEvent } from "./events";
-import { QueueHandler } from "./create-message";
-import { extractMergeRequestCommitMessage, type extractMergeRequestData } from "./messages";
+import { createMessageHandler } from "./create-message";
+import { MessageKind, metadataSchema } from "./messages";
+import { z } from "zod";
 
-const clerkClient = Clerk({ secretKey: Config.CLERK_SECRET_KEY });
-const client = createClient({
-  url: Config.DATABASE_URL,
-  authToken: Config.DATABASE_AUTH_TOKEN,
+const mergeRequestCommitSenderHandler = createMessageHandler({
+  kind: MessageKind.MergeRequestCommit,
+  metadataShape: metadataSchema.shape,
+  contentShape: z.object({
+    mergeRequestIds: z.array(MergeRequestSchema.shape.id),
+    repositoryId: RepositorySchema.shape.id,
+    namespaceId: NamespaceSchema.shape.id,
+  }).shape,
+  handler: async (message) => {
+    if (!message) {
+      console.warn("Expected message to have content,but get empty")
+      return;
+    }
+
+    context.integrations.sourceControl = await initSourceControl(message.metadata.userId, message.metadata.sourceControl);
+
+    const { mergeRequestIds, namespaceId, repositoryId } = message.content;
+
+    await Promise.allSettled(mergeRequestIds.map(mergeRequestId =>
+      getMergeRequestCommits({
+        mergeRequestId,
+        namespaceId,
+        repositoryId
+      }, context)
+    ));
+
+  }
 });
-const db = drizzle(client);
 
-const context: Context<
-  GetMergeRequestCommitsSourceControl,
-  GetMergeRequestCommitsEntities
-> = {
+const { sender } = mergeRequestCommitSenderHandler;
+
+  const clerkClient = Clerk({ secretKey: Config.CLERK_SECRET_KEY });
+  const client = createClient({
+    url: Config.DATABASE_URL,
+    authToken: Config.DATABASE_AUTH_TOKEN,
+  });
+  const db = drizzle(client);
+
+  const context: Context<
+    GetMergeRequestCommitsSourceControl,
+    GetMergeRequestCommitsEntities
+  > = {
   entities: {
     mergeRequestCommits,
     namespaces,
@@ -52,13 +84,13 @@ const initSourceControl = async (userId: string, sourceControl: 'github' | 'gitl
 }
 
 export const eventHandler = EventHandler(extractMergeRequestsEvent, async (evt) => {
-  const { mergeRequestIds, namespaceId, repositoryId} = evt.properties;
+  const { mergeRequestIds, namespaceId, repositoryId } = evt.properties;
 
   const { sourceControl, userId } = evt.metadata;
 
   const numberOfMrsPerMessage = 5;
 
-  const arrayOfExtractMergeRequestData: extractMergeRequestData[] = [];
+  const arrayOfExtractMergeRequestData = [];
   for (let i = 0; i < mergeRequestIds.length; i += numberOfMrsPerMessage) {
     arrayOfExtractMergeRequestData.push({
       mergeRequestIds: mergeRequestIds.slice(i, i + numberOfMrsPerMessage),
@@ -67,31 +99,13 @@ export const eventHandler = EventHandler(extractMergeRequestsEvent, async (evt) 
     })
   }
 
-  await extractMergeRequestCommitMessage.sendAll(arrayOfExtractMergeRequestData, {
+  await sender.sendAll(arrayOfExtractMergeRequestData, {
     version: 1,
     caller: 'extract-merge-request-commits',
     sourceControl,
     userId,
     timestamp: new Date().getTime(),
-  }) 
+  })
 
 });
 
-export const queueHandler = QueueHandler(extractMergeRequestCommitMessage, async (message) => {
-  if (!message) {
-    console.warn("Expected message to have content,but get empty")
-    return;
-  }
-
-  context.integrations.sourceControl = await initSourceControl(message.metadata.userId, message.metadata.sourceControl);
-
-  const { mergeRequestIds, namespaceId, repositoryId } = message.content;
-
-  await Promise.allSettled(mergeRequestIds.map(mergeRequestId => 
-    getMergeRequestCommits({
-      mergeRequestId,
-      namespaceId,
-      repositoryId
-    }, context)
-  ));
-})
