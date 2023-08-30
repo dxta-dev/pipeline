@@ -15,7 +15,7 @@ export const mrcsh = createMessageHandler({
   kind: MessageKind.MergeRequestCommit,
   metadataShape: metadataSchema.shape,
   contentShape: z.object({
-    mergeRequestIds: z.array(MergeRequestSchema.shape.id),
+    mergeRequestId: MergeRequestSchema.shape.id,
     repositoryId: RepositorySchema.shape.id,
     namespaceId: NamespaceSchema.shape.id,
   }).shape,
@@ -27,16 +27,13 @@ export const mrcsh = createMessageHandler({
 
     context.integrations.sourceControl = await initSourceControl(message.metadata.userId, message.metadata.sourceControl);
 
-    const { mergeRequestIds, namespaceId, repositoryId } = message.content;
+    const { mergeRequestId, namespaceId, repositoryId } = message.content;
 
-    await Promise.allSettled(mergeRequestIds.map(mergeRequestId =>
-      getMergeRequestCommits({
+    await getMergeRequestCommits({
         mergeRequestId,
         namespaceId,
         repositoryId
       }, context)
-    ));
-
   }
 });
 
@@ -88,12 +85,11 @@ export const eventHandler = EventHandler(extractMergeRequestsEvent, async (evt) 
 
   const { sourceControl, userId } = evt.metadata;
 
-  const numberOfMrsPerMessage = 5;
 
   const arrayOfExtractMergeRequestData = [];
-  for (let i = 0; i < mergeRequestIds.length; i += numberOfMrsPerMessage) {
+  for (let i = 0; i < mergeRequestIds.length; i += 1) {
     arrayOfExtractMergeRequestData.push({
-      mergeRequestIds: mergeRequestIds.slice(i, i + numberOfMrsPerMessage),
+      mergeRequestId: mergeRequestIds[i]!,
       namespaceId,
       repositoryId,
     })

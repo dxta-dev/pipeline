@@ -16,24 +16,20 @@ export const mergeRequestDiffSenderHandler = createMessageHandler({
   kind: 'merge-request-diff',
   metadataShape: metadataSchema.shape,
   contentShape: z.object({
-    mergeRequestIds: z.array(MergeRequestSchema.shape.id),
+    mergeRequestId: MergeRequestSchema.shape.id,
     repositoryId: RepositorySchema.shape.id,
     namespaceId: NamespaceSchema.shape.id,
   }).shape,
   handler: async (message) => {
     const { sourceControl, userId } = message.metadata;
-    const { mergeRequestIds, repositoryId, namespaceId } = message.content;
-
+    const { mergeRequestId, repositoryId, namespaceId } = message.content;
     context.integrations.sourceControl = await initSourceControl(userId, sourceControl);
-    const results = await Promise.allSettled(mergeRequestIds.map(mergeRequestId => getMergeRequestsDiffs({
+
+    await getMergeRequestsDiffs({
       mergeRequestId,
       repositoryId,
       namespaceId
-    }, context)));
-
-    results.forEach((result, i) => {
-      if (result.status === 'rejected') console.error('ERROR: extract diff of merge-request:', mergeRequestIds[i], 'failed, reason:', result.reason);
-    })
+    }, context);
   }
 });
 
@@ -78,9 +74,10 @@ export const eventHandler = EventHandler(extractMergeRequestsEvent, async (ev) =
   const { mergeRequestIds, repositoryId, namespaceId } = ev.properties;
 
   const arrayOfExtractMergeRequestData = [];
-  for (let i = 0; i < mergeRequestIds.length; i += 5) {
+  for (let i = 0; i < mergeRequestIds.length; i += 1) {
+    
     arrayOfExtractMergeRequestData.push({
-      mergeRequestIds: mergeRequestIds.slice(i, i + 5),
+      mergeRequestId: mergeRequestIds[i]!,
       namespaceId,
       repositoryId,
     })
