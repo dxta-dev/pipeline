@@ -92,10 +92,12 @@ function createLog(kind: string, event: unknown, logMap: Map<string, string[]>) 
   const propertiesToLog = logMap.get(kind);
   if (!propertiesToLog) return;
   const properties = propertiesToLog.map(property => property.split('.'));
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
   const log = properties.map(property => property.reduce((acc, curr) => ({ key: property.join('.'), value: acc.value[curr] || acc.value}), {key: '', value: event as any})).filter(value => !!value);
   const logMessage = log.map(({ key, value }) => `- ${key}: ${JSON.stringify(value)}`).join('\n');
   return `${kind}\n${logMessage}`;
 }
+
 
 
 export function QueueHandler(map: Map<string, unknown>, logMap: Map<string, string[]>) {
