@@ -88,8 +88,17 @@ type MessagePayload<Shape extends ZodRawShape, MetadataShape extends ZodRawShape
   kind: string;
 }
 
+function createLog(kind: string, event: unknown, logMap: Map<string, string[]>) {
+  const propertiesToLog = logMap.get(kind);
+  if (!propertiesToLog) return;
+  const properties = propertiesToLog.map(property => property.split('.'));
+  const log = properties.map(property => property.reduce((acc, curr) => ({ key: property.join('.'), value: acc.value[curr] || acc.value}), {key: '', value: event as any})).filter(value => !!value);
+  const logMessage = log.map(({ key, value }) => `- ${key}: ${JSON.stringify(value)}`).join('\n');
+  return `${kind}\n${logMessage}`;
+}
 
-export function QueueHandler(map: Map<string, unknown>) {
+
+export function QueueHandler(map: Map<string, unknown>, logMap: Map<string, string[]>) {
 
   return async (event: SQSEvent) => {
     if (event.Records.length > 1) console.warn('WARNING: QueueHandler should process 1 message but got', event.Records.length);
@@ -112,8 +121,9 @@ export function QueueHandler(map: Map<string, unknown>) {
       const validatedEvent = schema.parse(parsedEvent);
       try {
         await handler(validatedEvent);
+        console.log('Handled message', createLog(validatedEvent.kind, validatedEvent, logMap));
       } catch (e) {
-        console.error('Failed to handle message', e, validatedEvent);
+        console.error('Failed to handle message', e, createLog(validatedEvent.kind, validatedEvent, logMap));
         throw e;
       }
     }
