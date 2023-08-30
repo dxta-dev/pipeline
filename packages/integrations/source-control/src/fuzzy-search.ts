@@ -16,12 +16,17 @@ interface Member {
   username: string,
 }
 
+interface GitIdentitiesToMember {
+  memberId: number | undefined,
+  gitIdentityId: number | undefined,
+}
+
 // JUST FOR TESTING
 const gitIdentities: Array<GitIdentities> = [
   { id: 1, repositoryId: 1, email: 'ante@crocoder.dev', name: 'Ante Koceić' },
   { id: 2, repositoryId: 1, email: 'david@crocoder.dev', name: 'David Abram' },
   { id: 3, repositoryId: 1, email: 'ivek@crocoder.dev', name: 'Ivan Ivic' },
-  { id: 4, repositoryId: 1, email: 'dejan@crocoder.dev', name: 'Dejan Tot' },
+  { id: 4, repositoryId: 1, email: 'ivan@crocoder.dev', name: 'Ivan Penga' },
 ];
 
 // JUST FOR TESTING
@@ -36,7 +41,7 @@ const members: Array<Member> = [
   { id: 8, externalId: 15514899, name: 'sup', username: 'davidabram' },
 ];
 
-export function fuzzySearch(gitIdentities: GitIdentities[], members: Member[]): void {
+export function fuzzySearch(gitIdentities: GitIdentities[], members: Member[]): GitIdentitiesToMember[] {
   const options = {
     shouldSort: true,
     threshold: 0.4, // Lower the threshold to make matching more lenient
@@ -47,12 +52,12 @@ export function fuzzySearch(gitIdentities: GitIdentities[], members: Member[]): 
     keys: ['name'], // Use 'name' as the key for matching
   };
 
-  gitIdentities.map((identity) => {
+  const result = gitIdentities.map((identity) => {
     const fuse = new Fuse(members, options);
     const result = fuse.search(identity.name);
     if (result.length > 0) {
       if (result[0]) {
-        return result[0].item; // Access the matched object using the 'item' property
+        return result[0]; // Access the matched object using the 'item' property
       }
       return null;
     } else {
@@ -60,6 +65,14 @@ export function fuzzySearch(gitIdentities: GitIdentities[], members: Member[]): 
     }
   })
 
+  const filteredResult = result.filter((res) => res !== null);
+  
+  const mappedIds: GitIdentitiesToMember[] = filteredResult.map((res, index) => {
+    return { memberId: res?.item.id, gitIdentityId: gitIdentities[index]?.id};
+  });
+
+  console.log("FA", mappedIds);
+  return mappedIds;
 }
 
 const finale = fuzzySearch(gitIdentities, members);
