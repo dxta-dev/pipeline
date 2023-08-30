@@ -110,8 +110,12 @@ export function QueueHandler(map: Map<string, unknown>) {
       });
 
       const validatedEvent = schema.parse(parsedEvent);
-
-      await handler(validatedEvent);
+      try {
+        await handler(validatedEvent);
+      } catch (e) {
+        console.error('Failed to handle message', e, validatedEvent);
+        throw e;
+      }
     }
   }
 } 
