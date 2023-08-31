@@ -2,7 +2,7 @@ import { Clerk } from "@clerk/clerk-sdk-node";
 import { createClient } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
 import { Config } from "sst/node/config";
-import { EventHandler } from "sst/node/event-bus";
+import { EventHandler } from "./create-event";
 
 import {
   getMergeRequests,

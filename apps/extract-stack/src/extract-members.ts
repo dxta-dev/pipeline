@@ -1,4 +1,4 @@
-import { EventHandler } from "sst/node/event-bus";
+import { EventHandler } from "./create-event";
 import { extractRepositoryEvent } from "./events";
 import { Clerk } from "@clerk/clerk-sdk-node";
 import { createClient } from "@libsql/client";

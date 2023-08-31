@@ -2,6 +2,7 @@ import {
   EventBridgeClient,
   PutEventsCommand,
 } from "@aws-sdk/client-eventbridge";
+import { EventHandler as SSTEventHandler } from "sst/node/event-bus";
 import { z } from "zod";
 import type { ZodRawShape, ZodAny, ZodObject } from "zod";
 
@@ -64,3 +65,5 @@ export function createEvent<
   };
 }
 
+const StubEventHandler = (() => async () => (console.log('IM DISABLED'), Promise.resolve())) as typeof SSTEventHandler;
+export const EventHandler = ('SST_EVENT_HANDLER_DISABLE' in process.env) ? StubEventHandler : SSTEventHandler;

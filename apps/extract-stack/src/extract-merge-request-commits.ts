@@ -5,7 +5,7 @@ import { createClient } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
 import { Config } from "sst/node/config";
 import { mergeRequestCommits, namespaces, repositories, mergeRequests, RepositorySchema, NamespaceSchema, MergeRequestSchema } from "@acme/extract-schema";
-import { EventHandler } from "sst/node/event-bus";
+import { EventHandler } from "./create-event";
 import { extractMergeRequestsEvent } from "./events";
 import { createMessageHandler } from "./create-message";
 import { MessageKind, metadataSchema } from "./messages";
@@ -30,26 +30,26 @@ export const mrcsh = createMessageHandler({
     const { mergeRequestId, namespaceId, repositoryId } = message.content;
 
     await getMergeRequestCommits({
-        mergeRequestId,
-        namespaceId,
-        repositoryId
-      }, context)
+      mergeRequestId,
+      namespaceId,
+      repositoryId
+    }, context)
   }
 });
 
 const { sender } = mrcsh;
 
-  const clerkClient = Clerk({ secretKey: Config.CLERK_SECRET_KEY });
-  const client = createClient({
-    url: Config.DATABASE_URL,
-    authToken: Config.DATABASE_AUTH_TOKEN,
-  });
-  const db = drizzle(client);
+const clerkClient = Clerk({ secretKey: Config.CLERK_SECRET_KEY });
+const client = createClient({
+  url: Config.DATABASE_URL,
+  authToken: Config.DATABASE_AUTH_TOKEN,
+});
+const db = drizzle(client);
 
-  const context: Context<
-    GetMergeRequestCommitsSourceControl,
-    GetMergeRequestCommitsEntities
-  > = {
+const context: Context<
+  GetMergeRequestCommitsSourceControl,
+  GetMergeRequestCommitsEntities
+> = {
   entities: {
     mergeRequestCommits,
     namespaces,
