@@ -1,6 +1,6 @@
 import type { SourceControl, Pagination, TimePeriod } from "../source-control";
 import type { Gitlab as GitlabType, ShowExpanded, Sudo, MergeRequestDiffSchema, OffsetPagination } from '@gitbeaker/core';
-import type { NewRepository, NewNamespace, NewMergeRequest, NewMember, NewMergeRequestDiff, Repository, Namespace, MergeRequest, NewMergeRequestCommit } from "@acme/extract-schema";
+import type { NewRepository, NewNamespace, NewMergeRequest, NewMember, NewMergeRequestDiff, Repository, Namespace, MergeRequest, NewMergeRequestCommit, NewMergeRequestNote } from "@acme/extract-schema";
 import { Gitlab } from '@gitbeaker/rest';
 
 export class GitlabSourceControl implements SourceControl {
@@ -125,7 +125,7 @@ export class GitlabSourceControl implements SourceControl {
         showExpanded: true,
       }
     );
-    
+
     return {
       mergeRequestCommits: data.map((mrc) => ({
         mergeRequestId: mergeRequest.mergeRequestId,
@@ -142,5 +142,23 @@ export class GitlabSourceControl implements SourceControl {
       })),
     }
   }
+
+  async fetchMergeRequestNotes(repository: Repository, namespace: Namespace, mergeRequest: MergeRequest): Promise<{ mergeRequestNotes: NewMergeRequestNote[] }> {
+    const { data } = await this.api.MergeRequestNotes.all(repository.id, mergeRequest.mergeRequestId, {
+      showExpanded: true
+    });
+
+    return {
+      mergeRequestNotes: data.map((mergeRequestNote) => ({
+        authorExternalId: mergeRequestNote.author.id,
+        authorUsername: mergeRequestNote.author.username,
+        createdAt: new Date(mergeRequestNote.created_at),
+        updatedAt: new Date(mergeRequestNote.updated_at),
+        externalId: mergeRequestNote.id,
+        mergeRequestId: mergeRequest.id
+      }))
+    };
+  }
+
 
 }
