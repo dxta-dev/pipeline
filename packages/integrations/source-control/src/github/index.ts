@@ -2,53 +2,53 @@ import type { SourceControl } from '..';
 import { Octokit } from '@octokit/rest';
 import parseLinkHeader from "parse-link-header";
 
-import type { NewRepository, NewNamespace, NewMergeRequest, NewMember, NewMergeRequestDiff, Repository, Namespace, MergeRequest, NewMergeRequestCommit } from "@acme/extract-schema";
+import type { NewRepository, NewNamespace, NewMergeRequest, NewMember, NewMergeRequestDiff, Repository, Namespace, MergeRequest, NewMergeRequestCommit, NewMergeRequestNote } from "@acme/extract-schema";
 import type { Pagination, TimePeriod } from '../source-control';
 
 const FILE_STATUS_FLAGS_MAPPING: Record<
-      "added"
-      | "removed"
-      | "modified"
-      | "renamed"
-      | "copied"
-      | "changed"
-      | "unchanged", Pick<NewMergeRequestDiff, "newFile" | "renamedFile" | "deletedFile">> = {
-      "modified": {
-        newFile: false,
-        renamedFile: false,
-        deletedFile: false,
-      },
-      "renamed": {
-        newFile: false,
-        renamedFile: true,
-        deletedFile: false,
-      },
-      "added": {
-        newFile: true,
-        renamedFile: false,
-        deletedFile: false,
-      },
-      "changed": {
-        newFile: false,
-        deletedFile: false,
-        renamedFile: false,
-      },
-      "copied": {
-        newFile: false,
-        deletedFile: false,
-        renamedFile: false,
-      },
-      "removed": {
-        newFile: false,
-        deletedFile: true,
-        renamedFile: false,
-      },
-      "unchanged": {
-        newFile: false,
-        deletedFile: false,
-        renamedFile: false,
-      }
-    }
+  "added"
+  | "removed"
+  | "modified"
+  | "renamed"
+  | "copied"
+  | "changed"
+  | "unchanged", Pick<NewMergeRequestDiff, "newFile" | "renamedFile" | "deletedFile">> = {
+  "modified": {
+    newFile: false,
+    renamedFile: false,
+    deletedFile: false,
+  },
+  "renamed": {
+    newFile: false,
+    renamedFile: true,
+    deletedFile: false,
+  },
+  "added": {
+    newFile: true,
+    renamedFile: false,
+    deletedFile: false,
+  },
+  "changed": {
+    newFile: false,
+    deletedFile: false,
+    renamedFile: false,
+  },
+  "copied": {
+    newFile: false,
+    deletedFile: false,
+    renamedFile: false,
+  },
+  "removed": {
+    newFile: false,
+    deletedFile: true,
+    renamedFile: false,
+  },
+  "unchanged": {
+    newFile: false,
+    deletedFile: false,
+    renamedFile: false,
+  }
+}
 
 export class GitHubSourceControl implements SourceControl {
 
@@ -207,6 +207,25 @@ export class GitHubSourceControl implements SourceControl {
         committerName: mrc.commit.committer?.name || '',
         committerEmail: mrc.commit.committer?.email || '',
       })),
+    }
+  }
+
+  async fetchMergeRequestNotes(repository: Repository, namespace: Namespace, mergeRequest: MergeRequest): Promise<{ mergeRequestNotes: NewMergeRequestNote[] }> {
+    const response = await this.api.pulls.listReviewComments({
+      owner: namespace.name,
+      repo: repository.name,
+      pull_number: mergeRequest.mergeRequestId,
+    });
+
+    return {
+      mergeRequestNotes: response.data.map(mergeRequestNote => ({
+        externalId: mergeRequestNote.id,
+        mergeRequestId: mergeRequest.id,
+        createdAt: new Date(mergeRequestNote.created_at),
+        updatedAt: new Date(mergeRequestNote.updated_at),
+        authorUsername: mergeRequestNote.user.login,
+        authorExternalId: mergeRequestNote.user.id,
+      }))
     }
   }
 }
