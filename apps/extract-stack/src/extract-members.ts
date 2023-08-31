@@ -132,16 +132,14 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
     timestamp: new Date().getTime(),
   });
 
-  await Promise.all(members.map((member) =>
-    extractMembersEvent.publish({
-      memberId: member.id
-    }, {
-      version: 1,
-      caller: 'extract-member',
-      sourceControl: ev.metadata.sourceControl,
-      userId: ev.metadata.userId,
-      timestamp: new Date().getTime(),
-    })
-  ));
+  await extractMembersEvent.publish({
+    memberIds: members.map(member => member.id)
+  }, {
+    version: 1,
+    caller: 'extract-member',
+    sourceControl: ev.metadata.sourceControl,
+    userId: ev.metadata.userId,
+    timestamp: new Date().getTime(),
+  });
 
 });
