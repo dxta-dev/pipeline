@@ -9,11 +9,11 @@ import { mergeRequestDiffs, mergeRequests, repositories, namespaces, MergeReques
 import { EventHandler } from "sst/node/event-bus";
 import { extractMergeRequestsEvent } from "./events";
 import { createMessageHandler } from "./create-message";
-import { metadataSchema } from "./messages";
+import { MessageKind, metadataSchema } from "./messages";
 import { z } from "zod";
 
 export const mergeRequestDiffSenderHandler = createMessageHandler({
-  kind: 'merge-request-diff',
+  kind: MessageKind.MergeRequestDiff,
   metadataShape: metadataSchema.shape,
   contentShape: z.object({
     mergeRequestId: MergeRequestSchema.shape.id,
