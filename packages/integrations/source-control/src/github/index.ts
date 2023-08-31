@@ -2,7 +2,7 @@ import type { SourceControl } from '..';
 import { Octokit } from '@octokit/rest';
 import parseLinkHeader from "parse-link-header";
 
-import type { NewRepository, NewNamespace, NewMergeRequest, NewMember, NewMergeRequestDiff, Repository, Namespace, MergeRequest, NewMergeRequestCommit } from "@acme/extract-schema";
+import type { NewRepository, NewNamespace, NewMergeRequest, NewMember, NewMergeRequestDiff, Repository, Namespace, MergeRequest, NewMergeRequestCommit, NewMergeRequestNote } from "@acme/extract-schema";
 import type { Pagination, TimePeriod } from '../source-control';
 
 const FILE_STATUS_FLAGS_MAPPING: Record<
@@ -254,6 +254,25 @@ export class GitHubSourceControl implements SourceControl {
         committerName: mrc.commit.committer?.name || '',
         committerEmail: mrc.commit.committer?.email || '',
       })),
+    }
+  }
+
+  async fetchMergeRequestNotes(repository: Repository, namespace: Namespace, mergeRequest: MergeRequest): Promise<{ mergeRequestNotes: NewMergeRequestNote[] }> {
+    const response = await this.api.pulls.listReviewComments({
+      owner: namespace.name,
+      repo: repository.name,
+      pull_number: mergeRequest.mergeRequestId,
+    });
+
+    return {
+      mergeRequestNotes: response.data.map(mergeRequestNote => ({
+        externalId: mergeRequestNote.id,
+        mergeRequestId: mergeRequest.id,
+        createdAt: new Date(mergeRequestNote.created_at),
+        updatedAt: new Date(mergeRequestNote.updated_at),
+        authorUsername: mergeRequestNote.user.login,
+        authorExternalId: mergeRequestNote.user.id,
+      }))
     }
   }
 }
