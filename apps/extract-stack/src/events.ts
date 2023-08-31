@@ -3,7 +3,7 @@ import { z } from "zod";
 
 import { MergeRequestSchema } from "@acme/extract-schema/src/merge-requests";
 import { createEvent } from "./create-event";
-import { NamespaceSchema, RepositorySchema } from "@acme/extract-schema";
+import { MemberSchema, NamespaceSchema, RepositorySchema } from "@acme/extract-schema";
 
 const extractRepositoryEventSchema = z.object({
   repositoryId: z.number(),
@@ -38,6 +38,16 @@ export const extractRepositoryEvent = createEvent({
   source: "extract",
   type: "repository",
   propertiesShape: extractRepositoryEventSchema.shape,
+  eventBusName: EventBus.ExtractBus.eventBusName,
+  metadataShape: metadataSchema.shape,
+});
+
+export const extractMembersEvent = createEvent({
+  source: "extract",
+  type: "members",
+  propertiesShape: z.object({
+    memberIds: z.array(MemberSchema.shape.id),
+  }).shape,
   eventBusName: EventBus.ExtractBus.eventBusName,
   metadataShape: metadataSchema.shape,
 });

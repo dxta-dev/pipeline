@@ -20,12 +20,21 @@ export function ExtractStack({ stack }: StackContext) {
           detailType: ["repository"],
         },
       },
-        mergeRequests: {
-          pattern: {
-            source: ["extract"],
-            detailType: ["mergeRequest"],
-          },
+      mergeRequests: {
+        pattern: {
+          source: ["extract"],
+          detailType: ["mergeRequest"],
         },
+      },
+      githubMembers: {
+        pattern: {
+          source: ["extract"],
+          detailType: ["members"],
+          detail: {
+            sourceControl: ["github"],
+          }
+        }
+      },
     },
     defaults: {
       retries: 10,
@@ -35,6 +44,7 @@ export function ExtractStack({ stack }: StackContext) {
       },
     },
   });
+
   const extractQueue = new Queue(stack, "ExtractQueue");
   extractQueue.addConsumer(stack, {
     cdk: {
@@ -52,6 +62,15 @@ export function ExtractStack({ stack }: StackContext) {
         DATABASE_AUTH_TOKEN,
       ], // Issue: need to bind bus because same file
       handler: "src/queue.handler",
+    },
+  });
+
+  bus.addTargets(stack, "githubMembers", {
+    extractUserInfo: {
+      function: {
+        bind: [bus, extractQueue],
+        handler: "src/extract-user-info.eventHandler",
+      },
     },
   });
 
@@ -74,21 +93,21 @@ export function ExtractStack({ stack }: StackContext) {
   });
 
   bus.addTargets(stack, "mergeRequests", {
-    extractMergeRequestDiffs:{
+    extractMergeRequestDiffs: {
       function: {
         bind: [bus, extractQueue],
         handler: "src/extract-merge-request-diffs.eventHandler",
       }
-    } 
+    }
   })
 
   bus.addTargets(stack, "mergeRequests", {
-    extractMergeRequestCommits:{
+    extractMergeRequestCommits: {
       function: {
         bind: [bus, extractQueue],
         handler: "src/extract-merge-request-commits.eventHandler",
       }
-    } 
+    }
   })
 
   const ENVSchema = z.object({

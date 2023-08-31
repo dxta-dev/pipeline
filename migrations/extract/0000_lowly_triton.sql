@@ -11,8 +11,9 @@ CREATE TABLE `git_identities` (
 CREATE TABLE `members` (
 	`id` integer PRIMARY KEY NOT NULL,
 	`external_id` integer NOT NULL,
-	`name` text NOT NULL,
+	`name` text,
 	`username` text NOT NULL,
+	`email` text,
 	`__created_at` integer DEFAULT CURRENT_TIMESTAMP,
 	`__updated_at` integer DEFAULT CURRENT_TIMESTAMP
 );
