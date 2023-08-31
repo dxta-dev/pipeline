@@ -134,7 +134,7 @@ export function QueueHandler(map: Map<string, unknown>, logMap: Map<string, stri
 
 export type MessageKindMap = Map<string, ReturnType<typeof createMessageHandler>>;
 
-type CreateMassageHandlerProps<Shape extends ZodRawShape, MetadataShape extends ZodRawShape> = {
+type CreateMessageHandlerProps<Shape extends ZodRawShape, MetadataShape extends ZodRawShape> = {
   contentShape: Shape;
   metadataShape: MetadataShape;
   kind: string;
@@ -146,7 +146,7 @@ export function createMessageHandler<Shape extends ZodRawShape, MetadataShape ex
   contentShape,
   metadataShape,
   handler,
-}: CreateMassageHandlerProps<Shape, MetadataShape>) {
+}: CreateMessageHandlerProps<Shape, MetadataShape>) {
   const sender = createMessage({ kind, contentShape, metadataShape });
   return {
     sender,
