@@ -35,11 +35,8 @@ export function ExtractStack({ stack }: StackContext) {
       },
     },
   });
-  const mergeRequestQueue = new Queue(stack, "MRQueue");
-  const membersQueue = new Queue(stack, "ExtractMemberPageQueue");
-  const mergeRequestDiffQueue = new Queue(stack, "ExtractMergeRequestDiffsQueue");
-  const mergeRequestCommitQueue = new Queue(stack, "ExtractMergeRequestCommitsQueue");
-  membersQueue.addConsumer(stack, {
+  const extractQueue = new Queue(stack, "ExtractQueue");
+  extractQueue.addConsumer(stack, {
     cdk: {
       eventSource: {
         batchSize: 1,
@@ -49,22 +46,19 @@ export function ExtractStack({ stack }: StackContext) {
     function: {
       bind: [
         bus,
-        membersQueue,
-        mergeRequestQueue,
-        mergeRequestDiffQueue,
-        mergeRequestCommitQueue,
+        extractQueue,
         DATABASE_URL,
         CLERK_SECRET_KEY,
         DATABASE_AUTH_TOKEN,
       ], // Issue: need to bind bus because same file
-      handler: "src/extract-members.queueHandler",
+      handler: "src/queue.handler",
     },
   });
 
   bus.addTargets(stack, "repository", {
     extractMember: {
       function: {
-        bind: [bus, membersQueue, mergeRequestQueue, mergeRequestDiffQueue, mergeRequestCommitQueue],
+        bind: [bus, extractQueue],
         handler: "src/extract-members.eventHandler",
       },
     },
@@ -73,7 +67,7 @@ export function ExtractStack({ stack }: StackContext) {
   bus.addTargets(stack, "repository", {
     mergeRequests: {
       function: {
-        bind: [bus, mergeRequestQueue, membersQueue, mergeRequestDiffQueue, mergeRequestCommitQueue],
+        bind: [bus, extractQueue],
         handler: "src/extract-merge-requests.eventHandler",
       },
     },
@@ -82,7 +76,7 @@ export function ExtractStack({ stack }: StackContext) {
   bus.addTargets(stack, "mergeRequests", {
     extractMergeRequestDiffs:{
       function: {
-        bind: [bus, membersQueue, mergeRequestDiffQueue, mergeRequestQueue, mergeRequestCommitQueue],
+        bind: [bus, extractQueue],
         handler: "src/extract-merge-request-diffs.eventHandler",
       }
     } 
@@ -91,76 +85,10 @@ export function ExtractStack({ stack }: StackContext) {
   bus.addTargets(stack, "mergeRequests", {
     extractMergeRequestCommits:{
       function: {
-        bind: [bus, membersQueue, mergeRequestDiffQueue, mergeRequestQueue, mergeRequestCommitQueue],
+        bind: [bus, extractQueue],
         handler: "src/extract-merge-request-commits.eventHandler",
       }
     } 
-  })
-
-  mergeRequestQueue.addConsumer(stack, {
-    cdk: {
-      eventSource: {
-        batchSize: 1,
-        maxConcurrency: 20,
-      },
-    },
-    function: {
-      bind: [
-        bus,
-        mergeRequestQueue,
-        mergeRequestDiffQueue,
-        membersQueue,
-        mergeRequestCommitQueue,
-        DATABASE_URL,
-        CLERK_SECRET_KEY,
-        DATABASE_AUTH_TOKEN,
-      ],
-      handler: "src/extract-merge-requests.queueHandler",
-    },
-  });
-
-  mergeRequestDiffQueue.addConsumer(stack, {
-    cdk: {
-      eventSource: {
-        batchSize: 1,
-        maxConcurrency: 20,
-      },
-    },
-    function: {
-      bind: [
-        bus,
-        mergeRequestQueue,
-        mergeRequestDiffQueue,
-        mergeRequestCommitQueue,
-        membersQueue,
-        DATABASE_URL,
-        CLERK_SECRET_KEY,
-        DATABASE_AUTH_TOKEN,
-      ],
-      handler: "src/extract-merge-request-diffs.queueHandler",
-    },
-  })
-
-  mergeRequestCommitQueue.addConsumer(stack, {
-    cdk: {
-      eventSource: {
-        batchSize: 1,
-        maxConcurrency: 20,
-      },
-    },
-    function: {
-      bind: [
-        bus,
-        mergeRequestQueue,
-        mergeRequestDiffQueue,
-        mergeRequestCommitQueue,
-        membersQueue,
-        DATABASE_URL,
-        CLERK_SECRET_KEY,
-        DATABASE_AUTH_TOKEN,
-      ],
-      handler: "src/extract-merge-request-commits.queueHandler",
-    },
   })
 
   const ENVSchema = z.object({

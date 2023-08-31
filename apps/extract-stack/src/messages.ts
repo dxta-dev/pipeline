@@ -1,32 +1,12 @@
 import { z } from "zod";
-import { RepositorySchema } from "@acme/extract-schema";
-import { NamespaceSchema } from "@acme/extract-schema/src/namespaces";
-import { createMessage } from "./create-message";
-import { Queue } from 'sst/node/queue'
-import { MergeRequestSchema } from "@acme/extract-schema/src/merge-requests";
 
-const paginationSchema = z.object({
+export const paginationSchema = z.object({
   page: z.number(),
   perPage: z.number(),
   totalPages: z.number(),
 });
 
-const extractRepositoryDataSchema = z.object({
-  repository: RepositorySchema,
-  namespace: NamespaceSchema,
-  pagination: paginationSchema
-});
-
-const extractMergeRequestDataSchema = z.object({
-  mergeRequestIds: z.array(MergeRequestSchema.shape.id),
-  repositoryId: RepositorySchema.shape.id,
-  namespaceId: NamespaceSchema.shape.id,
-})
-
-export type extractRepositoryData = z.infer<typeof extractRepositoryDataSchema>;
-export type extractMergeRequestData = z.infer<typeof extractMergeRequestDataSchema>;
-
-const metadataSchema = z.object({
+export const metadataSchema = z.object({
   version: z.number(),
   timestamp: z.number(),
   caller: z.string(),
@@ -34,26 +14,10 @@ const metadataSchema = z.object({
   userId: z.string(),
 });
 
-export const extractMemberPageMessage = createMessage({
-  metadataShape: metadataSchema.shape,
-  contentShape: extractRepositoryDataSchema.shape,
-  queueUrl: Queue.ExtractMemberPageQueue.queueUrl
-});
+export enum MessageKind {
+  Member = "member",
+  MergeRequest = "merge-request",
+  MergeRequestDiff = "merge-request-diff",
+  MergeRequestCommit = "merge-request-commit",
+};
 
-export const extractMergeRequestMessage = createMessage({
-  metadataShape: metadataSchema.shape,
-  contentShape: extractRepositoryDataSchema.shape,
-  queueUrl: Queue.MRQueue.queueUrl
-});
-
-export const extractMergeRequestDiffMessage = createMessage({
-  metadataShape: metadataSchema.shape,
-  contentShape: extractMergeRequestDataSchema.shape,
-  queueUrl: Queue.ExtractMergeRequestDiffsQueue.queueUrl
-});
-
-export const extractMergeRequestCommitMessage = createMessage({
-  metadataShape: metadataSchema.shape,
-  contentShape: extractMergeRequestDataSchema.shape,
-  queueUrl: Queue.ExtractMergeRequestCommitsQueue.queueUrl
-});

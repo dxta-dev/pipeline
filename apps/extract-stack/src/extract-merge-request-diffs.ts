@@ -5,12 +5,36 @@ import { GitHubSourceControl, GitlabSourceControl } from "@acme/source-control";
 import { Config } from "sst/node/config";
 import type { Context, GetMergeRequestDiffsEntities, GetMergeRequestDiffsSourceControl } from "@acme/extract-functions";
 import { getMergeRequestsDiffs } from "@acme/extract-functions";
-import { mergeRequestDiffs, mergeRequests, repositories, namespaces } from "@acme/extract-schema";
+import { mergeRequestDiffs, mergeRequests, repositories, namespaces, MergeRequestSchema, RepositorySchema, NamespaceSchema } from "@acme/extract-schema";
 import { EventHandler } from "sst/node/event-bus";
 import { extractMergeRequestsEvent } from "./events";
-import { extractMergeRequestDiffMessage } from "./messages";
-import type { extractMergeRequestData } from "./messages";
-import { QueueHandler } from "./create-message";
+import { createMessageHandler } from "./create-message";
+import { MessageKind, metadataSchema } from "./messages";
+import { z } from "zod";
+
+export const mergeRequestDiffSenderHandler = createMessageHandler({
+  kind: MessageKind.MergeRequestDiff,
+  metadataShape: metadataSchema.shape,
+  contentShape: z.object({
+    mergeRequestId: MergeRequestSchema.shape.id,
+    repositoryId: RepositorySchema.shape.id,
+    namespaceId: NamespaceSchema.shape.id,
+  }).shape,
+  handler: async (message) => {
+    const { sourceControl, userId } = message.metadata;
+    const { mergeRequestId, repositoryId, namespaceId } = message.content;
+    context.integrations.sourceControl = await initSourceControl(userId, sourceControl);
+
+    await getMergeRequestsDiffs({
+      mergeRequestId,
+      repositoryId,
+      namespaceId
+    }, context);
+  }
+});
+
+const { sender } = mergeRequestDiffSenderHandler;
+
 
 const clerkClient = Clerk({ secretKey: Config.CLERK_SECRET_KEY });
 const client = createClient({ url: Config.DATABASE_URL, authToken: Config.DATABASE_AUTH_TOKEN });
@@ -45,36 +69,21 @@ const context: Context<GetMergeRequestDiffsSourceControl, GetMergeRequestDiffsEn
   }
 };
 
-export const queueHandler = QueueHandler(extractMergeRequestDiffMessage, async (message) => {
-  const { sourceControl, userId } = message.metadata;
-  const { mergeRequestIds, repositoryId, namespaceId } = message.content;
-
-  context.integrations.sourceControl = await initSourceControl(userId, sourceControl);
-  const results = await Promise.allSettled(mergeRequestIds.map(mergeRequestId => getMergeRequestsDiffs({
-    mergeRequestId,
-    repositoryId,
-    namespaceId
-  }, context)));
-
-  results.forEach((result, i) => {
-    if (result.status === 'rejected') console.error('ERROR: extract diff of merge-request:', mergeRequestIds[i], 'failed, reason:', result.reason);
-  })
-})
-
 export const eventHandler = EventHandler(extractMergeRequestsEvent, async (ev) => {
   const { sourceControl, userId } = ev.metadata;
   const { mergeRequestIds, repositoryId, namespaceId } = ev.properties;
 
-  const arrayOfExtractMergeRequestData: extractMergeRequestData[] = [];
-  for (let i = 0; i < mergeRequestIds.length; i += 5) {
+  const arrayOfExtractMergeRequestData = [];
+  for (let i = 0; i < mergeRequestIds.length; i += 1) {
+    
     arrayOfExtractMergeRequestData.push({
-      mergeRequestIds: mergeRequestIds.slice(i, i + 5),
+      mergeRequestId: mergeRequestIds[i]!,
       namespaceId,
       repositoryId,
     })
   }
 
-  await extractMergeRequestDiffMessage.sendAll(arrayOfExtractMergeRequestData, {
+  await sender.sendAll(arrayOfExtractMergeRequestData, {
     version: 1,
     caller: 'extract-merge-request-diffs',
     sourceControl,

@@ -10,14 +10,61 @@ import {
   type GetMergeRequestsEntities,
   type GetMergeRequestsSourceControl,
 } from "@acme/extract-functions";
-import { mergeRequests, namespaces, repositories } from "@acme/extract-schema";
+import { NamespaceSchema, RepositorySchema, mergeRequests, namespaces, repositories } from "@acme/extract-schema";
 import { GitHubSourceControl, GitlabSourceControl } from "@acme/source-control";
 
 import { extractMergeRequestsEvent, extractRepositoryEvent } from "./events";
-import { extractMergeRequestMessage } from "./messages";
-import type { extractRepositoryData } from "./messages";
-import { QueueHandler } from "./create-message";
 import { eq } from "drizzle-orm";
+import { MessageKind, metadataSchema, paginationSchema } from "./messages";
+import { z } from "zod";
+import { createMessageHandler } from "./create-message";
+
+
+export const mergeRequestSenderHandler = createMessageHandler({
+  kind: MessageKind.MergeRequest,
+  metadataShape: metadataSchema.shape,
+  contentShape: z.object({
+    repository: RepositorySchema,
+    namespace: NamespaceSchema,
+    pagination: paginationSchema,
+  }).shape,
+  handler: async (message) => {
+
+    if (!message) {
+      console.warn("Expected message to have content,but get empty")
+      return;
+    }
+
+    context.integrations.sourceControl = await initSourceControl(message.metadata.userId, message.metadata.sourceControl);
+
+    const { namespace, pagination, repository } = message.content;
+
+    if (!namespace) throw new Error("Invalid namespace id");
+
+    const { mergeRequests } = await getMergeRequests(
+      {
+        externalRepositoryId: repository.externalId,
+        namespaceName: namespace.name,
+        repositoryName: repository.name,
+        repositoryId: repository.id,
+        page: pagination.page,
+        perPage: pagination.perPage,
+      },
+      context,
+    );
+
+    await extractMergeRequestsEvent.publish({ mergeRequestIds: mergeRequests.map(mr => mr.id), namespaceId: namespace.id, repositoryId: repository.id }, {
+      version: 1,
+      caller: 'extract-merge-requests',
+      sourceControl: message.metadata.sourceControl,
+      userId: message.metadata.userId,
+      timestamp: new Date().getTime(),
+    });
+
+  }
+});
+
+const { sender } = mergeRequestSenderHandler;
 
 const clerkClient = Clerk({ secretKey: Config.CLERK_SECRET_KEY });
 const client = createClient({
@@ -87,7 +134,7 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (evt) => 
     timestamp: new Date().getTime(),
   });
 
-  const arrayOfExtractMergeRequests: extractRepositoryData[] = [];
+  const arrayOfExtractMergeRequests = [];
   for (let i = 2; i <= paginationInfo.totalPages; i++) {
     arrayOfExtractMergeRequests.push({
       repository,
@@ -100,7 +147,7 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (evt) => 
     });
   }
 
-  await extractMergeRequestMessage.sendAll(arrayOfExtractMergeRequests, {
+  await sender.sendAll(arrayOfExtractMergeRequests, {
     version: 1,
     caller: 'extract-merge-requests',
     sourceControl,
@@ -108,39 +155,5 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (evt) => 
     timestamp: new Date().getTime(),
   });
 
-});
-
-export const queueHandler = QueueHandler(extractMergeRequestMessage, async (message) => {
-
-  if (!message) {
-    console.warn("Expected message to have content,but get empty")
-    return;
-  }
-
-  context.integrations.sourceControl = await initSourceControl(message.metadata.userId, message.metadata.sourceControl);
-
-  const { namespace, pagination, repository } = message.content;
-
-  if (!namespace) throw new Error("Invalid namespace id");
-
-  const { mergeRequests } = await getMergeRequests(
-    {
-      externalRepositoryId: repository.externalId,
-      namespaceName: namespace.name,
-      repositoryName: repository.name,
-      repositoryId: repository.id,
-      page: pagination.page,
-      perPage: pagination.perPage,
-    },
-    context,
-  );
-
-  await extractMergeRequestsEvent.publish({ mergeRequestIds: mergeRequests.map(mr => mr.id), namespaceId: namespace.id, repositoryId: repository.id }, {
-    version: 1,
-    caller: 'extract-merge-requests',
-    sourceControl: message.metadata.sourceControl,
-    userId: message.metadata.userId,
-    timestamp: new Date().getTime(),
-  });
-
 })
+
