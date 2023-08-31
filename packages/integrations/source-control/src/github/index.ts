@@ -6,49 +6,49 @@ import type { NewRepository, NewNamespace, NewMergeRequest, NewMember, NewMergeR
 import type { Pagination, TimePeriod } from '../source-control';
 
 const FILE_STATUS_FLAGS_MAPPING: Record<
-      "added"
-      | "removed"
-      | "modified"
-      | "renamed"
-      | "copied"
-      | "changed"
-      | "unchanged", Pick<NewMergeRequestDiff, "newFile" | "renamedFile" | "deletedFile">> = {
-      "modified": {
-        newFile: false,
-        renamedFile: false,
-        deletedFile: false,
-      },
-      "renamed": {
-        newFile: false,
-        renamedFile: true,
-        deletedFile: false,
-      },
-      "added": {
-        newFile: true,
-        renamedFile: false,
-        deletedFile: false,
-      },
-      "changed": {
-        newFile: false,
-        deletedFile: false,
-        renamedFile: false,
-      },
-      "copied": {
-        newFile: false,
-        deletedFile: false,
-        renamedFile: false,
-      },
-      "removed": {
-        newFile: false,
-        deletedFile: true,
-        renamedFile: false,
-      },
-      "unchanged": {
-        newFile: false,
-        deletedFile: false,
-        renamedFile: false,
-      }
-    }
+  "added"
+  | "removed"
+  | "modified"
+  | "renamed"
+  | "copied"
+  | "changed"
+  | "unchanged", Pick<NewMergeRequestDiff, "newFile" | "renamedFile" | "deletedFile">> = {
+  "modified": {
+    newFile: false,
+    renamedFile: false,
+    deletedFile: false,
+  },
+  "renamed": {
+    newFile: false,
+    renamedFile: true,
+    deletedFile: false,
+  },
+  "added": {
+    newFile: true,
+    renamedFile: false,
+    deletedFile: false,
+  },
+  "changed": {
+    newFile: false,
+    deletedFile: false,
+    renamedFile: false,
+  },
+  "copied": {
+    newFile: false,
+    deletedFile: false,
+    renamedFile: false,
+  },
+  "removed": {
+    newFile: false,
+    deletedFile: true,
+    renamedFile: false,
+  },
+  "unchanged": {
+    newFile: false,
+    deletedFile: false,
+    renamedFile: false,
+  }
+}
 
 export class GitHubSourceControl implements SourceControl {
 
@@ -58,6 +58,52 @@ export class GitHubSourceControl implements SourceControl {
     this.api = new Octokit({
       auth, // TODO: Need to look into https://github.com/octokit/authentication-strategies.js
     })
+  }
+
+  async fetchUserInfo(username: string): Promise<{ member: NewMember }> {
+    const result = await this.api.users.getByUsername({
+      username
+    });
+
+    return {
+      member: {
+        externalId: result.data.id,
+        name: result.data.name,
+        username: result.data.login,
+        email: result.data.email,
+      }
+    }
+  }
+
+  async fetchNamespaceMembers(namespaceName: string, page?: number, perPage?: number): Promise<{ members: NewMember[], pagination: Pagination }> {
+    page = page || 1;
+    perPage = perPage || 30;
+
+    const result = await this.api.orgs.listMembers({
+      org: namespaceName,
+      page,
+      per_page: perPage,
+      affiliation: 'all',
+    });
+
+    const linkHeader = parseLinkHeader(result.headers.link) || { next: { per_page: perPage } };
+
+    const pagination = {
+      page,
+      perPage: ('next' in linkHeader) ? Number(linkHeader.next?.per_page) : Number(linkHeader.prev?.per_page),
+      totalPages: (!('last' in linkHeader)) ? page : Number(linkHeader.last?.page)
+    } satisfies Pagination;
+
+    return {
+      members: result.data.map(member => ({
+        externalId: member.id,
+        name: member.name,
+        username: member.login,
+        email: member.email,
+      })),
+      pagination
+    }
+
   }
 
   async fetchRepository(externalRepositoryId: number, namespaceName: string, repositoryName: string): Promise<{ repository: NewRepository; namespace: NewNamespace }> {
@@ -101,8 +147,9 @@ export class GitHubSourceControl implements SourceControl {
     return {
       members: result.data.map(member => ({
         externalId: member.id,
-        name: member.name || member.login,
-        username: member.login
+        name: member.name,
+        username: member.login,
+        email: member.email,
       })),
       pagination
     }

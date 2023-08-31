@@ -7,8 +7,9 @@ import { z } from 'zod';
 export const members = sqliteTable('members', {
   id: integer('id').primaryKey(),
   externalId: integer('external_id').notNull(),
-  name: text('name').notNull(),
+  name: text('name'),
   username: text('username').notNull(),
+  email: text('email'),
   _createdAt: integer('__created_at', { mode: 'timestamp_ms' }).default(sql`CURRENT_TIMESTAMP`),
   _updatedAt: integer('__updated_at', { mode: 'timestamp_ms' }).default(sql`CURRENT_TIMESTAMP`),
 }, (members) => ({

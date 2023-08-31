@@ -12,6 +12,34 @@ export class GitlabSourceControl implements SourceControl {
     });
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await, @typescript-eslint/no-unused-vars
+  async fetchUserInfo(username: string): Promise<{ member: NewMember }> {
+    throw new Error("Method not implemented.");
+  }
+
+
+  async fetchNamespaceMembers(namespaceName: string, page?: number, perPage?: number): Promise<{ members: NewMember[], pagination: Pagination }> {
+    const { data, paginationInfo } = await this.api.Groups.allProvisionedUsers(namespaceName, {
+      perPage,
+      page: page || 1,
+      pagination: 'offset',
+      showExpanded: true,
+    });
+
+    return {
+      members: data.map(member => ({
+        externalId: member.id,
+        name: member.name,
+        username: member.username,
+      } satisfies NewMember)),
+      pagination: {
+        page: paginationInfo.current,
+        perPage: paginationInfo.perPage,
+        totalPages: paginationInfo.totalPages
+      } satisfies Pagination
+    }
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async fetchRepository(externalRepositoryId: number, namespaceName: string, repositoryName: string): Promise<{ repository: NewRepository, namespace: NewNamespace }> {
     const project = await this.api.Projects.show(externalRepositoryId);
@@ -42,7 +70,8 @@ export class GitlabSourceControl implements SourceControl {
       members: data.map(member => ({
         externalId: member.id,
         name: member.name,
-        username: member.username
+        username: member.username,
+        email: member.email,
       } satisfies NewMember)),
       pagination: {
         page: paginationInfo.current,
