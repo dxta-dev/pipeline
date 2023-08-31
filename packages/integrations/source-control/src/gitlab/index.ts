@@ -150,12 +150,12 @@ export class GitlabSourceControl implements SourceControl {
 
     return {
       mergeRequestNotes: data.map((mergeRequestNote) => ({
-        authorExternalId: mergeRequestNote.author.id,
-        authorUsername: mergeRequestNote.author.username,
+        externalId: mergeRequestNote.id,
+        mergeRequestId: mergeRequest.id,
         createdAt: new Date(mergeRequestNote.created_at),
         updatedAt: new Date(mergeRequestNote.updated_at),
-        externalId: mergeRequestNote.id,
-        mergeRequestId: mergeRequest.id
+        authorUsername: mergeRequestNote.author.username,
+        authorExternalId: mergeRequestNote.author.id,
       }))
     };
   }

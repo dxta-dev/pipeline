@@ -219,12 +219,12 @@ export class GitHubSourceControl implements SourceControl {
 
     return {
       mergeRequestNotes: response.data.map(mergeRequestNote => ({
-        authorExternalId: mergeRequestNote.user.id,
-        authorUsername: mergeRequestNote.user.login,
-        createdAt: new Date(mergeRequestNote.created_at),
         externalId: mergeRequestNote.id,
         mergeRequestId: mergeRequest.id,
+        createdAt: new Date(mergeRequestNote.created_at),
         updatedAt: new Date(mergeRequestNote.updated_at),
+        authorUsername: mergeRequestNote.user.login,
+        authorExternalId: mergeRequestNote.user.id,
       }))
     }
   }
