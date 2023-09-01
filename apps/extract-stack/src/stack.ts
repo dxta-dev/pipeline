@@ -26,6 +26,17 @@ export function ExtractStack({ stack }: StackContext) {
           detailType: ["mergeRequest"],
         },
       },
+      githubMembers: {
+        pattern: {
+          source: ["extract"],
+          detailType: ["members"],
+          detail: {
+            metadata: {
+              sourceControl: ["github"],
+            }
+          }
+        }
+      },
     },
     defaults: {
       retries: 10,
@@ -35,6 +46,7 @@ export function ExtractStack({ stack }: StackContext) {
       },
     },
   });
+
   const extractQueue = new Queue(stack, "ExtractQueue");
   extractQueue.addConsumer(stack, {
     cdk: {
@@ -50,8 +62,17 @@ export function ExtractStack({ stack }: StackContext) {
         DATABASE_URL,
         CLERK_SECRET_KEY,
         DATABASE_AUTH_TOKEN,
-      ], // Issue: need to bind bus because same file
+      ],
       handler: "src/queue.handler",
+    },
+  });
+
+  bus.addTargets(stack, "githubMembers", {
+    extractUserInfo: {
+      function: {
+        bind: [bus, extractQueue],
+        handler: "src/extract-member-info.eventHandler",
+      },
     },
   });
 
@@ -80,7 +101,7 @@ export function ExtractStack({ stack }: StackContext) {
         handler: "src/extract-merge-request-diffs.eventHandler",
       }
     }
-  })
+  });
 
   bus.addTargets(stack, "mergeRequests", {
     extractMergeRequestCommits: {
@@ -89,7 +110,7 @@ export function ExtractStack({ stack }: StackContext) {
         handler: "src/extract-merge-request-commits.eventHandler",
       }
     }
-  })
+  });
 
   bus.addTargets(stack, "mergeRequests", {
     extractMergeRequestNotes: {
@@ -98,7 +119,7 @@ export function ExtractStack({ stack }: StackContext) {
         handler: "src/extract-merge-request-notes.eventHandler",
       }
     }
-  })
+  });
 
   const ENVSchema = z.object({
     CLERK_JWT_ISSUER: z.string(),

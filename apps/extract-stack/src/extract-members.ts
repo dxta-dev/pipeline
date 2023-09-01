@@ -1,5 +1,5 @@
 import { EventHandler } from "sst/node/event-bus";
-import { extractRepositoryEvent } from "./events";
+import { extractMembersEvent, extractRepositoryEvent } from "./events";
 import { Clerk } from "@clerk/clerk-sdk-node";
 import { createClient } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
@@ -82,7 +82,7 @@ const extractMembersPage = async ({ namespace, repository, sourceControl, userId
 
   context.integrations.sourceControl = await initSourceControl(userId, sourceControl);
 
-  const { paginationInfo: resultPaginationInfo } = await getMembers({
+  const { members, paginationInfo: resultPaginationInfo } = await getMembers({
     externalRepositoryId: repository.externalId,
     namespaceName: namespace.name,
     repositoryId: repository.id,
@@ -91,7 +91,18 @@ const extractMembersPage = async ({ namespace, repository, sourceControl, userId
     page: page
   }, context);
 
-  return resultPaginationInfo;
+  await extractMembersEvent.publish({
+    memberIds: members.map(member => member.id)
+  }, {
+    version: 1,
+    caller: 'extract-member',
+    sourceControl: sourceControl,
+    userId: userId,
+    timestamp: new Date().getTime(),
+  });
+
+
+  return { members, pagination: resultPaginationInfo };
 };
 
 export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
@@ -101,7 +112,7 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
   if (!repository) throw new Error("invalid repo id");
   if (!namespace) throw new Error("Invalid namespace id");
 
-  const pagination = await extractMembersPage({
+  const { pagination } = await extractMembersPage({
     namespace: namespace,
     repository: repository,
     sourceControl: ev.metadata.sourceControl,
@@ -130,5 +141,6 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
     sourceControl: ev.metadata.sourceControl,
     userId: ev.metadata.userId,
     timestamp: new Date().getTime(),
-  })
+  });
+
 });

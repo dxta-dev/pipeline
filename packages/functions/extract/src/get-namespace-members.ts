@@ -5,7 +5,6 @@ import type { LibSQLDatabase } from "drizzle-orm/libsql";
 import type { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
 
 export type GetMembersInput = {
-  externalRepositoryId: number;
   namespaceName: string;
   repositoryName: string;
   repositoryId: number;
@@ -18,13 +17,13 @@ export type GetMembersOutput = {
   paginationInfo: Pagination;
 };
 
-export type GetMembersSourceControl = Pick<SourceControl, "fetchMembers">;
+export type GetMembersSourceControl = Pick<SourceControl, "fetchNamespaceMembers">;
 export type GetMembersEntities = Pick<Entities, "members" | "repositoriesToMembers">;
 
 export type GetMembersFunction = ExtractFunction<GetMembersInput, GetMembersOutput, GetMembersSourceControl, GetMembersEntities>;
 
-export const getMembers: GetMembersFunction = async (
-  { externalRepositoryId, namespaceName, repositoryName, repositoryId, perPage, page },
+export const getNamespaceMembers: GetMembersFunction = async (
+  { namespaceName, repositoryId, perPage, page },
   { integrations, db, entities }
 ) => {
 
@@ -32,19 +31,18 @@ export const getMembers: GetMembersFunction = async (
     throw new Error("Source control integration not configured");
   }
 
-  const { members, pagination } = await integrations.sourceControl.fetchMembers(externalRepositoryId, namespaceName, repositoryName, page, perPage);
+  const { members, pagination } = await integrations.sourceControl.fetchNamespaceMembers(namespaceName, page, perPage);
 
-  // TODO: Deki is a wizard
+  // TODO: Deki is not a wizard
   const insertedMembers = await (db as (LibSQLDatabase & BetterSQLite3Database)).transaction(async (tx) => {
     return Promise.all(members.map(member =>
       tx.insert(entities.members).values(member)
-        .onConflictDoUpdate({ target: entities.members.externalId, set: { username: member.username } })
+        .onConflictDoUpdate({ target: entities.members.externalId, set: { name: member.name } })
         .returning()
         .get()
     ));
   });
 
-  // Issue: no way to know if passed repositoryId is correct
   await db.insert(entities.repositoriesToMembers)
     .values(insertedMembers.map(member => ({ memberId: member.id, repositoryId })))
     .onConflictDoNothing()

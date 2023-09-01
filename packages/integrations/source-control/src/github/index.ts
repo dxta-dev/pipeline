@@ -60,6 +60,52 @@ export class GitHubSourceControl implements SourceControl {
     })
   }
 
+  async fetchUserInfo(username: string): Promise<{ member: NewMember }> {
+    const result = await this.api.users.getByUsername({
+      username
+    });
+
+    return {
+      member: {
+        externalId: result.data.id,
+        name: result.data.name,
+        username: result.data.login,
+        email: result.data.email,
+      }
+    }
+  }
+
+  async fetchNamespaceMembers(namespaceName: string, page?: number, perPage?: number): Promise<{ members: NewMember[], pagination: Pagination }> {
+    page = page || 1;
+    perPage = perPage || 30;
+
+    const result = await this.api.orgs.listMembers({
+      org: namespaceName,
+      page,
+      per_page: perPage,
+      affiliation: 'all',
+    });
+
+    const linkHeader = parseLinkHeader(result.headers.link) || { next: { per_page: perPage } };
+
+    const pagination = {
+      page,
+      perPage: ('next' in linkHeader) ? Number(linkHeader.next?.per_page) : Number(linkHeader.prev?.per_page),
+      totalPages: (!('last' in linkHeader)) ? page : Number(linkHeader.last?.page)
+    } satisfies Pagination;
+
+    return {
+      members: result.data.map(member => ({
+        externalId: member.id,
+        name: member.name,
+        username: member.login,
+        email: member.email,
+      })),
+      pagination
+    }
+
+  }
+
   async fetchRepository(externalRepositoryId: number, namespaceName: string, repositoryName: string): Promise<{ repository: NewRepository; namespace: NewNamespace }> {
     const result = await this.api.repos.get({
       owner: namespaceName,
@@ -101,8 +147,9 @@ export class GitHubSourceControl implements SourceControl {
     return {
       members: result.data.map(member => ({
         externalId: member.id,
-        name: member.name || member.login,
-        username: member.login
+        name: member.name,
+        username: member.login,
+        email: member.email,
       })),
       pagination
     }

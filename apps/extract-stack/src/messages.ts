@@ -15,6 +15,7 @@ export const metadataSchema = z.object({
 });
 
 export enum MessageKind {
+  MemberInfo = "member-info",
   Member = "member",
   MergeRequest = "merge-request",
   MergeRequestDiff = "merge-request-diff",
