@@ -3,8 +3,6 @@ import { MessageKind } from "./messages";
 import { mergeRequestSenderHandler } from "./extract-merge-requests";
 import { mergeRequestDiffSenderHandler } from "./extract-merge-request-diffs";
 import { mrcsh } from "./extract-merge-request-commits";
-import { mergeRequestSenderHandler } from "./extract-merge-requests";
-import { MessageKind } from "./messages";
 import { memberInfoSenderHandler } from "./extract-member-info";
 import { mergeRequestNoteSenderHandler } from "./extract-merge-request-notes";
 import { memberSenderHandler } from "./extract-members";
