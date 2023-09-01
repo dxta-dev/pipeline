@@ -112,22 +112,11 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
   if (!repository) throw new Error("invalid repo id");
   if (!namespace) throw new Error("Invalid namespace id");
 
-  const { members, pagination } = await extractMembersPage({
+  const { pagination } = await extractMembersPage({
     namespace: namespace,
     repository: repository,
     sourceControl: ev.metadata.sourceControl,
     userId: ev.metadata.userId,
-  });
-
-
-  await extractMembersEvent.publish({
-    memberIds: members.map(member => member.id)
-  }, {
-    version: 1,
-    caller: 'extract-member',
-    sourceControl: ev.metadata.sourceControl,
-    userId: ev.metadata.userId,
-    timestamp: new Date().getTime(),
   });
 
   const arrayOfExtractMemberPageMessageContent: { repository: Repository, namespace: Namespace, pagination: Pagination }[] = [];
