@@ -86,6 +86,15 @@ export function ExtractStack({ stack }: StackContext) {
   });
 
   bus.addTargets(stack, "repository", {
+    extractNamespaceMember: {
+      function: {
+        bind: [bus, extractQueue],
+        handler: "src/extract-namespace-members.eventHandler",
+      },
+    },
+  });
+
+  bus.addTargets(stack, "repository", {
     mergeRequests: {
       function: {
         bind: [bus, extractQueue],
