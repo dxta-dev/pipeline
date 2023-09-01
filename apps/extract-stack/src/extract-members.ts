@@ -108,6 +108,17 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
     userId: ev.metadata.userId,
   });
 
+
+  await extractMembersEvent.publish({
+    memberIds: members.map(member => member.id)
+  }, {
+    version: 1,
+    caller: 'extract-member',
+    sourceControl: ev.metadata.sourceControl,
+    userId: ev.metadata.userId,
+    timestamp: new Date().getTime(),
+  });
+
   const arrayOfExtractMemberPageMessageContent: { repository: Repository, namespace: Namespace, pagination: Pagination }[] = [];
   for (let i = 2; i <= pagination.totalPages; i++) {
     arrayOfExtractMemberPageMessageContent.push({
@@ -125,16 +136,6 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
     return;
 
   await sender.sendAll(arrayOfExtractMemberPageMessageContent, {
-    version: 1,
-    caller: 'extract-member',
-    sourceControl: ev.metadata.sourceControl,
-    userId: ev.metadata.userId,
-    timestamp: new Date().getTime(),
-  });
-
-  await extractMembersEvent.publish({
-    memberIds: members.map(member => member.id)
-  }, {
     version: 1,
     caller: 'extract-member',
     sourceControl: ev.metadata.sourceControl,

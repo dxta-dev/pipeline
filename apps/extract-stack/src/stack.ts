@@ -31,7 +31,9 @@ export function ExtractStack({ stack }: StackContext) {
           source: ["extract"],
           detailType: ["members"],
           detail: {
-            sourceControl: ["github"],
+            metadata: {
+              sourceControl: ["github"],
+            }
           }
         }
       },
@@ -83,7 +85,7 @@ export function ExtractStack({ stack }: StackContext) {
     },
   });
 
-  bus.addTargets(stack, "repository", {
+  /*bus.addTargets(stack, "repository", {
     mergeRequests: {
       function: {
         bind: [bus, extractQueue],
@@ -108,7 +110,7 @@ export function ExtractStack({ stack }: StackContext) {
         handler: "src/extract-merge-request-commits.eventHandler",
       }
     }
-  })
+  }) */
 
   const ENVSchema = z.object({
     CLERK_JWT_ISSUER: z.string(),

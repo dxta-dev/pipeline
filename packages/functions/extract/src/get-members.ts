@@ -38,7 +38,7 @@ export const getMembers: GetMembersFunction = async (
   const insertedMembers = await (db as (LibSQLDatabase & BetterSQLite3Database)).transaction(async (tx) => {
     return Promise.all(members.map(member =>
       tx.insert(entities.members).values(member)
-        .onConflictDoUpdate({ target: entities.members.externalId, set: { name: member.name } })
+        .onConflictDoUpdate({ target: entities.members.externalId, set: { username: member.username } })
         .returning()
         .get()
     ));

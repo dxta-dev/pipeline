@@ -4,16 +4,19 @@ import { mergeRequestDiffSenderHandler } from "./extract-merge-request-diffs";
 import { mrcsh } from "./extract-merge-request-commits";
 import { mergeRequestSenderHandler } from "./extract-merge-requests";
 import { MessageKind } from "./messages";
+import { userInfoSenderHandler } from "./extract-user-info";
 
 const messageHandlers = new Map<string, unknown>();
 
-messageHandlers.set(MessageKind.MergeRequest, mergeRequestSenderHandler);
+/*messageHandlers.set(MessageKind.MergeRequest, mergeRequestSenderHandler);
 
 messageHandlers.set(MessageKind.MergeRequestDiff, mergeRequestDiffSenderHandler);
 
 messageHandlers.set(MessageKind.MergeRequestCommit, mrcsh);
 
-messageHandlers.set(MessageKind.Member, memberSenderHandler);
+messageHandlers.set(MessageKind.Member, memberSenderHandler); */
+
+messageHandlers.set(MessageKind.UserInfo, userInfoSenderHandler);
 
 const logMap = new Map<string, string[]>();
 
@@ -24,6 +27,8 @@ logMap.set(MessageKind.MergeRequestDiff, ['content.repositoryId', 'content.names
 logMap.set(MessageKind.MergeRequestCommit, ['content.repositoryId', 'content.namespaceId', 'content.mergeRequestId']);
 
 logMap.set(MessageKind.Member, ['content.repository.id', 'content.namespace.id']);
+
+logMap.set(MessageKind.UserInfo, ['metadata.sourceControl', 'content.memberId']);
 
 
 export const handler = QueueHandler(messageHandlers, logMap);
