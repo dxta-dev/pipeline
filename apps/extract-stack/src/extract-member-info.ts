@@ -12,8 +12,8 @@ import { MessageKind, metadataSchema } from "./messages";
 import { z } from "zod";
 import { getMemberInfo } from "@acme/extract-functions";
 
-export const userInfoSenderHandler = createMessageHandler({
-  kind: MessageKind.UserInfo,
+export const memberInfoSenderHandler = createMessageHandler({
+  kind: MessageKind.MemberInfo,
   metadataShape: metadataSchema.shape,
   contentShape: z.object({
     memberId: z.number(),
@@ -26,7 +26,7 @@ export const userInfoSenderHandler = createMessageHandler({
   }
 });
 
-const { sender } = userInfoSenderHandler;
+const { sender } = memberInfoSenderHandler;
 
 
 const clerkClient = Clerk({ secretKey: Config.CLERK_SECRET_KEY });
