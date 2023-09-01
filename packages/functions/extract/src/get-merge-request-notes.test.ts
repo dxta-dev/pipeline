@@ -76,8 +76,8 @@ afterAll(async () => {
   await unlink(databaseName);
 });
 
-describe('get-merge-request-diffs:', () => {
-  describe('getMergeRequestDiffs', () => {
+describe('get-merge-request-notes:', () => {
+  describe('getMergeRequestNotes', () => {
     test('should insert merge request note data in the db', async () => {
       const { mergeRequestNotes } = await getMergeRequestNotes({
         mergeRequestId: TEST_MERGE_REQUEST_1.id,
