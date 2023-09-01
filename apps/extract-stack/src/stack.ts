@@ -112,6 +112,15 @@ export function ExtractStack({ stack }: StackContext) {
     }
   });
 
+  bus.addTargets(stack, "mergeRequests", {
+    extractMergeRequestNotes: {
+      function: {
+        bind: [bus,extractQueue],
+        handler: "src/extract-merge-request-notes.eventHandler",
+      }
+    }
+  });
+
   const ENVSchema = z.object({
     CLERK_JWT_ISSUER: z.string(),
     CLERK_JWT_AUDIENCE: z.string(),
