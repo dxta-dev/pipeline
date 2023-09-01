@@ -3,14 +3,14 @@ import { createClient } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
 import { GitHubSourceControl, GitlabSourceControl } from "@acme/source-control";
 import { Config } from "sst/node/config";
-import type { Context, GetUserInfoEntities, GetUserInfoSourceControl } from "@acme/extract-functions";
+import type { Context, GetMemberInfoEntities, GetMemberInfoSourceControl } from "@acme/extract-functions";
 import { members } from "@acme/extract-schema";
 import { EventHandler } from "sst/node/event-bus";
 import { extractMembersEvent } from "./events";
 import { createMessageHandler } from "./create-message";
 import { MessageKind, metadataSchema } from "./messages";
 import { z } from "zod";
-import { getUserInfo } from "@acme/extract-functions";
+import { getMemberInfo } from "@acme/extract-functions";
 
 export const userInfoSenderHandler = createMessageHandler({
   kind: MessageKind.UserInfo,
@@ -22,7 +22,7 @@ export const userInfoSenderHandler = createMessageHandler({
     const { sourceControl, userId } = message.metadata;
     const { memberId } = message.content;
     context.integrations.sourceControl = await initSourceControl(userId, sourceControl);
-    await getUserInfo({ memberId }, context);
+    await getMemberInfo({ memberId }, context);
   }
 });
 
@@ -49,7 +49,7 @@ const initSourceControl = async (userId: string, sourceControl: 'github' | 'gitl
 
 const db = drizzle(client);
 
-const context: Context<GetUserInfoSourceControl, GetUserInfoEntities> = {
+const context: Context<GetMemberInfoSourceControl, GetMemberInfoEntities> = {
   db,
   entities: {
     members,
