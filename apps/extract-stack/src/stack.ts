@@ -62,7 +62,7 @@ export function ExtractStack({ stack }: StackContext) {
         DATABASE_URL,
         CLERK_SECRET_KEY,
         DATABASE_AUTH_TOKEN,
-      ], // Issue: need to bind bus because same file
+      ],
       handler: "src/queue.handler",
     },
   });
@@ -85,7 +85,7 @@ export function ExtractStack({ stack }: StackContext) {
     },
   });
 
-  /*bus.addTargets(stack, "repository", {
+  bus.addTargets(stack, "repository", {
     mergeRequests: {
       function: {
         bind: [bus, extractQueue],
@@ -101,7 +101,7 @@ export function ExtractStack({ stack }: StackContext) {
         handler: "src/extract-merge-request-diffs.eventHandler",
       }
     }
-  })
+  });
 
   bus.addTargets(stack, "mergeRequests", {
     extractMergeRequestCommits: {
@@ -110,7 +110,7 @@ export function ExtractStack({ stack }: StackContext) {
         handler: "src/extract-merge-request-commits.eventHandler",
       }
     }
-  }) */
+  });
 
   const ENVSchema = z.object({
     CLERK_JWT_ISSUER: z.string(),

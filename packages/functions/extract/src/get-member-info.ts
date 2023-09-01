@@ -38,7 +38,10 @@ export const getUserInfo: GetUserInfoFunction = async (
 
   console.log(fetchedMember);
 
-  const insertedMember = await (db as LibSQLDatabase & BetterSQLite3Database).update(entities.members).set(fetchedMember)
+  const insertedMember = await (db as LibSQLDatabase & BetterSQLite3Database)
+    .update(entities.members)
+    .set(fetchedMember)
+    .where(eq(entities.members.id, memberId))
     .returning()
     .get()
 

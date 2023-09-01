@@ -8,13 +8,13 @@ import { userInfoSenderHandler } from "./extract-user-info";
 
 const messageHandlers = new Map<string, unknown>();
 
-/*messageHandlers.set(MessageKind.MergeRequest, mergeRequestSenderHandler);
+messageHandlers.set(MessageKind.MergeRequest, mergeRequestSenderHandler);
 
 messageHandlers.set(MessageKind.MergeRequestDiff, mergeRequestDiffSenderHandler);
 
 messageHandlers.set(MessageKind.MergeRequestCommit, mrcsh);
 
-messageHandlers.set(MessageKind.Member, memberSenderHandler); */
+messageHandlers.set(MessageKind.Member, memberSenderHandler);
 
 messageHandlers.set(MessageKind.UserInfo, userInfoSenderHandler);
 

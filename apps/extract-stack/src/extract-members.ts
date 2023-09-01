@@ -91,6 +91,17 @@ const extractMembersPage = async ({ namespace, repository, sourceControl, userId
     page: page
   }, context);
 
+  await extractMembersEvent.publish({
+    memberIds: members.map(member => member.id)
+  }, {
+    version: 1,
+    caller: 'extract-member',
+    sourceControl: sourceControl,
+    userId: userId,
+    timestamp: new Date().getTime(),
+  });
+
+
   return { members, pagination: resultPaginationInfo };
 };
 
