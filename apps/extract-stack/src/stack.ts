@@ -71,7 +71,7 @@ export function ExtractStack({ stack }: StackContext) {
     extractUserInfo: {
       function: {
         bind: [bus, extractQueue],
-        handler: "src/extract-user-info.eventHandler",
+        handler: "src/extract-member-info.eventHandler",
       },
     },
   });
