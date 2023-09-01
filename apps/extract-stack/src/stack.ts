@@ -20,12 +20,12 @@ export function ExtractStack({ stack }: StackContext) {
           detailType: ["repository"],
         },
       },
-        mergeRequests: {
-          pattern: {
-            source: ["extract"],
-            detailType: ["mergeRequest"],
-          },
+      mergeRequests: {
+        pattern: {
+          source: ["extract"],
+          detailType: ["mergeRequest"],
         },
+      },
     },
     defaults: {
       retries: 10,
@@ -74,21 +74,30 @@ export function ExtractStack({ stack }: StackContext) {
   });
 
   bus.addTargets(stack, "mergeRequests", {
-    extractMergeRequestDiffs:{
+    extractMergeRequestDiffs: {
       function: {
         bind: [bus, extractQueue],
         handler: "src/extract-merge-request-diffs.eventHandler",
       }
-    } 
+    }
   })
 
   bus.addTargets(stack, "mergeRequests", {
-    extractMergeRequestCommits:{
+    extractMergeRequestCommits: {
       function: {
         bind: [bus, extractQueue],
         handler: "src/extract-merge-request-commits.eventHandler",
       }
-    } 
+    }
+  })
+
+  bus.addTargets(stack, "mergeRequests", {
+    extractMergeRequestNotes: {
+      function: {
+        bind: [bus,extractQueue],
+        handler: "src/extract-merge-request-notes.eventHandler",
+      }
+    }
   })
 
   const ENVSchema = z.object({

@@ -19,5 +19,6 @@ export enum MessageKind {
   MergeRequest = "merge-request",
   MergeRequestDiff = "merge-request-diff",
   MergeRequestCommit = "merge-request-commit",
+  MergeRequestNote = "merge-request-note",
 };
 
