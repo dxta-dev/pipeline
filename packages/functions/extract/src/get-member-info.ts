@@ -5,20 +5,20 @@ import type { LibSQLDatabase } from "drizzle-orm/libsql";
 import type { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
 import { eq } from "drizzle-orm";
 
-export type GetUserInfoInput = {
+export type GetMemberInfoInput = {
   memberId: number;
 };
 
-export type GetUserInfoOutput = {
+export type GetMemberInfoOutput = {
   member: Member;
 };
 
-export type GetUserInfoSourceControl = Pick<SourceControl, "fetchUserInfo">;
-export type GetUserInfoEntities = Pick<Entities, "members">;
+export type GetMemberInfoSourceControl = Pick<SourceControl, "fetchUserInfo">;
+export type GetMemberInfoEntities = Pick<Entities, "members">;
 
-export type GetUserInfoFunction = ExtractFunction<GetUserInfoInput, GetUserInfoOutput, GetUserInfoSourceControl, GetUserInfoEntities>;
+export type GetMemberInfoFunction = ExtractFunction<GetMemberInfoInput, GetMemberInfoOutput, GetMemberInfoSourceControl, GetMemberInfoEntities>;
 
-export const getUserInfo: GetUserInfoFunction = async (
+export const getMemberInfo: GetMemberInfoFunction = async (
   { memberId },
   { integrations, db, entities }
 ) => {
@@ -35,8 +35,6 @@ export const getUserInfo: GetUserInfoFunction = async (
   }
 
   const { member: fetchedMember } = await integrations.sourceControl.fetchUserInfo(member.username);
-
-  console.log(fetchedMember);
 
   const insertedMember = await (db as LibSQLDatabase & BetterSQLite3Database)
     .update(entities.members)
