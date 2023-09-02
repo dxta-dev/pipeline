@@ -29,7 +29,7 @@ beforeAll(() => {
     externalId: 1000,
   }).run();
 
-  fetchNamespaceMembers = jest.fn((namespaceName, page?: number, perPage?: number) => {
+  fetchNamespaceMembers = jest.fn((_externalNamespaceId, namespaceName, page?: number, perPage?: number) => {
     switch (namespaceName) {
       case 'crocoder-dev':
         return Promise.resolve({
@@ -70,6 +70,7 @@ describe('get-namespace-members:', () => {
   describe('getNamespaceMembers', () => {
     test('should insert member data in the database', async () => {
       const { members, paginationInfo } = await getNamespaceMembers({
+        externalNamespaceId: 1000,
         namespaceName: 'crocoder-dev',
         repositoryId: 1,
       }, context);
