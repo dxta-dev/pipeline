@@ -7,22 +7,12 @@ import { createClient } from '@libsql/client';
 import { drizzle } from 'drizzle-orm/libsql';
 import { z } from "zod";
 import { Config } from "sst/node/config";
-import { Clerk } from "@clerk/clerk-sdk-node";
 import { ApiHandler, useJsonBody } from 'sst/node/api';
+import { getClerkUserToken } from "./get-clerk-user-token";
 
-const clerkClient = Clerk({ secretKey: Config.CLERK_SECRET_KEY });
 const client = createClient({ url: Config.DATABASE_URL, authToken: Config.DATABASE_AUTH_TOKEN });
 
 const db = drizzle(client);
-
-
-const fetchSourceControlAccessToken = async (userId: string, forgeryIdProvider: 'oauth_github' | 'oauth_gitlab') => {
-  const [userOauthAccessTokenPayload, ...rest] = await clerkClient.users.getUserOauthAccessToken(userId, forgeryIdProvider);
-  if (!userOauthAccessTokenPayload) throw new Error("Failed to get token");
-  if (rest.length !== 0) throw new Error("wtf ?");
-
-  return userOauthAccessTokenPayload.token;
-}
 
 const context: Context<GetRepositorySourceControl, GetRepositoryEntities> = {
   entities: {
@@ -90,7 +80,7 @@ export const handler = ApiHandler(async (ev) => {
   const { repositoryId, repositoryName, namespaceName, sourceControl } = input;
 
   try {
-    sourceControlAccessToken = await fetchSourceControlAccessToken(sub, `oauth_${sourceControl}`);
+    sourceControlAccessToken = await getClerkUserToken(sub, `oauth_${sourceControl}`);
   } catch (error) {
     return {
       statusCode: 500,
