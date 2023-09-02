@@ -9,7 +9,7 @@ import { memberSenderHandler } from "./extract-members";
 import { namespaceMemberSenderHandler } from "./extract-namespace-members";
 
 const messageHandlers = new Map<string, unknown>();
-/*
+
 messageHandlers.set(MessageKind.MergeRequest, mergeRequestSenderHandler);
 
 messageHandlers.set(MessageKind.MergeRequestDiff, mergeRequestDiffSenderHandler);
@@ -19,7 +19,7 @@ messageHandlers.set(MessageKind.MergeRequestCommit, mrcsh);
 messageHandlers.set(MessageKind.MergeRequestNote, mergeRequestNoteSenderHandler);
 
 messageHandlers.set(MessageKind.Member, memberSenderHandler);
-*/
+
 messageHandlers.set(MessageKind.NamespaceMember, namespaceMemberSenderHandler);
 
 messageHandlers.set(MessageKind.MemberInfo, memberInfoSenderHandler);

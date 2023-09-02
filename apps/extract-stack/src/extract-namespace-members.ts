@@ -83,6 +83,7 @@ const extractNamespaceMembersPage = async ({ namespace, repositoryId, sourceCont
   context.integrations.sourceControl = await initSourceControl(userId, sourceControl);
 
   const { members, paginationInfo: resultPaginationInfo } = await getNamespaceMembers({
+    externalNamespaceId: namespace.externalId,
     namespaceName: namespace.name,
     repositoryId,
     perPage: perPage,

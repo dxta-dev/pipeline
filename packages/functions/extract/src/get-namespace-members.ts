@@ -5,6 +5,7 @@ import type { LibSQLDatabase } from "drizzle-orm/libsql";
 import type { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
 
 export type GetNamespaceMembersInput = {
+  externalNamespaceId: number;
   namespaceName: string;
   repositoryId: number;
   page?: number;
@@ -22,7 +23,7 @@ export type GetNamespaceMembersEntities = Pick<Entities, "members" | "repositori
 export type GetNamespaceMembersFunction = ExtractFunction<GetNamespaceMembersInput, GetNamespaceMembersOutput, GetNamespaceMembersSourceControl, GetNamespaceMembersEntities>;
 
 export const getNamespaceMembers: GetNamespaceMembersFunction = async (
-  { namespaceName, repositoryId, perPage, page },
+  { externalNamespaceId, namespaceName, repositoryId, perPage, page },
   { integrations, db, entities }
 ) => {
 
@@ -30,7 +31,8 @@ export const getNamespaceMembers: GetNamespaceMembersFunction = async (
     throw new Error("Source control integration not configured");
   }
 
-  const { members, pagination } = await integrations.sourceControl.fetchNamespaceMembers(namespaceName, page, perPage);
+
+  const { members, pagination } = await integrations.sourceControl.fetchNamespaceMembers(externalNamespaceId, namespaceName, page, perPage);
 
   // TODO: Deki is not a wizard
   const insertedMembers = await (db as (LibSQLDatabase & BetterSQLite3Database)).transaction(async (tx) => {

@@ -75,7 +75,7 @@ export class GitHubSourceControl implements SourceControl {
     }
   }
 
-  async fetchNamespaceMembers(namespaceName: string, page?: number, perPage?: number): Promise<{ members: NewMember[], pagination: Pagination }> {
+  async fetchNamespaceMembers(_externalNamespaceId: number, namespaceName: string, page?: number, perPage?: number): Promise<{ members: NewMember[], pagination: Pagination }> {
     page = page || 1;
     perPage = perPage || 30;
 

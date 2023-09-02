@@ -13,13 +13,14 @@ export class GitlabSourceControl implements SourceControl {
   }
 
   // eslint-disable-next-line @typescript-eslint/require-await, @typescript-eslint/no-unused-vars
-  async fetchUserInfo(username: string): Promise<{ member: NewMember }> {
+  async fetchUserInfo(_username: string): Promise<{ member: NewMember }> {
     throw new Error("Method not implemented.");
   }
 
 
-  async fetchNamespaceMembers(namespaceName: string, page?: number, perPage?: number): Promise<{ members: NewMember[], pagination: Pagination }> {
-    const { data, paginationInfo } = await this.api.GroupMembers.all(namespaceName, {
+  async fetchNamespaceMembers(externalNamespaceId: number, _namespaceName: string, page?: number, perPage?: number): Promise<{ members: NewMember[], pagination: Pagination }> {
+    console.log(externalNamespaceId, _namespaceName, page, perPage);
+    const { data, paginationInfo } = await this.api.GroupMembers.all(externalNamespaceId, {
       perPage,
       page: page || 1,
       pagination: 'offset',
