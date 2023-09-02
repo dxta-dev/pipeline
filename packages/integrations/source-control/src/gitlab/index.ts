@@ -19,7 +19,6 @@ export class GitlabSourceControl implements SourceControl {
 
 
   async fetchNamespaceMembers(externalNamespaceId: number, _namespaceName: string, page?: number, perPage?: number): Promise<{ members: NewMember[], pagination: Pagination }> {
-    console.log(externalNamespaceId, _namespaceName, page, perPage);
     const { data, paginationInfo } = await this.api.GroupMembers.all(externalNamespaceId, {
       perPage,
       page: page || 1,
