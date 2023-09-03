@@ -1,6 +1,5 @@
 
 import { describe, expect, test } from '@jest/globals';
-import { unlink } from 'fs/promises';
 import { getMergeRequests } from './get-merge-requests';
 
 import { drizzle } from "drizzle-orm/better-sqlite3";
@@ -16,10 +15,8 @@ let db: ReturnType<typeof drizzle>;
 let context: Context<GetMergeRequestsSourceControl, GetMergeRequestsEntities>;
 let fetchMergeRequests: SourceControl['fetchMergeRequests'];
 
-const databaseName = 'fetch-merge-requests.db';
-
 beforeAll(() => {
-  betterSqlite = new Database(databaseName);
+  betterSqlite = new Database(':memory:');
   db = drizzle(betterSqlite);
 
   migrate(db, { migrationsFolder: "../../../migrations/extract" });
@@ -86,9 +83,8 @@ beforeAll(() => {
 
 });
 
-afterAll(async () => {
+afterAll(() => {
   betterSqlite.close();
-  await unlink(databaseName);
 });
 
 describe('get-merge-request:', () => {
