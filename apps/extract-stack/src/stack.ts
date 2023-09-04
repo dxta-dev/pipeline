@@ -86,6 +86,15 @@ export function ExtractStack({ stack }: StackContext) {
   });
 
   bus.addTargets(stack, "repository", {
+    extractNamespaceMember: {
+      function: {
+        bind: [bus, extractQueue],
+        handler: "src/extract-namespace-members.eventHandler",
+      },
+    },
+  });
+
+  bus.addTargets(stack, "repository", {
     mergeRequests: {
       function: {
         bind: [bus, extractQueue],
@@ -119,7 +128,7 @@ export function ExtractStack({ stack }: StackContext) {
         handler: "src/extract-merge-request-notes.eventHandler",
       }
     }
-  });
+  }); 
 
   const ENVSchema = z.object({
     CLERK_JWT_ISSUER: z.string(),

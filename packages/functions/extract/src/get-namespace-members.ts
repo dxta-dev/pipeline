@@ -4,26 +4,26 @@ import type { Pagination, SourceControl } from "@acme/source-control";
 import type { LibSQLDatabase } from "drizzle-orm/libsql";
 import type { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
 
-export type GetMembersInput = {
+export type GetNamespaceMembersInput = {
+  externalNamespaceId: number;
   namespaceName: string;
-  repositoryName: string;
   repositoryId: number;
   page?: number;
   perPage?: number;
 };
 
-export type GetMembersOutput = {
+export type GetNamespaceMembersOutput = {
   members: Member[];
   paginationInfo: Pagination;
 };
 
-export type GetMembersSourceControl = Pick<SourceControl, "fetchNamespaceMembers">;
-export type GetMembersEntities = Pick<Entities, "members" | "repositoriesToMembers">;
+export type GetNamespaceMembersSourceControl = Pick<SourceControl, "fetchNamespaceMembers">;
+export type GetNamespaceMembersEntities = Pick<Entities, "members" | "repositoriesToMembers">;
 
-export type GetMembersFunction = ExtractFunction<GetMembersInput, GetMembersOutput, GetMembersSourceControl, GetMembersEntities>;
+export type GetNamespaceMembersFunction = ExtractFunction<GetNamespaceMembersInput, GetNamespaceMembersOutput, GetNamespaceMembersSourceControl, GetNamespaceMembersEntities>;
 
-export const getNamespaceMembers: GetMembersFunction = async (
-  { namespaceName, repositoryId, perPage, page },
+export const getNamespaceMembers: GetNamespaceMembersFunction = async (
+  { externalNamespaceId, namespaceName, repositoryId, perPage, page },
   { integrations, db, entities }
 ) => {
 
@@ -31,13 +31,14 @@ export const getNamespaceMembers: GetMembersFunction = async (
     throw new Error("Source control integration not configured");
   }
 
-  const { members, pagination } = await integrations.sourceControl.fetchNamespaceMembers(namespaceName, page, perPage);
+
+  const { members, pagination } = await integrations.sourceControl.fetchNamespaceMembers(externalNamespaceId, namespaceName, page, perPage);
 
   // TODO: Deki is not a wizard
   const insertedMembers = await (db as (LibSQLDatabase & BetterSQLite3Database)).transaction(async (tx) => {
     return Promise.all(members.map(member =>
       tx.insert(entities.members).values(member)
-        .onConflictDoUpdate({ target: entities.members.externalId, set: { name: member.name } })
+        .onConflictDoUpdate({ target: entities.members.externalId, set: { username: member.username } })
         .returning()
         .get()
     ));

@@ -6,6 +6,7 @@ import { mrcsh } from "./extract-merge-request-commits";
 import { memberInfoSenderHandler } from "./extract-member-info";
 import { mergeRequestNoteSenderHandler } from "./extract-merge-request-notes";
 import { memberSenderHandler } from "./extract-members";
+import { namespaceMemberSenderHandler } from "./extract-namespace-members";
 
 const messageHandlers = new Map<string, unknown>();
 
@@ -18,6 +19,8 @@ messageHandlers.set(MessageKind.MergeRequestCommit, mrcsh);
 messageHandlers.set(MessageKind.MergeRequestNote, mergeRequestNoteSenderHandler);
 
 messageHandlers.set(MessageKind.Member, memberSenderHandler);
+
+messageHandlers.set(MessageKind.NamespaceMember, namespaceMemberSenderHandler);
 
 messageHandlers.set(MessageKind.MemberInfo, memberInfoSenderHandler);
 
@@ -33,11 +36,8 @@ logMap.set(MessageKind.MergeRequestNote, ['content.repositoryId', 'content.names
 
 logMap.set(MessageKind.Member, ['content.repository.id', 'content.namespace.id']);
 
+logMap.set(MessageKind.NamespaceMember, ['content.repositoryId', 'content.namespace.id']);
+
 logMap.set(MessageKind.MemberInfo, ['metadata.sourceControl', 'content.memberId']);
 
-
 export const handler = QueueHandler(messageHandlers, logMap);
-
-
-
-

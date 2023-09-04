@@ -6,3 +6,4 @@ export * from "./get-merge-request-commits";
 export * from "./get-merge-request-notes";
 export * from "./config";
 export * from "./get-member-info";
+export * from "./get-namespace-members";
