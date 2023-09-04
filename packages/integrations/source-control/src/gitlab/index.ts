@@ -173,7 +173,7 @@ export class GitlabSourceControl implements SourceControl {
   }
 
   async fetchMergeRequestNotes(repository: Repository, namespace: Namespace, mergeRequest: MergeRequest): Promise<{ mergeRequestNotes: NewMergeRequestNote[] }> {
-    const { data } = await this.api.MergeRequestNotes.all(repository.id, mergeRequest.mergeRequestId, {
+    const { data } = await this.api.MergeRequestNotes.all(repository.externalId, mergeRequest.mergeRequestId, {
       showExpanded: true
     });
 
