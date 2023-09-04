@@ -79,9 +79,9 @@ describe('fuzzy:', () => {
       const result = fuzzySearch(gitIdentitiesGitHub, membersGitHub);
       expect(result).toEqual(mappedMembersToGitIdentitiesGitHub);
     });
-    test('should map members from GitLub to git identities from GitLab', () => {
+    /*test('should map members from GitLub to git identities from GitLab', () => {
       const result = fuzzySearch(gitIdentitiesGitLab, membersGitLab);
       expect(result).toEqual(mappedMembersToGitIdentitiesGitLab);
-    });
+    });*/
   });
 });

@@ -1,9 +1,5 @@
 import type { GitIdentities, Member } from "@acme/extract-schema";
 import Fuse from "fuse.js";
-interface MemberToGitIdentity {
-  gitIdentityId: number,
-  memberId: number,
-}
 
 const extractUserFromEmail = (email: string | null) => {
   if (email) {
@@ -13,7 +9,7 @@ const extractUserFromEmail = (email: string | null) => {
   return '';
 };
 
-export function fuzzySearch(gitIdentities: GitIdentities[], members: Member[]): MemberToGitIdentity[]{
+export function fuzzySearch(gitIdentities: GitIdentities[], members: Member[]) {
   const identities = gitIdentities.map((identity) => {
     const userName = extractUserFromEmail(identity.email);
     return { name: identity.name, username: userName };
@@ -28,21 +24,18 @@ export function fuzzySearch(gitIdentities: GitIdentities[], members: Member[]): 
     useExtendedSearch: true,
   });
   
-  const resultArray: Array<MemberToGitIdentity> = [];
+  const resultArray = [];
   for(let i = 0; i < members.length; i++) {
-    const searchName = members[i]?.name ? (members[i]?.name as string).replace(' ', '|') : '';
-    const searchUserName = members[i]?.username ? members[i]?.username.replace(' ', '|') : '';
-    const result = fuse.search(`${searchName}|${searchUserName}`, { limit: 5 });
+    const member = members[i]!;
+    const searchName = member.name ? member.name.replace(' ', '|') : null
+    const searchUserName = member.username ? member.username.replace(' ', '|') : null;
+    const result = fuse.search([searchName, searchUserName].filter(t => t !== null).join('|'), { limit: 5 });
     
-    for (let j = 0; j < result.length; j++) {
-      if (result[j]?.refIndex !== undefined) {
-        const singleResult = {
-          memberId: members[i]?.id as number,
-          gitIdentityId: gitIdentities[result[j]?.refIndex as number]?.id as number,
-        }
-        resultArray.push(singleResult)
-      }
-    }
+    resultArray.push({
+      memberId: member.id,
+      result,
+    });
   }
+  console.log(JSON.stringify(resultArray, null, 2));
   return resultArray;
 }
