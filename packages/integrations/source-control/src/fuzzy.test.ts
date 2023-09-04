@@ -1,7 +1,6 @@
 import { describe, expect, test } from '@jest/globals';
 import { fuzzySearch } from './fuzzy'
 
-
 const membersGitHub = [
   { id: 1, externalId: 6842718, name: 'Danica Pivalica Abram', username: 'danicapivalicaabram', email: 'danica@crocoder.dev'},
   { id: 2, externalId: 7620347, name: 'David Abram', username: 'davidabram', email: 'david@crocoder.dev' },
@@ -30,13 +29,12 @@ const gitIdentitiesGitHub = [
   { id: 10, repositoryId: 1, name: 'GitHub', email: 'noreply@github.com' },
 ];
 
-const githubMappedMembers = new Map<number, Set<number>>;
+const githubMappedMembers = new Map<number, number[]>();
 
-githubMappedMembers.set(2, new Set([2]));
-githubMappedMembers.set(8, new Set([4, 9]));
-githubMappedMembers.set(10, new Set([5, 6]));
-githubMappedMembers.set(12, new Set([7, 3, 8]));
-
+githubMappedMembers.set(2, [2]);
+githubMappedMembers.set(8, [4, 9]);
+githubMappedMembers.set(10, [5, 6]);
+githubMappedMembers.set(12, [3, 7, 8]);
 
 const membersGitLab = [
   { id: 1, externalId: 10978413, name: 'David Abram', username: 'davidabram', email: null},
@@ -55,11 +53,10 @@ const gitIdentitiesGitLab = [
   { id: 3, repositoryId: 2, name: 'David Abram', email: 'david@crocoder.dev' },
 ];
 
+const gitlabMappedMembers = new Map<number, number[]>;
 
-const gitlabMappedMembers = new Map<number, Set<number>>;
-
-gitlabMappedMembers.set(1, new Set([3]));
-gitlabMappedMembers.set(2, new Set([1, 2]));
+gitlabMappedMembers.set(1, [3]);
+gitlabMappedMembers.set(2, [1, 2]);
 
 describe('fuzzy:', () => {
   describe('fuzzy', () => {

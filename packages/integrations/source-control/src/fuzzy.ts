@@ -14,7 +14,7 @@ export function fuzzySearch(gitIdentities: Pick<GitIdentities, 'id' | 'name' | '
 
   const fuse = new Fuse(identities, {
     keys: ['username', 'name', 'email'],
-    threshold: 0.2,
+    threshold: 0.20,
     location: 0,
     distance: 100,
     includeScore: true,
@@ -52,21 +52,19 @@ export function fuzzySearch(gitIdentities: Pick<GitIdentities, 'id' | 'name' | '
           score,
         });
       }
-
     }
-
   }
 
-
-  const result: Map<number, Set<number>> = new Map();
+  const result: Map<number, number[]> = new Map();
   memberMap.forEach((value, key) => {
     if (result.has(value.memberId)) {
       const current = result.get(value.memberId);
       if (current) {
-        current.add(key);
+        current.push(key);
+        current.sort();
       }
     } else {
-      result.set(value.memberId, new Set([key]));
+      result.set(value.memberId, [key]);
     }
   });
   return result;
