@@ -6,36 +6,68 @@ const extractUserFromEmail = (email: string | null) => {
     const [name] = email.split('@');
     return name;
   }
-  return '';
+  return null;
 };
 
-export function fuzzySearch(gitIdentities: GitIdentities[], members: Member[]) {
-  const identities = gitIdentities.map((identity) => {
-    const userName = extractUserFromEmail(identity.email);
-    return { name: identity.name, username: userName };
-  });
-  
+export function fuzzySearch(gitIdentities: Pick<GitIdentities, 'id' | 'name' | 'email'>[], members: Pick<Member, 'id' | 'name' | 'username' | 'email'>[]) {
+  const identities = gitIdentities.map((identity) => ({ name: identity.name, email: identity.email, username: extractUserFromEmail(identity.email) }));
+
   const fuse = new Fuse(identities, {
-    keys: ['username', 'name'],
+    keys: ['username', 'name', 'email'],
     threshold: 0.2,
     location: 0,
     distance: 100,
     includeScore: true,
     useExtendedSearch: true,
   });
-  
-  const resultArray = [];
-  for(let i = 0; i < members.length; i++) {
-    const member = members[i]!;
+
+
+  const memberMap = new Map<number, {
+    memberId: number,
+    score: number,
+  }>();
+
+  for (const member of members) {
     const searchName = member.name ? member.name.replace(' ', '|') : null
     const searchUserName = member.username ? member.username.replace(' ', '|') : null;
-    const result = fuse.search([searchName, searchUserName].filter(t => t !== null).join('|'), { limit: 5 });
-    
-    resultArray.push({
-      memberId: member.id,
-      result,
-    });
+    const searchEmail = member.email ? member.email.replace(' ', '|') : null;
+    const searchResult = fuse.search([searchName, searchUserName, searchEmail].filter(t => t !== null).join('|'), { limit: 5 });
+
+    for (const r of searchResult) {
+      const { score, refIndex } = r;
+
+      const gitIdentity = gitIdentities.at(refIndex);
+
+      if (gitIdentity && memberMap.has(gitIdentity.id) && score) {
+        const currentScore = memberMap.get(gitIdentity.id)?.score;
+        if (currentScore && currentScore > score) {
+          memberMap.set(gitIdentity.id, {
+            memberId: member.id,
+            score,
+          });
+        }
+      } else if (gitIdentity && score) {
+        memberMap.set(gitIdentity.id, {
+          memberId: member.id,
+          score,
+        });
+      }
+
+    }
+
   }
-  console.log(JSON.stringify(resultArray, null, 2));
-  return resultArray;
+
+
+  const result: Map<number, Set<number>> = new Map();
+  memberMap.forEach((value, key) => {
+    if (result.has(value.memberId)) {
+      const current = result.get(value.memberId);
+      if (current) {
+        current.add(key);
+      }
+    } else {
+      result.set(value.memberId, new Set([key]));
+    }
+  });
+  return result;
 }
