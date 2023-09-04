@@ -1,6 +1,5 @@
 import { EventHandler } from "sst/node/event-bus";
 import { extractMembersEvent, extractRepositoryEvent } from "./events";
-import { Clerk } from "@clerk/clerk-sdk-node";
 import { createClient } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
 import { getMembers } from "@acme/extract-functions";
@@ -15,6 +14,7 @@ import { createMessageHandler } from "./create-message";
 import { eq } from "drizzle-orm";
 import { metadataSchema, paginationSchema, MessageKind } from "./messages";
 import { z } from 'zod';
+import { getClerkUserToken } from "./get-clerk-user-token";
 
 export const memberSenderHandler = createMessageHandler({
   kind: MessageKind.Member,
@@ -37,19 +37,10 @@ export const memberSenderHandler = createMessageHandler({
 
 const { sender } = memberSenderHandler;
 
-const clerkClient = Clerk({ secretKey: Config.CLERK_SECRET_KEY });
 const client = createClient({ url: Config.DATABASE_URL, authToken: Config.DATABASE_AUTH_TOKEN });
 
-const fetchSourceControlAccessToken = async (userId: string, forgeryIdProvider: 'oauth_github' | 'oauth_gitlab') => {
-  const [userOauthAccessTokenPayload, ...rest] = await clerkClient.users.getUserOauthAccessToken(userId, forgeryIdProvider);
-  if (!userOauthAccessTokenPayload) throw new Error("Failed to get token");
-  if (rest.length !== 0) throw new Error("wtf ?");
-
-  return userOauthAccessTokenPayload.token;
-}
-
 const initSourceControl = async (userId: string, sourceControl: 'github' | 'gitlab') => {
-  const accessToken = await fetchSourceControlAccessToken(userId, `oauth_${sourceControl}`);
+  const accessToken = await getClerkUserToken(userId, `oauth_${sourceControl}`);
   if (sourceControl === 'github') return new GitHubSourceControl(accessToken);
   if (sourceControl === 'gitlab') return new GitlabSourceControl(accessToken);
   return null;

@@ -1,4 +1,3 @@
-import { Clerk } from "@clerk/clerk-sdk-node";
 import { createClient } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
 import { Config } from "sst/node/config";
@@ -18,6 +17,7 @@ import { eq } from "drizzle-orm";
 import { MessageKind, metadataSchema, paginationSchema } from "./messages";
 import { z } from "zod";
 import { createMessageHandler } from "./create-message";
+import { getClerkUserToken } from "./get-clerk-user-token";
 
 
 export const mergeRequestSenderHandler = createMessageHandler({
@@ -66,7 +66,6 @@ export const mergeRequestSenderHandler = createMessageHandler({
 
 const { sender } = mergeRequestSenderHandler;
 
-const clerkClient = Clerk({ secretKey: Config.CLERK_SECRET_KEY });
 const client = createClient({
   url: Config.DATABASE_URL,
   authToken: Config.DATABASE_AUTH_TOKEN,
@@ -87,19 +86,8 @@ const context: Context<
   db,
 };
 
-const fetchSourceControlAccessToken = async (
-  userId: string,
-  forgeryIdProvider: "oauth_github" | "oauth_gitlab",
-) => {
-  const [userOauthAccessTokenPayload, ...rest] =
-    await clerkClient.users.getUserOauthAccessToken(userId, forgeryIdProvider);
-  if (!userOauthAccessTokenPayload) throw new Error("Failed to get token");
-  if (rest.length !== 0) throw new Error("wtf ?");
-  return userOauthAccessTokenPayload.token;
-};
-
 const initSourceControl = async (userId: string, sourceControl: 'github' | 'gitlab') => {
-  const accessToken = await fetchSourceControlAccessToken(userId, `oauth_${sourceControl}`);
+  const accessToken = await getClerkUserToken(userId, `oauth_${sourceControl}`);
   if (sourceControl === 'github') return new GitHubSourceControl(accessToken);
   if (sourceControl === 'gitlab') return new GitlabSourceControl(accessToken);
   return null;

@@ -5,10 +5,8 @@ import { type GetMergeRequestCommitsEntities, type GetMergeRequestCommitsSourceC
 import { migrate } from "drizzle-orm/better-sqlite3/migrator";
 import { mergeRequestCommits, namespaces, repositories, mergeRequests } from "@acme/extract-schema";
 import type { Repository, Namespace, MergeRequest, NewRepository, NewNamespace, NewMergeRequest } from "@acme/extract-schema";
-import { unlink } from "fs/promises";
 
 let betterSqlite: ReturnType<typeof Database>;
-const databaseName = 'get-merge-request-commits.db';
 let db: ReturnType<typeof drizzle>;
 let context: Context<GetMergeRequestCommitsSourceControl, GetMergeRequestCommitsEntities>;
 let fetchMergeRequestCommits: jest.MockedFunction<GetMergeRequestCommitsSourceControl['fetchMergeRequestCommits']>;
@@ -18,7 +16,7 @@ const TEST_NAMESPACE_1 = { id: 1, externalId: 2000, name: 'TEST_NAMESPACE_NAME' 
 const TEST_MERGE_REQUEST_1 = { id: 1, externalId: 3000, createdAt: new Date(), mergeRequestId: 1, repositoryId: 1, title: "TEST_MR", webUrl: "localhost" } satisfies NewMergeRequest;
 
 beforeAll(() => {
-  betterSqlite = new Database(databaseName);
+  betterSqlite = new Database(':memory:');
   db = drizzle(betterSqlite);
 
   migrate(db, { migrationsFolder: "../../../migrations/extract" });
@@ -74,9 +72,8 @@ beforeAll(() => {
   }
 });
 
-afterAll(async () => {
+afterAll(() => {
   betterSqlite.close();
-  await unlink(databaseName);
 });
 
 describe('get-merge-request-commits:', () => {
