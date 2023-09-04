@@ -1,6 +1,5 @@
 
 import { describe, expect, test } from '@jest/globals';
-import { unlink } from 'fs/promises';
 import { getMergeRequestsDiffs } from './get-merge-request-diffs';
 
 import { drizzle } from "drizzle-orm/better-sqlite3";
@@ -12,7 +11,6 @@ import type { Context } from './config';
 import type { GetMergeRequestDiffsSourceControl, GetMergeRequestDiffsEntities } from './get-merge-request-diffs';
 
 let betterSqlite: ReturnType<typeof Database>;
-const databaseName = 'get-merge-request-diffs.db';
 let db: ReturnType<typeof drizzle>;
 let context: Context<GetMergeRequestDiffsSourceControl, GetMergeRequestDiffsEntities>;
 let fetchMergeRequestDiffs: jest.MockedFunction<GetMergeRequestDiffsSourceControl['fetchMergeRequestDiffs']>;
@@ -22,7 +20,7 @@ const TEST_NAMESPACE_1 = { id: 1, externalId: 2000, name: 'TEST_NAMESPACE_NAME' 
 const TEST_MERGE_REQUEST_1 = { id: 1, externalId: 3000, createdAt: new Date(), mergeRequestId: 1, repositoryId: 1, title: "TEST_MR", webUrl: "localhost" } satisfies NewMergeRequest;
 
 beforeAll(() => {
-  betterSqlite = new Database(databaseName);
+  betterSqlite = new Database(':memory:');
   db = drizzle(betterSqlite);
 
   migrate(db, { migrationsFolder: "../../../migrations/extract" });
@@ -83,9 +81,8 @@ beforeAll(() => {
   }
 });
 
-afterAll(async () => {
+afterAll(() => {
   betterSqlite.close();
-  await unlink(databaseName);
 });
 
 describe('get-merge-request-diffs:', () => {
