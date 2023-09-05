@@ -4,7 +4,6 @@ import { sqliteTable, text, integer, uniqueIndex } from 'drizzle-orm/sqlite-core
 
 export const gitIdentities = sqliteTable('git_identities', {
     id: integer('id').primaryKey(),
-    memberId: integer('member_id').notNull(),
     repositoryId: integer('repository_id').notNull(),
     email: text('email').notNull(), 
     name: text('name').notNull(),
