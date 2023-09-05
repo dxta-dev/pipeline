@@ -6,7 +6,7 @@ export const Enum = <U extends string, T extends Readonly<[U, ...U[]]>>(name: st
   config: { enum: T }
 }>({
   dataType() {
-    return 'integer' // Store enum as integer
+    return 'integer' // Sets sql column data type to integer
   },
   toDriver(value) {
     return config.enum.indexOf(value);

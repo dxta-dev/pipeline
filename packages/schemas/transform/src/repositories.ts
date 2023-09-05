@@ -1,11 +1,12 @@
 import type { InferModel } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
 import { sqliteTable, text, integer, uniqueIndex } from 'drizzle-orm/sqlite-core';
+import { Enum } from './enum-column';
 
 export const repositories = sqliteTable('repositories', {
   id: integer('id').primaryKey(),
   externalId: integer('external_id').notNull(),
-  forgeType: text('forge_type', { enum: ['github', 'gitlab'] }).notNull(),
+  forgeType: Enum('forge_type', { enum: ['github', 'gitlab'] }).notNull(),
   // tenantId: integer('tenant_id').notNull(),
   name: text('name').notNull(),
   // url: text('url').notNull(),
