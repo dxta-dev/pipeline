@@ -16,5 +16,3 @@ export { mergeRequestNotes } from './merge-request-notes';
 export type { MergeRequestNote, NewMergeRequestNote } from './merge-request-notes';
 export { gitIdentities } from './git-identities';
 export type { GitIdentities, NewGitIdentities } from './git-identities';
-export { membersToGitIdentities } from './members-to-git-identities';
-export type { MembersToGitIdentities, NewMembersToGitIdentities } from './members-to-git-identities'
