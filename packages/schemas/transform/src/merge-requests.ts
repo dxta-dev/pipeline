@@ -6,9 +6,9 @@ export const mergeRequests = sqliteTable('merge_requests', {
   id: integer('id').primaryKey(),
   externalId: integer('external_id').notNull(),
   forgeType: text('forge_type', { enum: ['github', 'gitlab'] }).notNull(),
-  // tenantId: integer('tenant_id').notNull(),
+  // TODO: tenantId: integer('tenant_id').notNull(),
   title: text('title').notNull(),
-  // url: text('url').notNull(),
+  // TODO: url: text('url').notNull(),
   _createdAt: integer('__created_at', { mode: 'timestamp_ms' }).default(sql`CURRENT_TIMESTAMP`),
   _updatedAt: integer('__updated_at', { mode: 'timestamp_ms' }).default(sql`CURRENT_TIMESTAMP`),
 }, (mergeRequests) => ({
