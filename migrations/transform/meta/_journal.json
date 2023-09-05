@@ -1,0 +1,13 @@
+{
+  "version": "5",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1693908474081,
+      "tag": "0000_dusty_red_hulk",
+      "breakpoints": true
+    }
+  ]
+}
