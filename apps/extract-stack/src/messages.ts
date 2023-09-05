@@ -14,6 +14,12 @@ export const metadataSchema = z.object({
   userId: z.string(),
 });
 
+export const timePeriodSchema = z.object({
+  from: z.coerce.date(),
+  to: z.coerce.date(),
+});
+
+
 export enum MessageKind {
   MemberInfo = "member-info",
   NamespaceMember = "namespace-member",
