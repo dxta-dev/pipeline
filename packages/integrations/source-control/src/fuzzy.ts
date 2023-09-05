@@ -1,48 +1,71 @@
 import type { GitIdentities, Member } from "@acme/extract-schema";
 import Fuse from "fuse.js";
-interface MemberToGitIdentity {
-  gitIdentityId: number,
-  memberId: number,
-}
 
 const extractUserFromEmail = (email: string | null) => {
   if (email) {
     const [name] = email.split('@');
     return name;
   }
-  return '';
+  return null;
 };
 
-export function fuzzySearch(gitIdentities: GitIdentities[], members: Member[]): MemberToGitIdentity[]{
-  const identities = gitIdentities.map((identity) => {
-    const userName = extractUserFromEmail(identity.email);
-    return { name: identity.name, username: userName };
-  });
-  
+export function fuzzySearch(gitIdentities: Pick<GitIdentities, 'id' | 'name' | 'email'>[], members: Pick<Member, 'id' | 'name' | 'username' | 'email'>[]) {
+  const identities = gitIdentities.map((identity) => ({ name: identity.name, email: identity.email, username: extractUserFromEmail(identity.email) }));
+
   const fuse = new Fuse(identities, {
-    keys: ['username', 'name'],
-    threshold: 0.2,
+    keys: ['username', 'name', 'email'],
+    threshold: 0.20,
     location: 0,
     distance: 100,
     includeScore: true,
     useExtendedSearch: true,
   });
-  
-  const resultArray: Array<MemberToGitIdentity> = [];
-  for(let i = 0; i < members.length; i++) {
-    const searchName = members[i]?.name ? (members[i]?.name as string).replace(' ', '|') : '';
-    const searchUserName = members[i]?.username ? members[i]?.username.replace(' ', '|') : '';
-    const result = fuse.search(`${searchName}|${searchUserName}`, { limit: 5 });
-    
-    for (let j = 0; j < result.length; j++) {
-      if (result[j]?.refIndex !== undefined) {
-        const singleResult = {
-          memberId: members[i]?.id as number,
-          gitIdentityId: gitIdentities[result[j]?.refIndex as number]?.id as number,
+
+
+  const memberMap = new Map<number, {
+    memberId: number,
+    score: number,
+  }>();
+
+  for (const member of members) {
+    const searchName = member.name ? member.name.replace(' ', '|') : null
+    const searchUserName = member.username ? member.username.replace(' ', '|') : null;
+    const searchEmail = member.email ? member.email.replace(' ', '|') : null;
+    const searchResult = fuse.search([searchName, searchUserName, searchEmail].filter(t => t !== null).join('|'), { limit: 5 });
+
+    for (const r of searchResult) {
+      const { score, refIndex } = r;
+
+      const gitIdentity = gitIdentities.at(refIndex);
+
+      if (gitIdentity && memberMap.has(gitIdentity.id) && score) {
+        const currentScore = memberMap.get(gitIdentity.id)?.score;
+        if (currentScore && currentScore > score) {
+          memberMap.set(gitIdentity.id, {
+            memberId: member.id,
+            score,
+          });
         }
-        resultArray.push(singleResult)
+      } else if (gitIdentity && score) {
+        memberMap.set(gitIdentity.id, {
+          memberId: member.id,
+          score,
+        });
       }
     }
   }
-  return resultArray;
+
+  const result: Map<number, number[]> = new Map();
+  memberMap.forEach((value, key) => {
+    if (result.has(value.memberId)) {
+      const current = result.get(value.memberId);
+      if (current) {
+        current.push(key);
+        current.sort();
+      }
+    } else {
+      result.set(value.memberId, [key]);
+    }
+  });
+  return result;
 }
