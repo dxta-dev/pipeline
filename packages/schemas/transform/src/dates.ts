@@ -4,9 +4,9 @@ import { sqliteTable, integer, uniqueIndex } from 'drizzle-orm/sqlite-core';
 export const dates = sqliteTable('dates', {
   id: integer('id').primaryKey(),
   day: integer('day'),
-  week: integer('day'),
-  month: integer('day'),
-  year: integer('day'),
+  week: integer('week'),
+  month: integer('month'),
+  year: integer('year'),
 }, (dates) => ({
   uniqueDateIndex: uniqueIndex('dates_day_week_month_year_idx').on(dates.day, dates.week, dates.month, dates.year)
 }));
