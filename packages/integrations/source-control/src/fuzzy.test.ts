@@ -17,7 +17,6 @@ const membersGitHub = [
 ];
 
 const gitIdentitiesGitHub = [
-  { id: 1, repositoryId: 1, name: 'renovate[bot]', email: '29139614+renovate[bot]@users.noreply.github.com' },
   { id: 2, repositoryId: 1, name: 'David Abram', email: 'david@crocoder.dev' },
   { id: 3, repositoryId: 1, name: 'dejan-crocoder', email: 'dejan@crocoder.dev' },
   { id: 4, repositoryId: 1, name: 'Ante Koceić', email: 'ante@crocoder.dev' },
