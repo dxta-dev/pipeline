@@ -25,6 +25,27 @@ declare module "sst/node/config" {
       value: string;
     }
   }
+}import "sst/node/config";
+declare module "sst/node/config" {
+  export interface SecretResources {
+    "REDIS_URL": {
+      value: string;
+    }
+  }
+}import "sst/node/config";
+declare module "sst/node/config" {
+  export interface SecretResources {
+    "REDIS_TOKEN": {
+      value: string;
+    }
+  }
+}import "sst/node/config";
+declare module "sst/node/config" {
+  export interface ParameterResources {
+    "REDIS_USER_TOKEN_TTL": {
+      value: string;
+    }
+  }
 }import "sst/node/event-bus";
 declare module "sst/node/event-bus" {
   export interface EventBusResources {
