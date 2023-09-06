@@ -12,8 +12,8 @@
   "license": "ISC",
   "dependencies": {
     "@acme/extract-schema": "^1.0.0",
-    "@gitbeaker/core": "^39.8.0",
-    "@gitbeaker/rest": "^39.8.0",
+    "@gitbeaker/core": "^39.13.0",
+    "@gitbeaker/rest": "^39.13.0",
     "@octokit/rest": "^20.0.1",
     "@types/parse-link-header": "^2.0.1",
     "fuse.js": "^6.6.2",
