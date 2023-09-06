@@ -11,6 +11,9 @@ export function ExtractStack({ stack }: StackContext) {
   const DATABASE_URL = new Config.Secret(stack, "DATABASE_URL");
   const DATABASE_AUTH_TOKEN = new Config.Secret(stack, "DATABASE_AUTH_TOKEN");
   const CLERK_SECRET_KEY = new Config.Secret(stack, "CLERK_SECRET_KEY");
+  const REDIS_URL = new Config.Secret(stack, "REDIS_URL");
+  const REDIS_TOKEN = new Config.Secret(stack, "REDIS_TOKEN");
+  const REDIS_USER_TOKEN_TTL = new Config.Parameter(stack, "REDIS_USER_TOKEN_TTL", { value: (20 * 60).toString() });
 
   const bus = new EventBus(stack, "ExtractBus", {
     rules: {
@@ -41,7 +44,7 @@ export function ExtractStack({ stack }: StackContext) {
     defaults: {
       retries: 10,
       function: {
-        bind: [DATABASE_URL, CLERK_SECRET_KEY, DATABASE_AUTH_TOKEN],
+        bind: [DATABASE_URL, CLERK_SECRET_KEY, DATABASE_AUTH_TOKEN, REDIS_URL, REDIS_TOKEN, REDIS_USER_TOKEN_TTL],
         runtime: "nodejs18.x",
       },
     },
@@ -62,6 +65,7 @@ export function ExtractStack({ stack }: StackContext) {
         DATABASE_URL,
         CLERK_SECRET_KEY,
         DATABASE_AUTH_TOKEN,
+        REDIS_URL, REDIS_TOKEN, REDIS_USER_TOKEN_TTL
       ],
       handler: "src/queue.handler",
     },
@@ -124,11 +128,11 @@ export function ExtractStack({ stack }: StackContext) {
   bus.addTargets(stack, "mergeRequests", {
     extractMergeRequestNotes: {
       function: {
-        bind: [bus,extractQueue],
+        bind: [bus, extractQueue],
         handler: "src/extract-merge-request-notes.eventHandler",
       }
     }
-  }); 
+  });
 
   const ENVSchema = z.object({
     CLERK_JWT_ISSUER: z.string(),
@@ -141,7 +145,7 @@ export function ExtractStack({ stack }: StackContext) {
     defaults: {
       authorizer: "JwtAuthorizer",
       function: {
-        bind: [bus, DATABASE_URL, DATABASE_AUTH_TOKEN, CLERK_SECRET_KEY],
+        bind: [bus, DATABASE_URL, DATABASE_AUTH_TOKEN, CLERK_SECRET_KEY, REDIS_URL, REDIS_TOKEN, REDIS_USER_TOKEN_TTL],
         runtime: "nodejs18.x",
       },
     },
