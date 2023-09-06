@@ -21,7 +21,7 @@
     "@jest/globals": "^29.6.2",
     "@types/better-sqlite3": "^7.6.4",
     "@types/jest": "^29.5.3",
-    "better-sqlite3": "^8.5.0",
+    "better-sqlite3": "^8.6.0",
     "ts-jest": "^29.1.1",
     "ts-node": "^10.9.1"
   }
