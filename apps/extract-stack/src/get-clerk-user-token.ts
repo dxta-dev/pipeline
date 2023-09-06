@@ -27,16 +27,28 @@ const fetchClerkUserToken = async (userId: string, provider: SupportedClerkOAuth
 
 export const getClerkUserToken = async (userId: string, provider: SupportedClerkOAuthProviders) => {
   const userTokenCacheKey = `${userId}_${provider}`;
-  const encodedUserTokenCacheValue = await redisClient.get<string>(userTokenCacheKey);
+  let encodedUserTokenCacheValue: string | null;
+
+  try {
+    encodedUserTokenCacheValue = await redisClient.get<string>(userTokenCacheKey);
+  } catch (error) {
+    console.error('RedisClerkTokenCache: read error');
+    console.error(error);
+    encodedUserTokenCacheValue = null;
+  }
 
   if (encodedUserTokenCacheValue !== null) {
-    const [cachedToken, cachedValueId] = decodeUserTokenCacheValue(encodedUserTokenCacheValue);
-    console.log('RedisClerkTokenCache -> Cache hit:', cachedValueId);
+    const [cachedToken] = decodeUserTokenCacheValue(encodedUserTokenCacheValue);
     return cachedToken;
   }
 
-  console.log('RedisClerkTokenCache -> Cache miss :(');
   const userToken = await fetchClerkUserToken(userId, provider);
-  await redisClient.set<string>(userTokenCacheKey, encodeUserTokenCacheValue(userToken), { ex: Number(Config.REDIS_USER_TOKEN_TTL) });
+
+  try {
+    await redisClient.set<string>(userTokenCacheKey, encodeUserTokenCacheValue(userToken), { ex: Number(Config.REDIS_USER_TOKEN_TTL) });
+  } catch (error) {
+    console.error('RedisClerkTokenCache: write error');
+    console.error(error);    
+  }
   return userToken;
 }
