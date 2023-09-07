@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+  },
+  "exclude": [],
+  "include": [
+    ".sst/types/index.ts",
+    "sst.config.ts",
+    "src/**/*.ts",
+    "src/**/*.ts",
+    "src/**/*.cjs",
+    "src/**/*.mjs"
+ ]
+}
