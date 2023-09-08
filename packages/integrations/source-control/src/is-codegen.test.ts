@@ -14,18 +14,15 @@ describe("is-codegen", () =>
         expect(isCodeGen('./packages/a-module/index.ts')).toStrictEqual(false);
       })
 
-      it('should match the root package-lock.json file', () => {
+      it('should match package-lock.json files', () => {
         expect(isCodeGen('package-lock.json')).toStrictEqual(true);
         expect(isCodeGen('./package-lock.json')).toStrictEqual(true);
+        expect(isCodeGen('packages/a-module/package-lock.json')).toStrictEqual(true);
+        expect(isCodeGen('./packages/a-module/package-lock.json')).toStrictEqual(true);
 
         expect(isCodeGen('package-lockajson')).toStrictEqual(false);
         expect(isCodeGen('package-lockaajson')).toStrictEqual(false);
         expect(isCodeGen('package-lock/file/a.json')).toStrictEqual(false);
-      })
-
-      it('should match nested package-lock.json files', () => {
-        expect(isCodeGen('packages/a-module/package-lock.json')).toStrictEqual(true);
-        expect(isCodeGen('./packages/a-module/package-lock.json')).toStrictEqual(true);
       })
 
       it('should match npm-shrinkwrap.json files', () => {
