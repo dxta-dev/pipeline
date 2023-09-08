@@ -36,6 +36,14 @@ describe("is-codegen", () =>
         expect(isCodeGen('./dist/out.min.css')).toStrictEqual(true);        
       })
 
+      it('should match node_module files', ()=> {
+        expect(isCodeGen('node_modules/@types/node/package.json')).toStrictEqual(true);
+        expect(isCodeGen('./node_modules/@types/node/package.json')).toStrictEqual(true);
+        
+        expect(isCodeGen('packages/core/node_modules/@types/node/package.json')).toStrictEqual(true);
+        expect(isCodeGen('./packages/core/node_modules/@types/node/package.json')).toStrictEqual(true);
+      })
+
     })
   })
 )
