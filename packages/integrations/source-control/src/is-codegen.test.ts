@@ -34,11 +34,11 @@ describe("is-codegen", () =>
       })
 
       it('should match minified files', () => {
-        expect(isCodeGen('dist/out.min.js')).toStrictEqual(true);
-        expect(isCodeGen('./dist/out.min.js')).toStrictEqual(true);
+        expect(isCodeGen('dist/index.min.js')).toStrictEqual(true);
+        expect(isCodeGen('./dist/index.min.js')).toStrictEqual(true);
 
-        expect(isCodeGen('dist/out.min.css')).toStrictEqual(true);
-        expect(isCodeGen('./dist/out.min.css')).toStrictEqual(true);
+        expect(isCodeGen('dist/styles.min.css')).toStrictEqual(true);
+        expect(isCodeGen('./dist/styles.min.css')).toStrictEqual(true);
       })
 
       it('should match source map files', ()=> {
