@@ -1,3 +1,3 @@
 export const isCodeGen = (path: string): boolean => {
-  return path.length === 0;
+  return /.?package-lock.json$/.test(path);
 }
