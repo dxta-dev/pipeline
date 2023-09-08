@@ -2,6 +2,7 @@ const js = [
   /package-lock\.json$/,
   /npm-shrinkwrap\.json$/,
   /\.min\.(js|css)$/,
+  /\.(js|css)\.map$/,
   /node_modules\//,
   /yarn\.lock$/,
   /\.yarn\//,

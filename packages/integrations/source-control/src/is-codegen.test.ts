@@ -41,6 +41,14 @@ describe("is-codegen", () =>
         expect(isCodeGen('./dist/out.min.css')).toStrictEqual(true);
       })
 
+      it('should match source map files', ()=> {
+        expect(isCodeGen('dist/index.js.map')).toStrictEqual(true);
+        expect(isCodeGen('./dist/index.js.map')).toStrictEqual(true);
+
+        expect(isCodeGen('dist/styles.css.map')).toStrictEqual(true);
+        expect(isCodeGen('./dist/styles.css.map')).toStrictEqual(true);
+      })
+
       it('should match node_module files', () => {
         expect(isCodeGen('node_modules/@types/node/package.json')).toStrictEqual(true);
         expect(isCodeGen('./node_modules/@types/node/package.json')).toStrictEqual(true);
