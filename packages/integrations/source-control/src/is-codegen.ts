@@ -8,7 +8,7 @@ const js = [
   /\.yarn\//,
   /(^|\/)\.pnp\..*$/,
   /pnpm-lock\.yaml$/,
-  /pnpm-shrinkwrap\.(yaml|json)$/
+  /(^|\/)shrinkwrap\.(yaml|json)$/
 ]
 
 const matchers = [

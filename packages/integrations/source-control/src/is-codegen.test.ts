@@ -71,12 +71,12 @@ describe("is-codegen", () =>
 
       it('should match pnpm related files', ()=>{
         expect(isCodeGen('pnpm-lock.yaml')).toStrictEqual(true);
-        expect(isCodeGen('pnpm-shrinkwrap.yaml')).toStrictEqual(true);
-        expect(isCodeGen('pnpm-shrinkwrap.json')).toStrictEqual(true);
+        expect(isCodeGen('shrinkwrap.yaml')).toStrictEqual(true);
+        expect(isCodeGen('shrinkwrap.json')).toStrictEqual(true);
 
         expect(isCodeGen('./pnpm-lock.yaml')).toStrictEqual(true);
-        expect(isCodeGen('./pnpm-shrinkwrap.yaml')).toStrictEqual(true);
-        expect(isCodeGen('./pnpm-shrinkwrap.json')).toStrictEqual(true);
+        expect(isCodeGen('./shrinkwrap.yaml')).toStrictEqual(true);
+        expect(isCodeGen('./shrinkwrap.json')).toStrictEqual(true);
       })
     })
   })
