@@ -3,9 +3,9 @@ import { isCodeGen } from './is-codegen';
 
 describe("is-codegen", () =>
   describe('function isCodeGen', () => {
-    describe('# JavaScript Projects', () => {      
-      
-      it('should not match project files', ()=> {
+    describe('# JavaScript Projects', () => {
+
+      it('should not match project files', () => {
         expect(isCodeGen('index.js')).toStrictEqual(false);
         expect(isCodeGen('./index.js')).toStrictEqual(false);
         expect(isCodeGen('index.ts')).toStrictEqual(false);
@@ -28,22 +28,41 @@ describe("is-codegen", () =>
         expect(isCodeGen('./packages/a-module/package-lock.json')).toStrictEqual(true);
       })
 
-      it('should match minified files', ()=> {
-        expect(isCodeGen('dist/out.min.js')).toStrictEqual(true);
-        expect(isCodeGen('./dist/out.min.js')).toStrictEqual(true);
-        
-        expect(isCodeGen('dist/out.min.css')).toStrictEqual(true);
-        expect(isCodeGen('./dist/out.min.css')).toStrictEqual(true);        
+      it('should match npm-shrinkwrap.json files', () => {
+        expect(isCodeGen('npm-shrinkwrap.json')).toStrictEqual(true);
+        expect(isCodeGen('./npm-shrinkwrap.json')).toStrictEqual(true);
+
+        expect(isCodeGen('packages/a-module/npm-shrinkwrap.json')).toStrictEqual(true);
+        expect(isCodeGen('./packages/a-module/npm-shrinkwrap.json')).toStrictEqual(true);
       })
 
-      it('should match node_module files', ()=> {
+      it('should match minified files', () => {
+        expect(isCodeGen('dist/out.min.js')).toStrictEqual(true);
+        expect(isCodeGen('./dist/out.min.js')).toStrictEqual(true);
+
+        expect(isCodeGen('dist/out.min.css')).toStrictEqual(true);
+        expect(isCodeGen('./dist/out.min.css')).toStrictEqual(true);
+      })
+
+      it('should match node_module files', () => {
         expect(isCodeGen('node_modules/@types/node/package.json')).toStrictEqual(true);
         expect(isCodeGen('./node_modules/@types/node/package.json')).toStrictEqual(true);
-        
+
         expect(isCodeGen('packages/core/node_modules/@types/node/package.json')).toStrictEqual(true);
         expect(isCodeGen('./packages/core/node_modules/@types/node/package.json')).toStrictEqual(true);
       })
 
+      it('should match yarn related files', () => {
+        expect(isCodeGen('.pnp.cjs')).toStrictEqual(true);
+        expect(isCodeGen('.pnp.loader.mjs')).toStrictEqual(true);
+        expect(isCodeGen('yarn.lock')).toStrictEqual(true);
+        expect(isCodeGen('.yarn/releases/yarn-x.y.z.cjs')).toStrictEqual(true);
+
+        expect(isCodeGen('./.pnp.cjs')).toStrictEqual(true);
+        expect(isCodeGen('./.pnp.loader.mjs')).toStrictEqual(true);
+        expect(isCodeGen('./yarn.lock')).toStrictEqual(true);
+        expect(isCodeGen('./.yarn/releases/yarn-x.y.z.cjs')).toStrictEqual(true);
+      })
     })
   })
 )

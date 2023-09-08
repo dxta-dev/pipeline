@@ -1,7 +1,11 @@
 const js = [
   /package-lock\.json$/,
+  /npm-shrinkwrap\.json$/,
   /\.min\.(js|css)$/,
-  /node_modules\//
+  /node_modules\//,
+  /yarn\.lock$/,
+  /\.yarn\//,
+  /(^|\/)\.pnp\..*$/,
 ]
 
 const matchers = [
