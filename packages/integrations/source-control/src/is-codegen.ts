@@ -11,8 +11,21 @@ const js = [
   /(^|\/)shrinkwrap\.(yaml|json)$/ // pnpm version of shrinkwrap
 ]
 
+const python = [
+  /Pipfile\.lock$/,
+  /__pycache__/,
+]
+
+const IDEs = [
+  /(^|\/)\.idea\//,
+  /(^|\/)\.vscode\//,
+  /(^|\/)\.vim\//,
+]
+
 const matchers = [
-  ...js
+  ...js,
+  ...python,
+  ...IDEs
 ]
 
 export const isCodeGen = (path: string): boolean => !!matchers.find(matcher => matcher.test(path));
