@@ -60,6 +60,16 @@ describe("is-codegen", () =>
         expect(isCodeGen('./yarn.lock')).toStrictEqual(true);
         expect(isCodeGen('./.yarn/releases/yarn-x.y.z.cjs')).toStrictEqual(true);
       })
+
+      it('should match pnpm related files', ()=>{
+        expect(isCodeGen('pnpm-lock.yaml')).toStrictEqual(true);
+        expect(isCodeGen('pnpm-shrinkwrap.yaml')).toStrictEqual(true);
+        expect(isCodeGen('pnpm-shrinkwrap.json')).toStrictEqual(true);
+
+        expect(isCodeGen('./pnpm-lock.yaml')).toStrictEqual(true);
+        expect(isCodeGen('./pnpm-shrinkwrap.yaml')).toStrictEqual(true);
+        expect(isCodeGen('./pnpm-shrinkwrap.json')).toStrictEqual(true);
+      })
     })
   })
 )
