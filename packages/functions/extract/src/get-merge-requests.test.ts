@@ -50,9 +50,6 @@ beforeAll(() => {
     }];
 
     let filteredArray = [];
-
-    console.log('CP', timePeriod);
-    
     
     if (timePeriod) {
       filteredArray = mergeRequestArray.filter((mergeRequest) => {
@@ -61,9 +58,6 @@ beforeAll(() => {
     } else {
       filteredArray = mergeRequestArray;
     }
-
-    console.log('TEST', filteredArray);
-    
 
     switch (externalRepositoryId) {
       case 1000:
