@@ -107,7 +107,7 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (evt) => 
   context.integrations.sourceControl = await initSourceControl(evt.metadata.userId, sourceControl)
 
   const startDate = new Date();
-  startDate.setMonth(startDate.getMonth() - 3);
+  startDate.setMonth(startDate.getMonth() - 6);
   startDate.setDate(startDate.getDate() - 14);
 
   const timePeriod = {
