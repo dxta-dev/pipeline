@@ -8,4 +8,4 @@ const matchers = [
   ...js
 ]
 
-export const isCodeGen = (path: string): boolean => matchers.find(matcher => matcher.test(path)) === undefined ? false : true;
+export const isCodeGen = (path: string): boolean => !!matchers.find(matcher => matcher.test(path));
