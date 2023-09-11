@@ -68,7 +68,11 @@ describe("is-codegen", () =>
       assertIsCodeGen('src/Code.Feature.cs');
       assertIsCodeGen('src/Code.feature.cs');
 
-    })
+    });
+
+    test('# Ruby CodeGen', ()=> {
+      assertIsCodeGen('src/Gemfile.lock');
+    });
 
     test('# IDE files', () => {
       assertIsCodeGen('.idea/file');

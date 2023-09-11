@@ -25,6 +25,10 @@ const dotnet = [
   /\.feature\.cs$/i, // Visual Studio SpecFlow feature file
 ];
 
+const ruby = [
+  /Gemfile\.lock/,
+];
+
 const IDEs = [
   /(^|\/)\.idea\//,
   /(^|\/)\.vscode\//,
@@ -36,6 +40,7 @@ const matchers = [
   ...python,
   ...java,
   ...dotnet,
+  ...ruby,
   ...IDEs,
 ];
 
