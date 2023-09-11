@@ -40,8 +40,8 @@ const swift = [
 ];
 
 const go = [
-  /Gopk\.lock/,
-  /glide\.lock/,
+  /Gopk\.lock$/,
+  /glide\.lock$/,
   // /vendor\/((?!-)[-0-9A-Za-z]+(?<!-)\.)+(com|edu|gov|in|me|net|org|fm|io)/, // REMOVED: Godep vendor tree files
   /Godeps\//,
   /(^|\/)go\.mod/,
@@ -49,7 +49,7 @@ const go = [
 ];
 
 const rust = [
-  /Cargo\.lock/,
+  /Cargo\.lock$/,
 ];
 
 const IDEs = [
