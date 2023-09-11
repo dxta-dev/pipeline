@@ -64,7 +64,7 @@ beforeAll(async () => {
 
 
 
-afterAll(async () => {
+afterAll(() => {
   sqlite.close();
   fs.unlinkSync(databaseName);
 });
