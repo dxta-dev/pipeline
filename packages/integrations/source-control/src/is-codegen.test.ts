@@ -77,9 +77,16 @@ describe("is-codegen", () =>
       assertIsCodeGen('src/composer.lock');
     });
 
-    test('# Swift CodeGen', ()=> {
+    test('# Swift CodeGen', () => {
       assertIsCodeGen('src/.swiftpm/file');
       assertIsCodeGen('src/Package.resolved');
+    });
+
+    test('# Go CodeGen', () => {
+      assertIsCodeGen('src/Gopk.lock');
+      assertIsCodeGen('src/glide.lock');
+      assertIsCodeGen('src/vendor/github.com/foo.go');
+      assertIsCodeGen('src/Godeps/Godeps.json');
     });
 
     test('# IDE files', () => {

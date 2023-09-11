@@ -38,6 +38,15 @@ const swift = [
   /Package\.resolved$/,
 ];
 
+const go = [
+  /Gopk\.lock/,
+  /glide\.lock/,
+  /vendor\/((?!-)[-0-9A-Za-z]+(?<!-)\.)+(com|edu|gov|in|me|net|org|fm|io)/, // Godep vendor tree files
+  /Godeps\//,
+  // TODO: go.mod ?
+  // TODO: go.sum ?
+];
+
 const IDEs = [
   /(^|\/)\.idea\//,
   /(^|\/)\.vscode\//,
@@ -46,6 +55,8 @@ const IDEs = [
   /\.nib$/,
   /\.xcworkspacedata$/,
   /\.xcuserstate$/,
+  // TODO: .sln ?
+  // TODO: .vcxproj ?
 ];
 
 const matchers = [
@@ -56,6 +67,7 @@ const matchers = [
   ...ruby,
   ...php,
   ...swift,
+  ...go,
   ...IDEs,
 ];
 
