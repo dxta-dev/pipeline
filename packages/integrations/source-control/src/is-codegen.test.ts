@@ -53,12 +53,12 @@ describe("is-codegen", () =>
       assertIsCodeGen('src/__pycache__/main.pyc');
     });
 
-    test('# Java CodeGen', ()=> {
+    test('# Java CodeGen', () => {
       // maven local repository
       assertIsCodeGen('src/.m2/file');
     });
 
-    test('# .NET CodeGen', ()=> {
+    test('# .NET CodeGen', () => {
       // VS designer partial classes
       assertIsCodeGen('src/Code.Designer.cs');
       assertIsCodeGen('src/Code.Designer.vb');
@@ -70,8 +70,17 @@ describe("is-codegen", () =>
 
     });
 
-    test('# Ruby CodeGen', ()=> {
+    test('# Ruby CodeGen', () => {
       assertIsCodeGen('src/Gemfile.lock');
+    });
+
+    test('# PHP CodeGen', () => {
+      assertIsCodeGen('src/composer.lock');
+    });
+
+    test('# Swift CodeGen', ()=> {
+      assertIsCodeGen('src/.swiftpm/file');
+      assertIsCodeGen('src/Package.resolved');
     });
 
     test('# IDE files', () => {

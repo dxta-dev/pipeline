@@ -26,7 +26,16 @@ const dotnet = [
 ];
 
 const ruby = [
-  /Gemfile\.lock/,
+  /Gemfile\.lock$/,
+];
+
+const php = [
+  /composer\.lock$/,
+];
+
+const swift = [
+  /(^|\/)\.swiftpm\//,
+  /Package\.resolved$/,
 ];
 
 const IDEs = [
@@ -41,6 +50,8 @@ const matchers = [
   ...java,
   ...dotnet,
   ...ruby,
+  ...php,
+  ...swift,
   ...IDEs,
 ];
 
