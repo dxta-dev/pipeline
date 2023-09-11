@@ -53,11 +53,28 @@ describe("is-codegen", () =>
       assertIsCodeGen('src/__pycache__/main.pyc');
     });
 
+    test('# Java CodeGen', ()=> {
+      // maven local repository
+      assertIsCodeGen('src/.m2/file');
+    });
+
+    test('# .NET CodeGen', ()=> {
+      // VS designer partial classes
+      assertIsCodeGen('src/Code.Designer.cs');
+      assertIsCodeGen('src/Code.Designer.vb');
+      assertIsCodeGen('src/Code.designer.cs');
+      assertIsCodeGen('src/Code.Designer.cs');
+      // VS SpecFlow
+      assertIsCodeGen('src/Code.Feature.cs');
+      assertIsCodeGen('src/Code.feature.cs');
+
+    })
+
     test('# IDE files', () => {
       assertIsCodeGen('.idea/file');
       assertIsCodeGen('.vscode/file');
       assertIsCodeGen('.vim/file');
-    })
+    });
 
   })
 )

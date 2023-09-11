@@ -16,6 +16,15 @@ const python = [
   /__pycache__\//,
 ]
 
+const java = [
+  /(^|\/)\.m2\//,
+]
+
+const dotnet = [
+  /\.designer\.(cs|vb)$/i, // Visual Studio designer partial classes 
+  /\.feature\.cs$/i, // Visual Studio SpecFlow feature file
+]
+
 const IDEs = [
   /(^|\/)\.idea\//,
   /(^|\/)\.vscode\//,
@@ -25,7 +34,9 @@ const IDEs = [
 const matchers = [
   ...js,
   ...python,
-  ...IDEs
+  ...java,
+  ...dotnet,
+  ...IDEs,
 ]
 
 export const isCodeGen = (path: string): boolean => !!matchers.find(matcher => matcher.test(path));
