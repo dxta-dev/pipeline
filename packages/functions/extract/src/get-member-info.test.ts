@@ -1,25 +1,30 @@
 import { describe, expect, test } from '@jest/globals';
 
-import { drizzle } from "drizzle-orm/better-sqlite3";
-import { migrate } from "drizzle-orm/better-sqlite3/migrator";
-import Database from "better-sqlite3";
+import { drizzle } from "drizzle-orm/libsql";
+import { migrate } from "drizzle-orm/libsql/migrator";
+import { createClient } from '@libsql/client';
 import { members } from '@acme/extract-schema';
 import type { Context } from './config';
 import type { GetMemberInfoSourceControl, GetMemberInfoEntities} from './get-member-info';
 import { getMemberInfo } from './get-member-info';
 import type { SourceControl } from '@acme/source-control';
 import { eq } from 'drizzle-orm';
+import fs from 'fs';
 
-let betterSqlite: ReturnType<typeof Database>;
+let sqlite: ReturnType<typeof createClient>;
 let db: ReturnType<typeof drizzle>;
 let context: Context<GetMemberInfoSourceControl, GetMemberInfoEntities>;
 let fetchUserInfo: SourceControl['fetchUserInfo'];
 
-beforeAll(() => {
-  betterSqlite = new Database(':memory:');
-  db = drizzle(betterSqlite);
+const dbname = "get-member-info";
 
-  migrate(db, { migrationsFolder: "../../../migrations/extract" });
+beforeAll(async () => {
+  sqlite = createClient({
+    url: `file:${dbname}`,
+  });
+  db = drizzle(sqlite);
+
+  await migrate(db, { migrationsFolder: "../../../migrations/extract" });
 
   fetchUserInfo = jest.fn((username: string) => {
     switch (username) {
@@ -45,8 +50,8 @@ beforeAll(() => {
 
 });
 
-beforeEach(() => {
-  db.insert(members).values({
+beforeEach(async () => {
+  await db.insert(members).values({
     id: 1,
     username: 'deki',
     externalId: 1000,
@@ -55,12 +60,13 @@ beforeEach(() => {
   }).run();
 });
 
-afterEach(() => {
-  db.delete(members).where(eq(members.id, 1)).run();
+afterEach(async () => {
+  await db.delete(members).where(eq(members.id, 1)).run();
 });
 
 afterAll(() => {
-  betterSqlite.close();
+  sqlite.close();
+  fs.unlinkSync(dbname);
 });
 
 describe('get-member-info:', () => {
@@ -82,4 +88,3 @@ describe('get-member-info:', () => {
     });
   });
 });
-

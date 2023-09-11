@@ -1,29 +1,32 @@
+import { drizzle } from "drizzle-orm/libsql";
+import { migrate } from "drizzle-orm/libsql/migrator";
+import { createClient } from '@libsql/client';
+
 import { describe, expect, test } from '@jest/globals';
-import { unlink } from 'fs/promises';
 import { getNamespaceMembers } from './get-namespace-members';
 
-import { drizzle } from "drizzle-orm/better-sqlite3";
-import { migrate } from "drizzle-orm/better-sqlite3/migrator";
-import Database from "better-sqlite3";
 import { members, repositories, repositoriesToMembers } from '@acme/extract-schema';
 import type { Context } from './config';
 import type { GetNamespaceMembersSourceControl, GetNamespaceMembersEntities } from './get-namespace-members';
 import type { SourceControl } from '@acme/source-control';
+import fs from 'fs';
 
-let betterSqlite: ReturnType<typeof Database>;
+let sqlite: ReturnType<typeof createClient>;
 let db: ReturnType<typeof drizzle>;
 let context: Context<GetNamespaceMembersSourceControl, GetNamespaceMembersEntities>;
 let fetchNamespaceMembers: SourceControl['fetchNamespaceMembers'];
 
 const databaseName = 'fetch-namespace-members.db';
 
-beforeAll(() => {
-  betterSqlite = new Database(databaseName);
-  db = drizzle(betterSqlite);
+beforeAll(async () => {
+  sqlite = createClient({
+    url: `file:${databaseName}`,
+  });
+  db = drizzle(sqlite);
 
-  migrate(db, { migrationsFolder: "../../../migrations/extract" });
+  await migrate(db, { migrationsFolder: "../../../migrations/extract" });
  
-  db.insert(repositories).values({
+  await db.insert(repositories).values({
     id: 1,
     name: 'crocoder-dev',
     externalId: 1000,
@@ -62,8 +65,8 @@ beforeAll(() => {
 
 
 afterAll(async () => {
-  betterSqlite.close();
-  await unlink(databaseName);
+  sqlite.close();
+  fs.unlinkSync(databaseName);
 });
 
 describe('get-namespace-members:', () => {
@@ -79,7 +82,7 @@ describe('get-namespace-members:', () => {
       expect(paginationInfo).toBeDefined();
       expect(fetchNamespaceMembers).toHaveBeenCalledTimes(1);
 
-      const memberRows = db.select().from(context.entities.members).all();
+      const memberRows = await db.select().from(context.entities.members).all();
       expect(memberRows.length).toEqual(members.length);
 
       for (const memberRow of memberRows) {
