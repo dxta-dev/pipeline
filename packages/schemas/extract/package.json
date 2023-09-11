@@ -17,7 +17,7 @@
     "zod": "^3.21.4"
   },
   "devDependencies": {
-    "dotenv-cli": "^7.2.1",
-    "drizzle-kit": "^0.19.11"
+    "dotenv-cli": "^7.3.0",
+    "drizzle-kit": "^0.19.13"
   }
 }
