@@ -42,10 +42,10 @@ const swift = [
 const go = [
   /Gopk\.lock/,
   /glide\.lock/,
-  /vendor\/((?!-)[-0-9A-Za-z]+(?<!-)\.)+(com|edu|gov|in|me|net|org|fm|io)/, // Godep vendor tree files
+  // /vendor\/((?!-)[-0-9A-Za-z]+(?<!-)\.)+(com|edu|gov|in|me|net|org|fm|io)/, // REMOVED: Godep vendor tree files
   /Godeps\//,
-  // TODO: go.mod ?
-  // TODO: go.sum ?
+  /(^|\/)go\.mod/,
+  /(^|\/)go\.sum/,
 ];
 
 const rust = [

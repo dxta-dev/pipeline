@@ -87,8 +87,9 @@ describe("is-codegen", () =>
     test('# Go CodeGen', () => {
       assertIsCodeGen('src/Gopk.lock');
       assertIsCodeGen('src/glide.lock');
-      assertIsCodeGen('src/vendor/github.com/foo.go');
       assertIsCodeGen('src/Godeps/Godeps.json');
+      assertIsCodeGen('src/go.mod');
+      assertIsCodeGen('src/go.sum');
     });
 
     test('# Rust CodeGen', ()=> {
