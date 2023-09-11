@@ -9,27 +9,27 @@ const js = [
   /(^|\/)\.pnp\..*$/, // yarn module resolution scripts
   /pnpm-lock\.yaml$/, // pnpm version of package-lock
   /(^|\/)shrinkwrap\.(yaml|json)$/ // pnpm version of shrinkwrap
-]
+];
 
 const python = [
   /Pipfile\.lock$/,
   /__pycache__\//,
-]
+];
 
 const java = [
   /(^|\/)\.m2\//,
-]
+];
 
 const dotnet = [
   /\.designer\.(cs|vb)$/i, // Visual Studio designer partial classes 
   /\.feature\.cs$/i, // Visual Studio SpecFlow feature file
-]
+];
 
 const IDEs = [
   /(^|\/)\.idea\//,
   /(^|\/)\.vscode\//,
   /(^|\/)\.vim\//,
-]
+];
 
 const matchers = [
   ...js,
@@ -37,6 +37,6 @@ const matchers = [
   ...java,
   ...dotnet,
   ...IDEs,
-]
+];
 
 export const isCodeGen = (path: string): boolean => !!matchers.find(matcher => matcher.test(path));
