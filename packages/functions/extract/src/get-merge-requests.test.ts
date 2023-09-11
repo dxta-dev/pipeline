@@ -10,6 +10,7 @@ import { mergeRequests } from '@acme/extract-schema';
 import type { Context } from './config';
 import type { GetMergeRequestsSourceControl, GetMergeRequestsEntities } from './get-merge-requests';
 import type { SourceControl, TimePeriod } from '@acme/source-control';
+import fs from 'fs';
 
 let betterSqlite: ReturnType<typeof createClient>;
 let db: ReturnType<typeof drizzle>;
@@ -90,6 +91,7 @@ beforeAll(async () => {
 
 afterAll(() => {
   betterSqlite.close();
+  fs.unlinkSync(dbname);
 });
 
 describe('get-merge-request:', () => {
