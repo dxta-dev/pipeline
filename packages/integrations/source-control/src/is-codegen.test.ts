@@ -41,6 +41,23 @@ describe("is-codegen", () =>
       assertIsCodeGen('shrinkwrap.yaml');
       assertIsCodeGen('shrinkwrap.json');
     });
-    
+
+    test('# Python CodeGen', () => {
+      // Example vendor code
+      assertIsNotCodeGen('main.py');
+      assertIsNotCodeGen('src/main.py');
+      // pipenv
+      assertIsCodeGen('Pipfile.lock');
+      // bytecode folder 
+      assertIsCodeGen('__pycache__/main.pyc');
+      assertIsCodeGen('src/__pycache__/main.pyc');
+    });
+
+    test('# IDE files', () => {
+      assertIsCodeGen('.idea/file');
+      assertIsCodeGen('.vscode/file');
+      assertIsCodeGen('.vim/file');
+    })
+
   })
 )
