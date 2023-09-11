@@ -67,7 +67,6 @@ describe("is-codegen", () =>
       // VS SpecFlow
       assertIsCodeGen('src/Code.Feature.cs');
       assertIsCodeGen('src/Code.feature.cs');
-
     });
 
     test('# Ruby CodeGen', () => {
@@ -87,6 +86,11 @@ describe("is-codegen", () =>
       assertIsCodeGen('.idea/file');
       assertIsCodeGen('.vscode/file');
       assertIsCodeGen('.vim/file');
+      // Xcode
+      assertIsCodeGen('src/.xcodeproj/file');
+      assertIsCodeGen('src/file.nib');
+      assertIsCodeGen('src/file.xcworkspacedata');
+      assertIsCodeGen('src/file.xcuserstate');
     });
 
   })

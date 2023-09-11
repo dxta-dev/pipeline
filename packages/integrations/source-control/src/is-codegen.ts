@@ -42,6 +42,10 @@ const IDEs = [
   /(^|\/)\.idea\//,
   /(^|\/)\.vscode\//,
   /(^|\/)\.vim\//,
+  /(^|\/)\.xcodeproj\//,
+  /\.nib$/,
+  /\.xcworkspacedata$/,
+  /\.xcuserstate$/,
 ];
 
 const matchers = [
