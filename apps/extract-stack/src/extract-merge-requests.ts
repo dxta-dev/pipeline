@@ -14,7 +14,7 @@ import { GitHubSourceControl, GitlabSourceControl } from "@acme/source-control";
 
 import { extractMergeRequestsEvent, extractRepositoryEvent } from "./events";
 import { eq } from "drizzle-orm";
-import { MessageKind, metadataSchema, paginationSchema } from "./messages";
+import { MessageKind, metadataSchema, paginationSchema, timePeriodSchema } from "./messages";
 import { z } from "zod";
 import { createMessageHandler } from "./create-message";
 import { getClerkUserToken } from "./get-clerk-user-token";
@@ -27,6 +27,7 @@ export const mergeRequestSenderHandler = createMessageHandler({
     repository: RepositorySchema,
     namespace: NamespaceSchema,
     pagination: paginationSchema,
+    timePeriod: timePeriodSchema,
   }).shape,
   handler: async (message) => {
 
@@ -37,7 +38,7 @@ export const mergeRequestSenderHandler = createMessageHandler({
 
     context.integrations.sourceControl = await initSourceControl(message.metadata.userId, message.metadata.sourceControl);
 
-    const { namespace, pagination, repository } = message.content;
+    const { namespace, pagination, repository, timePeriod } = message.content;
 
     if (!namespace) throw new Error("Invalid namespace id");
 
@@ -49,6 +50,7 @@ export const mergeRequestSenderHandler = createMessageHandler({
         repositoryId: repository.id,
         page: pagination.page,
         perPage: pagination.perPage,
+        timePeriod,
       },
       context,
     );
@@ -104,6 +106,15 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (evt) => 
 
   context.integrations.sourceControl = await initSourceControl(evt.metadata.userId, sourceControl)
 
+  const startDate = new Date();
+  startDate.setMonth(startDate.getMonth() - 6);
+  startDate.setDate(startDate.getDate() - 14);
+
+  const timePeriod = {
+    from: startDate,
+    to: new Date(),
+  }
+
   const { mergeRequests, paginationInfo } = await getMergeRequests(
     {
       externalRepositoryId: repository.externalId,
@@ -111,6 +122,7 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (evt) => 
       repositoryName: repository.name,
       repositoryId: repository.id,
       perPage: 10,
+      timePeriod,
     }, context,
   );
 
@@ -131,7 +143,8 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (evt) => 
         page: i,
         perPage: paginationInfo.perPage,
         totalPages: paginationInfo.totalPages
-      }
+      },
+      timePeriod,
     });
   }
 

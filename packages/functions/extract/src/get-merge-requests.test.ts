@@ -27,7 +27,43 @@ beforeAll(async () => {
 
   await migrate(db, { migrationsFolder: "../../../migrations/extract" });
 
-  fetchMergeRequests = jest.fn((externalRepositoryId: number, namespaceName:string, repositoryName: string, repositoryId: number, creationPeriod?: TimePeriod, page?: number, perPage?: number) => {
+  fetchMergeRequests = jest.fn((externalRepositoryId: number, namespaceName:string, repositoryName: string, repositoryId: number, timePeriod?: TimePeriod, page?: number, perPage?: number) => {
+
+    const mergeRequestArray = [{ 
+      externalId: 2000, 
+      mergeRequestId: 2000, 
+      repositoryId: 2000,
+      createdAt: new Date('2021-01-01'),
+      state: 'open',
+      title: 'Merge Request 2000',
+      webUrl: 'https://gitlab.com/acme/merge-requests/2000',
+    }, { 
+      externalId: 2001, 
+      mergeRequestId: 2001, 
+      repositoryId: 2000,
+      createdAt: new Date('2021-01-02'),
+      state: 'open',
+      title: 'Merge Request 2001',
+      webUrl: 'https://gitlab.com/acme/merge-requests/2001',
+    }, { 
+      externalId: 2002, 
+      mergeRequestId: 2002, 
+      repositoryId: 2000,
+      createdAt: new Date('2021-02-01'),
+      state: 'open',
+      title: 'Merge Request 2001',
+      webUrl: 'https://gitlab.com/acme/merge-requests/2001',
+    }];
+
+    let filteredArray = [];
+    
+    if (timePeriod) {
+      filteredArray = mergeRequestArray.filter((mergeRequest) => {
+        return mergeRequest.createdAt > (timePeriod.from as Date) && mergeRequest.createdAt < (timePeriod.to as Date)
+      });
+    } else {
+      filteredArray = mergeRequestArray;
+    }
 
     switch (externalRepositoryId) {
       case 1000:
@@ -49,23 +85,7 @@ beforeAll(async () => {
         }) satisfies ReturnType<SourceControl['fetchMergeRequests']>;
       case 2000:
         return Promise.resolve({
-          mergeRequests: [{ 
-            externalId: 2000, 
-            mergeRequestId: 2000, 
-            repositoryId: 2000,
-            createdAt: new Date('2021-01-01'),
-            state: 'open',
-            title: 'Merge Request 2000',
-            webUrl: 'https://gitlab.com/acme/merge-requests/2000',
-          }, { 
-            externalId: 2001, 
-            mergeRequestId: 2001, 
-            repositoryId: 2000,
-            createdAt: new Date('2021-01-02'),
-            state: 'open',
-            title: 'Merge Request 2001',
-            webUrl: 'https://gitlab.com/acme/merge-requests/2001',
-          }],
+          mergeRequests: filteredArray,
           pagination: {
             page: page || 1,
             perPage: perPage || 40,
@@ -104,6 +124,25 @@ describe('get-merge-request:', () => {
       expect(fetchMergeRequests).toHaveBeenCalledTimes(1);
 
       const mergeRequestData = await db.select().from(context.entities.mergeRequests).all();
+      expect(mergeRequestData.length).toEqual(mergeRequests.length);
+      
+      for (const mergeRequest of mergeRequestData) {
+        expect(mergeRequests.find(mr => mr.externalId === mergeRequest.externalId)).toBeDefined();
+        expect(mergeRequests.find(mr => mr.id === mergeRequest.id)).toBeDefined();
+      }
+    });
+    test('should only insert merge requests that are within the time period', async () => {
+      // Cleared the database just to have the data for this test
+      await db.delete(context.entities.mergeRequests).run();
+      
+      const { mergeRequests, paginationInfo } = await getMergeRequests({ externalRepositoryId: 2000, namespaceName: '', repositoryName: '', repositoryId: 2000, timePeriod: { from: new Date('2021-01-01'), to: new Date('2021-01-31')} }, context);
+
+      expect(mergeRequests).toBeDefined();
+      expect(paginationInfo).toBeDefined();
+      expect(fetchMergeRequests).toHaveBeenCalled();
+
+      const mergeRequestData = await db.select().from(context.entities.mergeRequests).all();
+
       expect(mergeRequestData.length).toEqual(mergeRequests.length);
       
       for (const mergeRequest of mergeRequestData) {
