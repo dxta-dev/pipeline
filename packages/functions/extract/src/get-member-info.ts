@@ -27,7 +27,7 @@ export const getMemberInfo: GetMemberInfoFunction = async (
     throw new Error("Source control integration not configured");
   }
 
-  const member = await db.select({ username: entities.members.username }).from(entities.members).where(eq(entities.members.id, memberId)).get();
+  const member = await db.select().from(entities.members).where(eq(entities.members.id, memberId)).get();
 
   if (!member) {
     console.error(`Member ${memberId} not found`);
