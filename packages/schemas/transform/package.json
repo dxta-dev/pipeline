@@ -16,7 +16,7 @@
     "zod": "^3.21.4"
   },
   "devDependencies": {
-    "drizzle-kit": "^0.19.11"
+    "drizzle-kit": "^0.19.13"
   },
   "keywords": [],
   "author": "",
