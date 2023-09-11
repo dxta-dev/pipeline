@@ -12,7 +12,7 @@ import type { GetMergeRequestsSourceControl, GetMergeRequestsEntities } from './
 import type { SourceControl, TimePeriod } from '@acme/source-control';
 import fs from 'fs';
 
-let betterSqlite: ReturnType<typeof createClient>;
+let sqlite: ReturnType<typeof createClient>;
 let db: ReturnType<typeof drizzle>;
 let context: Context<GetMergeRequestsSourceControl, GetMergeRequestsEntities>;
 let fetchMergeRequests: SourceControl['fetchMergeRequests'];
@@ -20,10 +20,10 @@ let fetchMergeRequests: SourceControl['fetchMergeRequests'];
 const dbname = "get-merge-requests";
 
 beforeAll(async () => {
-  betterSqlite = createClient({
+  sqlite = createClient({
     url: `file:${dbname}`,
   });
-  db = drizzle(betterSqlite);
+  db = drizzle(sqlite);
 
   await migrate(db, { migrationsFolder: "../../../migrations/extract" });
 
@@ -90,7 +90,7 @@ beforeAll(async () => {
 });
 
 afterAll(() => {
-  betterSqlite.close();
+  sqlite.close();
   fs.unlinkSync(dbname);
 });
 
