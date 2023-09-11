@@ -133,7 +133,7 @@ describe('get-merge-request:', () => {
     });
     test('should only insert merge requests that are within the time period', async () => {
       // Cleared the database just to have the data for this test
-      db.delete(context.entities.mergeRequests).run();
+      await db.delete(context.entities.mergeRequests).run();
       
       const { mergeRequests, paginationInfo } = await getMergeRequests({ externalRepositoryId: 2000, namespaceName: '', repositoryName: '', repositoryId: 2000, timePeriod: { from: new Date('2021-01-01'), to: new Date('2021-01-31')} }, context);
 
@@ -141,7 +141,7 @@ describe('get-merge-request:', () => {
       expect(paginationInfo).toBeDefined();
       expect(fetchMergeRequests).toHaveBeenCalled();
 
-      const mergeRequestData = db.select().from(context.entities.mergeRequests).all();
+      const mergeRequestData = await db.select().from(context.entities.mergeRequests).all();
 
       expect(mergeRequestData.length).toEqual(mergeRequests.length);
       
