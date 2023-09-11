@@ -11,7 +11,7 @@
     "lint": "eslint . && echo \"✔ No ESLint warnings or errors\""
   },
   "dependencies": {
-    "drizzle-orm": "^0.28.2",
+    "drizzle-orm": "^0.28.6",
     "drizzle-zod": "^0.5.1",
     "zod": "^3.21.4"
   },

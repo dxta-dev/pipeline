@@ -1,16 +1,18 @@
+import { drizzle } from "drizzle-orm/libsql";
+import { migrate } from "drizzle-orm/libsql/migrator";
+import { createClient } from '@libsql/client';
+
 import { describe, expect, test } from '@jest/globals';
 import { getRepository } from './get-repository';
 
-import { drizzle } from "drizzle-orm/better-sqlite3";
-import { migrate } from "drizzle-orm/better-sqlite3/migrator";
 import { eq } from "drizzle-orm";
-import Database from "better-sqlite3";
 import { namespaces, repositories } from '@acme/extract-schema';
 import type { NewNamespace, NewRepository } from '@acme/extract-schema';
 import type { Context } from './config';
 import type { GetRepositorySourceControl, GetRepositoryEntities } from './get-repository';
+import fs from 'fs';
 
-let betterSqlite: ReturnType<typeof Database>;
+let sqlite: ReturnType<typeof createClient>;
 let db: ReturnType<typeof drizzle>;
 let context: Context<GetRepositorySourceControl, GetRepositoryEntities>;
 let fetchRepository: jest.Mock<Promise<{
@@ -18,11 +20,15 @@ let fetchRepository: jest.Mock<Promise<{
   namespace: NewNamespace
 }>>
 
-beforeAll(() => {
-  betterSqlite = new Database(':memory:');
-  db = drizzle(betterSqlite);
+const dbname = 'get-repository';
 
-  migrate(db, { migrationsFolder: "../../../migrations/extract" });
+beforeAll(async () => {
+  sqlite = createClient({
+    url: `file:${dbname}`,
+  });
+  db = drizzle(sqlite);
+
+  await migrate(db, { migrationsFolder: "../../../migrations/extract" });
 
   fetchRepository = jest.fn((externalRepositoryId: number) => {
     switch (externalRepositoryId) {
@@ -49,7 +55,8 @@ beforeAll(() => {
 });
 
 afterAll(() => {
-  betterSqlite.close();
+  sqlite.close();
+  fs.unlinkSync(dbname);
 });
 
 describe('get-repository', () => {
@@ -61,14 +68,14 @@ describe('get-repository', () => {
       expect(repository).toBeDefined();
       expect(fetchRepository).toHaveBeenCalledTimes(1);
 
-      const repositoryRow = db.select().from(repositories)
+      const repositoryRow = await db.select().from(repositories)
         .where(eq(repositories.externalId, repository.externalId)).get();
 
       expect(repositoryRow).toBeDefined();
       expect(repositoryRow?.externalId).toEqual(repository.externalId);
       expect(repositoryRow?.id).toEqual(repository.id);
 
-      const namespaceRow = db.select().from(namespaces)
+      const namespaceRow = await db.select().from(namespaces)
         .where(eq(namespaces.externalId, namespace.externalId)).get();
         
       expect(namespaceRow).toBeDefined();
