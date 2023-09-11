@@ -48,6 +48,8 @@ describe("is-codegen", () =>
       assertIsNotCodeGen('src/main.py');
       // pipenv
       assertIsCodeGen('Pipfile.lock');
+      // poetry
+      assertIsCodeGen('poetry.lock');
       // bytecode folder 
       assertIsCodeGen('__pycache__/main.pyc');
       assertIsCodeGen('src/__pycache__/main.pyc');

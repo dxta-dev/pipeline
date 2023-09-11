@@ -13,6 +13,7 @@ const js = [
 
 const python = [
   /Pipfile\.lock$/,
+  /poetry\.lock$/,
   /__pycache__\//,
 ];
 
