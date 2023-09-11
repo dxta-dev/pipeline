@@ -13,7 +13,7 @@
   "dependencies": {
     "@acme/extract-schema": "^1.0.0",
     "@acme/source-control": "^1.0.0",
-    "drizzle-orm": "^0.28.2",
+    "drizzle-orm": "^0.28.6",
     "drizzle-zod": "^0.5.1",
     "zod": "^3.21.4"
   },

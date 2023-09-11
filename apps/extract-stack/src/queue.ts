@@ -26,7 +26,7 @@ messageHandlers.set(MessageKind.MemberInfo, memberInfoSenderHandler);
 
 const logMap = new Map<string, string[]>();
 
-logMap.set(MessageKind.MergeRequest, ['content.repository.id', 'content.namespace.id', 'content.pagination']);
+logMap.set(MessageKind.MergeRequest, ['content.repository.id', 'content.namespace.id', 'content.pagination', 'content.timePeriod']);
 
 logMap.set(MessageKind.MergeRequestDiff, ['content.repositoryId', 'content.namespaceId', 'content.mergeRequestId']);
 

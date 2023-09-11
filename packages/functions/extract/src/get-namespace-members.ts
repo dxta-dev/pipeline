@@ -1,8 +1,6 @@
 import type { Member } from "@acme/extract-schema";
 import type { ExtractFunction, Entities } from "./config";
 import type { Pagination, SourceControl } from "@acme/source-control";
-import type { LibSQLDatabase } from "drizzle-orm/libsql";
-import type { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
 
 export type GetNamespaceMembersInput = {
   externalNamespaceId: number;
@@ -35,7 +33,7 @@ export const getNamespaceMembers: GetNamespaceMembersFunction = async (
   const { members, pagination } = await integrations.sourceControl.fetchNamespaceMembers(externalNamespaceId, namespaceName, page, perPage);
 
   // TODO: Deki is not a wizard
-  const insertedMembers = await (db as (LibSQLDatabase & BetterSQLite3Database)).transaction(async (tx) => {
+  const insertedMembers = await db.transaction(async (tx) => {
     return Promise.all(members.map(member =>
       tx.insert(entities.members).values(member)
         .onConflictDoUpdate({ target: entities.members.externalId, set: { username: member.username } })

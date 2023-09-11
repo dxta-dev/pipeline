@@ -1,6 +1,6 @@
 import type { MergeRequest } from "@acme/extract-schema";
 import type { ExtractFunction, Entities } from "./config";
-import type { Pagination, SourceControl } from "@acme/source-control";
+import type { Pagination, SourceControl, TimePeriod } from "@acme/source-control";
 import type { LibSQLDatabase } from "drizzle-orm/libsql";
 import type { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
 
@@ -11,6 +11,7 @@ export type GetMergeRequestsInput = {
   repositoryId: number;
   page?: number;
   perPage?: number;
+  timePeriod?: TimePeriod;
 };
 
 export type GetMergeRequestsOutput = {
@@ -25,7 +26,7 @@ export type GetMergeRequestsFunction = ExtractFunction<GetMergeRequestsInput, Ge
 
 
 export const getMergeRequests: GetMergeRequestsFunction = async (
-  { externalRepositoryId, namespaceName, repositoryName, repositoryId, page, perPage},
+  { externalRepositoryId, namespaceName, repositoryName, repositoryId, page, perPage, timePeriod},
   { integrations, db, entities },
 ) => {
 
@@ -33,7 +34,7 @@ export const getMergeRequests: GetMergeRequestsFunction = async (
     throw new Error("Source control integration not configured");
   }
 
-  const { mergeRequests, pagination } = await integrations.sourceControl.fetchMergeRequests(externalRepositoryId, namespaceName, repositoryName, repositoryId, {}, page, perPage);
+  const { mergeRequests, pagination } = await integrations.sourceControl.fetchMergeRequests(externalRepositoryId, namespaceName, repositoryName, repositoryId, timePeriod, page, perPage);
 
   const insertedMergeRequests = await (db as (LibSQLDatabase & BetterSQLite3Database)).transaction(async (tx) => {
     return Promise.all(mergeRequests.map(mergeRequest =>

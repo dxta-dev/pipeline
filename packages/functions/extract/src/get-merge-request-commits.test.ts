@@ -1,12 +1,14 @@
-import Database from "better-sqlite3";
-import { drizzle } from "drizzle-orm/better-sqlite3";
+import { drizzle } from "drizzle-orm/libsql";
+import { migrate } from "drizzle-orm/libsql/migrator";
+import { createClient } from '@libsql/client';
+
 import type { Context } from "./config";
 import { type GetMergeRequestCommitsEntities, type GetMergeRequestCommitsSourceControl, getMergeRequestCommits } from "./get-merge-request-commits";
-import { migrate } from "drizzle-orm/better-sqlite3/migrator";
 import { mergeRequestCommits, namespaces, repositories, mergeRequests } from "@acme/extract-schema";
 import type { Repository, Namespace, MergeRequest, NewRepository, NewNamespace, NewMergeRequest } from "@acme/extract-schema";
+import fs from 'fs';
 
-let betterSqlite: ReturnType<typeof Database>;
+let sqlite: ReturnType<typeof createClient>;
 let db: ReturnType<typeof drizzle>;
 let context: Context<GetMergeRequestCommitsSourceControl, GetMergeRequestCommitsEntities>;
 let fetchMergeRequestCommits: jest.MockedFunction<GetMergeRequestCommitsSourceControl['fetchMergeRequestCommits']>;
@@ -15,14 +17,19 @@ const TEST_REPO_1 = { id: 1, externalId: 1000, name: 'TEST_REPO_NAME' } satisfie
 const TEST_NAMESPACE_1 = { id: 1, externalId: 2000, name: 'TEST_NAMESPACE_NAME' } satisfies NewNamespace;
 const TEST_MERGE_REQUEST_1 = { id: 1, externalId: 3000, createdAt: new Date(), mergeRequestId: 1, repositoryId: 1, title: "TEST_MR", webUrl: "localhost" } satisfies NewMergeRequest;
 
-beforeAll(() => {
-  betterSqlite = new Database(':memory:');
-  db = drizzle(betterSqlite);
+const dbname = 'get-merge-request-commits';
 
-  migrate(db, { migrationsFolder: "../../../migrations/extract" });
-  db.insert(repositories).values([TEST_REPO_1]).run();
-  db.insert(namespaces).values([TEST_NAMESPACE_1]).run();
-  db.insert(mergeRequests).values([TEST_MERGE_REQUEST_1]).run();
+beforeAll(async () => {
+  sqlite = createClient({
+    url: `file:${dbname}`,
+  });
+  db = drizzle(sqlite);
+
+  await migrate(db, { migrationsFolder: "../../../migrations/extract" });
+
+  await db.insert(repositories).values([TEST_REPO_1]).run();
+  await db.insert(namespaces).values([TEST_NAMESPACE_1]).run();
+  await db.insert(mergeRequests).values([TEST_MERGE_REQUEST_1]).run();
 
   fetchMergeRequestCommits = jest.fn((repository: Repository, namespace: Namespace, mergeRequest: MergeRequest): ReturnType<GetMergeRequestCommitsSourceControl['fetchMergeRequestCommits']> => {
     switch (mergeRequest.externalId) {
@@ -73,7 +80,8 @@ beforeAll(() => {
 });
 
 afterAll(() => {
-  betterSqlite.close();
+  sqlite.close();
+  fs.unlinkSync(dbname);
 });
 
 describe('get-merge-request-commits:', () => {
@@ -88,7 +96,7 @@ describe('get-merge-request-commits:', () => {
       expect(mergeRequestCommits).toBeDefined();
       expect(fetchMergeRequestCommits).toHaveBeenCalledTimes(1);
 
-      const mergeRequestCommitsRows = db.select().from(context.entities.mergeRequestCommits).all();
+      const mergeRequestCommitsRows = await db.select().from(context.entities.mergeRequestCommits).all();
       expect(mergeRequestCommitsRows).toHaveLength(2);
 
       for (const mergeRequestCommit of mergeRequestCommitsRows) {
