@@ -1,25 +1,31 @@
 
+import { drizzle } from "drizzle-orm/libsql";
+import { migrate } from "drizzle-orm/libsql/migrator";
+import { createClient } from '@libsql/client';
+
 import { describe, expect, test } from '@jest/globals';
 import { getMergeRequests } from './get-merge-requests';
 
-import { drizzle } from "drizzle-orm/better-sqlite3";
-import { migrate } from "drizzle-orm/better-sqlite3/migrator";
-import Database from "better-sqlite3";
 import { mergeRequests } from '@acme/extract-schema';
 import type { Context } from './config';
 import type { GetMergeRequestsSourceControl, GetMergeRequestsEntities } from './get-merge-requests';
 import type { SourceControl, TimePeriod } from '@acme/source-control';
+import fs from 'fs';
 
-let betterSqlite: ReturnType<typeof Database>;
+let sqlite: ReturnType<typeof createClient>;
 let db: ReturnType<typeof drizzle>;
 let context: Context<GetMergeRequestsSourceControl, GetMergeRequestsEntities>;
 let fetchMergeRequests: SourceControl['fetchMergeRequests'];
 
-beforeAll(() => {
-  betterSqlite = new Database(':memory:');
-  db = drizzle(betterSqlite);
+const dbname = "get-merge-requests";
 
-  migrate(db, { migrationsFolder: "../../../migrations/extract" });
+beforeAll(async () => {
+  sqlite = createClient({
+    url: `file:${dbname}`,
+  });
+  db = drizzle(sqlite);
+
+  await migrate(db, { migrationsFolder: "../../../migrations/extract" });
 
   fetchMergeRequests = jest.fn((externalRepositoryId: number, namespaceName:string, repositoryName: string, repositoryId: number, creationPeriod?: TimePeriod, page?: number, perPage?: number) => {
 
@@ -84,7 +90,8 @@ beforeAll(() => {
 });
 
 afterAll(() => {
-  betterSqlite.close();
+  sqlite.close();
+  fs.unlinkSync(dbname);
 });
 
 describe('get-merge-request:', () => {
@@ -96,7 +103,7 @@ describe('get-merge-request:', () => {
       expect(paginationInfo).toBeDefined();
       expect(fetchMergeRequests).toHaveBeenCalledTimes(1);
 
-      const mergeRequestData = db.select().from(context.entities.mergeRequests).all();
+      const mergeRequestData = await db.select().from(context.entities.mergeRequests).all();
       expect(mergeRequestData.length).toEqual(mergeRequests.length);
       
       for (const mergeRequest of mergeRequestData) {

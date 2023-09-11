@@ -1,24 +1,33 @@
+
+import { drizzle } from "drizzle-orm/libsql";
+import { migrate } from "drizzle-orm/libsql/migrator";
+import { createClient } from '@libsql/client';
+
+
 import { describe, expect, test } from '@jest/globals';
 import { getMembers } from './get-members';
 
-import { drizzle } from "drizzle-orm/better-sqlite3";
-import { migrate } from "drizzle-orm/better-sqlite3/migrator";
-import Database from "better-sqlite3";
 import { members, repositoriesToMembers } from '@acme/extract-schema';
 import type { Context } from './config';
 import type { GetMembersSourceControl, GetMembersEntities } from './get-members';
 import type { SourceControl } from '@acme/source-control';
+import fs from 'fs';
 
-let betterSqlite: ReturnType<typeof Database>;
+let sqlite: ReturnType<typeof createClient>;
 let db: ReturnType<typeof drizzle>;
 let context: Context<GetMembersSourceControl, GetMembersEntities>;
 let fetchMembers: SourceControl['fetchMembers'];
 
-beforeAll(() => {
-  betterSqlite = new Database(':memory:');
-  db = drizzle(betterSqlite);
 
-  migrate(db, { migrationsFolder: "../../../migrations/extract" });
+const dbname = "get-members";
+
+beforeAll(async () => {
+  sqlite = createClient({
+    url: `file:${dbname}`,
+  });
+  db = drizzle(sqlite);
+
+  await migrate(db, { migrationsFolder: "../../../migrations/extract" });
 
   fetchMembers = jest.fn((externalRepositoryId, namespaceName, repositoryName, page?: number, perPage?: number) => {
     switch (externalRepositoryId) {
@@ -51,7 +60,8 @@ beforeAll(() => {
 });
 
 afterAll(() => {
-  betterSqlite.close();
+  sqlite.close();
+  fs.unlinkSync(dbname);
 });
 
 describe('get-members:', () => {
@@ -68,7 +78,7 @@ describe('get-members:', () => {
       expect(paginationInfo).toBeDefined();
       expect(fetchMembers).toHaveBeenCalledTimes(1);
 
-      const memberRows = db.select().from(context.entities.members).all();
+      const memberRows = await db.select().from(context.entities.members).all();
       expect(memberRows.length).toEqual(members.length);
 
       for (const memberRow of memberRows) {
@@ -80,4 +90,3 @@ describe('get-members:', () => {
     });
   });
 });
-
