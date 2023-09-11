@@ -13,7 +13,7 @@ const js = [
 
 const python = [
   /Pipfile\.lock$/,
-  /__pycache__/,
+  /__pycache__\//,
 ]
 
 const IDEs = [
