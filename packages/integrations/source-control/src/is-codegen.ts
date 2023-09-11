@@ -47,6 +47,10 @@ const go = [
   // TODO: go.sum ?
 ];
 
+const rust = [
+  /Cargo\.lock/,
+];
+
 const IDEs = [
   /(^|\/)\.idea\//,
   /(^|\/)\.vscode\//,
@@ -68,6 +72,7 @@ const matchers = [
   ...php,
   ...swift,
   ...go,
+  ...rust,
   ...IDEs,
 ];
 

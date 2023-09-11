@@ -89,6 +89,10 @@ describe("is-codegen", () =>
       assertIsCodeGen('src/Godeps/Godeps.json');
     });
 
+    test('# Rust CodeGen', ()=> {
+      assertIsCodeGen('src/Cargo.lock');
+    });
+
     test('# IDE files', () => {
       assertIsCodeGen('.idea/file');
       assertIsCodeGen('.vscode/file');
