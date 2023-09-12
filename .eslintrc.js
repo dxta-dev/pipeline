@@ -15,7 +15,7 @@ const config = {
   },
   settings: {
     next: {
-      rootDir: ["apps/dashboard"]
+      rootDir: ["apps/app"]
     },
   },
 };
