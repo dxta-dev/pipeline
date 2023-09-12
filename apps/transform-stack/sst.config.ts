@@ -4,7 +4,7 @@ import { TransformStack } from "./src/stack";
 export default {
   config(_input) {
     return {
-      name: "extract",
+      name: "transform",
       region: "eu-central-1",
     };
   },
