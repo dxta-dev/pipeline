@@ -1,0 +1,34 @@
+{
+  "name": "@acme/transform-stack",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "type-check": "tsc --noEmit && echo \"✔ No TypeScript warnings or errors\"",
+    "test": "echo \"Warning: no test specified\"",
+    "lint": "eslint . && echo \"✔ No ESLint warnings or errors\"",
+    "dev": "npm run with-env sst dev",
+    "build": "npm run with-env sst build",
+    "deploy": "sst deploy",
+    "remove": "npm run with-env sst remove",
+    "console": "sst console",
+    "with-env": "dotenv -e ../../.env --"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@acme/extract-schema": "^1.0.0",
+    "@acme/transform-functions": "^1.0.0",
+    "@acme/transform-schema": "^1.0.0",
+    "aws-cdk-lib": "2.84.0",
+    "aws-lambda": "^1.0.7",
+    "constructs": "10.1.156",
+    "drizzle-orm": "^0.28.6",
+    "sst": "2.20.1",
+    "zod": "^3.21.4"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.119",
+    "dotenv-cli": "^7.3.0"
+  }
+}
