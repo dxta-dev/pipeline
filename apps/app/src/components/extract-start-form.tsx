@@ -2,6 +2,7 @@
 import { useAuth } from '@clerk/nextjs';
 import { useState } from 'react';
 import type { ChangeEvent, Dispatch, SetStateAction } from 'react';
+import { Input } from './ui/input';
 
 
 export function ExtractStartForm() {
@@ -39,33 +40,32 @@ export function ExtractStartForm() {
   return (
     <>
       <div>
-        <div>
-          <label>
-            repositoryId:
-            <input type="text" value={repositoryId} onChange={handleInputChange((v) => setRepositoryId(Number(v)))} />
-          </label>
-        </div>
-        <div>
-          <label>
-            repositoryName:
-            <input type="text" value={repositoryName} onChange={handleInputChange(setRepositoryName)} />
-          </label>
-        </div>
-        <div>
-          <label>
-            namespaceName:
-            <input type="text" value={namespaceName} onChange={handleInputChange(setNamespaceName)} />
-          </label>
-        </div>
-        <div>
-          <label>
-            sourceControl:
-            <select defaultValue={sourceControl} onChange={handleSelectChange}>
-              <option value='gitlab'>gitlab</option>
-              <option value='github'>github</option>
-            </select>
-          </label>
-        </div>
+        <table>
+          <tbody>
+
+            <tr>
+              <td>repositoryId:</td>
+              <td><Input className='w-[200px] inline-block' type="text" value={repositoryId} onChange={handleInputChange((v) => setRepositoryId(Number(v)))} /></td>
+            </tr>
+            <tr>
+              <td>repositoryName:</td>
+              <td><Input className='w-[200px] inline-block' type='text' value={repositoryName} onChange={handleInputChange(setRepositoryName)} /></td>
+            </tr>
+            <tr>
+              <td>namespaceName:</td>
+              <td><Input className='w-[200px] inline-block' type="text" value={namespaceName} onChange={handleInputChange(setNamespaceName)} /></td>
+            </tr>
+            <tr>
+              <td>sourceControl:</td>
+              <td>
+                <select defaultValue={sourceControl} onChange={handleSelectChange} className='!dropdown-no-box-shadow flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50'>
+                  <option value='gitlab'>gitlab</option>
+                  <option value='github'>github</option>
+                </select>
+              </td>
+            </tr>
+          </tbody>
+        </table>
         <button onClick={() => void handleSubmit()}>Submit</button>
       </div>
       <div><b>{status}</b></div>
