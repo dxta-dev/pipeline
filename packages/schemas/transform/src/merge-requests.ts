@@ -1,4 +1,4 @@
-import type { InferModel } from 'drizzle-orm';
+import type { InferSelectModel, InferInsertModel } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
 import { sqliteTable, text, integer, uniqueIndex } from 'drizzle-orm/sqlite-core';
 import { Enum } from './enum-column';
@@ -16,5 +16,5 @@ export const mergeRequests = sqliteTable('merge_requests', {
   uniqueExternalIdForgeTypeIndex: uniqueIndex('merge_requests_external_id_forge_type_idx').on(mergeRequests.externalId, mergeRequests.forgeType)
 }));
 
-export type MergeRequest = InferModel<typeof mergeRequests>;
-export type NewMergeRequest = InferModel<typeof mergeRequests, 'insert'>;
+export type MergeRequest = InferSelectModel<typeof mergeRequests>;
+export type NewMergeRequest = InferInsertModel<typeof mergeRequests>;

@@ -1,4 +1,4 @@
-import type { InferModel } from 'drizzle-orm';
+import type { InferSelectModel, InferInsertModel } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
 import { sqliteTable, text, integer, uniqueIndex } from 'drizzle-orm/sqlite-core';
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
@@ -16,8 +16,8 @@ export const members = sqliteTable('members', {
   uniqueGitlabId: uniqueIndex('members_external_id_idx').on(members.externalId),
 }));
 
-export type Member = InferModel<typeof members>;
-export type NewMember = InferModel<typeof members, 'insert'>;
+export type Member = InferSelectModel<typeof members>;
+export type NewMember = InferInsertModel<typeof members>;
 export const MemberSchema = createSelectSchema(members, {
   _createdAt: z.coerce.date(),
   _updatedAt: z.coerce.date(),

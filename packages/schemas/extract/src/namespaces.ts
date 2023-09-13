@@ -1,4 +1,4 @@
-import type { InferModel } from 'drizzle-orm';
+import type { InferSelectModel, InferInsertModel } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
 import { sqliteTable, text, integer, uniqueIndex } from 'drizzle-orm/sqlite-core';
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
@@ -14,8 +14,8 @@ export const namespaces = sqliteTable('namespaces', {
   uniqueExternalId: uniqueIndex('namespaces_external_id_idx').on(namespaces.externalId),
 }));
 
-export type Namespace = InferModel<typeof namespaces>;
-export type NewNamespace = InferModel<typeof namespaces, 'insert'>;
+export type Namespace = InferSelectModel<typeof namespaces>;
+export type NewNamespace = InferInsertModel<typeof namespaces>;
 export const NewNamespaceSchema = createInsertSchema(namespaces, {
   _createdAt: z.coerce.date(),
   _updatedAt: z.coerce.date(),
