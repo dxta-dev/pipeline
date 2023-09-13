@@ -59,7 +59,7 @@ gitlabMappedMembers.set(2, [1, 2]);
 
 describe('fuzzy:', () => {
   describe('fuzzy', () => {
-    test('should map members from GitHub to git identities from GitHab', () => {
+    test('should map members from GitHub to git identities from GitHub', () => {
       const result = fuzzySearch(gitIdentitiesGitHub, membersGitHub);
       expect(result).toEqual(githubMappedMembers);
     });
