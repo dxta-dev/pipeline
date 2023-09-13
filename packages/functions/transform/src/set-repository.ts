@@ -4,7 +4,7 @@ import type { NewRepository as TransformedRepository } from "@acme/transform-sch
 
 export type SetRepositoryInput = {
   extractRepositoryId: number;
-  forgeType: 'github' | 'gitlab'; // Question: which package should define supported forges -> this should be defined in extract db as well
+  forgeType: 'github' | 'gitlab';
 }
 export type SetRepositoryOutput = void;
 export type SetRepositoryExtractEntities = Pick<ExtractEntities, 'repositories'>;
@@ -24,7 +24,7 @@ export const setRepository: SetRepositoryFunction = async (
   if (!extractRepository) throw new Error(`Repository doesn't exist: ${extractRepositoryId}`);
 
   const transformedRepository = {
-    externalId: extractRepositoryId, // Question: do we need external ids in transform or only extract ids ?
+    externalId: extractRepositoryId,
     forgeType,
     name: extractRepository.name,
   } satisfies TransformedRepository;
