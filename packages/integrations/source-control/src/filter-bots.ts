@@ -1,19 +1,18 @@
 import type { GitIdentities } from "@acme/extract-schema";
 
 // ToDo look into more potential bots
-// GitHub bots => in name: bot / GitHub
-// GitLab bots => in email: bot
-const botName = ['bot', 'GitHub'];
-const botEmail = ['bot'];
+// in name => bot / GitHub
+// in email => bot
+const botNameKeywords = ['bot', 'GitHub'];
+const botEmailKeywords = ['bot'];
 
-const checkForValue = (identity: string, valuesToCheck: string[]) => {
-  const test = valuesToCheck.filter((singleString) => identity.includes(singleString));
-  return test.length === 0;
+const checkForBotKeywords = (identity: string, botKeywords: string[]) => {
+  return botKeywords.some((keyword) => identity.includes(keyword));
 }
 
 export function filterBots(gitIdentities: GitIdentities[]) {
   const gitIdentitiesWithoutBots = gitIdentities.filter(
-    (identity) => checkForValue(identity.name, botName) && checkForValue(identity.email, botEmail)
+    (identity) => !checkForBotKeywords(identity.name, botNameKeywords) && !checkForBotKeywords(identity.email, botEmailKeywords)
   );
   return gitIdentitiesWithoutBots;
 }
