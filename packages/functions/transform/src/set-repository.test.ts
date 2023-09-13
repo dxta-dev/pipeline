@@ -71,7 +71,7 @@ describe('set-repository', () => {
       }, context);
 
       const transformedRepositoryRow = await transformDb.select().from(transform.repositories)
-        .where(eq(transform.repositories.externalId, TEST_REPO_1.id))
+        .where(eq(transform.repositories.externalId, TEST_REPO_1.externalId))
         .get();
       
         expect(transformedRepositoryRow).toBeDefined();

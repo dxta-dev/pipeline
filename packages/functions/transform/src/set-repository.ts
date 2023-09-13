@@ -24,7 +24,7 @@ export const setRepository: SetRepositoryFunction = async (
   if (!extractRepository) throw new Error(`Repository doesn't exist: ${extractRepositoryId}`);
 
   const transformedRepository = {
-    externalId: extractRepositoryId,
+    externalId: extractRepository.externalId,
     forgeType,
     name: extractRepository.name,
   } satisfies TransformedRepository;
