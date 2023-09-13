@@ -1,4 +1,4 @@
-import type { InferModel } from 'drizzle-orm';
+import type { InferSelectModel, InferInsertModel } from "drizzle-orm";
 import { sql } from 'drizzle-orm';
 import { sqliteTable, integer,text, uniqueIndex } from 'drizzle-orm/sqlite-core';
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
@@ -14,8 +14,8 @@ export const repositories = sqliteTable('repositories', {
   uniqueExternalId: uniqueIndex('repositories_external_id_idx').on(projects.externalId),
 }));
 
-export type Repository = InferModel<typeof repositories>;
-export type NewRepository = InferModel<typeof repositories, 'insert'>;
+export type Repository = InferSelectModel<typeof repositories>;
+export type NewRepository = InferInsertModel<typeof repositories>;
 export const NewRepositorySchema = createInsertSchema(repositories, {
   _createdAt: z.coerce.date(),
   _updatedAt: z.coerce.date(),

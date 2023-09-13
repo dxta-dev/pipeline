@@ -1,4 +1,4 @@
-import type { InferModel } from 'drizzle-orm';
+import type { InferSelectModel, InferInsertModel } from "drizzle-orm";
 import { sql } from 'drizzle-orm';
 import { sqliteTable, integer, primaryKey } from 'drizzle-orm/sqlite-core';
 
@@ -11,5 +11,5 @@ export const repositoriesToMembers = sqliteTable('repositories_to_members', {
   pk: primaryKey(repositoriesToMembers.repositoryId, repositoriesToMembers.memberId)
 }));
 
-export type RepositoryToMember = InferModel<typeof repositoriesToMembers>;
-export type NewRepositoryToMember = InferModel<typeof repositoriesToMembers, 'insert'>;
+export type RepositoryToMember = InferSelectModel<typeof repositoriesToMembers>;
+export type NewRepositoryToMember = InferInsertModel<typeof repositoriesToMembers>;

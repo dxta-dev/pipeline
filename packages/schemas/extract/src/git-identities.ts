@@ -1,4 +1,4 @@
-import type { InferModel } from "drizzle-orm";
+import type { InferSelectModel, InferInsertModel } from "drizzle-orm";
 import { sql } from 'drizzle-orm';
 import { sqliteTable, text, integer, uniqueIndex } from 'drizzle-orm/sqlite-core';
 
@@ -13,5 +13,5 @@ export const gitIdentities = sqliteTable('git_identities', {
     uniqueRepositoryIdEmailName: uniqueIndex('repository_id_email_name_idx').on(gitIdentities.repositoryId, gitIdentities.email, gitIdentities.name),
   }));
     
-  export type GitIdentities = InferModel<typeof gitIdentities>;
-  export type NewGitIdentities = InferModel<typeof gitIdentities, 'insert'>;
+  export type GitIdentities = InferSelectModel<typeof gitIdentities>;
+  export type NewGitIdentities = InferInsertModel<typeof gitIdentities>;

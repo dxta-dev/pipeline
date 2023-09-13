@@ -1,4 +1,4 @@
-import type { InferModel } from 'drizzle-orm';
+import type { InferSelectModel, InferInsertModel } from "drizzle-orm";
 import { sql } from 'drizzle-orm';
 import { sqliteTable, text, integer, uniqueIndex } from 'drizzle-orm/sqlite-core';
 
@@ -20,5 +20,5 @@ export const mergeRequestDiffs = sqliteTable('merge_request_diffs', {
   uniqueMergeRequestId: uniqueIndex('diffs_merge_request_id_newPath_idx').on(diffs.mergeRequestId, diffs.newPath),
 }));
 
-export type MergeRequestDiff = InferModel<typeof mergeRequestDiffs>;
-export type NewMergeRequestDiff = InferModel<typeof mergeRequestDiffs, 'insert'>;
+export type MergeRequestDiff = InferSelectModel<typeof mergeRequestDiffs>;
+export type NewMergeRequestDiff = InferInsertModel<typeof mergeRequestDiffs>;

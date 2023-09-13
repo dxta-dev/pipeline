@@ -1,4 +1,4 @@
-import type { InferModel } from 'drizzle-orm';
+import type { InferSelectModel, InferInsertModel } from "drizzle-orm";
 import { sql } from 'drizzle-orm';
 import { sqliteTable, integer } from 'drizzle-orm/sqlite-core';
 import { repositories } from './repositories';
@@ -26,5 +26,5 @@ export const mergeRequestReports = sqliteTable('merge_request_reports', {
   _updatedAt: integer('__updated_at', { mode: 'timestamp_ms' }).default(sql`CURRENT_TIMESTAMP`),
 });
 
-export type MergeRequestReport = InferModel<typeof mergeRequestReports>;
-export type NewMergeRequestReport = InferModel<typeof mergeRequestReports, 'insert'>;
+export type MergeRequestReport = InferSelectModel<typeof mergeRequestReports>;
+export type NewMergeRequestReport = InferInsertModel<typeof mergeRequestReports>;

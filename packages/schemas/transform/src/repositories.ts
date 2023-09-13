@@ -1,4 +1,4 @@
-import type { InferModel } from 'drizzle-orm';
+import type { InferSelectModel, InferInsertModel } from "drizzle-orm";
 import { sql } from 'drizzle-orm';
 import { sqliteTable, text, integer, uniqueIndex } from 'drizzle-orm/sqlite-core';
 import { Enum } from './enum-column';
@@ -16,5 +16,5 @@ export const repositories = sqliteTable('repositories', {
   uniqueExternalIdForgeTypeIndex: uniqueIndex('repositories_external_id_forge_type_idx').on(repositories.externalId, repositories.forgeType)
 }));
 
-export type Repository = InferModel<typeof repositories>;
-export type NewRepository = InferModel<typeof repositories, 'insert'>;
+export type Repository = InferSelectModel<typeof repositories>;
+export type NewRepository = InferInsertModel<typeof repositories>;
