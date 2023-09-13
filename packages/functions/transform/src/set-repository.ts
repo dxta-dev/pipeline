@@ -4,7 +4,7 @@ import type { NewRepository as TransformedRepository } from "@acme/transform-sch
 
 export type SetRepositoryInput = {
   extractRepositoryId: number;
-  forgeType: 'github' | 'gitlab'; // Question: which package should define supported forges
+  forgeType: 'github' | 'gitlab'; // Question: which package should define supported forges -> this should be defined in extract db as well
 }
 export type SetRepositoryOutput = void;
 export type SetRepositoryExtractEntities = Pick<ExtractEntities, 'repositories'>;
