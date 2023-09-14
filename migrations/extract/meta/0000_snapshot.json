@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "1616593b-9450-4e9a-950b-208e390d92e3",
+  "id": "08da3944-a9e2-4ba0-bfb3-c5698dac4e34",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "git_identities": {
@@ -11,13 +11,6 @@
           "name": "id",
           "type": "integer",
           "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "member_id": {
-          "name": "member_id",
-          "type": "integer",
-          "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
@@ -91,6 +84,13 @@
           "notNull": true,
           "autoincrement": false
         },
+        "forge_type": {
+          "name": "forge_type",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
         "name": {
           "name": "name",
           "type": "text",
@@ -133,7 +133,8 @@
         "members_external_id_idx": {
           "name": "members_external_id_idx",
           "columns": [
-            "external_id"
+            "external_id",
+            "forge_type"
           ],
           "isUnique": true
         }
@@ -250,6 +251,7 @@
         "merge_request_commits_external_id_idx": {
           "name": "merge_request_commits_external_id_idx",
           "columns": [
+            "merge_request_id",
             "external_id"
           ],
           "isUnique": true
@@ -436,6 +438,7 @@
         "merge_request_notes_external_id_idx": {
           "name": "merge_request_notes_external_id_idx",
           "columns": [
+            "merge_request_id",
             "external_id"
           ],
           "isUnique": true
@@ -462,8 +465,8 @@
           "notNull": true,
           "autoincrement": false
         },
-        "merge_request_id": {
-          "name": "merge_request_id",
+        "canon_id": {
+          "name": "canon_id",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
@@ -567,7 +570,8 @@
         "merge_requests_external_id_idx": {
           "name": "merge_requests_external_id_idx",
           "columns": [
-            "external_id"
+            "external_id",
+            "repository_id"
           ],
           "isUnique": true
         }
@@ -588,6 +592,13 @@
         },
         "external_id": {
           "name": "external_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "forge_type": {
+          "name": "forge_type",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
@@ -621,7 +632,8 @@
         "namespaces_external_id_idx": {
           "name": "namespaces_external_id_idx",
           "columns": [
-            "external_id"
+            "external_id",
+            "forge_type"
           ],
           "isUnique": true
         }
@@ -642,6 +654,13 @@
         },
         "external_id": {
           "name": "external_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "forge_type": {
+          "name": "forge_type",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
@@ -675,7 +694,8 @@
         "repositories_external_id_idx": {
           "name": "repositories_external_id_idx",
           "columns": [
-            "external_id"
+            "external_id",
+            "forge_type"
           ],
           "isUnique": true
         }
