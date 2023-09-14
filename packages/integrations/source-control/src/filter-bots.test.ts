@@ -25,13 +25,13 @@ const filteredGitIdentitiesGitHub = [
   { id: 9, repositoryId: 1, name: 'Ante-Koceic', email: '97022082+Ante-Koceic@users.noreply.github.com', _createdAt: new Date('2023-09-12'), _updatedAt: new Date('2023-09-12') },
 ];
 
-//Gitlab creates a lot of accounts with username project_<some id>_bot and mail address project<some id>_bot@example.com.
 const gitIdentitiesGitLab = [
   { id: 1, repositoryId: 2, name: 'Ante Koceić', email: 'ante@crocoder.dev', _createdAt: new Date('2023-09-12'), _updatedAt: new Date('2023-09-12') },
-  { id: 2, repositoryId: 2, name: 'ci-cd-test-token', email: 'project_44247924_bot@example.com', _createdAt: new Date('2023-09-12'), _updatedAt: new Date('2023-09-12') },
+  { id: 2, repositoryId: 2, name: 'ci-cd-test-token', email: 'project_44247924_bot_8a64bd1c92489f26164da69310605f2d@noreply.gitlab.com', _createdAt: new Date('2023-09-12'), _updatedAt: new Date('2023-09-12') },
   { id: 3, repositoryId: 2, name: 'Ante Koceic', email: 'ante@crocodre.dev', _createdAt: new Date('2023-09-12'), _updatedAt: new Date('2023-09-12') },
-  { id: 4, repositoryId: 2, name: 'sup', email: 'group_64938374_bot@example.com', _createdAt: new Date('2023-09-12'), _updatedAt: new Date('2023-09-12') },
+  { id: 4, repositoryId: 2, name: 'sup', email: 'group_64938374_bot_08dc84e9abe071352e8845b2cb3ce70a@noreply.gitlab.com', _createdAt: new Date('2023-09-12'), _updatedAt: new Date('2023-09-12') },
   { id: 5, repositoryId: 2, name: 'David Abram', email: 'david@crocoder.dev', _createdAt: new Date('2023-09-12'), _updatedAt: new Date('2023-09-12') },
+  { id: 6, repositoryId: 2, name: 'Ante Cash', email: 'project_44247924_bot_46e091bcc88e8e5636c00d5119fe8e47@noreply.gitlab.com', _createdAt: new Date('2023-09-12'), _updatedAt: new Date('2023-09-12') },
 ];
 
 const filteredGitIdentitiesGitLab = [
