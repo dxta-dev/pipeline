@@ -3,17 +3,19 @@ import { sql } from 'drizzle-orm';
 import { sqliteTable, text, integer, uniqueIndex } from 'drizzle-orm/sqlite-core';
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import { z } from 'zod';
+import { Enum } from './enum-column';
 
 export const members = sqliteTable('members', {
   id: integer('id').primaryKey(),
   externalId: integer('external_id').notNull(),
+  forgeType: Enum('forge_type', { enum: ['github', 'gitlab'] }).notNull(),
   name: text('name'),
   username: text('username').notNull(),
   email: text('email'),
   _createdAt: integer('__created_at', { mode: 'timestamp_ms' }).default(sql`CURRENT_TIMESTAMP`),
   _updatedAt: integer('__updated_at', { mode: 'timestamp_ms' }).default(sql`CURRENT_TIMESTAMP`),
 }, (members) => ({
-  uniqueGitlabId: uniqueIndex('members_external_id_idx').on(members.externalId),
+  uniqueExternalId: uniqueIndex('members_external_id_idx').on(members.externalId, members.forgeType),
 }));
 
 export type Member = InferSelectModel<typeof members>;
