@@ -23,8 +23,10 @@ export type NewMember = InferInsertModel<typeof members>;
 export const MemberSchema = createSelectSchema(members, {
   _createdAt: z.coerce.date(),
   _updatedAt: z.coerce.date(),
+  forgeType: z.literal('github').or(z.literal('gitlab')),
 });
 export const NewMemberSchema = createInsertSchema(members, {
   _createdAt: z.coerce.date(),
   _updatedAt: z.coerce.date(),
+  forgeType: z.literal('github').or(z.literal('gitlab')),
 });
