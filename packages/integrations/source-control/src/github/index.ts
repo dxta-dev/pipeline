@@ -264,7 +264,7 @@ export class GitHubSourceControl implements SourceControl {
     const response = await this.api.pulls.listReviewComments({
       owner: namespace.name,
       repo: repository.name,
-      pull_number: mergeRequest.mergeRequestId,
+      pull_number: mergeRequest.canonId,
     });
 
     return {
