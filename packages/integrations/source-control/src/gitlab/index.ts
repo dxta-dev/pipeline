@@ -97,7 +97,7 @@ export class GitlabSourceControl implements SourceControl {
     return {
       mergeRequests: data.map((mr) => ({
         externalId: mr.id,
-        mergeRequestId: mr.iid,
+        canonId: mr.iid,
         repositoryId,
         title: mr.title,
         webUrl: mr.web_url,

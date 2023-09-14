@@ -184,7 +184,7 @@ export class GitHubSourceControl implements SourceControl {
       mergeRequests: result.data
         .map(mergeRequest => ({
           externalId: mergeRequest.id,
-          mergeRequestId: mergeRequest.number,
+          canonId: mergeRequest.number,
           repositoryId,
           title: mergeRequest.title,
           webUrl: mergeRequest.url,
