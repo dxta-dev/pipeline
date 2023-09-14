@@ -4,7 +4,6 @@ import { sqliteTable, text, integer, uniqueIndex } from 'drizzle-orm/sqlite-core
 
 export const mergeRequestDiffs = sqliteTable('merge_request_diffs', {
   id: integer('id').primaryKey(),
-  /* Gitlab -> iid */
   mergeRequestId: integer('merge_request_id').notNull(),
   newPath: text('new_path').notNull(),
   oldPath: text('old_path').notNull(),
