@@ -31,7 +31,7 @@ beforeAll(async () => {
 
     const mergeRequestArray = [{ 
       externalId: 2000, 
-      mergeRequestId: 2000, 
+      canonId: 2000, 
       repositoryId: 2000,
       createdAt: new Date('2021-01-01'),
       state: 'open',
@@ -39,7 +39,7 @@ beforeAll(async () => {
       webUrl: 'https://gitlab.com/acme/merge-requests/2000',
     }, { 
       externalId: 2001, 
-      mergeRequestId: 2001, 
+      canonId: 2001, 
       repositoryId: 2000,
       createdAt: new Date('2021-01-02'),
       state: 'open',
@@ -47,7 +47,7 @@ beforeAll(async () => {
       webUrl: 'https://gitlab.com/acme/merge-requests/2001',
     }, { 
       externalId: 2002, 
-      mergeRequestId: 2002, 
+      canonId: 2002, 
       repositoryId: 2000,
       createdAt: new Date('2021-02-01'),
       state: 'open',
@@ -70,7 +70,7 @@ beforeAll(async () => {
         return Promise.resolve({
           mergeRequests: [{ 
             externalId: 1000,
-            mergeRequestId: 1000,
+            canonId: 1000,
             repositoryId: 1000,
             createdAt: new Date('2021-01-01'),
             state: 'open',

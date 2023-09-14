@@ -21,7 +21,7 @@ let context: Context<SetRepositoryExtractEntities, SetRepositoryTransformEntitie
 const extractDbName = 'extract-set-repository';
 const transformDbName = 'transform-set-repository';
 
-const TEST_REPO_1 = { id: 1, externalId: 1000, name: 'TEST_REPO_NAME' } satisfies extract.NewRepository;
+const TEST_REPO_1 = { id: 1, externalId: 1000, name: 'TEST_REPO_NAME', forgeType: 'github' } satisfies extract.NewRepository;
 
 beforeAll(async () => {
   extractSqlite = createClient({

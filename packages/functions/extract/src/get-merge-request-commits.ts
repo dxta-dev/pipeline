@@ -41,7 +41,7 @@ export const getMergeRequestCommits: GetMergeRequestCommitsFunction = async (
     return Promise.all(mergeRequestCommits.map(mergeRequestCommit => 
       tx.insert(entities.mergeRequestCommits).values(mergeRequestCommit)
         .onConflictDoUpdate({ 
-          target: entities.mergeRequestCommits.externalId,
+          target: [entities.mergeRequestCommits.mergeRequestId, entities.mergeRequestCommits.externalId],
           set: { 
             createdAt: mergeRequestCommit.createdAt,
             committedDate: mergeRequestCommit.committedDate,

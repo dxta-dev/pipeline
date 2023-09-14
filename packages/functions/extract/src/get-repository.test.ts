@@ -34,8 +34,8 @@ beforeAll(async () => {
     switch (externalRepositoryId) {
       case 1000:
         return Promise.resolve({
-          repository: { externalId: 1000, name: 'repo' },
-          namespace: { externalId: 2000, name: 'gengar' }
+          repository: { externalId: 1000, name: 'repo', forgeType: 'github' },
+          namespace: { externalId: 2000, name: 'gengar', forgeType: 'github' }
         });
       default:
         return Promise.reject(new Error('Are you mocking me?'));
@@ -77,7 +77,7 @@ describe('get-repository', () => {
 
       const namespaceRow = await db.select().from(namespaces)
         .where(eq(namespaces.externalId, namespace.externalId)).get();
-        
+
       expect(namespaceRow).toBeDefined();
       expect(namespaceRow?.externalId).toEqual(namespace.externalId);
       expect(namespaceRow?.id).toEqual(namespace.id);

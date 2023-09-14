@@ -30,11 +30,11 @@ export const getRepository: GetRepositoryFunction = async (
   const { repository, namespace } = await integrations.sourceControl.fetchRepository(externalRepositoryId, namespaceName, repositoryName);
 
   const insertedRepository = await db.insert(entities.repositories).values(repository)
-    .onConflictDoUpdate({ target: entities.repositories.externalId, set: { name: repository.name } }).returning()
+    .onConflictDoUpdate({ target: [entities.repositories.externalId, entities.repositories.forgeType], set: { name: repository.name } }).returning()
     .get();
 
   const insertedNamespace = await db.insert(entities.namespaces).values(namespace)
-    .onConflictDoUpdate({ target: entities.namespaces.externalId, set: { name: namespace.name } }).returning()
+    .onConflictDoUpdate({ target: [entities.namespaces.externalId, entities.namespaces.forgeType], set: { name: namespace.name } }).returning()
     .get();
 
   return {

@@ -5,7 +5,7 @@ import { migrate } from "drizzle-orm/libsql/migrator";
 import { createClient } from '@libsql/client';
 import { members } from '@acme/extract-schema';
 import type { Context } from './config';
-import type { GetMemberInfoSourceControl, GetMemberInfoEntities} from './get-member-info';
+import type { GetMemberInfoSourceControl, GetMemberInfoEntities } from './get-member-info';
 import { getMemberInfo } from './get-member-info';
 import type { SourceControl } from '@acme/source-control';
 import { eq } from 'drizzle-orm';
@@ -31,7 +31,7 @@ beforeAll(async () => {
       case 'deki':
         return Promise.resolve({
           member:
-            { externalId: 1000, name: 'Dejan', username: 'dejan-crocoder', email: 'deki.the.wizard@gmail.com' },
+            { externalId: 1000, forgeType: 'github', name: 'Dejan', username: 'dejan-crocoder', email: 'deki.the.wizard@gmail.com' },
         }) satisfies ReturnType<SourceControl['fetchUserInfo']>;
       default:
         return Promise.reject(new Error("Are you mocking me?"))
@@ -55,6 +55,7 @@ beforeEach(async () => {
     id: 1,
     username: 'deki',
     externalId: 1000,
+    forgeType: 'github',
     name: null,
     email: null,
   }).run();

@@ -13,9 +13,9 @@ let db: ReturnType<typeof drizzle>;
 let context: Context<GetMergeRequestCommitsSourceControl, GetMergeRequestCommitsEntities>;
 let fetchMergeRequestCommits: jest.MockedFunction<GetMergeRequestCommitsSourceControl['fetchMergeRequestCommits']>;
 
-const TEST_REPO_1 = { id: 1, externalId: 1000, name: 'TEST_REPO_NAME' } satisfies NewRepository;
-const TEST_NAMESPACE_1 = { id: 1, externalId: 2000, name: 'TEST_NAMESPACE_NAME' } satisfies NewNamespace;
-const TEST_MERGE_REQUEST_1 = { id: 1, externalId: 3000, createdAt: new Date(), mergeRequestId: 1, repositoryId: 1, title: "TEST_MR", webUrl: "localhost" } satisfies NewMergeRequest;
+const TEST_REPO_1 = { id: 1, externalId: 1000, name: 'TEST_REPO_NAME', forgeType: 'github' } satisfies NewRepository;
+const TEST_NAMESPACE_1 = { id: 1, externalId: 2000, name: 'TEST_NAMESPACE_NAME', forgeType: 'github' } satisfies NewNamespace;
+const TEST_MERGE_REQUEST_1 = { id: 1, externalId: 3000, createdAt: new Date(), canonId: 1, repositoryId: 1, title: "TEST_MR", webUrl: "localhost" } satisfies NewMergeRequest;
 
 const dbname = 'get-merge-request-commits';
 
@@ -37,7 +37,7 @@ beforeAll(async () => {
         return Promise.resolve({
           mergeRequestCommits: [
             {
-              mergeRequestId: mergeRequest.mergeRequestId,
+              mergeRequestId: mergeRequest.canonId,
               externalId: '4b14eb1cb5cdb1937f17e0aafaa697f1f943f546',
               createdAt: new Date('2023-01-02'),
               authoredDate: new Date('2023-01-02'),
@@ -48,7 +48,7 @@ beforeAll(async () => {
               authorEmail: 'mock@author.com'
             },
             {
-              mergeRequestId: mergeRequest.mergeRequestId,
+              mergeRequestId: mergeRequest.canonId,
               externalId: '6c307422a2957215f63b826491dc33a51dc08f03',
               createdAt: new Date('2023-01-05'),
               authoredDate: new Date('2023-01-05'),

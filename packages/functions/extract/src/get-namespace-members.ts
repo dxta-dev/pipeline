@@ -36,7 +36,7 @@ export const getNamespaceMembers: GetNamespaceMembersFunction = async (
   const insertedMembers = await db.transaction(async (tx) => {
     return Promise.all(members.map(member =>
       tx.insert(entities.members).values(member)
-        .onConflictDoUpdate({ target: entities.members.externalId, set: { username: member.username } })
+        .onConflictDoUpdate({ target: [entities.members.externalId, entities.members.forgeType], set: { username: member.username } })
         .returning()
         .get()
     ));
