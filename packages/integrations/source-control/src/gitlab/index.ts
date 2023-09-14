@@ -120,7 +120,7 @@ export class GitlabSourceControl implements SourceControl {
 
   async fetchMergeRequestDiffs(repository: Repository, namespace: Namespace, mergeRequest: MergeRequest, page?: number, perPage?: number): Promise<{ mergeRequestDiffs: NewMergeRequestDiff[], pagination: Pagination }> {
     // TODO: wait until gitbeaker fixes this
-    const { data, paginationInfo } = ((await this.api.MergeRequests.allDiffs(repository.externalId, mergeRequest.mergeRequestId, {
+    const { data, paginationInfo } = ((await this.api.MergeRequests.allDiffs(repository.externalId, mergeRequest.canonId, {
       showExpanded: true,
       page: page || 1,
       perPage,
@@ -129,7 +129,7 @@ export class GitlabSourceControl implements SourceControl {
 
     return {
       mergeRequestDiffs: data.map(mergeRequestDiff => ({
-        mergeRequestId: mergeRequest.mergeRequestId,
+        mergeRequestId: mergeRequest.id,
         diff: mergeRequestDiff.diff,
         newPath: mergeRequestDiff.new_path,
         oldPath: mergeRequestDiff.old_path,

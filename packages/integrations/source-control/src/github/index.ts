@@ -210,7 +210,7 @@ export class GitHubSourceControl implements SourceControl {
       repo: repository.name,
       page: page,
       per_page: perPage,
-      pull_number: mergeRequest.mergeRequestId,
+      pull_number: mergeRequest.canonId,
     });
 
     const linkHeader = parseLinkHeader(result.headers.link) || { next: { per_page: perPage } };
@@ -223,7 +223,7 @@ export class GitHubSourceControl implements SourceControl {
 
     return {
       mergeRequestDiffs: result.data.map(mergeRequestFile => ({
-        mergeRequestId: mergeRequest.mergeRequestId,
+        mergeRequestId: mergeRequest.id,
         diff: mergeRequestFile.patch || "",
         newPath: mergeRequestFile.filename,
         oldPath: mergeRequestFile.previous_filename || mergeRequestFile.filename,
