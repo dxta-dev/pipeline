@@ -68,6 +68,7 @@ export class GitHubSourceControl implements SourceControl {
     return {
       member: {
         externalId: result.data.id,
+        forgeType: 'github',
         name: result.data.name,
         username: result.data.login,
         email: result.data.email,
@@ -97,6 +98,7 @@ export class GitHubSourceControl implements SourceControl {
     return {
       members: result.data.map(member => ({
         externalId: member.id,
+        forgeType: 'github',
         name: member.name,
         username: member.login,
         email: member.email,
@@ -147,6 +149,7 @@ export class GitHubSourceControl implements SourceControl {
     return {
       members: result.data.map(member => ({
         externalId: member.id,
+        forgeType: 'github',
         name: member.name,
         username: member.login,
         email: member.email,

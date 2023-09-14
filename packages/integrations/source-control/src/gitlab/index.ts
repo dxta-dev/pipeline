@@ -29,6 +29,7 @@ export class GitlabSourceControl implements SourceControl {
     return {
       members: data.map(member => ({
         externalId: member.id,
+        forgeType: 'gitlab',
         name: member.name,
         username: member.username,
       } satisfies NewMember)),
@@ -69,6 +70,7 @@ export class GitlabSourceControl implements SourceControl {
     return {
       members: data.map(member => ({
         externalId: member.id,
+        forgeType: 'gitlab',
         name: member.name,
         username: member.username,
         email: member.email,
