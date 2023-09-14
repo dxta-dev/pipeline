@@ -49,10 +49,12 @@ export class GitlabSourceControl implements SourceControl {
     return {
       repository: {
         externalId: project.id,
+        forgeType: 'gitlab',
         name: project.name
       } satisfies NewRepository,
       namespace: {
         externalId: namespace.id,
+        forgeType: 'gitlab',
         name: namespace.name,
       } satisfies NewNamespace,
     };

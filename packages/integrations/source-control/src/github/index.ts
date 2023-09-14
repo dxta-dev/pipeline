@@ -117,10 +117,12 @@ export class GitHubSourceControl implements SourceControl {
     return {
       repository: {
         externalId: result.data.id,
+        forgeType: 'github',
         name: result.data.name,
       },
       namespace: {
         externalId: result.data.owner.id,
+        forgeType: 'github',
         name: result.data.owner.login
       }
     }
