@@ -6,7 +6,6 @@ import { z } from 'zod';
 
 export const mergeRequestCommits = sqliteTable('merge_request_commits', {
   id: integer('id').primaryKey(),
-  /* Gitlab -> iid */
   mergeRequestId: integer('merge_request_id').notNull(),
   externalId: text('external_id').notNull(),
   createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),
@@ -21,7 +20,7 @@ export const mergeRequestCommits = sqliteTable('merge_request_commits', {
   _createdAt: integer('__created_at', { mode: 'timestamp_ms' }).default(sql`CURRENT_TIMESTAMP`),
   _updatedAt: integer('__updated_at', { mode: 'timestamp_ms' }).default(sql`CURRENT_TIMESTAMP`),
 }, (commits) => ({
-  uniqueExternalId: uniqueIndex('merge_request_commits_external_id_idx').on(commits.externalId),
+  uniqueExternalId: uniqueIndex('merge_request_commits_external_id_idx').on(commits.mergeRequestId, commits.externalId),
 }));
 
 export type MergeRequestCommit = InferSelectModel<typeof mergeRequestCommits>;
