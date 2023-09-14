@@ -240,12 +240,12 @@ export class GitHubSourceControl implements SourceControl {
     const response = await this.api.pulls.listCommits({
       owner: namespace.name,
       repo: repository.name,
-      pull_number: mergeRequest.mergeRequestId,
+      pull_number: mergeRequest.canonId,
     });
 
     return {
       mergeRequestCommits: response.data.map((mrc) => ({
-        mergeRequestId: mergeRequest.mergeRequestId,
+        mergeRequestId: mergeRequest.id,
         externalId: mrc.sha,
         createdAt: new Date(mrc.commit.committer?.date || ''),
         authoredDate: new Date(mrc.commit.author?.date || ''),

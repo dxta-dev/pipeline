@@ -151,7 +151,7 @@ export class GitlabSourceControl implements SourceControl {
   async fetchMergeRequestCommits(repository: Repository, namespace: Namespace, mergeRequest: MergeRequest, creationPeriod: TimePeriod = {}): Promise<{ mergeRequestCommits: NewMergeRequestCommit[] }> {
     const { data } = await this.api.MergeRequests.allCommits(
       repository.externalId,
-      mergeRequest.mergeRequestId,
+      mergeRequest.canonId,
       {
         showExpanded: true,
       }
@@ -159,7 +159,7 @@ export class GitlabSourceControl implements SourceControl {
 
     return {
       mergeRequestCommits: data.map((mrc) => ({
-        mergeRequestId: mergeRequest.mergeRequestId,
+        mergeRequestId: mergeRequest.id,
         externalId: mrc.id,
         createdAt: new Date(mrc.created_at),
         authoredDate: new Date(mrc.authored_date || ''),
