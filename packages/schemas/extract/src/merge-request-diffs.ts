@@ -16,7 +16,7 @@ export const mergeRequestDiffs = sqliteTable('merge_request_diffs', {
   _createdAt: integer('__created_at', { mode: 'timestamp_ms' }).default(sql`CURRENT_TIMESTAMP`),
   _updatedAt: integer('__updated_at', { mode: 'timestamp_ms' }).default(sql`CURRENT_TIMESTAMP`),
 }, (diffs) => ({
-  uniqueMergeRequestId: uniqueIndex('diffs_merge_request_id_newPath_idx').on(diffs.mergeRequestId, diffs.newPath),
+  uniqueExternalDiffId: uniqueIndex('diffs_merge_request_id_newPath_idx').on(diffs.mergeRequestId, diffs.newPath),
 }));
 
 export type MergeRequestDiff = InferSelectModel<typeof mergeRequestDiffs>;
