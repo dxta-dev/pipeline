@@ -3,15 +3,17 @@ import { sql } from 'drizzle-orm';
 import { sqliteTable, text, integer, uniqueIndex } from 'drizzle-orm/sqlite-core';
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import { z } from 'zod';
+import { Enum } from './enum-column';
 
 export const namespaces = sqliteTable('namespaces', {
   id: integer('id').primaryKey(),
   externalId: integer('external_id').notNull(),
+  forgeType: Enum('forge_type', { enum: ['github', 'gitlab'] }).notNull(),
   name: text('name').notNull(),
   _createdAt: integer('__created_at', { mode: 'timestamp_ms' }).default(sql`CURRENT_TIMESTAMP`),
   _updatedAt: integer('__updated_at', { mode: 'timestamp_ms' }).default(sql`CURRENT_TIMESTAMP`),
 }, (namespaces) => ({
-  uniqueExternalId: uniqueIndex('namespaces_external_id_idx').on(namespaces.externalId),
+  uniqueExternalId: uniqueIndex('namespaces_external_id_idx').on(namespaces.externalId, namespaces.forgeType),
 }));
 
 export type Namespace = InferSelectModel<typeof namespaces>;
