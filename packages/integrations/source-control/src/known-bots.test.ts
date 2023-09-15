@@ -1,5 +1,5 @@
 import { describe, expect, test } from '@jest/globals';
-import { knownBots } from "./known-bots";
+import { filterKnownBots } from "./known-bots";
 
 const gitIdentitiesGitHub = [
   { id: 1, name: 'renovate[bot]', email: '29139614+renovate[bot]@users.noreply.github.com' },
@@ -44,11 +44,11 @@ const filteredGitIdentitiesGitLab = [
 describe('filter-bots:', () => {
   describe('filter-bots', () => {
     test('should return an array of GitHub identities without bot accounts', () => {
-      const result = knownBots(gitIdentitiesGitHub);
+      const result = filterKnownBots(gitIdentitiesGitHub);
       expect(result).toEqual(filteredGitIdentitiesGitHub);
     });
     test('should return an array of GitLab identities without bot accounts', () => {
-      const result = knownBots(gitIdentitiesGitLab);
+      const result = filterKnownBots(gitIdentitiesGitLab);
       expect(result).toEqual(filteredGitIdentitiesGitLab);
     });
   });

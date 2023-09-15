@@ -69,7 +69,7 @@ const checkForBotKeywords = (name: string, email: string, listOfKnownBots: BotIn
   });
 }
 
-export function knownBots(gitIdentities: { name: string, email: string , id: number}[]) {
+export function filterKnownBots(gitIdentities: { name: string, email: string , id: number}[]) {
   const gitIdentitiesWithoutBots = gitIdentities.filter(
     (identity) => !checkForBotKeywords(identity.name, identity.email, listOfKnownBots)
   );
