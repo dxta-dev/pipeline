@@ -8,10 +8,9 @@ export const mergeRequests = sqliteTable(
   "merge_requests",
   {
     id: integer("id").primaryKey(),
-    /* Gitlab -> id */
     externalId: integer("external_id").notNull(),
     /* Gitlab -> iid, GitHub -> number */
-    mergeRequestId: integer("merge_request_id").notNull(),
+    canonId: integer("canon_id").notNull(),
     repositoryId: integer("repository_id").notNull(),
     title: text("title").notNull(),
     webUrl: text("web_url").notNull(),
@@ -29,6 +28,7 @@ export const mergeRequests = sqliteTable(
   (mergeRequests) => ({
     uniqueExternalId: uniqueIndex("merge_requests_external_id_idx").on(
       mergeRequests.externalId,
+      mergeRequests.repositoryId,
     ),
   }),
 );

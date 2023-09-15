@@ -34,7 +34,7 @@ beforeAll(async () => {
       case 1000:
         return Promise.resolve({
           members: [
-            { externalId: 1000, name: 'Dejan', username: 'dejan-crocoder' }
+            { externalId: 1000, name: 'Dejan', username: 'dejan-crocoder', forgeType: 'github' }
           ],
           pagination: {
             page: 1 || page,

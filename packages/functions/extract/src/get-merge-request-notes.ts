@@ -41,7 +41,7 @@ export const getMergeRequestNotes: GetMergeRequestNotesFunction = async (
     Promise.all(mergeRequestNotes.map(mergeRequestNote =>
       tx.insert(entities.mergeRequestNotes).values(mergeRequestNote)
         .onConflictDoUpdate({
-          target: entities.mergeRequestNotes.externalId,
+          target: [entities.mergeRequestNotes.mergeRequestId, entities.mergeRequestNotes.externalId],
           set: {
             updatedAt: mergeRequestNote.updatedAt
           }

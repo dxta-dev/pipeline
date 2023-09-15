@@ -68,6 +68,7 @@ export class GitHubSourceControl implements SourceControl {
     return {
       member: {
         externalId: result.data.id,
+        forgeType: 'github',
         name: result.data.name,
         username: result.data.login,
         email: result.data.email,
@@ -97,6 +98,7 @@ export class GitHubSourceControl implements SourceControl {
     return {
       members: result.data.map(member => ({
         externalId: member.id,
+        forgeType: 'github',
         name: member.name,
         username: member.login,
         email: member.email,
@@ -115,10 +117,12 @@ export class GitHubSourceControl implements SourceControl {
     return {
       repository: {
         externalId: result.data.id,
+        forgeType: 'github',
         name: result.data.name,
       },
       namespace: {
         externalId: result.data.owner.id,
+        forgeType: 'github',
         name: result.data.owner.login
       }
     }
@@ -147,6 +151,7 @@ export class GitHubSourceControl implements SourceControl {
     return {
       members: result.data.map(member => ({
         externalId: member.id,
+        forgeType: 'github',
         name: member.name,
         username: member.login,
         email: member.email,
@@ -181,7 +186,7 @@ export class GitHubSourceControl implements SourceControl {
       mergeRequests: result.data
         .map(mergeRequest => ({
           externalId: mergeRequest.id,
-          mergeRequestId: mergeRequest.number,
+          canonId: mergeRequest.number,
           repositoryId,
           title: mergeRequest.title,
           webUrl: mergeRequest.url,
@@ -207,7 +212,7 @@ export class GitHubSourceControl implements SourceControl {
       repo: repository.name,
       page: page,
       per_page: perPage,
-      pull_number: mergeRequest.mergeRequestId,
+      pull_number: mergeRequest.canonId,
     });
 
     const linkHeader = parseLinkHeader(result.headers.link) || { next: { per_page: perPage } };
@@ -220,7 +225,7 @@ export class GitHubSourceControl implements SourceControl {
 
     return {
       mergeRequestDiffs: result.data.map(mergeRequestFile => ({
-        mergeRequestId: mergeRequest.mergeRequestId,
+        mergeRequestId: mergeRequest.id,
         diff: mergeRequestFile.patch || "",
         newPath: mergeRequestFile.filename,
         oldPath: mergeRequestFile.previous_filename || mergeRequestFile.filename,
@@ -237,12 +242,12 @@ export class GitHubSourceControl implements SourceControl {
     const response = await this.api.pulls.listCommits({
       owner: namespace.name,
       repo: repository.name,
-      pull_number: mergeRequest.mergeRequestId,
+      pull_number: mergeRequest.canonId,
     });
 
     return {
       mergeRequestCommits: response.data.map((mrc) => ({
-        mergeRequestId: mergeRequest.mergeRequestId,
+        mergeRequestId: mergeRequest.id,
         externalId: mrc.sha,
         createdAt: new Date(mrc.commit.committer?.date || ''),
         authoredDate: new Date(mrc.commit.author?.date || ''),
@@ -261,7 +266,7 @@ export class GitHubSourceControl implements SourceControl {
     const response = await this.api.pulls.listReviewComments({
       owner: namespace.name,
       repo: repository.name,
-      pull_number: mergeRequest.mergeRequestId,
+      pull_number: mergeRequest.canonId,
     });
 
     return {

@@ -29,6 +29,7 @@ export class GitlabSourceControl implements SourceControl {
     return {
       members: data.map(member => ({
         externalId: member.id,
+        forgeType: 'gitlab',
         name: member.name,
         username: member.username,
       } satisfies NewMember)),
@@ -48,10 +49,12 @@ export class GitlabSourceControl implements SourceControl {
     return {
       repository: {
         externalId: project.id,
+        forgeType: 'gitlab',
         name: project.name
       } satisfies NewRepository,
       namespace: {
         externalId: namespace.id,
+        forgeType: 'gitlab',
         name: namespace.name,
       } satisfies NewNamespace,
     };
@@ -69,6 +72,7 @@ export class GitlabSourceControl implements SourceControl {
     return {
       members: data.map(member => ({
         externalId: member.id,
+        forgeType: 'gitlab',
         name: member.name,
         username: member.username,
         email: member.email,
@@ -95,7 +99,7 @@ export class GitlabSourceControl implements SourceControl {
     return {
       mergeRequests: data.map((mr) => ({
         externalId: mr.id,
-        mergeRequestId: mr.iid,
+        canonId: mr.iid,
         repositoryId,
         title: mr.title,
         webUrl: mr.web_url,
@@ -118,7 +122,7 @@ export class GitlabSourceControl implements SourceControl {
 
   async fetchMergeRequestDiffs(repository: Repository, namespace: Namespace, mergeRequest: MergeRequest, page?: number, perPage?: number): Promise<{ mergeRequestDiffs: NewMergeRequestDiff[], pagination: Pagination }> {
     // TODO: wait until gitbeaker fixes this
-    const { data, paginationInfo } = ((await this.api.MergeRequests.allDiffs(repository.externalId, mergeRequest.mergeRequestId, {
+    const { data, paginationInfo } = ((await this.api.MergeRequests.allDiffs(repository.externalId, mergeRequest.canonId, {
       showExpanded: true,
       page: page || 1,
       perPage,
@@ -127,7 +131,7 @@ export class GitlabSourceControl implements SourceControl {
 
     return {
       mergeRequestDiffs: data.map(mergeRequestDiff => ({
-        mergeRequestId: mergeRequest.mergeRequestId,
+        mergeRequestId: mergeRequest.id,
         diff: mergeRequestDiff.diff,
         newPath: mergeRequestDiff.new_path,
         oldPath: mergeRequestDiff.old_path,
@@ -149,7 +153,7 @@ export class GitlabSourceControl implements SourceControl {
   async fetchMergeRequestCommits(repository: Repository, namespace: Namespace, mergeRequest: MergeRequest, creationPeriod: TimePeriod = {}): Promise<{ mergeRequestCommits: NewMergeRequestCommit[] }> {
     const { data } = await this.api.MergeRequests.allCommits(
       repository.externalId,
-      mergeRequest.mergeRequestId,
+      mergeRequest.canonId,
       {
         showExpanded: true,
       }
@@ -157,7 +161,7 @@ export class GitlabSourceControl implements SourceControl {
 
     return {
       mergeRequestCommits: data.map((mrc) => ({
-        mergeRequestId: mergeRequest.mergeRequestId,
+        mergeRequestId: mergeRequest.id,
         externalId: mrc.id,
         createdAt: new Date(mrc.created_at),
         authoredDate: new Date(mrc.authored_date || ''),
@@ -173,7 +177,7 @@ export class GitlabSourceControl implements SourceControl {
   }
 
   async fetchMergeRequestNotes(repository: Repository, namespace: Namespace, mergeRequest: MergeRequest): Promise<{ mergeRequestNotes: NewMergeRequestNote[] }> {
-    const { data } = await this.api.MergeRequestNotes.all(repository.externalId, mergeRequest.mergeRequestId, {
+    const { data } = await this.api.MergeRequestNotes.all(repository.externalId, mergeRequest.canonId, {
       showExpanded: true
     });
 

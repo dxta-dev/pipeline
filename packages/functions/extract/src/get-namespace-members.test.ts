@@ -30,6 +30,7 @@ beforeAll(async () => {
     id: 1,
     name: 'crocoder-dev',
     externalId: 1000,
+    forgeType: 'github',
   }).run();
 
   fetchNamespaceMembers = jest.fn((_externalNamespaceId, namespaceName, page?: number, perPage?: number) => {
@@ -37,7 +38,7 @@ beforeAll(async () => {
       case 'crocoder-dev':
         return Promise.resolve({
           members: [
-            { externalId: 1000, name: 'Dejan', username: 'dejan-crocoder' }
+            { externalId: 1000, name: 'Dejan', username: 'dejan-crocoder', forgeType: 'github' }
           ],
           pagination: {
             page: 1 || page,
