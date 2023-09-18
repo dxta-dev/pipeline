@@ -1,5 +1,5 @@
 {
-  "name": "@acme/extract-stack",
+  "name": "@acme/stack",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",

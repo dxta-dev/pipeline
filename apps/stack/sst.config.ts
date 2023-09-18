@@ -1,5 +1,5 @@
 import type { SSTConfig } from "sst";
-import { ExtractStack } from "./src/stack";
+import { ExtractStack } from "./stacks/ExtractStack";
 
 export default {
   config(_input) {

@@ -6,8 +6,8 @@
   "exclude": [],
   "include": [
     ".sst/types/index.ts",
+    "stacks/*.ts",
     "sst.config.ts",
-    "src/**/*.ts",
     "src/**/*.ts",
     "src/**/*.cjs",
     "src/**/*.mjs"
