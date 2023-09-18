@@ -1,2 +1,2 @@
-.sst
-!.sst/types/index.ts
+.sst/*
+!.sst/types
