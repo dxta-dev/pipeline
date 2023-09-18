@@ -1,14 +1,14 @@
 import type { SSTConfig } from "sst";
-import { TransformStack } from "./src/stack";
+import { ExtractStack } from "./stacks/ExtractStack";
 
 export default {
   config(_input) {
     return {
-      name: "transform",
+      name: "extract",
       region: "eu-central-1",
     };
   },
   stacks(app) {
-    app.stack(TransformStack);
+    app.stack(ExtractStack);
   }
 } satisfies SSTConfig;
