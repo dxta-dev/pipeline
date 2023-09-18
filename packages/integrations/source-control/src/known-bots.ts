@@ -46,32 +46,24 @@ const listOfKnownBots: BotInfo[] = [
   }
 ];
 
-const checkForBotKeywords = (name: string, email: string, listOfKnownBots: BotInfo[]) => {
+const checkForBotKeywords = (name: string, email: string) => {
   return listOfKnownBots.some((knownBot) => {
     switch (knownBot.type) {
       case 'string-regex':
-        if (name === knownBot.name)
-          if(knownBot.email.test(email))
-            return true;
-        return false;
+        return name === knownBot.name && knownBot.email.test(email);
       case 'string-string':
-        if (name === knownBot.name)
-          if (email === knownBot.email)
-            return true;
-        return false;
+        return name === knownBot.name && email === knownBot.email;
       case 'regex':
-        if (knownBot.email.test(email))
-          return true;
-        return false;
+        return knownBot.email.test(email);
       default:
-        return false;
+        const _: never = knownBot;
     }
   });
 }
 
-export function filterKnownBots(gitIdentities: { name: string, email: string , id: number}[]) {
+export function filterKnownBots(gitIdentities: { name: string, email: string, id: number }[]) {
   const gitIdentitiesWithoutBots = gitIdentities.filter(
-    (identity) => !checkForBotKeywords(identity.name, identity.email, listOfKnownBots)
+    (identity) => !checkForBotKeywords(identity.name, identity.email)
   );
   return gitIdentitiesWithoutBots;
 }
