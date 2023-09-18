@@ -67,7 +67,7 @@ export function ExtractStack({ stack }: StackContext) {
         DATABASE_AUTH_TOKEN,
         REDIS_URL, REDIS_TOKEN, REDIS_USER_TOKEN_TTL
       ],
-      handler: "src/queue.handler",
+      handler: "src/extract/queue.handler",
     },
   });
 
@@ -75,7 +75,7 @@ export function ExtractStack({ stack }: StackContext) {
     extractUserInfo: {
       function: {
         bind: [bus, extractQueue],
-        handler: "src/extract-member-info.eventHandler",
+        handler: "src/extract/extract-member-info.eventHandler",
       },
     },
   });
@@ -84,7 +84,7 @@ export function ExtractStack({ stack }: StackContext) {
     extractMember: {
       function: {
         bind: [bus, extractQueue],
-        handler: "src/extract-members.eventHandler",
+        handler: "src/extract/extract-members.eventHandler",
       },
     },
   });
@@ -93,7 +93,7 @@ export function ExtractStack({ stack }: StackContext) {
     extractNamespaceMember: {
       function: {
         bind: [bus, extractQueue],
-        handler: "src/extract-namespace-members.eventHandler",
+        handler: "src/extract/extract-namespace-members.eventHandler",
       },
     },
   });
@@ -102,7 +102,7 @@ export function ExtractStack({ stack }: StackContext) {
     mergeRequests: {
       function: {
         bind: [bus, extractQueue],
-        handler: "src/extract-merge-requests.eventHandler",
+        handler: "src/extract/extract-merge-requests.eventHandler",
       },
     },
   });
@@ -111,7 +111,7 @@ export function ExtractStack({ stack }: StackContext) {
     extractMergeRequestDiffs: {
       function: {
         bind: [bus, extractQueue],
-        handler: "src/extract-merge-request-diffs.eventHandler",
+        handler: "src/extract/extract-merge-request-diffs.eventHandler",
       }
     }
   });
@@ -120,7 +120,7 @@ export function ExtractStack({ stack }: StackContext) {
     extractMergeRequestCommits: {
       function: {
         bind: [bus, extractQueue],
-        handler: "src/extract-merge-request-commits.eventHandler",
+        handler: "src/extract/extract-merge-request-commits.eventHandler",
       }
     }
   });
@@ -129,7 +129,7 @@ export function ExtractStack({ stack }: StackContext) {
     extractMergeRequestNotes: {
       function: {
         bind: [bus, extractQueue],
-        handler: "src/extract-merge-request-notes.eventHandler",
+        handler: "src/extract/extract-merge-request-notes.eventHandler",
       }
     }
   });
@@ -160,7 +160,7 @@ export function ExtractStack({ stack }: StackContext) {
       },
     },
     routes: {
-      "POST /start": "src/extract-repository.handler",
+      "POST /start": "src/extract/extract-repository.handler",
     },
   });
 

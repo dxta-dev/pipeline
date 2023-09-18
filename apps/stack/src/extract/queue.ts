@@ -1,4 +1,4 @@
-import { QueueHandler } from "./create-message";
+import { QueueHandler } from "@stack/config/create-message";
 import { MessageKind } from "./messages";
 import { mergeRequestSenderHandler } from "./extract-merge-requests";
 import { mergeRequestDiffSenderHandler } from "./extract-merge-request-diffs";

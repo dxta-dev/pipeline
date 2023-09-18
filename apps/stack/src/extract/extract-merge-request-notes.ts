@@ -1,5 +1,5 @@
 import { mergeRequestNotes, mergeRequests, repositories, namespaces, MergeRequestSchema, NamespaceSchema, RepositorySchema } from "@acme/extract-schema";
-import { createMessageHandler } from "./create-message";
+import { createMessageHandler } from "@stack/config/create-message";
 import { MessageKind, metadataSchema } from "./messages";
 import { z } from "zod";
 import { Config } from "sst/node/config";

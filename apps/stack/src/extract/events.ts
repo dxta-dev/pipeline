@@ -1,8 +1,8 @@
 import { EventBus } from "sst/node/event-bus";
 import { z } from "zod";
 
+import { createEvent } from "@stack/config/create-event";
 import { MergeRequestSchema } from "@acme/extract-schema/src/merge-requests";
-import { createEvent } from "./create-event";
 import { MemberSchema, NamespaceSchema, RepositorySchema } from "@acme/extract-schema";
 
 const extractRepositoryEventSchema = z.object({

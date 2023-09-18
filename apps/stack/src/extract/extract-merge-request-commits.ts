@@ -6,7 +6,7 @@ import { Config } from "sst/node/config";
 import { mergeRequestCommits, namespaces, repositories, mergeRequests, RepositorySchema, NamespaceSchema, MergeRequestSchema } from "@acme/extract-schema";
 import { EventHandler } from "sst/node/event-bus";
 import { extractMergeRequestsEvent } from "./events";
-import { createMessageHandler } from "./create-message";
+import { createMessageHandler } from "@stack/config/create-message";
 import { MessageKind, metadataSchema } from "./messages";
 import { z } from "zod";
 import { getClerkUserToken } from "./get-clerk-user-token";
