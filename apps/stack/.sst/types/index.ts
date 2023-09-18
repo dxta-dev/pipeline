@@ -67,4 +67,18 @@ declare module "sst/node/api" {
       url: string;
     }
   }
+}import "sst/node/config";
+declare module "sst/node/config" {
+  export interface SecretResources {
+    "TRANSFORM_DB_URL": {
+      value: string;
+    }
+  }
+}import "sst/node/config";
+declare module "sst/node/config" {
+  export interface SecretResources {
+    "TRANSFORM_DB_TOKEN": {
+      value: string;
+    }
+  }
 }
