@@ -1,4 +1,3 @@
-import { EventBus } from "sst/node/event-bus";
 import { z } from "zod";
 
 import { createEvent } from "@stack/config/create-event";
@@ -30,7 +29,7 @@ export const extractMergeRequestsEvent = createEvent({
   source: "extract",
   type: "mergeRequest",
   propertiesShape: extractMergeRequestEventSchema.shape,
-  eventBusName: EventBus.ExtractBus.eventBusName,
+  bus: 'ExtractBus',
   metadataShape: metadataSchema.shape,
 });
 
@@ -38,7 +37,7 @@ export const extractRepositoryEvent = createEvent({
   source: "extract",
   type: "repository",
   propertiesShape: extractRepositoryEventSchema.shape,
-  eventBusName: EventBus.ExtractBus.eventBusName,
+  bus: 'ExtractBus',
   metadataShape: metadataSchema.shape,
 });
 
@@ -48,6 +47,6 @@ export const extractMembersEvent = createEvent({
   propertiesShape: z.object({
     memberIds: z.array(MemberSchema.shape.id),
   }).shape,
-  eventBusName: EventBus.ExtractBus.eventBusName,
+  bus: 'ExtractBus',
   metadataShape: metadataSchema.shape,
 });

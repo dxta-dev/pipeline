@@ -2,6 +2,7 @@ import {
   EventBridgeClient,
   PutEventsCommand,
 } from "@aws-sdk/client-eventbridge";
+import { EventBus } from "sst/node/event-bus";
 import { z } from "zod";
 import type { ZodRawShape, ZodAny, ZodObject } from "zod";
 
@@ -14,16 +15,16 @@ type Publish<Shape extends ZodRawShape, MetadataShape extends ZodRawShape> = (
   metadata: z.infer<ZodObject<Exclude<MetadataShape, undefined>, "strip", ZodAny>>
 ) => Promise<void>;
 
-type EventProps<Bus extends string, Source extends string, Type extends string, Shape extends ZodRawShape, MetadataShape extends ZodRawShape> = {
+type EventProps<Bus extends keyof typeof EventBus, Source extends string, Type extends string, Shape extends ZodRawShape, MetadataShape extends ZodRawShape> = {
   source: Source;
   type: Type;
   propertiesShape: Shape;
-  eventBusName: Bus;
+  bus: Bus;
   metadataShape: MetadataShape;
 };
 
 export function createEvent<
-  Bus extends string,
+  Bus extends keyof typeof EventBus,
   Source extends string,
   Type extends string,
   Shape extends ZodRawShape,
@@ -32,7 +33,7 @@ export function createEvent<
   source,
   type,
   propertiesShape,
-  eventBusName,
+  bus,
   metadataShape,
 }: EventProps<Bus, Source, Type, Shape, MetadataShape>) {
   const propertiesSchema = z.object(propertiesShape);
@@ -41,7 +42,7 @@ export function createEvent<
   const publish: Publish<Shape, MetadataShape> = async (properties, metadata) => {
     await client.send(new PutEventsCommand({
       Entries: [{
-        EventBusName: eventBusName,
+        EventBusName: EventBus[bus].eventBusName,
         Source: source,
         DetailType: type,
         Detail: JSON.stringify({
