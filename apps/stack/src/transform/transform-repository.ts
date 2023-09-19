@@ -18,7 +18,7 @@ const context: Context<SetRepositoryExtractEntities, SetRepositoryTransformEntit
     }
   },
   transform: {
-    db: drizzle(createClient({ url: Config.TRANSFORM_DB_URL, authToken: Config.TRANSFORM_DB_TOKEN })),
+    db: drizzle(createClient({ url: Config.TRANSFORM_DB_URL, authToken: Config.TRANSFORM_DB_AUTH_TOKEN })),
     entities: {
       repositories: transform.repositories
     }
