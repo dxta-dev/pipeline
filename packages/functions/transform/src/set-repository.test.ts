@@ -66,8 +66,7 @@ describe('set-repository', () => {
   describe('setRepository', () => {
     test('should insert values into db', async () => {
       await setRepository({
-        extractRepositoryId: TEST_REPO_1.id,
-        forgeType: 'github'
+        extractRepositoryId: TEST_REPO_1.id
       }, context);
 
       const transformedRepositoryRow = await transformDb.select().from(transform.repositories)
