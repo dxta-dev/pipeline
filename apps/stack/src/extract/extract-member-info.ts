@@ -6,7 +6,7 @@ import type { Context, GetMemberInfoEntities, GetMemberInfoSourceControl } from 
 import { members } from "@acme/extract-schema";
 import { EventHandler } from "sst/node/event-bus";
 import { extractMembersEvent } from "./events";
-import { createMessageHandler } from "./create-message";
+import { createMessageHandler } from "@stack/config/create-message";
 import { MessageKind, metadataSchema } from "./messages";
 import { z } from "zod";
 import { getMemberInfo } from "@acme/extract-functions";

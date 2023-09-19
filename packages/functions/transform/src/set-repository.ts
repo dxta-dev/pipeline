@@ -4,7 +4,6 @@ import type { NewRepository as TransformedRepository } from "@acme/transform-sch
 
 export type SetRepositoryInput = {
   extractRepositoryId: number;
-  forgeType: 'github' | 'gitlab';
 }
 export type SetRepositoryOutput = void;
 export type SetRepositoryExtractEntities = Pick<ExtractEntities, 'repositories'>;
@@ -13,7 +12,7 @@ export type SetRepositoryTransformEntities = Pick<TransformEntities, 'repositori
 export type SetRepositoryFunction = TransformFunction<SetRepositoryInput, SetRepositoryOutput, SetRepositoryExtractEntities, SetRepositoryTransformEntities>;
 
 export const setRepository: SetRepositoryFunction = async (
-  { extractRepositoryId, forgeType },
+  { extractRepositoryId },
   { extract, transform }
 ) => {
 
@@ -21,11 +20,12 @@ export const setRepository: SetRepositoryFunction = async (
     .where(eq(extract.entities.repositories.id, extractRepositoryId))
     .get();
 
+
   if (!extractRepository) throw new Error(`Repository doesn't exist: ${extractRepositoryId}`);
 
   const transformedRepository = {
     externalId: extractRepository.externalId,
-    forgeType,
+    forgeType: extractRepository.forgeType,
     name: extractRepository.name,
   } satisfies TransformedRepository;
 

@@ -7,7 +7,7 @@ import { getMergeRequestsDiffs } from "@acme/extract-functions";
 import { mergeRequestDiffs, mergeRequests, repositories, namespaces, MergeRequestSchema, RepositorySchema, NamespaceSchema } from "@acme/extract-schema";
 import { EventHandler } from "sst/node/event-bus";
 import { extractMergeRequestsEvent } from "./events";
-import { createMessageHandler } from "./create-message";
+import { createMessageHandler } from "@stack/config/create-message";
 import { MessageKind, metadataSchema } from "./messages";
 import { z } from "zod";
 import { getClerkUserToken } from "./get-clerk-user-token";

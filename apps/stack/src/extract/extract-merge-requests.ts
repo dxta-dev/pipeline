@@ -16,7 +16,7 @@ import { extractMergeRequestsEvent, extractRepositoryEvent } from "./events";
 import { eq } from "drizzle-orm";
 import { MessageKind, metadataSchema, paginationSchema, timePeriodSchema } from "./messages";
 import { z } from "zod";
-import { createMessageHandler } from "./create-message";
+import { createMessageHandler } from "@stack/config/create-message";
 import { getClerkUserToken } from "./get-clerk-user-token";
 
 

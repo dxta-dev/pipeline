@@ -1,55 +1,46 @@
 import { EventHandler } from "sst/node/event-bus";
 import { extractMembersEvent, extractRepositoryEvent } from "./events";
-import { Clerk } from "@clerk/clerk-sdk-node";
 import { createClient } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
-import { getNamespaceMembers } from "@acme/extract-functions";
-import type { Context,  GetNamespaceMembersEntities, GetNamespaceMembersSourceControl } from "@acme/extract-functions";
+import { getMembers } from "@acme/extract-functions";
+import type { Context, GetMembersEntities, GetMembersSourceControl } from "@acme/extract-functions";
 import { members, namespaces, repositories, repositoriesToMembers, NamespaceSchema, RepositorySchema } from "@acme/extract-schema";
 import type { Namespace, Repository } from "@acme/extract-schema";
 import { GitHubSourceControl, GitlabSourceControl } from "@acme/source-control";
 import type { Pagination } from "@acme/source-control";
 import { Config } from "sst/node/config";
 
-import { createMessageHandler } from "./create-message";
+import { createMessageHandler } from "@stack/config/create-message";
 import { eq } from "drizzle-orm";
 import { metadataSchema, paginationSchema, MessageKind } from "./messages";
 import { z } from 'zod';
+import { getClerkUserToken } from "./get-clerk-user-token";
 
-export const namespaceMemberSenderHandler = createMessageHandler({
-  kind: MessageKind.NamespaceMember,
+export const memberSenderHandler = createMessageHandler({
+  kind: MessageKind.Member,
   metadataShape: metadataSchema.shape,
   contentShape: z.object({
-    repositoryId: RepositorySchema.shape.id,
+    repository: RepositorySchema,
     namespace: NamespaceSchema,
     pagination: paginationSchema,
   }).shape,
   handler: async (message) => {
-    await extractNamespaceMembersPage({
+    await extractMembersPage({
       namespace: message.content.namespace,
       paginationInfo: message.content.pagination,
-      repositoryId: message.content.repositoryId,
+      repository: message.content.repository,
       sourceControl: message.metadata.sourceControl,
       userId: message.metadata.userId
     });
   }
 });
 
-const { sender } = namespaceMemberSenderHandler;
+const { sender } = memberSenderHandler;
 
-const clerkClient = Clerk({ secretKey: Config.CLERK_SECRET_KEY });
 const client = createClient({ url: Config.DATABASE_URL, authToken: Config.DATABASE_AUTH_TOKEN });
 
-const fetchSourceControlAccessToken = async (userId: string, forgeryIdProvider: 'oauth_github' | 'oauth_gitlab') => {
-  const [userOauthAccessTokenPayload, ...rest] = await clerkClient.users.getUserOauthAccessToken(userId, forgeryIdProvider);
-  if (!userOauthAccessTokenPayload) throw new Error("Failed to get token");
-  if (rest.length !== 0) throw new Error("wtf ?");
-
-  return userOauthAccessTokenPayload.token;
-}
-
 const initSourceControl = async (userId: string, sourceControl: 'github' | 'gitlab') => {
-  const accessToken = await fetchSourceControlAccessToken(userId, `oauth_${sourceControl}`);
+  const accessToken = await getClerkUserToken(userId, `oauth_${sourceControl}`);
   if (sourceControl === 'github') return new GitHubSourceControl(accessToken);
   if (sourceControl === 'gitlab') return new GitlabSourceControl(accessToken);
   return null;
@@ -57,7 +48,7 @@ const initSourceControl = async (userId: string, sourceControl: 'github' | 'gitl
 
 const db = drizzle(client);
 
-const context: Context<GetNamespaceMembersSourceControl, GetNamespaceMembersEntities> = {
+const context: Context<GetMembersSourceControl, GetMembersEntities> = {
   entities: {
     members,
     repositoriesToMembers
@@ -68,24 +59,25 @@ const context: Context<GetNamespaceMembersSourceControl, GetNamespaceMembersEnti
   db,
 };
 
-type ExtractNamespaceMembersPageInput = {
+type ExtractMembersPageInput = {
   namespace: Namespace;
-  repositoryId: Repository['id'];
+  repository: Repository;
   sourceControl: "github" | "gitlab";
   userId: string;
   paginationInfo?: Pagination;
 }
 
-const extractNamespaceMembersPage = async ({ namespace, repositoryId, sourceControl, userId, paginationInfo }: ExtractNamespaceMembersPageInput) => {
+const extractMembersPage = async ({ namespace, repository, sourceControl, userId, paginationInfo }: ExtractMembersPageInput) => {
   const page = paginationInfo?.page;
   const perPage = paginationInfo?.perPage;
 
   context.integrations.sourceControl = await initSourceControl(userId, sourceControl);
 
-  const { members, paginationInfo: resultPaginationInfo } = await getNamespaceMembers({
-    externalNamespaceId: namespace.externalId,
+  const { members, paginationInfo: resultPaginationInfo } = await getMembers({
+    externalRepositoryId: repository.externalId,
     namespaceName: namespace.name,
-    repositoryId,
+    repositoryId: repository.id,
+    repositoryName: repository.name,
     perPage: perPage,
     page: page
   }, context);
@@ -94,7 +86,7 @@ const extractNamespaceMembersPage = async ({ namespace, repositoryId, sourceCont
     memberIds: members.map(member => member.id)
   }, {
     version: 1,
-    caller: 'extract-namespace-member',
+    caller: 'extract-member',
     sourceControl: sourceControl,
     userId: userId,
     timestamp: new Date().getTime(),
@@ -111,18 +103,18 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
   if (!repository) throw new Error("invalid repo id");
   if (!namespace) throw new Error("Invalid namespace id");
 
-  const { pagination } = await extractNamespaceMembersPage({
+  const { pagination } = await extractMembersPage({
     namespace: namespace,
-    repositoryId: ev.properties.repositoryId,
+    repository: repository,
     sourceControl: ev.metadata.sourceControl,
     userId: ev.metadata.userId,
   });
 
-  const arrayOfExtractMemberPageMessageContent = []; 
+  const arrayOfExtractMemberPageMessageContent: { repository: Repository, namespace: Namespace, pagination: Pagination }[] = [];
   for (let i = 2; i <= pagination.totalPages; i++) {
     arrayOfExtractMemberPageMessageContent.push({
-      namespace,
-      repositoryId: ev.properties.repositoryId,
+      namespace: namespace,
+      repository: repository,
       pagination: {
         page: i,
         perPage: pagination.perPage,
@@ -136,7 +128,7 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
 
   await sender.sendAll(arrayOfExtractMemberPageMessageContent, {
     version: 1,
-    caller: 'extract-namespace-member',
+    caller: 'extract-member',
     sourceControl: ev.metadata.sourceControl,
     userId: ev.metadata.userId,
     timestamp: new Date().getTime(),
