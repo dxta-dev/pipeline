@@ -15,7 +15,7 @@
     "manypkg": "manypkg check",
     "lint:fix": "turbo lint:fix",
     "manypkg:fix": "manypkg fix",
-    "type-check": "turbo type-check",
+    "type-check": "turbo type-check --parallel",
     "test": "turbo test"
   },
   "dependencies": {
