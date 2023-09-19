@@ -165,8 +165,11 @@ export class GitHubSourceControl implements SourceControl {
     page = page || 1;
     perPage = perPage || 30;
 
+    // Created format created:YYYY-MM-DD..YYYY-MM-DD`,
+    // slice is used to remove the time part
+    // date.toISOString().slice(0, 10) => date.toISOString().slice(0, date.toISOString().indexOf('T'))
     const searchResult = await this.api.rest.search.issuesAndPullRequests({
-      q: `type:pr+repo:${namespaceName}/${repositoryName}+created:${creationPeriod.from?.toISOString().slice(0, creationPeriod.from.toISOString().indexOf('T'))}..${creationPeriod.to?.toISOString().slice(0, creationPeriod.to.toISOString().indexOf('T'))}`,
+      q: `type:pr+repo:${namespaceName}/${repositoryName}+created:${creationPeriod.from?.toISOString().slice(0, 10)}..${creationPeriod.to?.toISOString().slice(0, 10)}`,
       page: page,
       per_page: perPage,
       state: "all",
