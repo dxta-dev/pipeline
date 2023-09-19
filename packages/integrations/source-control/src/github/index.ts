@@ -165,16 +165,28 @@ export class GitHubSourceControl implements SourceControl {
     page = page || 1;
     perPage = perPage || 30;
 
-    const result = await this.api.pulls.list({
-      owner: namespaceName,
-      repo: repositoryName,
+    const searchResult = await this.api.rest.search.issuesAndPullRequests({
+      q: `type:pr+repo:${namespaceName}/${repositoryName}+created:${creationPeriod.from?.toISOString().slice(0, creationPeriod.from.toISOString().indexOf('T'))}..${creationPeriod.to?.toISOString().slice(0, creationPeriod.to.toISOString().indexOf('T'))}`,
       page: page,
       per_page: perPage,
       state: "all",
-      sort: "created",
+      sort: 'updated',
     });
+    const indexMap = searchResult.data.items.map((item) => item.number);
 
-    const linkHeader = parseLinkHeader(result.headers.link) || { next: { per_page: perPage } };
+    const result = [];
+
+    for (let i = 0; i < indexMap.length; i++) {
+      const mergeRequest = await this.api.pulls.get({
+        owner: namespaceName,
+        repo: repositoryName,
+        pull_number: indexMap[i] as number,
+      })
+      result.push(mergeRequest.data);
+    }
+    
+
+    const linkHeader = parseLinkHeader(searchResult.headers.link) || { next: { per_page: perPage } };
 
     const pagination = {
       page,
@@ -183,7 +195,7 @@ export class GitHubSourceControl implements SourceControl {
     } satisfies Pagination;
 
     return {
-      mergeRequests: result.data
+      mergeRequests: result
         .map(mergeRequest => ({
           externalId: mergeRequest.id,
           canonId: mergeRequest.number,
