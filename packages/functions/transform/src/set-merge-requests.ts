@@ -37,8 +37,8 @@ export const setMergeRequests: SetMergeRequestsFunction = async (
 
   assertNotEmpty(transformedMergeRequests, new Error(`No extracted merge requests found for ids: ${extractMergeRequestIds}`));
 
-  await transform.db.batch([
-    ...asNotEmpty(transformedMergeRequests.map(
+  await transform.db.batch(
+    asNotEmpty(transformedMergeRequests.map(
       mergeRequest => transform.db.insert(transform.entities.mergeRequests)
         .values(mergeRequest)
         .onConflictDoUpdate({
@@ -46,6 +46,6 @@ export const setMergeRequests: SetMergeRequestsFunction = async (
           set: { title: mergeRequest.title, webUrl: mergeRequest.webUrl }
         })
     ))
-  ]);
+  );
 
 }
