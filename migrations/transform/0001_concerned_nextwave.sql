@@ -1,0 +1,1 @@
+ALTER TABLE merge_requests ADD `web_url` text NOT NULL;
