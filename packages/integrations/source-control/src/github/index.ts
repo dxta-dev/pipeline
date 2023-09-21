@@ -169,26 +169,23 @@ export class GitHubSourceControl implements SourceControl {
     // slice is used to remove the time part
     // date.toISOString().slice(0, 10) => date.toISOString().slice(0, date.toISOString().indexOf('T'))
     const searchResult = await this.api.rest.search.issuesAndPullRequests({
-      q: `type:pr+repo:${namespaceName}/${repositoryName}+created:${creationPeriod.from?.toISOString().slice(0, 10)}..${creationPeriod.to?.toISOString().slice(0, 10)}`,
+      q: `type:pr+repo:${namespaceName}/${repositoryName}+updated:${creationPeriod.from?.toISOString().slice(0, 10)}..${creationPeriod.to?.toISOString().slice(0, 10)}`,
       page: page,
       per_page: perPage,
       state: "all",
       sort: 'updated',
     });
-    const indexMap = searchResult.data.items.map((item) => item.number);
 
-    const result = [];
-
-    for (let i = 0; i < indexMap.length; i++) {
-      const mergeRequest = await this.api.pulls.get({
-        owner: namespaceName,
-        repo: repositoryName,
-        pull_number: indexMap[i] as number,
-      })
-      result.push(mergeRequest.data);
-    }
-    
-
+    const result = await this.api.pulls.list({
+      owner: namespaceName,
+      repo: repositoryName,
+      page: page,
+      per_page: 100,
+      state: "all",
+      sort: 'updated',
+      direction: 'desc',
+    });
+       
     const linkHeader = parseLinkHeader(searchResult.headers.link) || { next: { per_page: perPage } };
 
     const pagination = {
@@ -198,7 +195,7 @@ export class GitHubSourceControl implements SourceControl {
     } satisfies Pagination;
 
     return {
-      mergeRequests: result
+      mergeRequests: result.data
         .map(mergeRequest => ({
           externalId: mergeRequest.id,
           canonId: mergeRequest.number,
