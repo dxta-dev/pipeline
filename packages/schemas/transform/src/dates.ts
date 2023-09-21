@@ -14,5 +14,5 @@ export const dates = sqliteTable('dates', {
   uniqueDateIndex: uniqueIndex('dates_day_week_month_year_idx').on(dates.day, dates.week, dates.month, dates.year)
 }));
 
-export type Date = InferSelectModel<typeof dates>;
-export type NewDate = InferInsertModel<typeof dates>;
+export type TransformDate = InferSelectModel<typeof dates>;
+export type NewTransformDate = InferInsertModel<typeof dates>;

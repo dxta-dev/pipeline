@@ -1,40 +1,71 @@
+import type { NewTransformDate } from "./dates";
+import type { NewForgeUser } from "./forge-users";
+import type { NewMergeRequest } from "./merge-requests";
+import type { NewRepository } from "./repositories";
+import type { LibSQLDatabase } from "drizzle-orm/libsql"
+import { forgeUsers } from "./forge-users";
+import { dates } from "./dates";
+import { mergeRequests } from "./merge-requests";
+import { repositories } from "./repositories";
 
-const currentYear = new Date().getFullYear();
-    const yearsInPast = 3;
-    const yearsInFuture = 3;
-    const pastStartYear = currentYear - yearsInPast;
-    const futureEndYear = currentYear + yearsInFuture;
+const nullForgeUser = {
+  id: 1,
+  externalId: Number.MAX_SAFE_INTEGER,
+  forgeType: 'unknown',
+  name: '',
+} satisfies NewForgeUser;
 
-    let weekNumber = 1; 
-    let yearSeed = 0; 
-    let dayOfWeek = 0; 
+const nullDate = {
+  id: 1,
+  day: Number.MAX_SAFE_INTEGER,
+  week: Number.MAX_SAFE_INTEGER,
+  month: Number.MAX_SAFE_INTEGER,
+  year: Number.MAX_SAFE_INTEGER
+} satisfies NewTransformDate;
 
-    for (let year = pastStartYear; year <= futureEndYear; year++) {
-      if (year !== yearSeed) {
-        weekNumber = 1;
-        yearSeed = year;
-      }
+const nullMergeRequest = {
+  id: 1,
+  externalId: Number.MAX_SAFE_INTEGER,
+  forgeType: 'unknown',
+  title: ''
+} satisfies NewMergeRequest;
 
-      for (let month = 1; month <= 12; month++) {
-        let daysInMonth = 31; 
+const nullRepository = {
+  id: 1,
+  externalId: Number.MAX_SAFE_INTEGER,
+  forgeType: 'unknown',
+  name: ''
+} satisfies NewRepository;
 
-        if (month === 4 || month === 6 || month === 9 || month === 11) {
-          daysInMonth = 30;
-        } else if (month === 2) {
-          daysInMonth = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0) ? 29 : 28;
-        }
+async function seed (db: LibSQLDatabase) {
+  await db.insert(forgeUsers).values(nullForgeUser).run();
+  await db.insert(dates).values(nullDate).run();
+  await db.insert(mergeRequests).values(nullMergeRequest).run();
+  await db.insert(repositories).values(nullRepository).run();
+}
 
-        for (let day = 1; day <= daysInMonth; day++) {
-          console.log(weekNumber)
+function generateDates(startDate: Date, endDate: Date) {
+  const dates = [];
+  const currentDate = new Date(startDate);
 
+  while (currentDate <= endDate) {
+    const customDate = {
+      day: currentDate.getDate(),
+      week: Math.ceil(((+currentDate - +new Date(currentDate.getFullYear(), 0, 1)) / (24 * 60 * 60 * 1000)) / 7),
+      month: currentDate.getMonth() + 1, // Months are zero-based, so we add 1.
+      year: currentDate.getFullYear(),
+    };
 
-          if (dayOfWeek === 6) {
-            weekNumber++;
-          }
+    dates.push(customDate);
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
 
-          dayOfWeek = (dayOfWeek + 1) % 7;
-        }
-      }
-    }
+  return dates;
+}
 
+// Example usage:
+const startDate = new Date('2022-09-07');
+const endDate = new Date('2023-09-20');
+const allDatesWithProperties = generateDates(startDate, endDate);
 
+console.log(allDatesWithProperties);
