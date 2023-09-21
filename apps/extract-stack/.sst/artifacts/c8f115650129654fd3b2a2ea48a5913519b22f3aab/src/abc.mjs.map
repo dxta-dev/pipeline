@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../../src/abc.ts"],
+  "sourcesContent": ["\nexport const bandler = async (ev: any) => {\n  console.log('ew', ev);\n  return {\n  }\n}\n"],
+  "mappings": ";;;;;;;;;AACO,IAAM,UAAU,8BAAO,OAAY;AACxC,UAAQ,IAAI,MAAM,EAAE;AACpB,SAAO,CACP;AACF,GAJuB;",
+  "names": []
+}

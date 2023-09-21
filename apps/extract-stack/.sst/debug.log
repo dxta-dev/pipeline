@@ -1,0 +1,37 @@
+2023-09-11T13:26:16.683Z   +310ms [debug] Config loaded {"version":"2.20.1","cdkVersion":"2.84.0","constructsVersion":"10.1.156","config":{"name":"extract","region":"eu-central-1","stage":"davidabram","ssmPrefix":"/sst/extract/davidabram/"},"metafile":{"inputs":{"sst.config.ts":{"bytes":218,"imports":[{"path":"./src/stack","kind":"import-statement","external":true}],"format":"esm"}},"outputs":{".sst.config.1694438776639.mjs":{"imports":[],"exports":["default"],"entryPoint":"sst.config.ts","inputs":{"sst.config.ts":{"bytesInOutput":125}},"bytes":307}}},"paths":{"config":"/home/davidabram/repos/mr-tool-monorepo/apps/extract-stack/sst.config.ts","root":"/home/davidabram/repos/mr-tool-monorepo/apps/extract-stack","out":"/home/davidabram/repos/mr-tool-monorepo/apps/extract-stack/.sst","artifacts":"/home/davidabram/repos/mr-tool-monorepo/apps/extract-stack/.sst/artifacts"}}
+2023-09-11T13:26:17.775Z  +1092ms [debug] Synthesizing stacks...
+2023-09-11T13:26:17.800Z    +25ms [debug] Using AWS profile 
+2023-09-11T13:26:17.827Z    +27ms [debug] Created AWS client STSClient
+2023-09-11T13:26:17.956Z   +129ms [debug] Using identity Account: 845637399907 User: AIDA4JY7KWVR5KQVNXZSZ
+2023-09-11T13:26:18.060Z   +104ms [debug] Generating types in /home/davidabram/repos/mr-tool-monorepo/apps/extract-stack/.sst/types
+2023-09-11T13:26:18.062Z     +2ms [debug] Running 9 deferred tasks with concurrency: 23
+2023-09-11T13:26:18.062Z     +0ms [debug] Building function c8dd0b928e83e0e5a8fd8f0800a6ab21797f3b710a
+2023-09-11T13:26:18.062Z     +0ms [debug] Building function c87dcb63e8fb396f3fc97c1151f860f05e47fb612c
+2023-09-11T13:26:18.062Z     +0ms [debug] Building function c8fc0bc98e95669da8a424611a92d59a6b81f62a2a
+2023-09-11T13:26:18.062Z     +0ms [debug] Building function c8ae169d797a71ecdad8f698ebe8340ed259329241
+2023-09-11T13:26:18.062Z     +0ms [debug] Building function c8ac5b5122c3ecbb401740955f8c607304c32b299c
+2023-09-11T13:26:18.062Z     +0ms [debug] Building function c8725691e52c6121b806bc1560cd078b3ad731b77f
+2023-09-11T13:26:18.062Z     +0ms [debug] Building function c843e350b839d22ee40e221168f7c6c94709e8954b
+2023-09-11T13:26:18.062Z     +0ms [debug] Building function c8d546a38bb7f6f60745c13c8978c52657f69d7083
+2023-09-11T13:26:18.062Z     +0ms [debug] Building function c855ec5f3ad8aa48fa13bb44e27bcbc8b7eca4d6cc
+2023-09-11T13:26:18.064Z     +2ms [debug] Publishing event {"type":"function.build.started","properties":{"functionID":"c8fc0bc98e95669da8a424611a92d59a6b81f62a2a"},"sourceID":"cb906aa84139419f04b4a28c3a40a599"}
+2023-09-11T13:26:18.065Z     +1ms [debug] Publishing event {"type":"function.build.started","properties":{"functionID":"c8dd0b928e83e0e5a8fd8f0800a6ab21797f3b710a"},"sourceID":"cb906aa84139419f04b4a28c3a40a599"}
+2023-09-11T13:26:18.065Z     +0ms [debug] Publishing event {"type":"function.build.started","properties":{"functionID":"c87dcb63e8fb396f3fc97c1151f860f05e47fb612c"},"sourceID":"cb906aa84139419f04b4a28c3a40a599"}
+2023-09-11T13:26:18.065Z     +0ms [debug] Publishing event {"type":"function.build.started","properties":{"functionID":"c8ae169d797a71ecdad8f698ebe8340ed259329241"},"sourceID":"cb906aa84139419f04b4a28c3a40a599"}
+2023-09-11T13:26:18.065Z     +0ms [debug] Publishing event {"type":"function.build.started","properties":{"functionID":"c8ac5b5122c3ecbb401740955f8c607304c32b299c"},"sourceID":"cb906aa84139419f04b4a28c3a40a599"}
+2023-09-11T13:26:18.065Z     +0ms [debug] Publishing event {"type":"function.build.started","properties":{"functionID":"c8725691e52c6121b806bc1560cd078b3ad731b77f"},"sourceID":"cb906aa84139419f04b4a28c3a40a599"}
+2023-09-11T13:26:18.066Z     +1ms [debug] Publishing event {"type":"function.build.started","properties":{"functionID":"c843e350b839d22ee40e221168f7c6c94709e8954b"},"sourceID":"cb906aa84139419f04b4a28c3a40a599"}
+2023-09-11T13:26:18.066Z     +0ms [debug] Publishing event {"type":"function.build.started","properties":{"functionID":"c855ec5f3ad8aa48fa13bb44e27bcbc8b7eca4d6cc"},"sourceID":"cb906aa84139419f04b4a28c3a40a599"}
+2023-09-11T13:26:18.066Z     +0ms [debug] Publishing event {"type":"function.build.started","properties":{"functionID":"c8d546a38bb7f6f60745c13c8978c52657f69d7083"},"sourceID":"cb906aa84139419f04b4a28c3a40a599"}
+2023-09-11T13:26:19.019Z   +953ms [debug] Publishing event {"type":"function.build.success","properties":{"functionID":"c8ae169d797a71ecdad8f698ebe8340ed259329241"},"sourceID":"cb906aa84139419f04b4a28c3a40a599"}
+2023-09-11T13:26:19.103Z    +84ms [debug] Publishing event {"type":"function.build.success","properties":{"functionID":"c8725691e52c6121b806bc1560cd078b3ad731b77f"},"sourceID":"cb906aa84139419f04b4a28c3a40a599"}
+2023-09-11T13:26:19.119Z    +16ms [debug] Publishing event {"type":"function.build.success","properties":{"functionID":"c8ac5b5122c3ecbb401740955f8c607304c32b299c"},"sourceID":"cb906aa84139419f04b4a28c3a40a599"}
+2023-09-11T13:26:19.142Z    +23ms [debug] Publishing event {"type":"function.build.success","properties":{"functionID":"c8dd0b928e83e0e5a8fd8f0800a6ab21797f3b710a"},"sourceID":"cb906aa84139419f04b4a28c3a40a599"}
+2023-09-11T13:26:19.153Z    +11ms [debug] Publishing event {"type":"function.build.success","properties":{"functionID":"c843e350b839d22ee40e221168f7c6c94709e8954b"},"sourceID":"cb906aa84139419f04b4a28c3a40a599"}
+2023-09-11T13:26:19.163Z    +10ms [debug] Publishing event {"type":"function.build.success","properties":{"functionID":"c855ec5f3ad8aa48fa13bb44e27bcbc8b7eca4d6cc"},"sourceID":"cb906aa84139419f04b4a28c3a40a599"}
+2023-09-11T13:26:19.171Z     +8ms [debug] Publishing event {"type":"function.build.success","properties":{"functionID":"c8fc0bc98e95669da8a424611a92d59a6b81f62a2a"},"sourceID":"cb906aa84139419f04b4a28c3a40a599"}
+2023-09-11T13:26:19.181Z    +10ms [debug] Publishing event {"type":"function.build.success","properties":{"functionID":"c8d546a38bb7f6f60745c13c8978c52657f69d7083"},"sourceID":"cb906aa84139419f04b4a28c3a40a599"}
+2023-09-11T13:26:19.188Z     +7ms [debug] Publishing event {"type":"function.build.success","properties":{"functionID":"c87dcb63e8fb396f3fc97c1151f860f05e47fb612c"},"sourceID":"cb906aa84139419f04b4a28c3a40a599"}
+2023-09-11T13:26:19.290Z   +102ms [debug] 
+2023-09-11T13:26:19.290Z     +0ms [debug] Loading v2 AWS SDK
+2023-09-11T13:26:19.290Z     +0ms [debug] Finished synthesizing

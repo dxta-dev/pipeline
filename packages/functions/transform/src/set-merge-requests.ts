@@ -12,10 +12,6 @@ export type SetMergeRequestsTransformEntities = Pick<TransformEntities, 'mergeRe
 
 export type SetMergeRequestsFunction = TransformFunction<SetMergeRequestsInput, SetMergeRequestsOutput, SetMergeRequestsExtractEntities, SetMergeRequestsTransformEntities>;
 
-function asNotEmpty<T>(value: T[]): [T, ...T[]] {
-  return value as [T, ...T[]];
-}
-
 export const setMergeRequests: SetMergeRequestsFunction = async (
   { extractMergeRequestIds },
   { extract, transform }
@@ -31,17 +27,24 @@ export const setMergeRequests: SetMergeRequestsFunction = async (
     .where(inArray(extract.entities.mergeRequests.id, extractMergeRequestIds))
     .all() satisfies TransformedMergeRequest[];
 
-  if (transformedMergeRequests.length === 0) return console.error(new Error(`No extracted merge requests found for ids: ${extractMergeRequestIds}`));
+  if (transformedMergeRequests.length === 0) {
+    console.error(new Error(`No extracted merge requests found for ids: ${extractMergeRequestIds}`));
+    return;
+  }
+
+  const queries = transformedMergeRequests.map(
+    mergeRequest => transform.db.insert(transform.entities.mergeRequests)
+      .values(mergeRequest)
+      .onConflictDoUpdate({
+        target: [transform.entities.mergeRequests.externalId, transform.entities.mergeRequests.forgeType],
+        set: { title: mergeRequest.title, webUrl: mergeRequest.webUrl }
+      })
+  );
+
+  type Query = typeof queries[number];
 
   await transform.db.batch(
-    asNotEmpty(transformedMergeRequests.map(
-      mergeRequest => transform.db.insert(transform.entities.mergeRequests)
-        .values(mergeRequest)
-        .onConflictDoUpdate({
-          target: [transform.entities.mergeRequests.externalId, transform.entities.mergeRequests.forgeType],
-          set: { title: mergeRequest.title, webUrl: mergeRequest.webUrl }
-        })
-    ))
+    queries as [Query, ...Query[]]
   );
 
 }
