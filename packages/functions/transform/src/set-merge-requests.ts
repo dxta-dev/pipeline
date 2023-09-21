@@ -12,10 +12,6 @@ export type SetMergeRequestsTransformEntities = Pick<TransformEntities, 'mergeRe
 
 export type SetMergeRequestsFunction = TransformFunction<SetMergeRequestsInput, SetMergeRequestsOutput, SetMergeRequestsExtractEntities, SetMergeRequestsTransformEntities>;
 
-function assertNotEmpty<T>(value: T[], error: Error): asserts value is [T, ...T[]] {
-  if (value.length == 0) throw error;
-}
-
 function asNotEmpty<T>(value: T[]): [T, ...T[]] {
   return value as [T, ...T[]];
 }
@@ -35,7 +31,7 @@ export const setMergeRequests: SetMergeRequestsFunction = async (
     .where(inArray(extract.entities.mergeRequests.id, extractMergeRequestIds))
     .all() satisfies TransformedMergeRequest[];
 
-  assertNotEmpty(transformedMergeRequests, new Error(`No extracted merge requests found for ids: ${extractMergeRequestIds}`));
+  if (transformedMergeRequests.length === 0) return console.error(new Error(`No extracted merge requests found for ids: ${extractMergeRequestIds}`));
 
   await transform.db.batch(
     asNotEmpty(transformedMergeRequests.map(
