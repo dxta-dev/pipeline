@@ -2,11 +2,17 @@ import type { NewTransformDate } from "./dates";
 import type { NewForgeUser } from "./forge-users";
 import type { NewMergeRequest } from "./merge-requests";
 import type { NewRepository } from "./repositories";
-import type { LibSQLDatabase } from "drizzle-orm/libsql"
+import { drizzle, type LibSQLDatabase } from "drizzle-orm/libsql"
 import { forgeUsers } from "./forge-users";
 import { dates } from "./dates";
 import { mergeRequests } from "./merge-requests";
 import { repositories } from "./repositories";
+import { createClient } from "@libsql/client";
+
+const db = drizzle(createClient({
+  url: process.env.TRANSFORM_DB_URL as string,
+  authToken: process.env.TRANSFORM_DB_TOKEN
+}))
 
 const nullForgeUser = {
   id: 1,
@@ -67,5 +73,6 @@ function generateDates(startDate: Date, endDate: Date) {
 const startDate = new Date('2022-09-07');
 const endDate = new Date('2023-09-20');
 const allDatesWithProperties = generateDates(startDate, endDate);
+await seed(db)
 
 console.log(allDatesWithProperties);
