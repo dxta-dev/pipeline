@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "d737554b-068f-444f-acf2-98b31908bd83",
+  "id": "6a4c4fa8-3815-400e-8769-e6f6bfe5a9b9",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "dates": {
@@ -327,6 +327,13 @@
         },
         "title": {
           "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "web_url": {
+          "name": "web_url",
           "type": "text",
           "primaryKey": false,
           "notNull": true,

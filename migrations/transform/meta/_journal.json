@@ -5,15 +5,8 @@
     {
       "idx": 0,
       "version": "5",
-      "when": 1694604957790,
-      "tag": "0000_loose_supernaut",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "5",
-      "when": 1695203245863,
-      "tag": "0001_concerned_nextwave",
+      "when": 1695283456303,
+      "tag": "0000_brown_shinobi_shaw",
       "breakpoints": true
     }
   ]

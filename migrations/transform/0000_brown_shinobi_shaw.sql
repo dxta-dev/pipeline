@@ -43,6 +43,7 @@ CREATE TABLE `merge_requests` (
 	`external_id` integer NOT NULL,
 	`forge_type` integer NOT NULL,
 	`title` text NOT NULL,
+	`web_url` text NOT NULL,
 	`__created_at` integer DEFAULT CURRENT_TIMESTAMP,
 	`__updated_at` integer DEFAULT CURRENT_TIMESTAMP
 );
