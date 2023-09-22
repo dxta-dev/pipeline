@@ -75,5 +75,5 @@ const tryMigrateDatabase = async (databaseId: string, dbUrl: string | undefined,
 
   console.log('DONE');
 }
-await tryMigrateDatabase('extract', process.env.EXTRACT_DB_URL, process.env.EXTRACT_DB_TOKEN);
-await tryMigrateDatabase('transform', process.env.TRANSFORM_DB_URL, process.env.TRANSFORM_DB_TOKEN);
+await tryMigrateDatabase('extract', process.env.EXTRACT_DATABASE_URL, process.env.EXTRACT_DATABASE_AUTH_TOKEN);
+await tryMigrateDatabase('transform', process.env.TRANSFORM_DATABASE_URL, process.env.TRANSFORM_DATABASE_AUTH_TOKEN);
