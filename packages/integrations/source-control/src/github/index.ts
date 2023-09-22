@@ -180,7 +180,7 @@ export class GitHubSourceControl implements SourceControl {
       owner: namespaceName,
       repo: repositoryName,
       page: page,
-      per_page: 100,
+      per_page: perPage,
       state: "all",
       sort: 'updated',
       direction: 'desc',
