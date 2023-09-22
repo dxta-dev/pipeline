@@ -28,6 +28,18 @@ jobs:
     runs-on: ubuntu-latest
     needs: install
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+      - name: Install dependecies
+        run: npm ci
+
       - name: Build
         run: npm run build
 
@@ -36,6 +48,18 @@ jobs:
     runs-on: ubuntu-latest
     needs: install
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+      - name: Install dependecies
+        run: npm ci
+
       - name: Type checking
         run: npm run type-check
 
@@ -50,5 +74,17 @@ jobs:
     runs-on: ubuntu-latest
     needs: install
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+      - name: Install dependecies
+        run: npm ci
+
       - name: Run tests
         run: npm run tests
