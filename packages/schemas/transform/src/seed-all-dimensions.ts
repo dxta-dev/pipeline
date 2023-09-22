@@ -9,8 +9,11 @@ import { mergeRequests } from "./merge-requests";
 import { repositories } from "./repositories";
 import { createClient } from "@libsql/client";
 
+
 const db = drizzle(createClient({
+  // eslint-disable-next-line
   url: process.env.TRANSFORM_DB_URL as string,
+  // eslint-disable-next-line
   authToken: process.env.TRANSFORM_DB_TOKEN
 }))
 
