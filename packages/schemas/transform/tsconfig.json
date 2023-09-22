@@ -9,6 +9,6 @@
     "src/**/*.ts",
     "src/**/*.ts",
     "src/**/*.cjs",
-    "src/**/*.mjs", "seed/seed-all-dimensions.ts",
+    "src/**/*.mjs", "seed/dimensions.ts",
  ]
 }

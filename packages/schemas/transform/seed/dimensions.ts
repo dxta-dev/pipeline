@@ -10,6 +10,7 @@ import { repositories } from "../src/repositories";
 import { createClient } from "@libsql/client";
 
 
+
 const db = drizzle(createClient({
   url: process.env.TRANSFORM_DATABASE_URL as string,
   authToken: process.env.TRANSFORM_DATABASE_AUTH_TOKEN
@@ -49,6 +50,7 @@ async function seed (db: LibSQLDatabase) {
   await db.insert(dates).values(nullDate).run();
   await db.insert(mergeRequests).values(nullMergeRequest).run();
   await db.insert(repositories).values(nullRepository).run();
+  await db.insert(dates).values(allDatesWithProperties).run();
 }
 
 function generateDates(startDate: Date, endDate: Date) {
