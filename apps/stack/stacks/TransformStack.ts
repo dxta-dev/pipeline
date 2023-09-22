@@ -29,4 +29,22 @@ export function TransformStack({ stack }: StackContext) {
     }
   });
 
+  ExtractBus.addRules(stack, {
+    "transformMergeRequests": {
+      pattern: {
+        source: ["extract"],
+        detailType: ["mergeRequest"]
+      },
+      targets: {
+        transformMergeRequests: {
+          function: {
+            bind: [TRANSFORM_DB_URL, TRANSFORM_DB_AUTH_TOKEN],
+            handler: "src/transform/transform-merge-requests.eventHandler",
+          }
+        }
+      },
+    }
+  });
+
+
 }
