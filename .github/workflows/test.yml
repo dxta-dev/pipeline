@@ -22,6 +22,7 @@ jobs:
         with:
           node-version-file: '.nvmrc'
           cache: 'npm'
+          cache-dependency-path: 'package-lock.json'
 
       - name: LS post-set
         run: ls
