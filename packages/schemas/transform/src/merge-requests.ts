@@ -9,7 +9,7 @@ export const mergeRequests = sqliteTable('merge_requests', {
   forgeType: Enum('forge_type', { enum: ['github', 'gitlab'] }).notNull(),
   // TODO: tenantId: integer('tenant_id').notNull(),
   title: text('title').notNull(),
-  // TODO: url: text('url').notNull(),
+  webUrl: text('web_url').notNull(),
   _createdAt: integer('__created_at', { mode: 'timestamp_ms' }).default(sql`CURRENT_TIMESTAMP`),
   _updatedAt: integer('__updated_at', { mode: 'timestamp_ms' }).default(sql`CURRENT_TIMESTAMP`),
 }, (mergeRequests) => ({
