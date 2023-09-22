@@ -36,7 +36,7 @@ export function TransformStack({ stack }: StackContext) {
         detailType: ["mergeRequest"]
       },
       targets: {
-        transformRepository: {
+        transformMergeRequests: {
           function: {
             bind: [TRANSFORM_DB_URL, TRANSFORM_DB_AUTH_TOKEN],
             handler: "src/transform/transform-merge-requests.eventHandler",
