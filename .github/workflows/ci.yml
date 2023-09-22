@@ -21,7 +21,7 @@ jobs:
           cache: 'npm'
 
       - name: Install dependecies
-        run: npm run ci
+        run: npm ci
   
   dry_build:
     name: Dry Build
