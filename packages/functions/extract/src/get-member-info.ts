@@ -1,8 +1,6 @@
 import type { Member } from "@acme/extract-schema";
 import type { ExtractFunction, Entities } from "./config";
 import type { SourceControl } from "@acme/source-control";
-import type { LibSQLDatabase } from "drizzle-orm/libsql";
-import type { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
 import { eq } from "drizzle-orm";
 
 export type GetMemberInfoInput = {
@@ -36,8 +34,7 @@ export const getMemberInfo: GetMemberInfoFunction = async (
 
   const { member: fetchedMember } = await integrations.sourceControl.fetchUserInfo(member.username);
 
-  const insertedMember = await (db as LibSQLDatabase & BetterSQLite3Database)
-    .update(entities.members)
+  const insertedMember = await db.update(entities.members)
     .set(fetchedMember)
     .where(eq(entities.members.id, memberId))
     .returning()
