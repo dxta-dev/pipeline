@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  # pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  install:
+    name: Install
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+      - name: Install dependecies
+        run: npm run ci
+  
+  dry_build:
+    name: Dry Build
+    needs: install
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build
+        run: npm run build
+
+  lint:
+    name: Linting
+    needs: install
+    steps:
+      - name: Type checking
+        run: npm run type-check
+
+      - name: Package checking
+        run: npm run manypkg
+
+      - name: Eslint
+        run: npm run lint
+
+  test:
+    name: Testing
+    needs: install
+    steps:
+      - name: Run tests
+        run: npm run tests
