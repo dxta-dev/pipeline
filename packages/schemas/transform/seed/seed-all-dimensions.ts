@@ -1,20 +1,18 @@
-import type { NewTransformDate } from "./dates";
-import type { NewForgeUser } from "./forge-users";
-import type { NewMergeRequest } from "./merge-requests";
-import type { NewRepository } from "./repositories";
+import type { NewTransformDate } from "../src/dates";
+import type { NewForgeUser } from "../src/forge-users";
+import type { NewMergeRequest } from "../src/merge-requests";
+import type { NewRepository } from "../src/repositories";
 import { drizzle, type LibSQLDatabase } from "drizzle-orm/libsql"
-import { forgeUsers } from "./forge-users";
-import { dates } from "./dates";
-import { mergeRequests } from "./merge-requests";
-import { repositories } from "./repositories";
+import { forgeUsers } from "../src/forge-users";
+import { dates } from "../src/dates";
+import { mergeRequests } from "../src/merge-requests";
+import { repositories } from "../src/repositories";
 import { createClient } from "@libsql/client";
 
 
 const db = drizzle(createClient({
-  // eslint-disable-next-line
-  url: process.env.TRANSFORM_DB_URL as string,
-  // eslint-disable-next-line
-  authToken: process.env.TRANSFORM_DB_TOKEN
+  url: process.env.TRANSFORM_DATABASE_URL as string,
+  authToken: process.env.TRANSFORM_DATABASE_AUTH_TOKEN
 }))
 
 const nullForgeUser = {
