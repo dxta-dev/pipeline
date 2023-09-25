@@ -11,6 +11,8 @@ export function ExtractStartForm() {
   const [repositoryName, setRepositoryName] = useState('');
   const [namespaceName, setNamespaceName] = useState('');
   const [sourceControl, setSourceControl] = useState('gitlab');
+  const [from, setFrom] = useState('2023-01-01');
+  const [to, setTo] = useState(new Date().toISOString().slice(0, 10));
   const [status, setStatus] = useState('---');
   const [body, setBody] = useState('');
 
@@ -26,7 +28,7 @@ export function ExtractStartForm() {
     if (!token) return;
     const res = await fetch(process.env.NEXT_PUBLIC_EXTRACT_API_URL, {
       method: 'post',
-      body: JSON.stringify({ repositoryId, repositoryName, namespaceName, sourceControl }),
+      body: JSON.stringify({ repositoryId, repositoryName, namespaceName, sourceControl, from: new Date(from), to: new Date(to) }),
       headers: {
         'Authorization': 'Bearer ' + token
       }
@@ -63,6 +65,14 @@ export function ExtractStartForm() {
                   <option value='github'>github</option>
                 </select>
               </td>
+            </tr>
+            <tr>
+              <td>From</td>
+              <td>To</td>
+            </tr>
+            <tr>
+              <td><input type='date' value={from} onChange={handleInputChange(setFrom)} className='flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50' /></td>
+              <td><input type='date' value={to} onChange={handleInputChange(setTo)} className='flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50' /></td>
             </tr>
           </tbody>
         </table>
