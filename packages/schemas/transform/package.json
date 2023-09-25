@@ -7,13 +7,15 @@
   "scripts": {
     "db:generate": "drizzle-kit generate:sqlite",
     "type-check": "tsc --noEmit && echo \"✔ No TypeScript warnings or errors\"",
-    "test": "echo \"Warning: no test specified\"",
+    "test": "jest",
     "lint": "eslint . && echo \"✔ No ESLint warnings or errors\""
   },
-  "dependencies": {
-  },
   "devDependencies": {
-    "drizzle-kit": "^0.19.13"
+    "@jest/globals": "^29.6.4",
+    "@types/jest": "^29.5.4",
+    "drizzle-kit": "^0.19.13",
+    "ts-jest": "^29.1.1",
+    "ts-node": "^10.9.1"
   },
   "keywords": [],
   "author": "",

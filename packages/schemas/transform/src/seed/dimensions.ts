@@ -2,19 +2,11 @@ import type { NewTransformDate } from "../dates";
 import type { NewForgeUser } from "../forge-users";
 import type { NewMergeRequest } from "../merge-requests";
 import type { NewRepository } from "../repositories";
-import { drizzle, type LibSQLDatabase } from "drizzle-orm/libsql"
+import type { LibSQLDatabase } from "drizzle-orm/libsql"
 import { forgeUsers } from "../forge-users";
 import { dates } from "../dates";
 import { mergeRequests } from "../merge-requests";
 import { repositories } from "../repositories";
-import { createClient } from "@libsql/client";
-
-
-
-const db = drizzle(createClient({
-  url: process.env.TRANSFORM_DATABASE_URL as string,
-  authToken: process.env.TRANSFORM_DATABASE_AUTH_TOKEN
-}))
 
 const nullForgeUser = {
   id: 1,
@@ -28,29 +20,30 @@ const nullDate = {
   day: Number.MAX_SAFE_INTEGER,
   week: Number.MAX_SAFE_INTEGER,
   month: Number.MAX_SAFE_INTEGER,
-  year: Number.MAX_SAFE_INTEGER
+  year: Number.MAX_SAFE_INTEGER,
 } satisfies NewTransformDate;
 
 const nullMergeRequest = {
   id: 1,
   externalId: Number.MAX_SAFE_INTEGER,
   forgeType: 'unknown',
-  title: ''
+  title: '',
+  webUrl: '',
 } satisfies NewMergeRequest;
 
 const nullRepository = {
   id: 1,
   externalId: Number.MAX_SAFE_INTEGER,
   forgeType: 'unknown',
-  name: ''
+  name: '',
 } satisfies NewRepository;
 
-async function seed (db: LibSQLDatabase) {
+export async function seed (db: LibSQLDatabase, startDate: Date, endDate: Date) {
   await db.insert(forgeUsers).values(nullForgeUser).run();
   await db.insert(dates).values(nullDate).run();
   await db.insert(mergeRequests).values(nullMergeRequest).run();
   await db.insert(repositories).values(nullRepository).run();
-  await db.insert(dates).values(allDatesWithProperties).run();
+  await db.insert(dates).values(generateDates(startDate, endDate)).run();
 }
 
 function generateDates(startDate: Date, endDate: Date) {
@@ -71,11 +64,3 @@ function generateDates(startDate: Date, endDate: Date) {
 
   return dates;
 }
-
-// Example usage:
-const startDate = new Date('2022-09-07');
-const endDate = new Date('2023-09-20');
-const allDatesWithProperties = generateDates(startDate, endDate);
-await seed(db)
-
-console.log(allDatesWithProperties);
