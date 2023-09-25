@@ -54,10 +54,9 @@ const context: Context<GetMemberInfoSourceControl, GetMemberInfoEntities> = {
 export const eventHandler = EventHandler(extractMembersEvent, async (ev) => {
   const { sourceControl, userId } = ev.metadata;
   const { memberIds } = ev.properties;
-
   await sender.sendAll(memberIds.map(memberId => ({ memberId })), {
     version: 1,
-    caller: 'extract-user-info',
+    caller: 'extract-member-info',
     sourceControl,
     userId,
     timestamp: new Date().getTime(),

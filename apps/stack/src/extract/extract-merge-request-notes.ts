@@ -1,4 +1,4 @@
-import { mergeRequestNotes, mergeRequests, repositories, namespaces, MergeRequestSchema, NamespaceSchema, RepositorySchema } from "@acme/extract-schema";
+import { mergeRequestNotes, mergeRequests, repositories, namespaces, MergeRequestSchema, NamespaceSchema, RepositorySchema, members } from "@acme/extract-schema";
 import { createMessageHandler } from "@stack/config/create-message";
 import { MessageKind, metadataSchema } from "./messages";
 import { z } from "zod";
@@ -8,7 +8,7 @@ import { GitHubSourceControl, GitlabSourceControl } from "@acme/source-control";
 import { drizzle } from "drizzle-orm/libsql";
 import { getMergeRequestNotes, type Context, type GetMergeRequestNotesEntities, type GetMergeRequestNotesSourceControl } from "@acme/extract-functions";
 import { EventHandler } from "sst/node/event-bus";
-import { extractMergeRequestsEvent } from "./events";
+import { extractMembersEvent, extractMergeRequestsEvent } from "./events";
 import { getClerkUserToken } from "./get-clerk-user-token";
 
 const client = createClient({ url: Config.DATABASE_URL, authToken: Config.DATABASE_AUTH_TOKEN });
@@ -25,6 +25,7 @@ const db = drizzle(client);
 const context: Context<GetMergeRequestNotesSourceControl, GetMergeRequestNotesEntities> = {
   db,
   entities: {
+    members,
     mergeRequestNotes,
     mergeRequests,
     namespaces,
@@ -49,11 +50,21 @@ export const mergeRequestNoteSenderHandler = createMessageHandler({
     const { mergeRequestId, namespaceId, repositoryId } = message.content;
     context.integrations.sourceControl = await initSourceControl(userId, sourceControl);
 
-    await getMergeRequestNotes({
+    const { members } = await getMergeRequestNotes({
       mergeRequestId,
       repositoryId,
       namespaceId,
     }, context);
+
+    await extractMembersEvent.publish({ memberIds: members.map(member => member.id) }, {
+      version: 1,
+      caller: 'extract-merge-request-notes',
+      sourceControl,
+      userId,
+      timestamp: new Date().getTime(),
+      from: message.metadata.from,
+      to: message.metadata.to,
+    });
   }
 });
 
@@ -74,7 +85,7 @@ export const eventHandler = EventHandler(extractMergeRequestsEvent, async (ev) =
   }
   await mergeRequestNoteQueue.sendAll(arrayOfExtractMergeRequestData, {
     version: 1,
-    caller: 'extract-merge-request-diffs',
+    caller: 'extract-merge-request-notes',
     sourceControl,
     userId,
     timestamp: new Date().getTime(),

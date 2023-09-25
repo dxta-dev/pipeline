@@ -1,6 +1,6 @@
 import type { SourceControl } from "@acme/source-control"
 import type { ExtractFunction, Entities } from "./config";
-import type { MergeRequestNote } from "@acme/extract-schema";
+import type { Member, MergeRequestNote, NewMember } from "@acme/extract-schema";
 import { eq } from "drizzle-orm";
 
 export type GetMergeRequestNotesInput = {
@@ -11,10 +11,11 @@ export type GetMergeRequestNotesInput = {
 
 export type GetMergeRequestNotesOutput = {
   mergeRequestNotes: MergeRequestNote[];
+  members: Member[];
 };
 
 export type GetMergeRequestNotesSourceControl = Pick<SourceControl, "fetchMergeRequestNotes">;
-export type GetMergeRequestNotesEntities = Pick<Entities, "namespaces" | "repositories" | "mergeRequests" | "mergeRequestNotes">;
+export type GetMergeRequestNotesEntities = Pick<Entities, "namespaces" | "repositories" | "mergeRequests" | "mergeRequestNotes" | "members">;
 
 export type GetMergeRequestNotesFunction = ExtractFunction<GetMergeRequestNotesInput, GetMergeRequestNotesOutput, GetMergeRequestNotesSourceControl, GetMergeRequestNotesEntities>;
 
@@ -37,6 +38,22 @@ export const getMergeRequestNotes: GetMergeRequestNotesFunction = async (
 
   const { mergeRequestNotes } = await integrations.sourceControl.fetchMergeRequestNotes(repository, namespace, mergeRequest);
 
+  const mergeRequestNoteUniqueAuthors = [...mergeRequestNotes.reduce((externalIdToAuthor, note) =>
+    externalIdToAuthor.set(note.authorExternalId, {
+      externalId: note.authorExternalId,
+      username: note.authorUsername,
+      forgeType: repository.forgeType,
+    }), new Map<number, NewMember>()).values()];
+
+  const insertedMembers = await db.transaction(async (tx) => {
+    return Promise.all(mergeRequestNoteUniqueAuthors.map(author =>
+      tx.insert(entities.members).values(author)
+        .onConflictDoUpdate({ target: [entities.members.externalId, entities.members.forgeType], set: { username: author.username } })
+        .returning()
+        .get()
+    ));
+  });
+
   const insertedMergeRequestNotes = await db.transaction(async (tx) =>
     Promise.all(mergeRequestNotes.map(mergeRequestNote =>
       tx.insert(entities.mergeRequestNotes).values(mergeRequestNote)
@@ -52,6 +69,7 @@ export const getMergeRequestNotes: GetMergeRequestNotesFunction = async (
   )
 
   return {
-    mergeRequestNotes: insertedMergeRequestNotes
+    mergeRequestNotes: insertedMergeRequestNotes,
+    members: insertedMembers
   };
 }
