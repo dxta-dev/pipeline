@@ -23,6 +23,7 @@ export const memberInfoSenderHandler = createMessageHandler({
     const { memberId } = message.content;
     context.integrations.sourceControl = await initSourceControl(userId, sourceControl);
     await getMemberInfo({ memberId }, context);
+    // TODO: extractMemberInfoEvent.publish(/*...*/)
   }
 });
 
