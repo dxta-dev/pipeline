@@ -90,6 +90,8 @@ export const eventHandler = EventHandler(extractMergeRequestsEvent, async (evt) 
     sourceControl,
     userId,
     timestamp: new Date().getTime(),
+    from: evt.metadata.from,
+    to: evt.metadata.to,
   })
 
 });

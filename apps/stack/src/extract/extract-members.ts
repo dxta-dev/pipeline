@@ -30,7 +30,9 @@ export const memberSenderHandler = createMessageHandler({
       paginationInfo: message.content.pagination,
       repository: message.content.repository,
       sourceControl: message.metadata.sourceControl,
-      userId: message.metadata.userId
+      userId: message.metadata.userId,
+      from: message.metadata.from,
+      to: message.metadata.to  
     });
   }
 });
@@ -65,9 +67,11 @@ type ExtractMembersPageInput = {
   sourceControl: "github" | "gitlab";
   userId: string;
   paginationInfo?: Pagination;
+  from: Date;
+  to: Date;
 }
 
-const extractMembersPage = async ({ namespace, repository, sourceControl, userId, paginationInfo }: ExtractMembersPageInput) => {
+const extractMembersPage = async ({ namespace, repository, sourceControl, userId, paginationInfo, from, to }: ExtractMembersPageInput) => {
   const page = paginationInfo?.page;
   const perPage = paginationInfo?.perPage;
 
@@ -90,6 +94,8 @@ const extractMembersPage = async ({ namespace, repository, sourceControl, userId
     sourceControl: sourceControl,
     userId: userId,
     timestamp: new Date().getTime(),
+    from,
+    to,
   });
 
 
@@ -108,6 +114,8 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
     repository: repository,
     sourceControl: ev.metadata.sourceControl,
     userId: ev.metadata.userId,
+    from: ev.metadata.from,
+    to: ev.metadata.to
   });
 
   const arrayOfExtractMemberPageMessageContent: { repository: Repository, namespace: Namespace, pagination: Pagination }[] = [];
@@ -132,6 +140,8 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
     sourceControl: ev.metadata.sourceControl,
     userId: ev.metadata.userId,
     timestamp: new Date().getTime(),
+    from: ev.metadata.from,
+    to: ev.metadata.to
   });
 
 });

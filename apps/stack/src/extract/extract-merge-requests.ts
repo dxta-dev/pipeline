@@ -14,7 +14,7 @@ import { GitHubSourceControl, GitlabSourceControl } from "@acme/source-control";
 
 import { extractMergeRequestsEvent, extractRepositoryEvent } from "./events";
 import { eq } from "drizzle-orm";
-import { MessageKind, metadataSchema, paginationSchema, timePeriodSchema } from "./messages";
+import { MessageKind, metadataSchema, paginationSchema } from "./messages";
 import { z } from "zod";
 import { createMessageHandler } from "@stack/config/create-message";
 import { getClerkUserToken } from "./get-clerk-user-token";
@@ -27,7 +27,6 @@ export const mergeRequestSenderHandler = createMessageHandler({
     repository: RepositorySchema,
     namespace: NamespaceSchema,
     pagination: paginationSchema,
-    timePeriod: timePeriodSchema,
   }).shape,
   handler: async (message) => {
 
@@ -38,7 +37,7 @@ export const mergeRequestSenderHandler = createMessageHandler({
 
     context.integrations.sourceControl = await initSourceControl(message.metadata.userId, message.metadata.sourceControl);
 
-    const { namespace, pagination, repository, timePeriod } = message.content;
+    const { namespace, pagination, repository } = message.content;
 
     if (!namespace) throw new Error("Invalid namespace id");
 
@@ -50,7 +49,7 @@ export const mergeRequestSenderHandler = createMessageHandler({
         repositoryId: repository.id,
         page: pagination.page,
         perPage: pagination.perPage,
-        timePeriod,
+        timePeriod: { from: message.metadata.from, to: message.metadata.to },
         totalPages: pagination.totalPages,
       },
       context,
@@ -62,6 +61,8 @@ export const mergeRequestSenderHandler = createMessageHandler({
       sourceControl: message.metadata.sourceControl,
       userId: message.metadata.userId,
       timestamp: new Date().getTime(),
+      from: message.metadata.from,
+      to: message.metadata.to,
     });
 
   }
@@ -136,6 +137,8 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (evt) => 
     sourceControl,
     userId: evt.metadata.userId,
     timestamp: new Date().getTime(),
+    from: evt.metadata.from,
+    to: evt.metadata.to,
   });
 
   const arrayOfExtractMergeRequests = [];
@@ -152,12 +155,16 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (evt) => 
     });
   }
 
+  if (arrayOfExtractMergeRequests.length === 0) return;
+
   await sender.sendAll(arrayOfExtractMergeRequests, {
     version: 1,
     caller: 'extract-merge-requests',
     sourceControl,
     userId: evt.metadata.userId,
     timestamp: new Date().getTime(),
+    from: evt.metadata.from,
+    to: evt.metadata.to,
   });
 
 })

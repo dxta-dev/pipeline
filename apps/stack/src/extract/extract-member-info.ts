@@ -60,5 +60,7 @@ export const eventHandler = EventHandler(extractMembersEvent, async (ev) => {
     sourceControl,
     userId,
     timestamp: new Date().getTime(),
+    from: ev.metadata.from,
+    to: ev.metadata.to,
   });
 });
