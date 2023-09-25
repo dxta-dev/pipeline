@@ -51,6 +51,7 @@ export const mergeRequestSenderHandler = createMessageHandler({
         page: pagination.page,
         perPage: pagination.perPage,
         timePeriod,
+        totalPages: pagination.totalPages,
       },
       context,
     );
@@ -110,9 +111,12 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (evt) => 
   startDate.setMonth(startDate.getMonth() - 6);
   startDate.setDate(startDate.getDate() - 14);
 
+  const endDate = new Date();
+  endDate.setDate(endDate.getDate() - 12);
+
   const timePeriod = {
     from: startDate,
-    to: new Date(),
+    to: endDate,
   }
 
   const { mergeRequests, paginationInfo } = await getMergeRequests(
@@ -135,7 +139,7 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (evt) => 
   });
 
   const arrayOfExtractMergeRequests = [];
-  for (let i = 2; i <= paginationInfo.totalPages; i++) {
+  for (let i = paginationInfo.page + 1; i <= paginationInfo.totalPages; i++) {
     arrayOfExtractMergeRequests.push({
       repository,
       namespace: namespace,

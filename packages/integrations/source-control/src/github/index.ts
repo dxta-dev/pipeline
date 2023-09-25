@@ -161,20 +161,44 @@ export class GitHubSourceControl implements SourceControl {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async fetchMergeRequests(externalRepositoryId: number, namespaceName: string, repositoryName: string, repositoryId: number, creationPeriod: TimePeriod = {}, page?: number, perPage?: number): Promise<{ mergeRequests: NewMergeRequest[]; pagination: Pagination; }> {
+  async fetchMergeRequests(externalRepositoryId: number, namespaceName: string, repositoryName: string, repositoryId: number, creationPeriod?: TimePeriod, page?: number, perPage?: number, totalPages?: number): Promise<{ mergeRequests: NewMergeRequest[]; pagination: Pagination; }> {
     page = page || 1;
     perPage = perPage || 30;
+
+    let searchResult;
+    let fullSearchResult;
+    let offset = 0;
 
     // Created format created:YYYY-MM-DD..YYYY-MM-DD`,
     // slice is used to remove the time part
     // date.toISOString().slice(0, 10) => date.toISOString().slice(0, date.toISOString().indexOf('T'))
-    const searchResult = await this.api.rest.search.issuesAndPullRequests({
-      q: `type:pr+repo:${namespaceName}/${repositoryName}+updated:${creationPeriod.from?.toISOString().slice(0, 10)}..${creationPeriod.to?.toISOString().slice(0, 10)}`,
-      page: page,
-      per_page: perPage,
-      state: "all",
-      sort: 'updated',
-    });
+    if (!totalPages && creationPeriod) {
+      let linkHeader;
+      searchResult = await this.api.rest.search.issuesAndPullRequests({
+        q: `type:pr+repo:${namespaceName}/${repositoryName}+updated:${creationPeriod.from.toISOString().slice(0, 10)}..${creationPeriod.to.toISOString().slice(0, 10)}`,
+        page: page,
+        per_page: perPage,
+        state: "all",
+        sort: 'updated',
+      });
+      
+      if (creationPeriod.to.toDateString() !== new Date().toDateString()) {
+        fullSearchResult = await this.api.rest.search.issuesAndPullRequests({
+          q: `type:pr+repo:${namespaceName}/${repositoryName}+updated:>${creationPeriod.from.toISOString().slice(0, 10)}`,
+          page: page,
+          per_page: perPage,
+          state: "all",
+          sort: 'updated',
+        });
+        offset = Math.floor((fullSearchResult.data.total_count - searchResult.data.total_count) / perPage);
+        linkHeader = parseLinkHeader(fullSearchResult.headers.link) || { next: { per_page: perPage } };
+      } else {
+        linkHeader = parseLinkHeader(searchResult.headers.link) || { next: { per_page: perPage } };
+      }
+      page = page + offset;
+      totalPages = ('last' in linkHeader) ? Number(linkHeader.last?.page) : page;
+      perPage = ('next' in linkHeader) ? Number(linkHeader.next?.per_page) : Number(linkHeader.prev?.per_page);
+    }
 
     const result = await this.api.pulls.list({
       owner: namespaceName,
@@ -185,8 +209,8 @@ export class GitHubSourceControl implements SourceControl {
       sort: 'updated',
       direction: 'desc',
     });
-       
-    const linkHeader = parseLinkHeader(searchResult.headers.link) || { next: { per_page: perPage } };
+
+    const linkHeader = parseLinkHeader(result.headers.link) || { next: { per_page: perPage } };
 
     const pagination = {
       page,
@@ -250,7 +274,7 @@ export class GitHubSourceControl implements SourceControl {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async fetchMergeRequestCommits(repository: Repository, namespace: Namespace, mergeRequest: MergeRequest, creationPeriod: TimePeriod = {}): Promise<{ mergeRequestCommits: NewMergeRequestCommit[] }> {
+  async fetchMergeRequestCommits(repository: Repository, namespace: Namespace, mergeRequest: MergeRequest): Promise<{ mergeRequestCommits: NewMergeRequestCommit[] }> {
     const response = await this.api.pulls.listCommits({
       owner: namespace.name,
       repo: repository.name,

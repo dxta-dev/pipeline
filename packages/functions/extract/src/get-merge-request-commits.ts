@@ -35,7 +35,7 @@ export const getMergeRequestCommits: GetMergeRequestCommitsFunction = async (
     throw new Error("Source control integration not configured");
   }
 
-  const { mergeRequestCommits } = await integrations.sourceControl.fetchMergeRequestCommits(repository, namespace, mergeRequest, {});
+  const { mergeRequestCommits } = await integrations.sourceControl.fetchMergeRequestCommits(repository, namespace, mergeRequest);
 
   const insertedMergeRequestCommits = await db.transaction(async (tx) => {
     return Promise.all(mergeRequestCommits.map(mergeRequestCommit => 
