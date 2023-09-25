@@ -82,18 +82,12 @@ export function ExtractStack({ stack }: StackContext) {
         handler: "src/extract/extract-members.eventHandler",
       },
     },
-  });
-
-  bus.addTargets(stack, "repository", {
     extractNamespaceMember: {
       function: {
         bind: [bus, extractQueue],
         handler: "src/extract/extract-namespace-members.eventHandler",
       },
     },
-  });
-
-  bus.addTargets(stack, "repository", {
     mergeRequests: {
       function: {
         bind: [bus, extractQueue],
@@ -108,19 +102,13 @@ export function ExtractStack({ stack }: StackContext) {
         bind: [bus, extractQueue],
         handler: "src/extract/extract-merge-request-diffs.eventHandler",
       }
-    }
-  });
-
-  bus.addTargets(stack, "mergeRequests", {
+    },
     extractMergeRequestCommits: {
       function: {
         bind: [bus, extractQueue],
         handler: "src/extract/extract-merge-request-commits.eventHandler",
       }
-    }
-  });
-
-  bus.addTargets(stack, "mergeRequests", {
+    },
     extractMergeRequestNotes: {
       function: {
         bind: [bus, extractQueue],
