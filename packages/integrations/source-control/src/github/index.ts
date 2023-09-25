@@ -165,46 +165,77 @@ export class GitHubSourceControl implements SourceControl {
     page = page || 1;
     perPage = perPage || 30;
 
-    let searchResult;
-    let fullSearchResult;
-    let offset = 0;
+    const serchPRs = async (namespaceName: string, repositoryName: string, page: number, perPage: number, from: Date, to: Date | 'today') => {
+      let updated;
 
-    // Created format created:YYYY-MM-DD..YYYY-MM-DD`,
-    // slice is used to remove the time part
-    // date.toISOString().slice(0, 10) => date.toISOString().slice(0, date.toISOString().indexOf('T'))
-    if (!totalPages && creationPeriod) {
-      let linkHeader;
-      searchResult = await this.api.rest.search.issuesAndPullRequests({
-        q: `type:pr+repo:${namespaceName}/${repositoryName}+updated:${creationPeriod.from.toISOString().slice(0, 10)}..${creationPeriod.to.toISOString().slice(0, 10)}`,
-        page: page,
+      if (to === 'today') {
+        updated = `>${from.toISOString().slice(0, 10)}`;
+      } else {
+        updated = `${from.toISOString().slice(0, 10)}..${to.toISOString().slice(0, 10)}`;
+      }
+
+      const searchResult = await this.api.rest.search.issuesAndPullRequests({
+        q: `type:pr+repo:${namespaceName}/${repositoryName}+updated:${updated}`,
+        page,
         per_page: perPage,
         state: "all",
         sort: 'updated',
       });
-      
-      if (creationPeriod.to.toDateString() !== new Date().toDateString()) {
-        fullSearchResult = await this.api.rest.search.issuesAndPullRequests({
-          q: `type:pr+repo:${namespaceName}/${repositoryName}+updated:>${creationPeriod.from.toISOString().slice(0, 10)}`,
-          page: page,
-          per_page: perPage,
-          state: "all",
-          sort: 'updated',
-        });
-        offset = Math.floor((fullSearchResult.data.total_count - searchResult.data.total_count) / perPage);
-        linkHeader = parseLinkHeader(fullSearchResult.headers.link) || { next: { per_page: perPage } };
-      } else {
-        linkHeader = parseLinkHeader(searchResult.headers.link) || { next: { per_page: perPage } };
+
+      const linkHeader = parseLinkHeader(searchResult.headers.link);
+
+      return {
+        totalCount: searchResult.data.total_count,
+        lastPage: linkHeader?.last?.page,
+        perPage: linkHeader?.next?.per_page,
       }
-      page = page + offset;
-      totalPages = ('last' in linkHeader) ? Number(linkHeader.last?.page) : page;
-      perPage = ('next' in linkHeader) ? Number(linkHeader.next?.per_page) : Number(linkHeader.prev?.per_page);
     }
+
+
+    async function getPagination({ page, perPage, totalPages, timePeriod }: { page: number, perPage: number, totalPages?: number, timePeriod?: TimePeriod }) {
+
+      if (totalPages || !timePeriod) return null;
+
+      const searchPRsResult = await serchPRs(namespaceName, repositoryName, page, perPage, timePeriod.from, timePeriod.to);
+
+      function isToday(date: Date) {
+        const today = new Date();
+        return date.getDate() === today.getDate() &&
+          date.getMonth() === today.getMonth() &&
+          date.getFullYear() === today.getFullYear();
+      }
+
+      if (isToday(timePeriod.to)) {
+        return {
+          page,
+          totalPages: searchPRsResult.lastPage ? Number(searchPRsResult.lastPage) : page,
+          perPage: searchPRsResult.perPage ? Number(searchPRsResult.perPage) : perPage,
+        };
+      }
+      const searchOffsetResult = await serchPRs(namespaceName, repositoryName, page, perPage, timePeriod.from, 'today');
+
+      const calcPerPage = searchOffsetResult.perPage ? Number(searchOffsetResult.perPage) : perPage;
+
+      return {
+        page: page + Math.floor((searchOffsetResult.totalCount - searchPRsResult.totalCount) / calcPerPage),
+        totalPages: searchOffsetResult.lastPage ? Number(searchOffsetResult.lastPage) : page,
+        perPage: calcPerPage,
+      }
+
+    }
+
+    const firstPagePagination = await getPagination({
+      page,
+      perPage,
+      totalPages,
+      timePeriod: creationPeriod,
+    });
 
     const result = await this.api.pulls.list({
       owner: namespaceName,
       repo: repositoryName,
-      page: page,
-      per_page: perPage,
+      page: firstPagePagination?.page || page,
+      per_page: firstPagePagination?.perPage || perPage,
       state: "all",
       sort: 'updated',
       direction: 'desc',
@@ -212,10 +243,12 @@ export class GitHubSourceControl implements SourceControl {
 
     const linkHeader = parseLinkHeader(result.headers.link) || { next: { per_page: perPage } };
 
+    const pullsTotalPages = (!('last' in linkHeader)) ? page : Number(linkHeader.last?.page);
+
     const pagination = {
       page,
       perPage: ('next' in linkHeader) ? Number(linkHeader.next?.per_page) : Number(linkHeader.prev?.per_page),
-      totalPages: (!('last' in linkHeader)) ? page : Number(linkHeader.last?.page)
+      totalPages: totalPages || firstPagePagination?.totalPages || pullsTotalPages,
     } satisfies Pagination;
 
     return {
