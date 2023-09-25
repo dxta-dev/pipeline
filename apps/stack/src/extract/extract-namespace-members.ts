@@ -30,7 +30,9 @@ export const namespaceMemberSenderHandler = createMessageHandler({
       paginationInfo: message.content.pagination,
       repositoryId: message.content.repositoryId,
       sourceControl: message.metadata.sourceControl,
-      userId: message.metadata.userId
+      userId: message.metadata.userId,
+      from: message.metadata.from,
+      to: message.metadata.to,
     });
   }
 });
@@ -74,9 +76,11 @@ type ExtractNamespaceMembersPageInput = {
   sourceControl: "github" | "gitlab";
   userId: string;
   paginationInfo?: Pagination;
+  from: Date;
+  to: Date;
 }
 
-const extractNamespaceMembersPage = async ({ namespace, repositoryId, sourceControl, userId, paginationInfo }: ExtractNamespaceMembersPageInput) => {
+const extractNamespaceMembersPage = async ({ namespace, repositoryId, sourceControl, userId, paginationInfo, from, to }: ExtractNamespaceMembersPageInput) => {
   const page = paginationInfo?.page;
   const perPage = paginationInfo?.perPage;
 
@@ -98,6 +102,8 @@ const extractNamespaceMembersPage = async ({ namespace, repositoryId, sourceCont
     sourceControl: sourceControl,
     userId: userId,
     timestamp: new Date().getTime(),
+    from,
+    to
   });
 
 
@@ -116,6 +122,8 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
     repositoryId: ev.properties.repositoryId,
     sourceControl: ev.metadata.sourceControl,
     userId: ev.metadata.userId,
+    from: ev.metadata.from,
+    to: ev.metadata.to,
   });
 
   const arrayOfExtractMemberPageMessageContent = []; 
@@ -140,6 +148,8 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
     sourceControl: ev.metadata.sourceControl,
     userId: ev.metadata.userId,
     timestamp: new Date().getTime(),
+    from: ev.metadata.from,
+    to: ev.metadata.to,
   });
 
 });

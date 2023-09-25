@@ -59,7 +59,7 @@ beforeAll(async () => {
     
     if (timePeriod) {
       filteredArray = mergeRequestArray.filter((mergeRequest) => {
-        return mergeRequest.createdAt > (timePeriod.from as Date) && mergeRequest.createdAt < (timePeriod.to as Date)
+        return mergeRequest.createdAt > timePeriod.from && mergeRequest.createdAt < timePeriod.to;
       });
     } else {
       filteredArray = mergeRequestArray;

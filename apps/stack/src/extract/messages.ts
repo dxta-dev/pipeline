@@ -12,13 +12,9 @@ export const metadataSchema = z.object({
   caller: z.string(),
   sourceControl: z.literal("github").or(z.literal("gitlab")),
   userId: z.string(),
-});
-
-export const timePeriodSchema = z.object({
   from: z.coerce.date(),
   to: z.coerce.date(),
 });
-
 
 export enum MessageKind {
   MemberInfo = "member-info",

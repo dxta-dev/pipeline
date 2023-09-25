@@ -10,6 +10,7 @@ export type GetMergeRequestsInput = {
   page?: number;
   perPage?: number;
   timePeriod?: TimePeriod;
+  totalPages?: number;
 };
 
 export type GetMergeRequestsOutput = {
@@ -24,7 +25,7 @@ export type GetMergeRequestsFunction = ExtractFunction<GetMergeRequestsInput, Ge
 
 
 export const getMergeRequests: GetMergeRequestsFunction = async (
-  { externalRepositoryId, namespaceName, repositoryName, repositoryId, page, perPage, timePeriod},
+  { externalRepositoryId, namespaceName, repositoryName, repositoryId, page, perPage, timePeriod, totalPages},
   { integrations, db, entities },
 ) => {
 
@@ -32,7 +33,7 @@ export const getMergeRequests: GetMergeRequestsFunction = async (
     throw new Error("Source control integration not configured");
   }
 
-  const { mergeRequests, pagination } = await integrations.sourceControl.fetchMergeRequests(externalRepositoryId, namespaceName, repositoryName, repositoryId, timePeriod, page, perPage);
+  const { mergeRequests, pagination } = await integrations.sourceControl.fetchMergeRequests(externalRepositoryId, namespaceName, repositoryName, repositoryId, timePeriod, page, perPage, totalPages);
 
   const insertedMergeRequests = await db.transaction(async (tx) => {
     return Promise.all(mergeRequests.map(mergeRequest =>

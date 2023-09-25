@@ -42,6 +42,8 @@ const inputSchema = z.object({
   repositoryName: z.string(),
   namespaceName: z.string(),
   sourceControl: z.literal("gitlab").or(z.literal("github")),
+  from: z.coerce.date(),
+  to: z.coerce.date()
 });
 
 type Input = z.infer<typeof inputSchema>;
@@ -66,7 +68,7 @@ export const handler = ApiHandler(async (ev) => {
 
   try {
     input = inputSchema.parse(body);
-    
+
   } catch (error) {
     return {
       statusCode: 400,
@@ -77,7 +79,7 @@ export const handler = ApiHandler(async (ev) => {
   const { sub } = lambdaContext.authorizer.jwt.claims;
 
 
-  const { repositoryId, repositoryName, namespaceName, sourceControl } = input;
+  const { repositoryId, repositoryName, namespaceName, sourceControl, from, to } = input;
 
   try {
     sourceControlAccessToken = await getClerkUserToken(sub, `oauth_${sourceControl}`);
@@ -96,7 +98,7 @@ export const handler = ApiHandler(async (ev) => {
 
   const { repository, namespace } = await getRepository({ externalRepositoryId: repositoryId, repositoryName, namespaceName }, context);
 
-  await extractRepositoryEvent.publish({ repositoryId: repository.id, namespaceId: namespace.id }, { caller: 'extract-repository', timestamp: new Date().getTime(), version: 1, sourceControl, userId: sub });
+  await extractRepositoryEvent.publish({ repositoryId: repository.id, namespaceId: namespace.id }, { caller: 'extract-repository', timestamp: new Date().getTime(), version: 1, sourceControl, userId: sub, from, to });
 
   return {
     statusCode: 200,
