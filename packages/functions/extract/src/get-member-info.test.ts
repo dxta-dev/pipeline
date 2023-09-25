@@ -26,12 +26,12 @@ beforeAll(async () => {
 
   await migrate(db, { migrationsFolder: "../../../migrations/extract" });
 
-  fetchUserInfo = jest.fn((username: string) => {
+  fetchUserInfo = jest.fn((externalId: number, username: string) => {
     switch (username) {
       case 'deki':
         return Promise.resolve({
           member:
-            { externalId: 1000, forgeType: 'github', name: 'Dejan', username: 'dejan-crocoder', email: 'deki.the.wizard@gmail.com' },
+            { externalId, forgeType: 'github', name: 'Dejan', username: 'dejan-crocoder', email: 'deki.the.wizard@gmail.com' },
         }) satisfies ReturnType<SourceControl['fetchUserInfo']>;
       default:
         return Promise.reject(new Error("Are you mocking me?"))

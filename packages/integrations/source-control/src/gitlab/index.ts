@@ -13,10 +13,19 @@ export class GitlabSourceControl implements SourceControl {
   }
 
   // eslint-disable-next-line @typescript-eslint/require-await, @typescript-eslint/no-unused-vars
-  async fetchUserInfo(_username: string): Promise<{ member: NewMember }> {
-    throw new Error("Method not implemented.");
-  }
+  async fetchUserInfo(externalId: number, _username: string): Promise<{ member: NewMember }> {
+    const result = await this.api.Users.show(externalId, { showExpanded: true });
 
+    return {
+      member: {
+        externalId,
+        forgeType: 'gitlab',
+        name: result.data.name,
+        username: result.data.username,
+        email: (result.data.public_email as string | null | undefined), // Note: GitBeaker, hello ?
+      }
+    }
+  }
 
   async fetchNamespaceMembers(externalNamespaceId: number, _namespaceName: string, page?: number, perPage?: number): Promise<{ members: NewMember[], pagination: Pagination }> {
     const { data, paginationInfo } = await this.api.GroupMembers.all(externalNamespaceId, {

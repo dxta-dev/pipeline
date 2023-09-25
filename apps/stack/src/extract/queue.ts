@@ -38,6 +38,6 @@ logMap.set(MessageKind.Member, ['content.repository.id', 'content.namespace.id']
 
 logMap.set(MessageKind.NamespaceMember, ['content.repositoryId', 'content.namespace.id']);
 
-logMap.set(MessageKind.MemberInfo, ['metadata.sourceControl', 'content.memberId']);
+logMap.set(MessageKind.MemberInfo, ['content.memberId']);
 
 export const handler = QueueHandler(messageHandlers, logMap);

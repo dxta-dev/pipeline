@@ -60,7 +60,7 @@ export class GitHubSourceControl implements SourceControl {
     })
   }
 
-  async fetchUserInfo(username: string): Promise<{ member: NewMember }> {
+  async fetchUserInfo(_externalId: number, username: string): Promise<{ member: NewMember }> {
     const result = await this.api.users.getByUsername({
       username
     });
