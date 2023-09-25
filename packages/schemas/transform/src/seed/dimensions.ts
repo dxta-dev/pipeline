@@ -52,15 +52,16 @@ function generateDates(startDate: Date, endDate: Date) {
 
   while (currentDate <= endDate) {
     const customDate = {
-      day: currentDate.getDate(),
-      week: Math.ceil(((+currentDate - +new Date(currentDate.getFullYear(), 0, 1)) / (24 * 60 * 60 * 1000)) / 7),
-      month: currentDate.getMonth() + 1, // Months are zero-based, so we add 1.
-      year: currentDate.getFullYear(),
+      day: currentDate.getUTCDate(),
+      week: Math.ceil(((+currentDate - +new Date(currentDate.getUTCFullYear(), 0, 1)) / (24 * 60 * 60 * 1000)) / 7),
+      month: currentDate.getUTCMonth() + 1, // Months are zero-based, so we add 1.
+      year: currentDate.getUTCFullYear(),
     };
 
     dates.push(customDate);
-    currentDate.setDate(currentDate.getDate() + 1);
+    currentDate.setUTCDate(currentDate.getUTCDate() + 1);
+    console.log(currentDate)
   }
-
+  
   return dates;
 }
