@@ -16,7 +16,7 @@ export interface SourceControl {
   fetchRepository(externalRepositoryId: number, namespaceName: string, repositoryName: string): Promise<{ repository: NewRepository, namespace: NewNamespace }>;
   fetchMembers(externalRepositoryId: number, namespaceName: string, repositoryName: string, page?: number, perPage?: number): Promise<{ members: NewMember[], pagination: Pagination }>;
   fetchNamespaceMembers(externalNamespaceId: number, namespaceName: string, page?: number, perPage?: number): Promise<{ members: NewMember[], pagination: Pagination }>;
-  fetchUserInfo(username: string): Promise<{ member: NewMember }>;
+  fetchUserInfo(externalId: number, username: string): Promise<{ member: NewMember }>;
   fetchMergeRequests(externalRepositoryId: number, namespaceName: string, repositoryName: string, repositoryId: number, creationPeriod?: TimePeriod, page?: number, perPage?: number, totalPages?: number): Promise<{ mergeRequests: NewMergeRequest[], pagination: Pagination }>;
   fetchMergeRequestDiffs(repository: Repository, namespace: Namespace, mergeRequest: MergeRequest, page?: number, perPage?: number): Promise<{ mergeRequestDiffs: NewMergeRequestDiff[], pagination: Pagination }>;
   fetchMergeRequestCommits(repository: Repository, namespace: Namespace, mergeRequest: MergeRequest): Promise<{ mergeRequestCommits: NewMergeRequestCommit[] }>;

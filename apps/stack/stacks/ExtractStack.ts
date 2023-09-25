@@ -29,15 +29,10 @@ export function ExtractStack({ stack }: StackContext) {
           detailType: ["mergeRequest"],
         },
       },
-      githubMembers: {
+      members: {
         pattern: {
           source: ["extract"],
           detailType: ["members"],
-          detail: {
-            metadata: {
-              sourceControl: ["github"],
-            }
-          }
         }
       },
     },
@@ -71,7 +66,7 @@ export function ExtractStack({ stack }: StackContext) {
     },
   });
 
-  bus.addTargets(stack, "githubMembers", {
+  bus.addTargets(stack, "members", {
     extractUserInfo: {
       function: {
         bind: [bus, extractQueue],
