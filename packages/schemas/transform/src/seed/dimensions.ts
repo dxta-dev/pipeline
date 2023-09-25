@@ -1,12 +1,12 @@
-import type { NewTransformDate } from "../src/dates";
-import type { NewForgeUser } from "../src/forge-users";
-import type { NewMergeRequest } from "../src/merge-requests";
-import type { NewRepository } from "../src/repositories";
+import type { NewTransformDate } from "../dates";
+import type { NewForgeUser } from "../forge-users";
+import type { NewMergeRequest } from "../merge-requests";
+import type { NewRepository } from "../repositories";
 import { drizzle, type LibSQLDatabase } from "drizzle-orm/libsql"
-import { forgeUsers } from "../src/forge-users";
-import { dates } from "../src/dates";
-import { mergeRequests } from "../src/merge-requests";
-import { repositories } from "../src/repositories";
+import { forgeUsers } from "../forge-users";
+import { dates } from "../dates";
+import { mergeRequests } from "../merge-requests";
+import { repositories } from "../repositories";
 import { createClient } from "@libsql/client";
 
 
