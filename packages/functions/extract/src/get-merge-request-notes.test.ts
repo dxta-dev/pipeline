@@ -6,7 +6,7 @@ import { createClient } from '@libsql/client';
 import { describe, expect, test } from '@jest/globals';
 import { getMergeRequestNotes } from './get-merge-request-notes';
 
-import { mergeRequestNotes, mergeRequests, namespaces, repositories } from "@acme/extract-schema";
+import { members, mergeRequestNotes, mergeRequests, namespaces, repositories } from "@acme/extract-schema";
 import type { MergeRequest, Namespace, NewMergeRequest, NewNamespace, NewRepository, Repository } from "@acme/extract-schema";
 import type { Context } from './config';
 import type { GetMergeRequestNotesSourceControl, GetMergeRequestNotesEntities } from './get-merge-request-notes';
@@ -54,7 +54,15 @@ beforeAll(async () => {
               updatedAt: new Date(),
               authorUsername: 'Ante-Koceic',
               authorExternalId: 5001
-            }
+            },
+            {
+              externalId: 4002,
+              mergeRequestId: mergeRequest.id,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+              authorUsername: 'dejan-crocoder',
+              authorExternalId: 5000
+            },
           ]
         });
       default:
@@ -65,6 +73,7 @@ beforeAll(async () => {
   context = {
     db,
     entities: {
+      members,
       mergeRequestNotes,
       mergeRequests,
       namespaces,
@@ -84,7 +93,7 @@ afterAll(() => {
 describe('get-merge-request-notes:', () => {
   describe('getMergeRequestNotes', () => {
     test('should insert merge request note data in the db', async () => {
-      const { mergeRequestNotes } = await getMergeRequestNotes({
+      const { mergeRequestNotes, members } = await getMergeRequestNotes({
         mergeRequestId: TEST_MERGE_REQUEST_1.id,
         namespaceId: TEST_NAMESPACE_1.id,
         repositoryId: TEST_REPO_1.id,
@@ -94,14 +103,24 @@ describe('get-merge-request-notes:', () => {
       expect(fetchMergeRequestNotes).toHaveBeenCalledTimes(1);
 
       const mergeRequesNoteRows = await db.select().from(context.entities.mergeRequestNotes).all();
-      expect(mergeRequesNoteRows).toHaveLength(2);
+      expect(mergeRequesNoteRows).toHaveLength(3);
 
       for (const mergeRequestNoteRow of mergeRequesNoteRows) {
-        const extractedMergeRequestNote = mergeRequestNotes.find((mergeRequestNote)=>
-        mergeRequestNote.externalId === mergeRequestNoteRow.externalId);
-        
+        const extractedMergeRequestNote = mergeRequestNotes.find((mergeRequestNote) =>
+          mergeRequestNote.externalId === mergeRequestNoteRow.externalId);
+
         expect(extractedMergeRequestNote).toBeDefined();
         expect(extractedMergeRequestNote?.id).toBeDefined();
+      }
+
+      expect(members).toBeDefined();
+      const memberRows = await db.select().from(context.entities.members).all();
+      expect(memberRows).toHaveLength(2);
+      for (const memberRow of memberRows) {
+        const extractedMember = members.find(member => member.externalId === memberRow.externalId);
+        expect(extractedMember).toBeDefined();
+        expect(extractedMember?.id).toBeDefined();
+        expect(extractedMember?.username).toBeDefined();
       }
     });
   });
