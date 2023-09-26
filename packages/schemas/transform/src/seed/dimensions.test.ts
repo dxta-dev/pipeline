@@ -16,7 +16,7 @@ let sqlite: ReturnType<typeof createClient>;
 const testStartDate = new Date("1995-10-18");
 const testEndDate = new Date("1996-01-01");
 
-const testSeedDays = (testEndDate.getTime() - testStartDate.getTime()) / (24*60*60*1000)
+const testSeedDays = (testEndDate.getTime() - testStartDate.getTime()) / (24*60*60*1000) + 1
 
 const dbName = "dimensions";
 
@@ -47,7 +47,7 @@ describe("dimensions", () => {
 
       const seededDates = await db.select().from(dates).all();
       expect(seededDates).toBeDefined();
-      expect(seededDates).toHaveLength(testSeedDays + 2);
+      expect(seededDates).toHaveLength(testSeedDays + 1);
 
       const seedMergeRequests = await db.select().from(mergeRequests).all();
       expect(seedMergeRequests).toBeDefined();
