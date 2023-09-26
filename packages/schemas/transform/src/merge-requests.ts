@@ -6,7 +6,7 @@ import { Enum } from './enum-column';
 export const mergeRequests = sqliteTable('merge_requests', {
   id: integer('id').primaryKey(),
   externalId: integer('external_id').notNull(),
-  forgeType: Enum('forge_type', { enum: ['github', 'gitlab'] }).notNull(),
+  forgeType: Enum('forge_type', { enum: ['unknown', 'github', 'gitlab'] }).notNull(),
   // TODO: tenantId: integer('tenant_id').notNull(),
   title: text('title').notNull(),
   webUrl: text('web_url').notNull(),
