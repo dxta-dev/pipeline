@@ -7,8 +7,8 @@ import { migrate } from "drizzle-orm/libsql/migrator";
 import { seed } from "./dimensions";
 import { forgeUsers } from "../forge-users";
 import { dates } from "../dates";
-// import { mergeRequests } from "../merge-requests";
-// import { repositories } from "../repositories";
+import { mergeRequests } from "../merge-requests";
+import { repositories } from "../repositories";
 
 let db: LibSQLDatabase;
 let sqlite: ReturnType<typeof createClient>;
@@ -17,7 +17,6 @@ const testStartDate = new Date("1995-10-18");
 const testEndDate = new Date("1996-01-01");
 
 const testSeedDays = (testEndDate.getTime() - testStartDate.getTime()) / (24*60*60*1000)
-console.log(testSeedDays)
 
 const dbName = "dimensions";
 
@@ -45,12 +44,26 @@ describe("dimensions", () => {
         id: 1,
         forgeType: 'unknown',
       }))
+
       const seededDates = await db.select().from(dates).all();
-      console.log(seededDates[0])
-      console.log(seededDates[1])
-      console.log(seededDates[seededDates.length - 1])
       expect(seededDates).toBeDefined();
       expect(seededDates).toHaveLength(testSeedDays + 2);
+
+      const seedMergeRequests = await db.select().from(mergeRequests).all();
+      expect(seedMergeRequests).toBeDefined();
+      expect(seedMergeRequests).toHaveLength(1);
+      expect(seedMergeRequests[0]).toEqual(expect.objectContaining({
+        id: 1,
+        forgeType: 'unknown',
+      }))
+
+      const seedRepositories = await db.select().from(repositories).all();
+      expect(seedRepositories).toBeDefined();
+      expect(seedRepositories).toHaveLength(1);
+      expect(seedRepositories[0]).toEqual(expect.objectContaining({
+        id: 1,
+        forgeType: 'unknown',
+      }))
     });
   });
 });

@@ -60,7 +60,6 @@ function generateDates(startDate: Date, endDate: Date) {
 
     dates.push(customDate);
     currentDate.setUTCDate(currentDate.getUTCDate() + 1);
-    console.log(currentDate)
   }
   
   return dates;
