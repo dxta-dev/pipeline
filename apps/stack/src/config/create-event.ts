@@ -2,49 +2,48 @@ import {
   EventBridgeClient,
   PutEventsCommand,
 } from "@aws-sdk/client-eventbridge";
+import type { EventBridgeEvent } from "aws-lambda";
 import { EventBus } from "sst/node/event-bus";
 import { z } from "zod";
-import type { ZodRawShape, ZodAny, ZodObject } from "zod";
 
 const client = new EventBridgeClient({});
+type InferShapeOutput<Shape extends z.ZodRawShape> = z.infer<z.ZodObject<Shape, "strip", z.ZodAny>>;
 
-type Properties<Shape extends ZodRawShape> = z.infer<ZodObject<Shape, "strip", ZodAny>>
-
-type Publish<Shape extends ZodRawShape, MetadataShape extends ZodRawShape> = (
-  properties: Properties<Shape>,
-  metadata: z.infer<ZodObject<Exclude<MetadataShape, undefined>, "strip", ZodAny>>
-) => Promise<void>;
-
-type EventProps<Bus extends keyof typeof EventBus, Source extends string, Type extends string, Shape extends ZodRawShape, MetadataShape extends ZodRawShape> = {
-  source: Source;
-  type: Type;
-  propertiesShape: Shape;
-  bus: Bus;
-  metadataShape: MetadataShape;
-};
-
-export function createEvent<
+type EventProps<
   Bus extends keyof typeof EventBus,
   Source extends string,
-  Type extends string,
-  Shape extends ZodRawShape,
-  MetadataShape extends ZodRawShape,
->({
-  source,
-  type,
-  propertiesShape,
-  bus,
-  metadataShape,
-}: EventProps<Bus, Source, Type, Shape, MetadataShape>) {
-  const propertiesSchema = z.object(propertiesShape);
-  const metadataSchema = z.object(metadataShape);
+  DetailType extends string,
+  PropertiesShape extends z.ZodRawShape,
+  MetadataShape extends z.ZodRawShape
+> = {
+  bus: Bus;
+  source: Source;
+  detailType: DetailType;
+  properties: PropertiesShape;
+  metadata: MetadataShape;
+}
 
-  const publish: Publish<Shape, MetadataShape> = async (properties, metadata) => {
+export const createEvent = <
+  Bus extends keyof typeof EventBus,
+  Source extends string,
+  DetailType extends string,
+  PropertiesShape extends z.ZodRawShape,
+  MetadataShape extends z.ZodRawShape>({
+    bus,
+    source,
+    detailType,
+    properties,
+    metadata,
+  }: EventProps<Bus, Source, DetailType, PropertiesShape, MetadataShape>) => {
+  const propertiesSchema = z.object(properties);
+  const metadataSchema = z.object(metadata);
+
+  const publish = async (properties: InferShapeOutput<PropertiesShape>, metadata: InferShapeOutput<MetadataShape>) => {
     await client.send(new PutEventsCommand({
       Entries: [{
         EventBusName: EventBus[bus].eventBusName,
         Source: source,
-        DetailType: type,
+        DetailType: detailType,
         Detail: JSON.stringify({
           properties: propertiesSchema.parse(properties),
           metadata: metadataSchema.parse(metadata),
@@ -56,12 +55,58 @@ export function createEvent<
   return {
     publish,
     source,
-    type,
+    detailType,
     shape: {
-      properties: {} as Properties<Shape>,
-      metadata: {} as Parameters<Publish<Shape, MetadataShape>>[1],
-      metadataFn: undefined,
+      metadata,
+      properties
     },
   };
 }
 
+export type EventDefinition<
+  Source extends string,
+  DetailType extends string,
+  PropertiesShape extends z.ZodRawShape,
+  MetadataShape extends z.ZodRawShape,
+> = {
+  source: Source,
+  detailType: DetailType
+  shape: {
+    properties: PropertiesShape,
+    metadata: MetadataShape
+  }
+}
+
+type EventPayload<
+  PropertiesShape extends z.ZodRawShape,
+  MetadataShape extends z.ZodRawShape,
+> = {
+  properties: InferShapeOutput<PropertiesShape>;
+  metadata: InferShapeOutput<MetadataShape>;
+}
+
+export const EventHandler = <
+  Source extends string,
+  DetailType extends string,
+  PropertiesShape extends z.ZodRawShape,
+  MetadataShape extends z.ZodRawShape>(
+    event: EventDefinition<Source, DetailType, PropertiesShape, MetadataShape>,
+    cb: (ev: EventPayload<PropertiesShape,MetadataShape>) => Promise<void>) => {
+  const { source: targetSource, detailType: targetDetailType } = event;
+  const eventSchema = z.object({
+    properties: z.object(event.shape.properties),
+    metadata: z.object(event.shape.metadata),
+  });
+
+  return async (
+    event: EventBridgeEvent<string, unknown>
+  ) => {
+    if (event["detail-type"] !== targetDetailType || event.source !== targetSource) {
+      console.warn(`Warning: Invalid event handler configuration, expected event ${targetSource}.${targetDetailType} but got ${event.source}.${event["detail-type"]}`);
+    }
+    const parseResult = eventSchema.safeParse(event.detail);
+    if (!parseResult.success) return console.error(`ERROR: Failed to parse event detail '${targetSource}.${targetDetailType}'. Reason: ${parseResult.error}`);
+
+    await cb(parseResult.data as EventPayload<PropertiesShape, MetadataShape>);
+  }
+}
