@@ -52,3 +52,13 @@ export const extractMembersEvent = createEvent({
   bus: 'ExtractBus',
   metadataShape: metadataSchema.shape,
 });
+
+export const extractMemberInfoEvent = createEvent({
+  bus: "ExtractBus",
+  source: "extract",
+  type: "member-info",
+  propertiesShape: {
+    memberId: MemberSchema.shape.id,
+  },
+  metadataShape: metadataSchema.shape
+})
