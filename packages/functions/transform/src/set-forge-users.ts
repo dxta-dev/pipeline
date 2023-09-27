@@ -6,7 +6,7 @@ export type SetForgeUsersInput = {
   extractMemberIds?: number[];
 }
 export type SetForgeUsersOutput = void;
-export type SetForgeUsersExtractEntities = Pick<ExtractEntities, 'members' | 'mergeRequestNotes'>;
+export type SetForgeUsersExtractEntities = Pick<ExtractEntities, 'members'>;
 export type SetForgeUsersTransformEntities = Pick<TransformEntities, 'forgeUsers'>;
 
 export type SetForgeUsersFunction = TransformFunction<SetForgeUsersInput, SetForgeUsersOutput, SetForgeUsersExtractEntities, SetForgeUsersTransformEntities>;

@@ -5,7 +5,7 @@ import { Config } from "sst/node/config";
 import type { Context, GetMemberInfoEntities, GetMemberInfoSourceControl } from "@acme/extract-functions";
 import { members } from "@acme/extract-schema";
 import { EventHandler } from "@stack/config/create-event";
-import { extractMembersEvent } from "./events";
+import { extractMemberInfoEvent, extractMembersEvent } from "./events";
 import { createMessageHandler } from "@stack/config/create-message";
 import { MessageKind, metadataSchema } from "./messages";
 import { z } from "zod";
@@ -23,7 +23,7 @@ export const memberInfoSenderHandler = createMessageHandler({
     const { memberId } = message.content;
     context.integrations.sourceControl = await initSourceControl(userId, sourceControl);
     await getMemberInfo({ memberId }, context);
-    // TODO: extractMemberInfoEvent.publish(/*...*/)
+    await extractMemberInfoEvent.publish({ memberId }, { ...message.metadata, timestamp: new Date().getTime(), version: 1, caller: "extract-member-info" });
   }
 });
 
