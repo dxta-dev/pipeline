@@ -40,7 +40,6 @@ beforeAll(async () => {
       db: extractDb,
       entities: {
         members: extract.members,
-        mergeRequestNotes: extract.mergeRequestNotes
       }
     },
     transform: {
