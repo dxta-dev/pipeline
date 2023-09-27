@@ -4,7 +4,7 @@ import { createClient } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
 import { Config } from "sst/node/config";
 import { mergeRequestCommits, namespaces, repositories, mergeRequests, RepositorySchema, NamespaceSchema, MergeRequestSchema } from "@acme/extract-schema";
-import { EventHandler } from "sst/node/event-bus";
+import { EventHandler } from "@stack/config/create-event";
 import { extractMergeRequestsEvent } from "./events";
 import { createMessageHandler } from "@stack/config/create-message";
 import { MessageKind, metadataSchema } from "./messages";

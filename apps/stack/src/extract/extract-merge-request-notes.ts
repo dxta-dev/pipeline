@@ -7,7 +7,7 @@ import { createClient } from "@libsql/client";
 import { GitHubSourceControl, GitlabSourceControl } from "@acme/source-control";
 import { drizzle } from "drizzle-orm/libsql";
 import { getMergeRequestNotes, type Context, type GetMergeRequestNotesEntities, type GetMergeRequestNotesSourceControl } from "@acme/extract-functions";
-import { EventHandler } from "sst/node/event-bus";
+import { EventHandler } from "@stack/config/create-event";
 import { extractMembersEvent, extractMergeRequestsEvent } from "./events";
 import { getClerkUserToken } from "./get-clerk-user-token";
 

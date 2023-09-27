@@ -4,7 +4,7 @@ import { GitHubSourceControl, GitlabSourceControl } from "@acme/source-control";
 import { Config } from "sst/node/config";
 import type { Context, GetMemberInfoEntities, GetMemberInfoSourceControl } from "@acme/extract-functions";
 import { members } from "@acme/extract-schema";
-import { EventHandler } from "sst/node/event-bus";
+import { EventHandler } from "@stack/config/create-event";
 import { extractMembersEvent } from "./events";
 import { createMessageHandler } from "@stack/config/create-message";
 import { MessageKind, metadataSchema } from "./messages";

@@ -1,7 +1,7 @@
 import { createClient } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
 import { Config } from "sst/node/config";
-import { EventHandler } from "sst/node/event-bus";
+import { EventHandler } from "@stack/config/create-event";
 
 import {
   getMergeRequests,
