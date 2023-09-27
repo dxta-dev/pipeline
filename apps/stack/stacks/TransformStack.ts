@@ -46,5 +46,21 @@ export function TransformStack({ stack }: StackContext) {
     }
   });
 
+  ExtractBus.addRules(stack, {
+    "transformForgeUsers": {
+      pattern: {
+        source: ["extract"],
+        detailType: ["memberInfo"]
+      },
+      targets: {
+        transformForgeUsers: {
+          function: {
+            bind: [TRANSFORM_DB_URL, TRANSFORM_DB_AUTH_TOKEN],
+            handler: "src/transform/transform-forge-users.eventHandler",
+          }
+        }
+      },
+    }
+  });
 
 }
