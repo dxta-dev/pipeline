@@ -22,15 +22,24 @@ type MigrationState = {
 }
 
 const selectTablesFromDatabase = async (client: ReturnType<typeof createClient>) => {
-  const resultSet = await client.execute("SELECT name FROM sqlite_schema WHERE type in ('table') AND name NOT LIKE '\\_%' ESCAPE '\\'")
-  return [...resultSet.rows.map(row => row.name as string), '__drizzle_migrations'];
+  const resultSet = await client.execute("SELECT name FROM sqlite_schema WHERE type in ('table')")
+  const allTableNames = resultSet.rows.map(row => row.name as string);
+  const shouldIgnoreTable = (tableName: string) =>
+    tableName.startsWith("libsql_") ||
+    tableName.startsWith("_") && tableName !== "__drizzle_migrations"
+    ;
+
+  const ignoredTablesNames = allTableNames.filter(shouldIgnoreTable);
+  console.log(`Keeping tables: \x1b[33m${ignoredTablesNames.join(", ")}\x1b[0m`);
+
+  return allTableNames.filter(name => !shouldIgnoreTable(name));
 }
 const dropAllDatabaseTables = async (client: ReturnType<typeof createClient>) => {
   const tableNames = await selectTablesFromDatabase(client);
   if (tableNames.length === 1) return console.log('No tables to drop...');
   for (const tableName of tableNames) {
     try {
-      console.warn('Dropping table', tableName, '...');
+      console.warn('Dropping table:\x1b[31m', tableName, '\x1b[0m...');
       await client.execute(`drop table '${tableName}'`);
     } catch (error) {
       console.error('FAILED TO DROP TABLE');
