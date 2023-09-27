@@ -56,7 +56,7 @@ export const extractMembersEvent = createEvent({
 export const extractMemberInfoEvent = createEvent({
   bus: "ExtractBus",
   source: "extract",
-  type: "member-info",
+  type: "memberInfo",
   propertiesShape: {
     memberId: MemberSchema.shape.id,
   },
