@@ -18,9 +18,9 @@ type EventProps<
 > = {
   bus: Bus;
   source: Source;
-  detailType: DetailType;
-  properties: PropertiesShape;
-  metadata: MetadataShape;
+  type: DetailType;
+  propertiesShape: PropertiesShape;
+  metadataShape: MetadataShape;
 }
 
 export const createEvent = <
@@ -31,19 +31,19 @@ export const createEvent = <
   MetadataShape extends z.ZodRawShape>({
     bus,
     source,
-    detailType,
-    properties,
-    metadata,
+    type,
+    propertiesShape,
+    metadataShape,
   }: EventProps<Bus, Source, DetailType, PropertiesShape, MetadataShape>) => {
-  const propertiesSchema = z.object(properties);
-  const metadataSchema = z.object(metadata);
+  const propertiesSchema = z.object(propertiesShape);
+  const metadataSchema = z.object(metadataShape);
 
   const publish = async (properties: InferShapeOutput<PropertiesShape>, metadata: InferShapeOutput<MetadataShape>) => {
     await client.send(new PutEventsCommand({
       Entries: [{
         EventBusName: EventBus[bus].eventBusName,
         Source: source,
-        DetailType: detailType,
+        DetailType: type,
         Detail: JSON.stringify({
           properties: propertiesSchema.parse(properties),
           metadata: metadataSchema.parse(metadata),
@@ -55,10 +55,10 @@ export const createEvent = <
   return {
     publish,
     source,
-    detailType,
+    type,
     shape: {
-      metadata,
-      properties
+      metadata:metadataShape,
+      properties:propertiesShape
     },
   };
 }
@@ -70,7 +70,7 @@ export type EventDefinition<
   MetadataShape extends z.ZodRawShape,
 > = {
   source: Source,
-  detailType: DetailType
+  type: DetailType
   shape: {
     properties: PropertiesShape,
     metadata: MetadataShape
@@ -92,7 +92,7 @@ export const EventHandler = <
   MetadataShape extends z.ZodRawShape>(
     event: EventDefinition<Source, DetailType, PropertiesShape, MetadataShape>,
     cb: (ev: EventPayload<PropertiesShape,MetadataShape>) => Promise<void>) => {
-  const { source: targetSource, detailType: targetDetailType } = event;
+  const { source: targetSource, type: targetDetailType } = event;
   const eventSchema = z.object({
     properties: z.object(event.shape.properties),
     metadata: z.object(event.shape.metadata),

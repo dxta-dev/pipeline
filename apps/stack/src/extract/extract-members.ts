@@ -1,4 +1,4 @@
-import { EventHandler } from "sst/node/event-bus";
+import { EventHandler } from "@stack/config/create-event";
 import { extractMembersEvent, extractRepositoryEvent } from "./events";
 import { createClient } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
