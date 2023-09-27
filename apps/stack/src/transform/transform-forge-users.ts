@@ -2,7 +2,7 @@ import { createClient } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
 
 import { Config } from "sst/node/config";
-import { EventHandler } from "sst/node/event-bus";
+import { EventHandler } from "@stack/config/create-event";
 
 import { extractMemberInfoEvent } from "@stack/extract/events";
 import * as extract from "@acme/extract-schema";
