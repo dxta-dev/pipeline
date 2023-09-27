@@ -39,11 +39,11 @@ const nullRepository = {
 } satisfies NewRepository;
 
 export async function seed (db: LibSQLDatabase, startDate: Date, endDate: Date) {
-  await db.insert(forgeUsers).values(nullForgeUser).run();
-  await db.insert(dates).values(nullDate).run();
-  await db.insert(mergeRequests).values(nullMergeRequest).run();
-  await db.insert(repositories).values(nullRepository).run();
-  await db.insert(dates).values(generateDates(startDate, endDate)).run();
+  await db.insert(forgeUsers).values(nullForgeUser).onConflictDoNothing().run();
+  await db.insert(dates).values(nullDate).onConflictDoNothing().run();
+  await db.insert(mergeRequests).values(nullMergeRequest).onConflictDoNothing().run();
+  await db.insert(repositories).values(nullRepository).onConflictDoNothing().run();
+  await db.insert(dates).values(generateDates(startDate, endDate)).onConflictDoNothing().run();
 }
 
 function generateDates(startDate: Date, endDate: Date) {
