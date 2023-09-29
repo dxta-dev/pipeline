@@ -102,6 +102,7 @@ export class GitHubSourceControl implements SourceControl {
         name: member.name,
         username: member.login,
         email: member.email,
+        extractedSource: 'namespace',
       })),
       pagination
     }
@@ -155,6 +156,7 @@ export class GitHubSourceControl implements SourceControl {
         name: member.name,
         username: member.login,
         email: member.email,
+        extractedSource: 'repository',
       })),
       pagination
     }

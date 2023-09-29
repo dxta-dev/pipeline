@@ -12,6 +12,7 @@ export const members = sqliteTable('members', {
   name: text('name'),
   username: text('username').notNull(),
   email: text('email'),
+  extractedSource: Enum('extractedSource', {enum: ['repository', 'namespace', 'notes']}),
   _createdAt: integer('__created_at', { mode: 'timestamp_ms' }).default(sql`CURRENT_TIMESTAMP`),
   _updatedAt: integer('__updated_at', { mode: 'timestamp_ms' }).default(sql`CURRENT_TIMESTAMP`),
 }, (members) => ({
