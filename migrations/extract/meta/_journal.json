@@ -5,15 +5,8 @@
     {
       "idx": 0,
       "version": "5",
-      "when": 1694707800820,
-      "tag": "0000_medical_maelstrom",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "5",
-      "when": 1695993129426,
-      "tag": "0001_closed_blizzard",
+      "when": 1696251360271,
+      "tag": "0000_nifty_swarm",
       "breakpoints": true
     }
   ]

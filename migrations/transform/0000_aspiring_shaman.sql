@@ -4,8 +4,8 @@ CREATE TABLE `dates` (
 	`week` integer NOT NULL,
 	`month` integer NOT NULL,
 	`year` integer NOT NULL,
-	`__created_at` integer DEFAULT CURRENT_TIMESTAMP,
-	`__updated_at` integer DEFAULT CURRENT_TIMESTAMP
+	`__created_at` integer,
+	`__updated_at` integer
 );
 --> statement-breakpoint
 CREATE TABLE `forge_users` (
@@ -13,8 +13,8 @@ CREATE TABLE `forge_users` (
 	`external_id` integer NOT NULL,
 	`forge_type` integer NOT NULL,
 	`name` text NOT NULL,
-	`__created_at` integer DEFAULT CURRENT_TIMESTAMP,
-	`__updated_at` integer DEFAULT CURRENT_TIMESTAMP
+	`__created_at` integer,
+	`__updated_at` integer
 );
 --> statement-breakpoint
 CREATE TABLE `merge_request_reports` (
@@ -30,8 +30,8 @@ CREATE TABLE `merge_request_reports` (
 	`reviewed` integer DEFAULT false,
 	`approved` integer DEFAULT false,
 	`review_depth` integer NOT NULL,
-	`__created_at` integer DEFAULT CURRENT_TIMESTAMP,
-	`__updated_at` integer DEFAULT CURRENT_TIMESTAMP,
+	`__created_at` integer,
+	`__updated_at` integer,
 	FOREIGN KEY (`forge_user_id`) REFERENCES `forge_users`(`id`) ON UPDATE no action ON DELETE no action,
 	FOREIGN KEY (`repository_id`) REFERENCES `repositories`(`id`) ON UPDATE no action ON DELETE no action,
 	FOREIGN KEY (`merge_request_id`) REFERENCES `merge_requests`(`id`) ON UPDATE no action ON DELETE no action,
@@ -44,8 +44,8 @@ CREATE TABLE `merge_requests` (
 	`forge_type` integer NOT NULL,
 	`title` text NOT NULL,
 	`web_url` text NOT NULL,
-	`__created_at` integer DEFAULT CURRENT_TIMESTAMP,
-	`__updated_at` integer DEFAULT CURRENT_TIMESTAMP
+	`__created_at` integer,
+	`__updated_at` integer
 );
 --> statement-breakpoint
 CREATE TABLE `repositories` (
@@ -53,8 +53,8 @@ CREATE TABLE `repositories` (
 	`external_id` integer NOT NULL,
 	`forge_type` integer NOT NULL,
 	`name` text NOT NULL,
-	`__created_at` integer DEFAULT CURRENT_TIMESTAMP,
-	`__updated_at` integer DEFAULT CURRENT_TIMESTAMP
+	`__created_at` integer,
+	`__updated_at` integer
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `dates_day_week_month_year_idx` ON `dates` (`day`,`week`,`month`,`year`);--> statement-breakpoint
