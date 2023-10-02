@@ -1,5 +1,4 @@
 import type { InferSelectModel, InferInsertModel } from 'drizzle-orm';
-import { sql } from 'drizzle-orm';
 import { sqliteTable, integer } from 'drizzle-orm/sqlite-core';
 import { repositories } from './repositories';
 import { forgeUsers } from './forge-users';
@@ -22,8 +21,8 @@ export const mergeRequestReports = sqliteTable('merge_request_reports', {
   approved: integer('approved', { mode: 'boolean' }).default(false),
   reviewDepth: integer('review_depth').notNull(),
   // Meta
-  _createdAt: integer('__created_at', { mode: 'timestamp_ms' }).default(sql`CURRENT_TIMESTAMP`),
-  _updatedAt: integer('__updated_at', { mode: 'timestamp_ms' }).default(sql`CURRENT_TIMESTAMP`),
+  _createdAt: integer('__created_at', { mode: 'timestamp_ms' }).$defaultFn(() => new Date()),
+  _updatedAt: integer('__updated_at', { mode: 'timestamp_ms' }).$defaultFn(() => new Date()),
 });
 
 export type MergeRequestReport = InferSelectModel<typeof mergeRequestReports>;

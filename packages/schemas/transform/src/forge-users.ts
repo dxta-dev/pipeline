@@ -1,5 +1,4 @@
 import type { InferSelectModel, InferInsertModel } from 'drizzle-orm';
-import { sql } from 'drizzle-orm';
 import { sqliteTable, text, integer, uniqueIndex } from 'drizzle-orm/sqlite-core';
 import { Enum } from './enum-column';
 
@@ -10,8 +9,8 @@ export const forgeUsers = sqliteTable('forge_users', {
   // TODO: tenantId: integer('tenant_id').notNull(),
   name: text('name').notNull(),
   // TODO: url: text('url').notNull(),
-  _createdAt: integer('__created_at', { mode: 'timestamp_ms' }).default(sql`CURRENT_TIMESTAMP`),
-  _updatedAt: integer('__updated_at', { mode: 'timestamp_ms' }).default(sql`CURRENT_TIMESTAMP`),
+  _createdAt: integer('__created_at', { mode: 'timestamp_ms' }).$defaultFn(() => new Date()),
+  _updatedAt: integer('__updated_at', { mode: 'timestamp_ms' }).$defaultFn(() => new Date()),
 }, (forgeUsers) => ({
   uniqueExternalIdForgeTypeIndex: uniqueIndex('forge_users_external_id_forge_type_idx').on(forgeUsers.externalId, forgeUsers.forgeType)
 }));

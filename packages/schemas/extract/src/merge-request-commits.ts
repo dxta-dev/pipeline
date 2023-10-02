@@ -1,5 +1,4 @@
 import type { InferSelectModel, InferInsertModel } from 'drizzle-orm';
-import { sql } from 'drizzle-orm';
 import { sqliteTable, text, integer, uniqueIndex } from 'drizzle-orm/sqlite-core';
 import { createInsertSchema } from 'drizzle-zod';
 import { z } from 'zod';
@@ -17,8 +16,8 @@ export const mergeRequestCommits = sqliteTable('merge_request_commits', {
   authorEmail: text('author_email').notNull(),
   committerName: text('committer_name'),
   committerEmail: text('committer_email'),
-  _createdAt: integer('__created_at', { mode: 'timestamp_ms' }).default(sql`CURRENT_TIMESTAMP`),
-  _updatedAt: integer('__updated_at', { mode: 'timestamp_ms' }).default(sql`CURRENT_TIMESTAMP`),
+  _createdAt: integer('__created_at', { mode: 'timestamp_ms' }).$defaultFn(() => new Date()),
+  _updatedAt: integer('__updated_at', { mode: 'timestamp_ms' }).$defaultFn(() => new Date()),
 }, (commits) => ({
   uniqueExternalId: uniqueIndex('merge_request_commits_external_id_idx').on(commits.mergeRequestId, commits.externalId),
 }));

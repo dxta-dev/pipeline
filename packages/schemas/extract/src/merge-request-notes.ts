@@ -1,5 +1,4 @@
 import type { InferSelectModel, InferInsertModel } from 'drizzle-orm';
-import { sql } from 'drizzle-orm';
 import { sqliteTable, integer, uniqueIndex, text } from 'drizzle-orm/sqlite-core';
 
 export const mergeRequestNotes = sqliteTable('merge_request_notes', {
@@ -10,8 +9,8 @@ export const mergeRequestNotes = sqliteTable('merge_request_notes', {
   updatedAt: integer('updated_at', { mode: 'timestamp_ms' }).notNull(),
   authorUsername: text('author_username').notNull(),
   authorExternalId: integer('author_external_id').notNull(),
-  _createdAt: integer('__created_at', { mode: 'timestamp_ms' }).default(sql`CURRENT_TIMESTAMP`),
-  _updatedAt: integer('__updated_at', { mode: 'timestamp_ms' }).default(sql`CURRENT_TIMESTAMP`),
+  _createdAt: integer('__created_at', { mode: 'timestamp_ms' }).$defaultFn(() => new Date()),
+  _updatedAt: integer('__updated_at', { mode: 'timestamp_ms' }).$defaultFn(() => new Date()),
 }, (notes)=>({
   uniqueExternalId: uniqueIndex('merge_request_notes_external_id_idx').on(notes.mergeRequestId, notes.externalId),
 }));
