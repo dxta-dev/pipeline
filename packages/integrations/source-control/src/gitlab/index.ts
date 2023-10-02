@@ -41,6 +41,7 @@ export class GitlabSourceControl implements SourceControl {
         forgeType: 'gitlab',
         name: member.name,
         username: member.username,
+        extractedSource: 'namespace',
       } satisfies NewMember)),
       pagination: {
         page: paginationInfo.current,
@@ -85,6 +86,7 @@ export class GitlabSourceControl implements SourceControl {
         name: member.name,
         username: member.username,
         email: member.email,
+        extractedSource: 'repository',
       } satisfies NewMember)),
       pagination: {
         page: paginationInfo.current,

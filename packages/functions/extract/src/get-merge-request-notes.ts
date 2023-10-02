@@ -43,6 +43,7 @@ export const getMergeRequestNotes: GetMergeRequestNotesFunction = async (
       externalId: note.authorExternalId,
       username: note.authorUsername,
       forgeType: repository.forgeType,
+      extractedSource: 'notes',
     }), new Map<number, NewMember>()).values()];
 
   const insertedMembers = await db.transaction(async (tx) => {
