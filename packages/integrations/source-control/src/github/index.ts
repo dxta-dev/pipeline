@@ -252,7 +252,6 @@ export class GitHubSourceControl implements SourceControl {
       perPage: ('next' in linkHeader) ? Number(linkHeader.next?.per_page) : Number(linkHeader.prev?.per_page),
       totalPages: totalPages || firstPagePagination?.totalPages || pullsTotalPages,
     } satisfies Pagination;
-
     return {
       mergeRequests: result.data
         .map(mergeRequest => ({
@@ -260,7 +259,7 @@ export class GitHubSourceControl implements SourceControl {
           canonId: mergeRequest.number,
           repositoryId,
           title: mergeRequest.title,
-          webUrl: mergeRequest.url,
+          webUrl: mergeRequest.html_url,
           createdAt: new Date(mergeRequest.created_at),
           updatedAt: new Date(mergeRequest.updated_at),
           mergedAt: mergeRequest.merged_at ? new Date(mergeRequest.merged_at) : undefined,
