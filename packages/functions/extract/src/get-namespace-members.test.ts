@@ -41,8 +41,8 @@ beforeAll(async () => {
             { externalId: 1000, name: 'Dejan', username: 'dejan-crocoder', forgeType: 'github' }
           ],
           pagination: {
-            page: 1 || page,
-            perPage: 30 || perPage,
+            page: page || 1,
+            perPage: perPage || 30,
             totalPages: 1,
           }
         }) satisfies ReturnType<SourceControl['fetchNamespaceMembers']>;
