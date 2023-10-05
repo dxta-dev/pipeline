@@ -27,7 +27,7 @@ export class GitlabSourceControl implements SourceControl {
     }
   }
 
-  async fetchNamespaceMembers(externalNamespaceId: number, _namespaceName: string, page?: number, perPage?: number): Promise<{ members: NewMember[], pagination: Pagination }> {
+  async fetchNamespaceMembers(externalNamespaceId: number, _namespaceName: string, perPage: number, page?: number): Promise<{ members: NewMember[], pagination: Pagination }> {
     const { data, paginationInfo } = await this.api.GroupMembers.all(externalNamespaceId, {
       perPage,
       page: page || 1,
@@ -70,7 +70,7 @@ export class GitlabSourceControl implements SourceControl {
     };
   }
 
-  async fetchMembers(externalRepositoryId: number, namespaceName: string, repositoryName: string, page?: number, perPage?: number): Promise<{ members: NewMember[], pagination: Pagination }> {
+  async fetchMembers(externalRepositoryId: number, namespaceName: string, repositoryName: string, perPage: number, page?: number): Promise<{ members: NewMember[], pagination: Pagination }> {
     const { data, paginationInfo } = await this.api.ProjectMembers.all(externalRepositoryId, {
       includeInherited: true,
       perPage,
@@ -97,7 +97,7 @@ export class GitlabSourceControl implements SourceControl {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async fetchMergeRequests(externalRepositoryId: number, namespaceName = '', repositoryName = '', repositoryId: number, creationPeriod?: TimePeriod, page?: number, perPage?: number): Promise<{ mergeRequests: NewMergeRequest[], pagination: Pagination }> {
+  async fetchMergeRequests(externalRepositoryId: number, namespaceName = '', repositoryName = '', repositoryId: number, perPage: number, creationPeriod?: TimePeriod, page?: number): Promise<{ mergeRequests: NewMergeRequest[], pagination: Pagination }> {
     const { data, paginationInfo } = await this.api.MergeRequests.all({
       projectId: externalRepositoryId,
       page: page || 1,
@@ -131,7 +131,7 @@ export class GitlabSourceControl implements SourceControl {
     }
   }
 
-  async fetchMergeRequestDiffs(repository: Repository, namespace: Namespace, mergeRequest: MergeRequest, page?: number, perPage?: number): Promise<{ mergeRequestDiffs: NewMergeRequestDiff[], pagination: Pagination }> {
+  async fetchMergeRequestDiffs(repository: Repository, namespace: Namespace, mergeRequest: MergeRequest, perPage: number, page?: number): Promise<{ mergeRequestDiffs: NewMergeRequestDiff[], pagination: Pagination }> {
     // TODO: wait until gitbeaker fixes this
     const { data, paginationInfo } = ((await this.api.MergeRequests.allDiffs(repository.externalId, mergeRequest.canonId, {
       showExpanded: true,

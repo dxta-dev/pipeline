@@ -8,7 +8,7 @@ export type GetMergeRequestDiffsInput = {
   namespaceId: number;
   mergeRequestId: number;
   page?: number;
-  perPage?: number;
+  perPage: number;
 };
 
 export type GetMergeRequestDiffsOutput = {
@@ -38,7 +38,7 @@ export const getMergeRequestsDiffs: GetMergeRequestDiffsFunction = async (
     throw new Error("Source control integration not configured");
   }
 
-  const { mergeRequestDiffs, pagination } = await integrations.sourceControl.fetchMergeRequestDiffs(repository, namespace, mergeRequest, page, perPage);
+  const { mergeRequestDiffs, pagination } = await integrations.sourceControl.fetchMergeRequestDiffs(repository, namespace, mergeRequest, perPage, page);
 
   const insertedMergeRequestDiffs = await db.transaction(async (tx) => {
     return Promise.all(mergeRequestDiffs.map(mergeRequestDiff =>

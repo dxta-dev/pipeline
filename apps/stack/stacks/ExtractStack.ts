@@ -14,6 +14,7 @@ export function ExtractStack({ stack }: StackContext) {
   const REDIS_URL = new Config.Secret(stack, "REDIS_URL");
   const REDIS_TOKEN = new Config.Secret(stack, "REDIS_TOKEN");
   const REDIS_USER_TOKEN_TTL = new Config.Parameter(stack, "REDIS_USER_TOKEN_TTL", { value: (20 * 60).toString() });
+  const PER_PAGE = new Config.Parameter(stack, "PER_PAGE", {value: (30).toString()});
 
   const bus = new EventBus(stack, "ExtractBus", {
     rules: {
@@ -39,7 +40,7 @@ export function ExtractStack({ stack }: StackContext) {
     defaults: {
       retries: 10,
       function: {
-        bind: [DATABASE_URL, CLERK_SECRET_KEY, DATABASE_AUTH_TOKEN, REDIS_URL, REDIS_TOKEN, REDIS_USER_TOKEN_TTL],
+        bind: [DATABASE_URL, CLERK_SECRET_KEY, DATABASE_AUTH_TOKEN, REDIS_URL, REDIS_TOKEN, REDIS_USER_TOKEN_TTL, PER_PAGE],
         runtime: "nodejs18.x",
       },
     },
@@ -60,7 +61,8 @@ export function ExtractStack({ stack }: StackContext) {
         DATABASE_URL,
         CLERK_SECRET_KEY,
         DATABASE_AUTH_TOKEN,
-        REDIS_URL, REDIS_TOKEN, REDIS_USER_TOKEN_TTL
+        REDIS_URL, REDIS_TOKEN, REDIS_USER_TOKEN_TTL,
+        PER_PAGE
       ],
       handler: "src/extract/queue.handler",
     },

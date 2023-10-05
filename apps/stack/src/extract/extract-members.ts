@@ -27,7 +27,7 @@ export const memberSenderHandler = createMessageHandler({
   handler: async (message) => {
     await extractMembersPage({
       namespace: message.content.namespace,
-      paginationInfo: message.content.pagination,
+      paginationInput: message.content.pagination,
       repository: message.content.repository,
       sourceControl: message.metadata.sourceControl,
       userId: message.metadata.userId,
@@ -66,24 +66,22 @@ type ExtractMembersPageInput = {
   repository: Repository;
   sourceControl: "github" | "gitlab";
   userId: string;
-  paginationInfo?: Pagination;
+  paginationInput: Pick<Pagination, "page" | "perPage">;
   from: Date;
   to: Date;
 }
 
-const extractMembersPage = async ({ namespace, repository, sourceControl, userId, paginationInfo, from, to }: ExtractMembersPageInput) => {
-  const page = paginationInfo?.page;
-  const perPage = paginationInfo?.perPage;
-
+const extractMembersPage = async ({ namespace, repository, sourceControl, userId, paginationInput, from, to }: ExtractMembersPageInput) => {
+  
   context.integrations.sourceControl = await initSourceControl(userId, sourceControl);
 
-  const { members, paginationInfo: resultPaginationInfo } = await getMembers({
+  const { members, paginationInfo } = await getMembers({
     externalRepositoryId: repository.externalId,
     namespaceName: namespace.name,
     repositoryId: repository.id,
     repositoryName: repository.name,
-    perPage: perPage,
-    page: page
+    perPage: paginationInput.perPage, // provjeriti ovo,da li je ovo nesto sto moze API da mijenja (procitati docs)
+    page: paginationInput.page
   }, context);
 
   await extractMembersEvent.publish({
@@ -99,7 +97,7 @@ const extractMembersPage = async ({ namespace, repository, sourceControl, userId
   });
 
 
-  return { members, pagination: resultPaginationInfo };
+  return { members, pagination: paginationInfo };
 };
 
 export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
@@ -114,8 +112,12 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
     repository: repository,
     sourceControl: ev.metadata.sourceControl,
     userId: ev.metadata.userId,
+    paginationInput: {
+      page: 1,
+      perPage: Number(Config.PER_PAGE),
+    },
     from: ev.metadata.from,
-    to: ev.metadata.to
+    to: ev.metadata.to,
   });
 
   const arrayOfExtractMemberPageMessageContent: { repository: Repository, namespace: Namespace, pagination: Pagination }[] = [];

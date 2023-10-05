@@ -28,7 +28,8 @@ export const mergeRequestDiffSenderHandler = createMessageHandler({
     await getMergeRequestsDiffs({
       mergeRequestId,
       repositoryId,
-      namespaceId
+      namespaceId,
+      perPage: Number(Config.PER_PAGE),
     }, context);
   }
 });

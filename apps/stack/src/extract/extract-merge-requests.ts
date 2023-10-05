@@ -126,7 +126,7 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (evt) => 
       namespaceName: namespace.name,
       repositoryName: repository.name,
       repositoryId: repository.id,
-      perPage: 10,
+      perPage: Number(Config.PER_PAGE),
       timePeriod,
     }, context,
   );

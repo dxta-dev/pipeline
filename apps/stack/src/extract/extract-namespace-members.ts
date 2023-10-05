@@ -27,7 +27,7 @@ export const namespaceMemberSenderHandler = createMessageHandler({
   handler: async (message) => {
     await extractNamespaceMembersPage({
       namespace: message.content.namespace,
-      paginationInfo: message.content.pagination,
+      paginationInput: message.content.pagination,
       repositoryId: message.content.repositoryId,
       sourceControl: message.metadata.sourceControl,
       userId: message.metadata.userId,
@@ -75,23 +75,21 @@ type ExtractNamespaceMembersPageInput = {
   repositoryId: Repository['id'];
   sourceControl: "github" | "gitlab";
   userId: string;
-  paginationInfo?: Pagination;
+  paginationInput: Pick<Pagination, "page" | "perPage">;
   from: Date;
   to: Date;
 }
 
-const extractNamespaceMembersPage = async ({ namespace, repositoryId, sourceControl, userId, paginationInfo, from, to }: ExtractNamespaceMembersPageInput) => {
-  const page = paginationInfo?.page;
-  const perPage = paginationInfo?.perPage;
+const extractNamespaceMembersPage = async ({ namespace, repositoryId, sourceControl, userId, paginationInput, from, to }: ExtractNamespaceMembersPageInput) => {
 
   context.integrations.sourceControl = await initSourceControl(userId, sourceControl);
 
-  const { members, paginationInfo: resultPaginationInfo } = await getNamespaceMembers({
+  const { members, paginationInfo } = await getNamespaceMembers({
     externalNamespaceId: namespace.externalId,
     namespaceName: namespace.name,
     repositoryId,
-    perPage: perPage,
-    page: page
+    perPage: paginationInput.perPage,
+    page: paginationInput.page
   }, context);
 
   await extractMembersEvent.publish({
@@ -107,7 +105,7 @@ const extractNamespaceMembersPage = async ({ namespace, repositoryId, sourceCont
   });
 
 
-  return { members, pagination: resultPaginationInfo };
+  return { members, pagination: paginationInfo };
 };
 
 export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
@@ -122,6 +120,10 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
     repositoryId: ev.properties.repositoryId,
     sourceControl: ev.metadata.sourceControl,
     userId: ev.metadata.userId,
+    paginationInput: {
+      page: 1,
+      perPage: Number(Config.PER_PAGE), 
+    },
     from: ev.metadata.from,
     to: ev.metadata.to,
   });
