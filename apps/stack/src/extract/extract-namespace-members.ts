@@ -90,7 +90,7 @@ const extractNamespaceMembersPage = async ({ namespace, repositoryId, sourceCont
     externalNamespaceId: namespace.externalId,
     namespaceName: namespace.name,
     repositoryId,
-    perPage: perPage,
+    perPage: perPage || Number(Config.PER_PAGE),
     page: page
   }, context);
 

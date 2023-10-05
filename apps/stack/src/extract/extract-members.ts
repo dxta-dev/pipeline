@@ -82,7 +82,7 @@ const extractMembersPage = async ({ namespace, repository, sourceControl, userId
     namespaceName: namespace.name,
     repositoryId: repository.id,
     repositoryName: repository.name,
-    perPage: perPage,
+    perPage: perPage || Number(Config.PER_PAGE), // provjeriti ovo,da li je ovo nesto sto moze API da mijenja (procitati docs)
     page: page
   }, context);
 
