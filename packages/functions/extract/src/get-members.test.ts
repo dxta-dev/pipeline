@@ -29,7 +29,7 @@ beforeAll(async () => {
 
   await migrate(db, { migrationsFolder: "../../../migrations/extract" });
 
-  fetchMembers = jest.fn((externalRepositoryId, namespaceName, repositoryName, page?: number, perPage?: number) => {
+  fetchMembers = jest.fn((externalRepositoryId, namespaceName, repositoryName, perPage: number, page?: number) => {
     switch (externalRepositoryId) {
       case 1000:
         return Promise.resolve({
@@ -38,7 +38,7 @@ beforeAll(async () => {
           ],
           pagination: {
             page: page || 1,
-            perPage: perPage || 30,
+            perPage,
             totalPages: 1,
           }
         }) satisfies ReturnType<SourceControl['fetchMembers']>;
@@ -72,6 +72,7 @@ describe('get-members:', () => {
         namespaceName: '',
         repositoryName: '',
         repositoryId: 2000,
+        perPage: 1000
       }, context);
 
       expect(members).toBeDefined();

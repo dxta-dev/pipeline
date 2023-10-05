@@ -6,7 +6,7 @@ import { createClient } from '@libsql/client';
 import { describe, expect, test } from '@jest/globals';
 import { getMergeRequests } from './get-merge-requests';
 
-import { mergeRequests } from '@acme/extract-schema';
+import { type NewMergeRequest, mergeRequests } from '@acme/extract-schema';
 import type { Context } from './config';
 import type { GetMergeRequestsSourceControl, GetMergeRequestsEntities } from './get-merge-requests';
 import type { SourceControl, TimePeriod } from '@acme/source-control';
@@ -27,7 +27,7 @@ beforeAll(async () => {
 
   await migrate(db, { migrationsFolder: "../../../migrations/extract" });
 
-  fetchMergeRequests = jest.fn((externalRepositoryId: number, namespaceName:string, repositoryName: string, repositoryId: number, timePeriod?: TimePeriod, page?: number, perPage?: number) => {
+  fetchMergeRequests = jest.fn((externalRepositoryId: number, namespaceName:string, repositoryName: string, repositoryId: number, perPage: number, timePeriod?: TimePeriod, page?: number) => {
 
     const mergeRequestArray = [{ 
       externalId: 2000, 
@@ -53,7 +53,7 @@ beforeAll(async () => {
       state: 'open',
       title: 'Merge Request 2001',
       webUrl: 'https://gitlab.com/acme/merge-requests/2001',
-    }];
+    }] satisfies NewMergeRequest[];
 
     let filteredArray = [];
     
@@ -79,7 +79,7 @@ beforeAll(async () => {
           }],
           pagination: {
             page: page || 1,
-            perPage: perPage || 40,
+            perPage,
             totalPages: 1,
           },
         }) satisfies ReturnType<SourceControl['fetchMergeRequests']>;
@@ -88,7 +88,7 @@ beforeAll(async () => {
           mergeRequests: filteredArray,
           pagination: {
             page: page || 1,
-            perPage: perPage || 40,
+            perPage,
             totalPages: 1,
           },
         }) satisfies ReturnType<SourceControl['fetchMergeRequests']>;
@@ -117,7 +117,7 @@ afterAll(() => {
 describe('get-merge-request:', () => {
   describe('getMergeRequests', () => {
     test('should create insert merge request data in the database', async () => {
-      const { mergeRequests, paginationInfo } = await getMergeRequests({ externalRepositoryId: 2000, namespaceName: '', repositoryName: '', repositoryId: 2000}, context);
+      const { mergeRequests, paginationInfo } = await getMergeRequests({ externalRepositoryId: 2000, namespaceName: '', repositoryName: '', repositoryId: 2000, perPage: 1000}, context);
 
       expect(mergeRequests).toBeDefined();
       expect(paginationInfo).toBeDefined();
@@ -135,7 +135,7 @@ describe('get-merge-request:', () => {
       // Cleared the database just to have the data for this test
       await db.delete(context.entities.mergeRequests).run();
       
-      const { mergeRequests, paginationInfo } = await getMergeRequests({ externalRepositoryId: 2000, namespaceName: '', repositoryName: '', repositoryId: 2000, timePeriod: { from: new Date('2021-01-01'), to: new Date('2021-01-31')} }, context);
+      const { mergeRequests, paginationInfo } = await getMergeRequests({ externalRepositoryId: 2000, namespaceName: '', repositoryName: '', repositoryId: 2000, timePeriod: { from: new Date('2021-01-01'), to: new Date('2021-01-31')}, perPage: 1000 }, context);
 
       expect(mergeRequests).toBeDefined();
       expect(paginationInfo).toBeDefined();

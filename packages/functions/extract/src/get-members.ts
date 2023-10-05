@@ -8,7 +8,7 @@ export type GetMembersInput = {
   repositoryName: string;
   repositoryId: number;
   page?: number;
-  perPage?: number;
+  perPage: number;
 };
 
 export type GetMembersOutput = {
@@ -30,8 +30,8 @@ export const getMembers: GetMembersFunction = async (
     throw new Error("Source control integration not configured");
   }
 
-  const { members, pagination } = await integrations.sourceControl.fetchMembers(externalRepositoryId, namespaceName, repositoryName, page, perPage);
-
+  const { members, pagination } = await integrations.sourceControl.fetchMembers(externalRepositoryId, namespaceName, repositoryName, perPage, page);
+ 
   // TODO: Deki is a wizard
   const insertedMembers = await db.transaction(async (tx) => {
     return Promise.all(members.map(member =>

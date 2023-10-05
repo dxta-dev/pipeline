@@ -7,7 +7,7 @@ export type GetNamespaceMembersInput = {
   namespaceName: string;
   repositoryId: number;
   page?: number;
-  perPage?: number;
+  perPage: number;
 };
 
 export type GetNamespaceMembersOutput = {
@@ -30,7 +30,7 @@ export const getNamespaceMembers: GetNamespaceMembersFunction = async (
   }
 
 
-  const { members, pagination } = await integrations.sourceControl.fetchNamespaceMembers(externalNamespaceId, namespaceName, page, perPage);
+  const { members, pagination } = await integrations.sourceControl.fetchNamespaceMembers(externalNamespaceId, namespaceName, perPage, page);
 
   // TODO: Deki is not a wizard
   const insertedMembers = await db.transaction(async (tx) => {

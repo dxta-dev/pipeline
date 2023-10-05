@@ -34,7 +34,7 @@ beforeAll(async () => {
   await db.insert(namespaces).values([TEST_NAMESPACE_1]).run();
   await db.insert(mergeRequests).values([TEST_MERGE_REQUEST_1]).run();
 
-  fetchMergeRequestDiffs = jest.fn((repository: Repository, namespace: Namespace, mergeRequest: MergeRequest, page?: number, perPage?: number): ReturnType<GetMergeRequestDiffsSourceControl['fetchMergeRequestDiffs']> => {
+  fetchMergeRequestDiffs = jest.fn((repository: Repository, namespace: Namespace, mergeRequest: MergeRequest, perPage: number, page?: number): ReturnType<GetMergeRequestDiffsSourceControl['fetchMergeRequestDiffs']> => {
     switch (mergeRequest.externalId) {
       case 3000:
         return Promise.resolve({
@@ -64,7 +64,7 @@ beforeAll(async () => {
           ],
           pagination: {
             page: page || 1,
-            perPage: perPage || 40,
+            perPage,
             totalPages: 1
           }
         });
@@ -99,6 +99,7 @@ describe('get-merge-request-diffs:', () => {
         mergeRequestId: TEST_MERGE_REQUEST_1.id,
         namespaceId: TEST_NAMESPACE_1.id,
         repositoryId: TEST_REPO_1.id,
+        perPage: 1000,
       }, context);
 
       expect(mergeRequestDiffs).toBeDefined();

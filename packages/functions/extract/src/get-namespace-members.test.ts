@@ -33,7 +33,7 @@ beforeAll(async () => {
     forgeType: 'github',
   }).run();
 
-  fetchNamespaceMembers = jest.fn((_externalNamespaceId, namespaceName, page?: number, perPage?: number) => {
+  fetchNamespaceMembers = jest.fn((_externalNamespaceId, namespaceName, perPage: number, page?: number ) => {
     switch (namespaceName) {
       case 'crocoder-dev':
         return Promise.resolve({
@@ -42,7 +42,7 @@ beforeAll(async () => {
           ],
           pagination: {
             page: page || 1,
-            perPage: perPage || 30,
+            perPage,
             totalPages: 1,
           }
         }) satisfies ReturnType<SourceControl['fetchNamespaceMembers']>;
@@ -77,6 +77,7 @@ describe('get-namespace-members:', () => {
         externalNamespaceId: 1000,
         namespaceName: 'crocoder-dev',
         repositoryId: 1,
+        perPage: 1000
       }, context);
 
       expect(members).toBeDefined();
