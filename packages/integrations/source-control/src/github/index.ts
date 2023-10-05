@@ -76,9 +76,8 @@ export class GitHubSourceControl implements SourceControl {
     }
   }
 
-  async fetchNamespaceMembers(_externalNamespaceId: number, namespaceName: string, page?: number, perPage?: number): Promise<{ members: NewMember[], pagination: Pagination }> {
+  async fetchNamespaceMembers(_externalNamespaceId: number, namespaceName: string, perPage: number, page?: number): Promise<{ members: NewMember[], pagination: Pagination }> {
     page = page || 1;
-    perPage = perPage || 30;
 
     const result = await this.api.orgs.listMembers({
       org: namespaceName,
@@ -129,9 +128,8 @@ export class GitHubSourceControl implements SourceControl {
     }
   }
 
-  async fetchMembers(externalRepositoryId: number, namespaceName: string, repositoryName: string, page?: number, perPage?: number): Promise<{ members: NewMember[], pagination: Pagination }> {
+  async fetchMembers(externalRepositoryId: number, namespaceName: string, repositoryName: string, perPage: number, page?: number): Promise<{ members: NewMember[], pagination: Pagination }> {
     page = page || 1;
-    perPage = perPage || 30;
 
     const result = await this.api.repos.listCollaborators({
       owner: namespaceName,
@@ -163,10 +161,8 @@ export class GitHubSourceControl implements SourceControl {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async fetchMergeRequests(externalRepositoryId: number, namespaceName: string, repositoryName: string, repositoryId: number, creationPeriod?: TimePeriod, page?: number, perPage?: number, totalPages?: number): Promise<{ mergeRequests: NewMergeRequest[]; pagination: Pagination; }> {
+  async fetchMergeRequests(externalRepositoryId: number, namespaceName: string, repositoryName: string, repositoryId: number, perPage: number, creationPeriod?: TimePeriod, page?: number, totalPages?: number): Promise<{ mergeRequests: NewMergeRequest[]; pagination: Pagination; }> {
     page = page || 1;
-    perPage = perPage || 30;
-
     const serchPRs = async (namespaceName: string, repositoryName: string, page: number, perPage: number, from: Date, to: Date | 'today') => {
       let updated;
 
@@ -232,7 +228,6 @@ export class GitHubSourceControl implements SourceControl {
       totalPages,
       timePeriod: creationPeriod,
     });
-
     const result = await this.api.pulls.list({
       owner: namespaceName,
       repo: repositoryName,
@@ -246,10 +241,11 @@ export class GitHubSourceControl implements SourceControl {
     const linkHeader = parseLinkHeader(result.headers.link) || { next: { per_page: perPage } };
 
     const pullsTotalPages = (!('last' in linkHeader)) ? page : Number(linkHeader.last?.page);
-
+    const pullsPerPage =  ('next' in linkHeader) ? Number(linkHeader.next?.per_page) : Number(linkHeader.prev?.per_page);
+    
     const pagination = {
-      page,
-      perPage: ('next' in linkHeader) ? Number(linkHeader.next?.per_page) : Number(linkHeader.prev?.per_page),
+      page: firstPagePagination?.page || page,
+      perPage: perPage || firstPagePagination?.perPage || pullsPerPage, // Dejan: This can break if firstPagePagination returns different perPage -> check documentation on linkHeader ???
       totalPages: totalPages || firstPagePagination?.totalPages || pullsTotalPages,
     } satisfies Pagination;
     return {
@@ -273,9 +269,8 @@ export class GitHubSourceControl implements SourceControl {
     }
   }
 
-  async fetchMergeRequestDiffs(repository: Repository, namespace: Namespace, mergeRequest: MergeRequest, page?: number, perPage?: number): Promise<{ mergeRequestDiffs: NewMergeRequestDiff[], pagination: Pagination }> {
+  async fetchMergeRequestDiffs(repository: Repository, namespace: Namespace, mergeRequest: MergeRequest, perPage: number, page?: number ): Promise<{ mergeRequestDiffs: NewMergeRequestDiff[], pagination: Pagination }> {
     page = page || 1;
-    perPage = perPage || 30;
 
     const result = await this.api.pulls.listFiles({
       owner: namespace.name,
