@@ -1,6 +1,8 @@
-#!/usr/bin/env bun
-/* eslint-disable turbo/no-undeclared-env-vars */
+#!/usr/bin/env node
+import dotenv from "dotenv";
+dotenv.config();
 import { createClient } from "@libsql/client";
+/**@typedef {import("@libsql/client").Client} LibSQLClient*/
 import { drizzle } from "drizzle-orm/libsql";
 import { migrate } from "drizzle-orm/libsql/migrator";
 import fs from "fs";
@@ -10,21 +12,22 @@ if (process.env.NODE_ENV === 'production') {
   process.exit(-1);
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const [nodePath, execPath, command] = process.argv;
+const [command] = process.argv.slice(2);
 
 const fingersCrossedMode = command === 'fingers-crossed';
 const yoloMode = command === 'yolo';
 const noMigrationMode = !fingersCrossedMode && !yoloMode;
 
-type MigrationState = {
-  files: string[];
-}
+/**
+ * @typedef MigrationState
+ * @property {string[]} files
+ */
 
-const selectTablesFromDatabase = async (client: ReturnType<typeof createClient>) => {
-  const resultSet = await client.execute("SELECT name FROM sqlite_schema WHERE type in ('table')")
-  const allTableNames = resultSet.rows.map(row => row.name as string);
-  const shouldIgnoreTable = (tableName: string) =>
+const selectTablesFromDatabase = async (/**@type {LibSQLClient}*/client) => {
+  const resultSet = await client.execute("SELECT name FROM sqlite_schema WHERE type in ('table')");
+  const allTableNames = resultSet.rows.map(row => /**@type {string}*/(row.name));
+
+  const shouldIgnoreTable = (/**@type {string}*/tableName) =>
     tableName.startsWith("libsql_") ||
     tableName.startsWith("_") && tableName !== "__drizzle_migrations"
     ;
@@ -34,7 +37,8 @@ const selectTablesFromDatabase = async (client: ReturnType<typeof createClient>)
 
   return allTableNames.filter(name => !shouldIgnoreTable(name));
 }
-const dropAllDatabaseTables = async (client: ReturnType<typeof createClient>) => {
+
+const dropAllDatabaseTables = async (/**@type {LibSQLClient}*/client) => {
   const tableNames = await selectTablesFromDatabase(client);
   if (tableNames.length === 1) return console.log('No tables to drop...');
   for (const tableName of tableNames) {
@@ -47,16 +51,21 @@ const dropAllDatabaseTables = async (client: ReturnType<typeof createClient>) =>
     }
   }
 }
-const upstreamMigrationStatePath = (databaseId: string) => `scripts/out/${databaseId}-migrations.upstream-ref.json`;
-const upstreamMigrationStateExists = (databaseId: string) => fs.existsSync(upstreamMigrationStatePath(databaseId));
-const readUpstreamMigrationState = (databaseId: string) => upstreamMigrationStateExists(databaseId) ? JSON.parse(fs.readFileSync(upstreamMigrationStatePath(databaseId), { encoding: 'utf8' })) as MigrationState : undefined;
-const writeUpstreamMigrationState = (databaseId: string, files: string[]) => fs.writeFileSync(upstreamMigrationStatePath(databaseId), JSON.stringify({ files } satisfies MigrationState));
-const hasMigrationStateDesynced = (migrationState: MigrationState, files: string[]) => !!migrationState.files.find((file, index) => files.indexOf(file) !== index);
-const isMigrationStateEqual = (migrationState: MigrationState, files: string[]) => !files.find((file, index) => migrationState.files.indexOf(file) !== index);
+const upstreamMigrationStatePath = (/**@type {string}*/databaseId) => `scripts/out/${databaseId}-migrations.upstream-ref.json`;
+const upstreamMigrationStateExists = (/**@type {string}*/databaseId) => fs.existsSync(upstreamMigrationStatePath(databaseId));
+const readUpstreamMigrationState = (/**@type {string}*/databaseId) => upstreamMigrationStateExists(databaseId) ? /**@type {MigrationState}*/(JSON.parse(fs.readFileSync(upstreamMigrationStatePath(databaseId), { encoding: 'utf8' }))) : undefined;
+const writeUpstreamMigrationState = (/**@type {string}*/databaseId, /**@type {string[]}*/files) => fs.writeFileSync(upstreamMigrationStatePath(databaseId), JSON.stringify({ files }));
+const hasMigrationStateDesynced = (/**@type {MigrationState}*/migrationState, /**@type {string[]}*/files) => !!migrationState.files.find((file, index) => files.indexOf(file) !== index);
+const isMigrationStateEqual = (/**@type {MigrationState}*/migrationState, /**@type {string[]}*/files) => !files.find((file, index) => migrationState.files.indexOf(file) !== index);
 
 const maybeOutDirAlreadyExistsMaybeNot = () => fs.existsSync('scripts/out') || fs.mkdirSync('scripts/out');
 
-const tryMigrateDatabase = async (databaseId: string, dbUrl: string | undefined, dbToken: string | undefined) => {
+/**
+ * @param {string} databaseId 
+ * @param {string} [dbUrl] 
+ * @param {string} [dbToken] 
+ */
+const tryMigrateDatabase = async (databaseId, dbUrl, dbToken) => {
   console.log(`Migrating db '${databaseId}' ...`);
 
   const localMigrationFiles = fs.readdirSync(`migrations/${databaseId}`).filter(file => file !== 'meta').sort();
