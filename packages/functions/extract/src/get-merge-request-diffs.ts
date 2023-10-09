@@ -1,7 +1,7 @@
 import type { MergeRequestDiff } from "@acme/extract-schema";
 import type { ExtractFunction, Entities } from "./config";
 import type { Pagination, SourceControl } from "@acme/source-control";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 
 export type GetMergeRequestDiffsInput = {
   repositoryId: number;
@@ -54,7 +54,7 @@ export const getMergeRequestsDiffs: GetMergeRequestDiffsFunction = async (
             newFile: mergeRequestDiff.newFile,
             renamedFile: mergeRequestDiff.renamedFile,
             deletedFile: mergeRequestDiff.deletedFile,
-            _updatedAt: new Date(),
+            _updatedAt: sql`(strftime('%s', 'now'))`,
           }
         })
         .returning()

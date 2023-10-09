@@ -1,6 +1,7 @@
 import type { MergeRequest } from "@acme/extract-schema";
 import type { ExtractFunction, Entities } from "./config";
 import type { Pagination, SourceControl, TimePeriod } from "@acme/source-control";
+import { sql } from "drizzle-orm";
 
 export type GetMergeRequestsInput = {
   externalRepositoryId: number;
@@ -38,7 +39,7 @@ export const getMergeRequests: GetMergeRequestsFunction = async (
   const insertedMergeRequests = await db.transaction(async (tx) => {
     return Promise.all(mergeRequests.map(mergeRequest =>
       tx.insert(entities.mergeRequests).values(mergeRequest)
-        .onConflictDoUpdate({ target: [entities.mergeRequests.externalId, entities.mergeRequests.repositoryId], set: { _updatedAt: new Date() } })
+        .onConflictDoUpdate({ target: [entities.mergeRequests.externalId, entities.mergeRequests.repositoryId], set: { _updatedAt: sql`(strftime('%s', 'now'))` } })
         .returning()
         .get()
     ))
