@@ -11,8 +11,8 @@
     "lint": "eslint . && echo \"✔ No ESLint warnings or errors\""
   },
   "devDependencies": {
-    "@jest/globals": "^29.6.4",
-    "@types/jest": "^29.5.4",
+    "@jest/globals": "^29.7.0",
+    "@types/jest": "^29.5.5",
     "drizzle-kit": "^0.19.13",
     "ts-jest": "^29.1.1",
     "ts-node": "^10.9.1"
