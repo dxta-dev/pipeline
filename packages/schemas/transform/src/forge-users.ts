@@ -10,8 +10,8 @@ export const forgeUsers = sqliteTable('forge_users', {
   // TODO: tenantId: integer('tenant_id').notNull(),
   name: text('name').notNull(),
   // TODO: url: text('url').notNull(),
-  _createdAt: integer('__created_at', { mode: 'timestamp_ms' }).default(sql`CURRENT_TIMESTAMP`),
-  _updatedAt: integer('__updated_at', { mode: 'timestamp_ms' }).default(sql`CURRENT_TIMESTAMP`),
+  _createdAt: integer('__created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
+  _updatedAt: integer('__updated_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
 }, (forgeUsers) => ({
   uniqueExternalIdForgeTypeIndex: uniqueIndex('forge_users_external_id_forge_type_idx').on(forgeUsers.externalId, forgeUsers.forgeType)
 }));

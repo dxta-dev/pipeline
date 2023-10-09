@@ -22,8 +22,8 @@ export const mergeRequestReports = sqliteTable('merge_request_reports', {
   approved: integer('approved', { mode: 'boolean' }).default(false),
   reviewDepth: integer('review_depth').notNull(),
   // Meta
-  _createdAt: integer('__created_at', { mode: 'timestamp_ms' }).default(sql`CURRENT_TIMESTAMP`),
-  _updatedAt: integer('__updated_at', { mode: 'timestamp_ms' }).default(sql`CURRENT_TIMESTAMP`),
+  _createdAt: integer('__created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
+  _updatedAt: integer('__updated_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
 });
 
 export type MergeRequestReport = InferSelectModel<typeof mergeRequestReports>;

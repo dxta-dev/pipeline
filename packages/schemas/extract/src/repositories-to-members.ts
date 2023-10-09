@@ -5,8 +5,8 @@ import { sqliteTable, integer, primaryKey } from 'drizzle-orm/sqlite-core';
 export const repositoriesToMembers = sqliteTable('repositories_to_members', {
   repositoryId: integer('repository_id').notNull(),
   memberId: integer('member_id').notNull(),
-  _createdAt: integer('__created_at', { mode: 'timestamp_ms' }).default(sql`CURRENT_TIMESTAMP`),
-  _updatedAt: integer('__updated_at', { mode: 'timestamp_ms' }).default(sql`CURRENT_TIMESTAMP`),
+  _createdAt: integer('__created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
+  _updatedAt: integer('__updated_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
 }, (repositoriesToMembers) => ({
   pk: primaryKey(repositoriesToMembers.repositoryId, repositoriesToMembers.memberId)
 }));
