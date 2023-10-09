@@ -229,7 +229,7 @@ export class GitHubSourceControl implements SourceControl {
       return result.data.total_count;
     }
 
-    const oneDayBeforePeriodFrom = creationPeriod.from;
+    const oneDayBeforePeriodFrom = new Date(creationPeriod.from.getTime() - (24 * 60 * 60 * 1000));
 
     const [totalPullRequestsCount, skipPullRequestsCount] = await Promise.all([
       countPullRequestsAfter(namespaceName, repositoryName, oneDayBeforePeriodFrom),
