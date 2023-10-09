@@ -3,8 +3,8 @@ CREATE TABLE `git_identities` (
 	`repository_id` integer NOT NULL,
 	`email` text NOT NULL,
 	`name` text NOT NULL,
-	`__created_at` integer DEFAULT CURRENT_TIMESTAMP,
-	`__updated_at` integer DEFAULT CURRENT_TIMESTAMP
+	`__created_at` integer DEFAULT (strftime('%s', 'now')),
+	`__updated_at` integer DEFAULT (strftime('%s', 'now'))
 );
 --> statement-breakpoint
 CREATE TABLE `members` (
@@ -14,8 +14,9 @@ CREATE TABLE `members` (
 	`name` text,
 	`username` text NOT NULL,
 	`email` text,
-	`__created_at` integer DEFAULT CURRENT_TIMESTAMP,
-	`__updated_at` integer DEFAULT CURRENT_TIMESTAMP
+	`extractedSource` integer,
+	`__created_at` integer DEFAULT (strftime('%s', 'now')),
+	`__updated_at` integer DEFAULT (strftime('%s', 'now'))
 );
 --> statement-breakpoint
 CREATE TABLE `merge_request_commits` (
@@ -31,8 +32,8 @@ CREATE TABLE `merge_request_commits` (
 	`author_email` text NOT NULL,
 	`committer_name` text,
 	`committer_email` text,
-	`__created_at` integer DEFAULT CURRENT_TIMESTAMP,
-	`__updated_at` integer DEFAULT CURRENT_TIMESTAMP
+	`__created_at` integer DEFAULT (strftime('%s', 'now')),
+	`__updated_at` integer DEFAULT (strftime('%s', 'now'))
 );
 --> statement-breakpoint
 CREATE TABLE `merge_request_diffs` (
@@ -46,8 +47,8 @@ CREATE TABLE `merge_request_diffs` (
 	`renamed_file` integer NOT NULL,
 	`deleted_file` integer NOT NULL,
 	`diff` text NOT NULL,
-	`__created_at` integer DEFAULT CURRENT_TIMESTAMP,
-	`__updated_at` integer DEFAULT CURRENT_TIMESTAMP
+	`__created_at` integer DEFAULT (strftime('%s', 'now')),
+	`__updated_at` integer DEFAULT (strftime('%s', 'now'))
 );
 --> statement-breakpoint
 CREATE TABLE `merge_request_notes` (
@@ -58,8 +59,8 @@ CREATE TABLE `merge_request_notes` (
 	`updated_at` integer NOT NULL,
 	`author_username` text NOT NULL,
 	`author_external_id` integer NOT NULL,
-	`__created_at` integer DEFAULT CURRENT_TIMESTAMP,
-	`__updated_at` integer DEFAULT CURRENT_TIMESTAMP
+	`__created_at` integer DEFAULT (strftime('%s', 'now')),
+	`__updated_at` integer DEFAULT (strftime('%s', 'now'))
 );
 --> statement-breakpoint
 CREATE TABLE `merge_requests` (
@@ -77,8 +78,8 @@ CREATE TABLE `merge_requests` (
 	`state` text,
 	`target_branch` text,
 	`source_branch` text,
-	`__created_at` integer DEFAULT CURRENT_TIMESTAMP,
-	`__updated_at` integer DEFAULT CURRENT_TIMESTAMP
+	`__created_at` integer DEFAULT (strftime('%s', 'now')),
+	`__updated_at` integer DEFAULT (strftime('%s', 'now'))
 );
 --> statement-breakpoint
 CREATE TABLE `namespaces` (
@@ -86,8 +87,8 @@ CREATE TABLE `namespaces` (
 	`external_id` integer NOT NULL,
 	`forge_type` integer NOT NULL,
 	`name` text NOT NULL,
-	`__created_at` integer DEFAULT CURRENT_TIMESTAMP,
-	`__updated_at` integer DEFAULT CURRENT_TIMESTAMP
+	`__created_at` integer DEFAULT (strftime('%s', 'now')),
+	`__updated_at` integer DEFAULT (strftime('%s', 'now'))
 );
 --> statement-breakpoint
 CREATE TABLE `repositories` (
@@ -95,15 +96,15 @@ CREATE TABLE `repositories` (
 	`external_id` integer NOT NULL,
 	`forge_type` integer NOT NULL,
 	`name` text NOT NULL,
-	`__created_at` integer DEFAULT CURRENT_TIMESTAMP,
-	`__updated_at` integer DEFAULT CURRENT_TIMESTAMP
+	`__created_at` integer DEFAULT (strftime('%s', 'now')),
+	`__updated_at` integer DEFAULT (strftime('%s', 'now'))
 );
 --> statement-breakpoint
 CREATE TABLE `repositories_to_members` (
 	`repository_id` integer NOT NULL,
 	`member_id` integer NOT NULL,
-	`__created_at` integer DEFAULT CURRENT_TIMESTAMP,
-	`__updated_at` integer DEFAULT CURRENT_TIMESTAMP,
+	`__created_at` integer DEFAULT (strftime('%s', 'now')),
+	`__updated_at` integer DEFAULT (strftime('%s', 'now')),
 	PRIMARY KEY(`member_id`, `repository_id`)
 );
 --> statement-breakpoint
