@@ -38,7 +38,7 @@ export const getMergeRequests: GetMergeRequestsFunction = async (
   const insertedMergeRequests = await db.transaction(async (tx) => {
     return Promise.all(mergeRequests.map(mergeRequest =>
       tx.insert(entities.mergeRequests).values(mergeRequest)
-        .onConflictDoUpdate({ target: [entities.mergeRequests.externalId, entities.mergeRequests.repositoryId], set: { updatedAt: new Date() } })
+        .onConflictDoUpdate({ target: [entities.mergeRequests.externalId, entities.mergeRequests.repositoryId], set: { _updatedAt: new Date() } })
         .returning()
         .get()
     ))
