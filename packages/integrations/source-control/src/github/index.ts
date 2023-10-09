@@ -161,78 +161,15 @@ export class GitHubSourceControl implements SourceControl {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async fetchMergeRequests(externalRepositoryId: number, namespaceName: string, repositoryName: string, repositoryId: number, perPage: number, creationPeriod?: TimePeriod, page?: number, totalPages?: number): Promise<{ mergeRequests: NewMergeRequest[]; pagination: Pagination; }> {
-    page = page || 1;
-    const serchPRs = async (namespaceName: string, repositoryName: string, page: number, perPage: number, from: Date, to: Date | 'today') => {
-      let updated;
+  async fetchMergeRequestsPage(owner: string, repo: string, repositoryId: number, page: number, perPage: number): Promise<{ mergeRequests: NewMergeRequest[], pagination: Pagination }> {
 
-      if (to === 'today') {
-        updated = `>${from.toISOString().slice(0, 10)}`;
-      } else {
-        updated = `${from.toISOString().slice(0, 10)}..${to.toISOString().slice(0, 10)}`;
-      }
+    console.log("### PAGE", page);
 
-      const searchResult = await this.api.rest.search.issuesAndPullRequests({
-        q: `type:pr+repo:${namespaceName}/${repositoryName}+updated:${updated}`,
-        page,
-        per_page: perPage,
-        state: "all",
-        sort: 'updated',
-      });
-
-      const linkHeader = parseLinkHeader(searchResult.headers.link);
-
-      return {
-        totalCount: searchResult.data.total_count,
-        lastPage: linkHeader?.last?.page,
-        perPage: linkHeader?.next?.per_page,
-      }
-    }
-
-
-    async function getPagination({ page, perPage, totalPages, timePeriod }: { page: number, perPage: number, totalPages?: number, timePeriod?: TimePeriod }) {
-
-      if (totalPages || !timePeriod) return null;
-
-      const searchPRsResult = await serchPRs(namespaceName, repositoryName, page, perPage, timePeriod.from, timePeriod.to);
-
-      function isToday(date: Date) {
-        const today = new Date();
-        return date.getDate() === today.getDate() &&
-          date.getMonth() === today.getMonth() &&
-          date.getFullYear() === today.getFullYear();
-      }
-
-      if (isToday(timePeriod.to)) {
-        return {
-          page,
-          totalPages: searchPRsResult.lastPage ? Number(searchPRsResult.lastPage) : page,
-          perPage: searchPRsResult.perPage ? Number(searchPRsResult.perPage) : perPage,
-        };
-      }
-      const searchOffsetResult = await serchPRs(namespaceName, repositoryName, page, perPage, timePeriod.from, 'today');
-
-      const calcPerPage = searchOffsetResult.perPage ? Number(searchOffsetResult.perPage) : perPage;
-
-      return {
-        page: page + Math.floor((searchOffsetResult.totalCount - searchPRsResult.totalCount) / calcPerPage),
-        totalPages: searchOffsetResult.lastPage ? Number(searchOffsetResult.lastPage) : page,
-        perPage: calcPerPage,
-      }
-
-    }
-
-    const firstPagePagination = await getPagination({
-      page,
-      perPage,
-      totalPages,
-      timePeriod: creationPeriod,
-    });
     const result = await this.api.pulls.list({
-      owner: namespaceName,
-      repo: repositoryName,
-      page: firstPagePagination?.page || page,
-      per_page: firstPagePagination?.perPage || perPage,
+      owner,
+      repo,
+      page: page,
+      per_page: perPage,
       state: "all",
       sort: 'updated',
       direction: 'desc',
@@ -240,14 +177,12 @@ export class GitHubSourceControl implements SourceControl {
 
     const linkHeader = parseLinkHeader(result.headers.link) || { next: { per_page: perPage } };
 
-    const pullsTotalPages = (!('last' in linkHeader)) ? page : Number(linkHeader.last?.page);
-    const pullsPerPage =  ('next' in linkHeader) ? Number(linkHeader.next?.per_page) : Number(linkHeader.prev?.per_page);
-    
     const pagination = {
-      page: firstPagePagination?.page || page,
-      perPage: perPage || firstPagePagination?.perPage || pullsPerPage, // Dejan: This can break if firstPagePagination returns different perPage -> check documentation on linkHeader ???
-      totalPages: totalPages || firstPagePagination?.totalPages || pullsTotalPages,
+      page,
+      perPage: ('next' in linkHeader) ? Number(linkHeader.next?.per_page) : Number(linkHeader.prev?.per_page),
+      totalPages: (!('last' in linkHeader)) ? page : Number(linkHeader.last?.page)
     } satisfies Pagination;
+
     return {
       mergeRequests: result.data
         .map(mergeRequest => ({
@@ -255,7 +190,7 @@ export class GitHubSourceControl implements SourceControl {
           canonId: mergeRequest.number,
           repositoryId,
           title: mergeRequest.title,
-          webUrl: mergeRequest.html_url,
+          webUrl: mergeRequest.url,
           createdAt: new Date(mergeRequest.created_at),
           updatedAt: new Date(mergeRequest.updated_at),
           mergedAt: mergeRequest.merged_at ? new Date(mergeRequest.merged_at) : undefined,
@@ -269,7 +204,53 @@ export class GitHubSourceControl implements SourceControl {
     }
   }
 
-  async fetchMergeRequestDiffs(repository: Repository, namespace: Namespace, mergeRequest: MergeRequest, perPage: number, page?: number ): Promise<{ mergeRequestDiffs: NewMergeRequestDiff[], pagination: Pagination }> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async fetchMergeRequests(externalRepositoryId: number, namespaceName: string, repositoryName: string, repositoryId: number, perPage: number, creationPeriod?: TimePeriod, page?: number): Promise<{ mergeRequests: NewMergeRequest[]; pagination: Pagination; }> {
+    page = page || 1;
+
+    if (!creationPeriod || page !== 1) return this.fetchMergeRequestsPage(namespaceName, repositoryName, repositoryId, page, perPage);
+
+    const countPullRequestsAfter = async (owner: string, repo: string, after: Date) => {
+      const isToday = (date: Date) => {
+        const today = new Date();
+        return date.getDate() === today.getDate() &&
+          date.getMonth() === today.getMonth() &&
+          date.getFullYear() === today.getFullYear();
+      }
+
+      if (isToday(after)) return 0;
+
+      const result = await this.api.rest.search.issuesAndPullRequests({
+        q: `type:pr+repo:${owner}/${repo}+updated:>${after.toISOString().slice(0, 10)}`,
+      });
+
+      if (result.data.incomplete_results) console.warn(`The current crawl might not read all pull requests.`); // TODO: info about which repository ?
+
+      return result.data.total_count;
+    }
+
+    const oneDayBeforePeriodFrom = creationPeriod.from;
+
+    const [totalPullRequestsCount, skipPullRequestsCount] = await Promise.all([
+      countPullRequestsAfter(namespaceName, repositoryName, oneDayBeforePeriodFrom),
+      countPullRequestsAfter(namespaceName, repositoryName, creationPeriod.to)
+    ]);
+
+    console.log("### FETCHING PRs:", totalPullRequestsCount - skipPullRequestsCount, "Skipping:", skipPullRequestsCount);
+    console.log("### skip", skipPullRequestsCount, "typeof skip", typeof skipPullRequestsCount, "perPage", perPage, "typeof perPage", typeof perPage);
+
+    page = 1 + Math.floor(skipPullRequestsCount / perPage);
+
+    console.log("### PAGE??", page);
+
+    const { mergeRequests, pagination } = await this.fetchMergeRequestsPage(namespaceName, repositoryName, repositoryId, page, perPage);
+
+    pagination.totalPages = Math.ceil(totalPullRequestsCount / pagination.perPage);
+
+    return { mergeRequests, pagination };
+  }
+
+  async fetchMergeRequestDiffs(repository: Repository, namespace: Namespace, mergeRequest: MergeRequest, perPage: number, page?: number): Promise<{ mergeRequestDiffs: NewMergeRequestDiff[], pagination: Pagination }> {
     page = page || 1;
 
     const result = await this.api.pulls.listFiles({
