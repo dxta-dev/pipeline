@@ -11,7 +11,6 @@ export type GetMergeRequestsInput = {
   page?: number;
   perPage: number;
   timePeriod?: TimePeriod;
-  totalPages?: number;
 };
 
 export type GetMergeRequestsOutput = {
@@ -26,11 +25,11 @@ export type GetMergeRequestsFunction = ExtractFunction<GetMergeRequestsInput, Ge
 
 
 export const getMergeRequests: GetMergeRequestsFunction = async (
-  { externalRepositoryId, namespaceName, repositoryName, repositoryId, page, perPage, timePeriod, totalPages},
+  { externalRepositoryId, namespaceName, repositoryName, repositoryId, page, perPage, timePeriod },
   { integrations, db, entities },
 ) => {
 
-  if(!integrations.sourceControl) {
+  if (!integrations.sourceControl) {
     throw new Error("Source control integration not configured");
   }
 
@@ -45,8 +44,8 @@ export const getMergeRequests: GetMergeRequestsFunction = async (
     ))
   });
 
-    return {
-      mergeRequests: insertedMergeRequests,
-      paginationInfo: pagination,
-    };
+  return {
+    mergeRequests: insertedMergeRequests,
+    paginationInfo: pagination,
   };
+};
