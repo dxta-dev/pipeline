@@ -33,8 +33,6 @@ export function ExtractStartForm() {
   
     const requestBody = JSON.stringify({ repositoryId, repositoryName, namespaceName, sourceControl, from: new Date(from), to: new Date(to) });
   
-    console.log('Request Body:', requestBody); 
-  
     const res = await fetch(process.env.NEXT_PUBLIC_EXTRACT_API_URL, {
       method: 'post',
       body: requestBody,
