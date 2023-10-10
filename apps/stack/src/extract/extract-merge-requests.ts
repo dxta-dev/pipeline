@@ -50,7 +50,6 @@ export const mergeRequestSenderHandler = createMessageHandler({
         page: pagination.page,
         perPage: pagination.perPage,
         timePeriod: { from: message.metadata.from, to: message.metadata.to },
-        totalPages: pagination.totalPages,
       },
       context,
     );
