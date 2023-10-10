@@ -10,8 +10,8 @@ export const repositories = sqliteTable('repositories', {
   // tenantId: integer('tenant_id').notNull(),
   name: text('name').notNull(),
   // url: text('url').notNull(),
-  _createdAt: integer('__created_at', { mode: 'timestamp_ms' }).default(sql`CURRENT_TIMESTAMP`),
-  _updatedAt: integer('__updated_at', { mode: 'timestamp_ms' }).default(sql`CURRENT_TIMESTAMP`),
+  _createdAt: integer('__created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
+  _updatedAt: integer('__updated_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
 }, (repositories) => ({
   uniqueExternalIdForgeTypeIndex: uniqueIndex('repositories_external_id_forge_type_idx').on(repositories.externalId, repositories.forgeType)
 }));

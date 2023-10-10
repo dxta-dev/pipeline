@@ -12,9 +12,9 @@ export const members = sqliteTable('members', {
   name: text('name'),
   username: text('username').notNull(),
   email: text('email'),
-  extractedSource: Enum('extractedSource', {enum: ['repository', 'namespace', 'notes']}),
-  _createdAt: integer('__created_at', { mode: 'timestamp_ms' }).default(sql`CURRENT_TIMESTAMP`),
-  _updatedAt: integer('__updated_at', { mode: 'timestamp_ms' }).default(sql`CURRENT_TIMESTAMP`),
+  extractedSource: Enum('extractedSource', { enum: ['repository', 'namespace', 'notes'] }),
+  _createdAt: integer('__created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
+  _updatedAt: integer('__updated_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
 }, (members) => ({
   uniqueExternalId: uniqueIndex('members_external_id_idx').on(members.externalId, members.forgeType),
 }));

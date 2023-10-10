@@ -22,8 +22,8 @@ export const mergeRequests = sqliteTable(
     state: text('state'),
     targetBranch: text('target_branch'),
     sourceBranch: text('source_branch'),
-    _createdAt: integer('__created_at', { mode: 'timestamp_ms' }).default(sql`CURRENT_TIMESTAMP`),
-    _updatedAt: integer('__updated_at', { mode: 'timestamp_ms' }).default(sql`CURRENT_TIMESTAMP`),
+    _createdAt: integer('__created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
+    _updatedAt: integer('__updated_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
   },
   (mergeRequests) => ({
     uniqueExternalId: uniqueIndex("merge_requests_external_id_idx").on(

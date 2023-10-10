@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "08da3944-a9e2-4ba0-bfb3-c5698dac4e34",
+  "id": "d4ab059b-c262-4a55-bc1d-bb0861f79d8a",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "git_identities": {
@@ -41,7 +41,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
+          "default": "(strftime('%s', 'now'))"
         },
         "__updated_at": {
           "name": "__updated_at",
@@ -49,7 +49,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
+          "default": "(strftime('%s', 'now'))"
         }
       },
       "indexes": {
@@ -112,13 +112,20 @@
           "notNull": false,
           "autoincrement": false
         },
+        "extractedSource": {
+          "name": "extractedSource",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "__created_at": {
           "name": "__created_at",
           "type": "integer",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
+          "default": "(strftime('%s', 'now'))"
         },
         "__updated_at": {
           "name": "__updated_at",
@@ -126,7 +133,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
+          "default": "(strftime('%s', 'now'))"
         }
       },
       "indexes": {
@@ -236,7 +243,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
+          "default": "(strftime('%s', 'now'))"
         },
         "__updated_at": {
           "name": "__updated_at",
@@ -244,7 +251,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
+          "default": "(strftime('%s', 'now'))"
         }
       },
       "indexes": {
@@ -340,7 +347,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
+          "default": "(strftime('%s', 'now'))"
         },
         "__updated_at": {
           "name": "__updated_at",
@@ -348,7 +355,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
+          "default": "(strftime('%s', 'now'))"
         }
       },
       "indexes": {
@@ -423,7 +430,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
+          "default": "(strftime('%s', 'now'))"
         },
         "__updated_at": {
           "name": "__updated_at",
@@ -431,7 +438,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
+          "default": "(strftime('%s', 'now'))"
         }
       },
       "indexes": {
@@ -555,7 +562,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
+          "default": "(strftime('%s', 'now'))"
         },
         "__updated_at": {
           "name": "__updated_at",
@@ -563,7 +570,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
+          "default": "(strftime('%s', 'now'))"
         }
       },
       "indexes": {
@@ -617,7 +624,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
+          "default": "(strftime('%s', 'now'))"
         },
         "__updated_at": {
           "name": "__updated_at",
@@ -625,7 +632,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
+          "default": "(strftime('%s', 'now'))"
         }
       },
       "indexes": {
@@ -679,7 +686,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
+          "default": "(strftime('%s', 'now'))"
         },
         "__updated_at": {
           "name": "__updated_at",
@@ -687,7 +694,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
+          "default": "(strftime('%s', 'now'))"
         }
       },
       "indexes": {
@@ -727,7 +734,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
+          "default": "(strftime('%s', 'now'))"
         },
         "__updated_at": {
           "name": "__updated_at",
@@ -735,7 +742,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
+          "default": "(strftime('%s', 'now'))"
         }
       },
       "indexes": {},

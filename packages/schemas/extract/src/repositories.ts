@@ -10,8 +10,8 @@ export const repositories = sqliteTable('repositories', {
   externalId: integer('external_id').notNull(),
   forgeType: Enum('forge_type', { enum: ['github', 'gitlab'] }).notNull(),
   name: text('name').notNull(),
-  _createdAt: integer('__created_at', { mode: 'timestamp_ms' }).default(sql`CURRENT_TIMESTAMP`),
-  _updatedAt: integer('__updated_at', { mode: 'timestamp_ms' }).default(sql`CURRENT_TIMESTAMP`),
+  _createdAt: integer('__created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
+  _updatedAt: integer('__updated_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
 }, (repositories) => ({
   uniqueExternalId: uniqueIndex('repositories_external_id_idx').on(repositories.externalId, repositories.forgeType),
 }));
