@@ -7,34 +7,43 @@ import { Input } from './ui/input';
 
 export function ExtractStartForm() {
   const { getToken } = useAuth();
+  const currentDate = new Date();
+  currentDate.setMonth(currentDate.getMonth() - 6);
+  const defaultFromDate = currentDate.toISOString().slice(0, 10);
   const [repositoryId, setRepositoryId] = useState(0);
   const [repositoryName, setRepositoryName] = useState('');
   const [namespaceName, setNamespaceName] = useState('');
   const [sourceControl, setSourceControl] = useState('gitlab');
-  const [from, setFrom] = useState('2023-01-01');
+  const [from, setFrom] = useState(defaultFromDate);
   const [to, setTo] = useState(new Date().toISOString().slice(0, 10));
   const [status, setStatus] = useState('---');
   const [body, setBody] = useState('');
 
   const handleInputChange = (stateSetter: Dispatch<SetStateAction<any>>) => (ev: ChangeEvent<HTMLInputElement>) => stateSetter(ev.target.value);
+
   const handleSelectChange = (ev: ChangeEvent<HTMLSelectElement>) => setSourceControl(ev.target.value);
 
   const handleSubmit = async () => {
-    if (!process.env.NEXT_PUBLIC_EXTRACT_API_URL) return console.error('Missing ENV variable: NEXT_PUBLIC_EXTRACT_API_URL')
+    if (!process.env.NEXT_PUBLIC_EXTRACT_API_URL) return console.error('Missing ENV variable: NEXT_PUBLIC_EXTRACT_API_URL');
     setStatus('...');
     setBody('');
-
+  
     const token = await getToken({ template: 'dashboard' });
     if (!token) return;
+  
+    const requestBody = JSON.stringify({ repositoryId, repositoryName, namespaceName, sourceControl, from: new Date(from), to: new Date(to) });
+  
+    console.log('Request Body:', requestBody); 
+  
     const res = await fetch(process.env.NEXT_PUBLIC_EXTRACT_API_URL, {
       method: 'post',
-      body: JSON.stringify({ repositoryId, repositoryName, namespaceName, sourceControl, from: new Date(from), to: new Date(to) }),
+      body: requestBody,
       headers: {
         'Authorization': 'Bearer ' + token
       }
     });
+  
     const jsonBody = await res.json() as unknown;
-
     setStatus(res.status.toString());
     setBody(JSON.stringify(jsonBody, null, 2));
   };
