@@ -163,8 +163,6 @@ export class GitHubSourceControl implements SourceControl {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async fetchMergeRequestsPage(owner: string, repo: string, repositoryId: number, page: number, perPage: number): Promise<{ mergeRequests: NewMergeRequest[], pagination: Pagination }> {
 
-    console.log("### PAGE", page);
-
     const result = await this.api.pulls.list({
       owner,
       repo,
@@ -236,12 +234,7 @@ export class GitHubSourceControl implements SourceControl {
       countPullRequestsAfter(namespaceName, repositoryName, creationPeriod.to)
     ]);
 
-    console.log("### FETCHING PRs:", totalPullRequestsCount - skipPullRequestsCount, "Skipping:", skipPullRequestsCount);
-    console.log("### skip", skipPullRequestsCount, "typeof skip", typeof skipPullRequestsCount, "perPage", perPage, "typeof perPage", typeof perPage);
-
     page = 1 + Math.floor(skipPullRequestsCount / perPage);
-
-    console.log("### PAGE??", page);
 
     const { mergeRequests, pagination } = await this.fetchMergeRequestsPage(namespaceName, repositoryName, repositoryId, page, perPage);
 
