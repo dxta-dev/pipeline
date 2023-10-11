@@ -57,8 +57,8 @@ export const createEvent = <
     source,
     type,
     shape: {
-      metadata:metadataShape,
-      properties:propertiesShape
+      metadata: metadataShape,
+      properties: propertiesShape
     },
   };
 }
@@ -91,7 +91,7 @@ export const EventHandler = <
   PropertiesShape extends z.ZodRawShape,
   MetadataShape extends z.ZodRawShape>(
     event: EventDefinition<Source, DetailType, PropertiesShape, MetadataShape>,
-    cb: (ev: EventPayload<PropertiesShape,MetadataShape>) => Promise<void>) => {
+    cb: (ev: EventPayload<PropertiesShape, MetadataShape>) => Promise<void>) => {
   const { source: targetSource, type: targetDetailType } = event;
   const eventSchema = z.object({
     properties: z.object(event.shape.properties),
@@ -107,6 +107,11 @@ export const EventHandler = <
     const parseResult = eventSchema.safeParse(event.detail);
     if (!parseResult.success) return console.error(`ERROR: Failed to parse event detail '${targetSource}.${targetDetailType}'. Reason: ${parseResult.error}`);
 
-    await cb(parseResult.data as EventPayload<PropertiesShape, MetadataShape>);
+    try {
+      await cb(parseResult.data as EventPayload<PropertiesShape, MetadataShape>);
+    } catch (error) {
+      console.error("Failed to handle event", error, `${targetSource}.${targetDetailType}`);
+      throw error;
+    }
   }
 }
