@@ -103,17 +103,13 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (evt) => 
 
   if (!repository) throw new Error("invalid repo id");
   if (!namespace) throw new Error("Invalid namespace id");
-
+  
   const sourceControl = evt.metadata.sourceControl;
-
+  
   context.integrations.sourceControl = await initSourceControl(evt.metadata.userId, sourceControl)
-
-  const startDate = new Date();
-  startDate.setMonth(startDate.getMonth() - 6);
-  startDate.setDate(startDate.getDate() - 14);
-
-  const endDate = new Date();
-  endDate.setDate(endDate.getDate() - 12);
+  
+  const startDate = evt.metadata.from;
+  const endDate = evt.metadata.to;
 
   const timePeriod = {
     from: startDate,
@@ -150,8 +146,7 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (evt) => 
         page: i,
         perPage: paginationInfo.perPage,
         totalPages: paginationInfo.totalPages
-      },
-      timePeriod,
+      }
     });
   }
 
