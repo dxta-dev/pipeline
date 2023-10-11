@@ -146,8 +146,7 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (evt) => 
         page: i,
         perPage: paginationInfo.perPage,
         totalPages: paginationInfo.totalPages
-      },
-      timePeriod,
+      }
     });
   }
 
