@@ -96,14 +96,17 @@ type EventPayload<
 };
 
 
-function createLog(event: unknown, propertiesToLog: string[]) {
-  console.log("TESTLOG", event, propertiesToLog)
+function createLog(event: unknown, propertiesToLog: string[], eventTypeName: string) {
   if (propertiesToLog.length === 0) return;
-  const properties = propertiesToLog.map(property => property.split('.'));
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-  const log = properties.map(property => property.reduce((acc, curr) => ({ key: property.join('.'), value: acc.value[curr] || acc.value}), {key: '', value: event as any})).filter(value => !!value);
-  const logMessage = log.map(({ key, value }) => `- ${key}: ${JSON.stringify(value)}`).join('\n');
-  return logMessage;
+  const props = propertiesToLog.map((property) => property.split('.').reduce((acc, curr) => {
+    const key = curr;
+    if (!acc?.value) return { key, value: (event as Record<string, unknown>)[curr] };
+    return { key, value: null }
+  }, { key: '', value: event })
+  ).filter((prop) => prop.value !== null);
+  const logMessage = props.map(({ key, value }) => `- ${key}: ${JSON.stringify(value)}`).join('\n');
+  return `${eventTypeName}\n${logMessage}`;
+
 }
 
 export const EventHandler = <
@@ -140,9 +143,9 @@ export const EventHandler = <
       await cb(
         parseResult.data as EventPayload<PropertiesShape, MetadataShape>,
       );
-      console.log('Handled event', createLog(parseResult.data, propertiesToLog));
+      console.log('Handled event', createLog(parseResult.data, propertiesToLog, `${targetSource}.${targetDetailType}`));
     } catch (e) {
-      console.error('Failed to handle event', e, createLog(parseResult.data, propertiesToLog));
+      console.error('Failed to handle event', e, createLog(parseResult.data, propertiesToLog, `${targetSource}.${targetDetailType}`));
     }
   };
 };
