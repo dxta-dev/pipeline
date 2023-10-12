@@ -162,5 +162,5 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (evt) => 
     to: evt.metadata.to,
   });
 
-})
+}, ['properties.repositoryId', 'properties.namespaceId'])
 

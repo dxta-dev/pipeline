@@ -7,49 +7,59 @@ import { EventBus } from "sst/node/event-bus";
 import { z } from "zod";
 
 const client = new EventBridgeClient({});
-type InferShapeOutput<Shape extends z.ZodRawShape> = z.infer<z.ZodObject<Shape, "strip", z.ZodAny>>;
+type InferShapeOutput<Shape extends z.ZodRawShape> = z.infer<
+  z.ZodObject<Shape, "strip", z.ZodAny>
+>;
 
 type EventProps<
   Bus extends keyof typeof EventBus,
   Source extends string,
   DetailType extends string,
   PropertiesShape extends z.ZodRawShape,
-  MetadataShape extends z.ZodRawShape
+  MetadataShape extends z.ZodRawShape,
 > = {
   bus: Bus;
   source: Source;
   type: DetailType;
   propertiesShape: PropertiesShape;
   metadataShape: MetadataShape;
-}
+};
 
 export const createEvent = <
   Bus extends keyof typeof EventBus,
   Source extends string,
   DetailType extends string,
   PropertiesShape extends z.ZodRawShape,
-  MetadataShape extends z.ZodRawShape>({
-    bus,
-    source,
-    type,
-    propertiesShape,
-    metadataShape,
-  }: EventProps<Bus, Source, DetailType, PropertiesShape, MetadataShape>) => {
+  MetadataShape extends z.ZodRawShape,
+>({
+  bus,
+  source,
+  type,
+  propertiesShape,
+  metadataShape,
+}: EventProps<Bus, Source, DetailType, PropertiesShape, MetadataShape>) => {
   const propertiesSchema = z.object(propertiesShape);
   const metadataSchema = z.object(metadataShape);
 
-  const publish = async (properties: InferShapeOutput<PropertiesShape>, metadata: InferShapeOutput<MetadataShape>) => {
-    await client.send(new PutEventsCommand({
-      Entries: [{
-        EventBusName: EventBus[bus].eventBusName,
-        Source: source,
-        DetailType: type,
-        Detail: JSON.stringify({
-          properties: propertiesSchema.parse(properties),
-          metadata: metadataSchema.parse(metadata),
-        }),
-      }],
-    }));
+  const publish = async (
+    properties: InferShapeOutput<PropertiesShape>,
+    metadata: InferShapeOutput<MetadataShape>,
+  ) => {
+    await client.send(
+      new PutEventsCommand({
+        Entries: [
+          {
+            EventBusName: EventBus[bus].eventBusName,
+            Source: source,
+            DetailType: type,
+            Detail: JSON.stringify({
+              properties: propertiesSchema.parse(properties),
+              metadata: metadataSchema.parse(metadata),
+            }),
+          },
+        ],
+      }),
+    );
   };
 
   return {
@@ -57,11 +67,11 @@ export const createEvent = <
     source,
     type,
     shape: {
-      metadata:metadataShape,
-      properties:propertiesShape
+      metadata: metadataShape,
+      properties: propertiesShape,
     },
   };
-}
+};
 
 export type EventDefinition<
   Source extends string,
@@ -69,13 +79,13 @@ export type EventDefinition<
   PropertiesShape extends z.ZodRawShape,
   MetadataShape extends z.ZodRawShape,
 > = {
-  source: Source,
-  type: DetailType
+  source: Source;
+  type: DetailType;
   shape: {
-    properties: PropertiesShape,
-    metadata: MetadataShape
-  }
-}
+    properties: PropertiesShape;
+    metadata: MetadataShape;
+  };
+};
 
 type EventPayload<
   PropertiesShape extends z.ZodRawShape,
@@ -83,30 +93,56 @@ type EventPayload<
 > = {
   properties: InferShapeOutput<PropertiesShape>;
   metadata: InferShapeOutput<MetadataShape>;
+};
+
+
+function createLog(event: unknown, propertiesToLog: string[]) {
+  console.log("TESTLOG", event, propertiesToLog)
+  if (propertiesToLog.length === 0) return;
+  const properties = propertiesToLog.map(property => property.split('.'));
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+  const log = properties.map(property => property.reduce((acc, curr) => ({ key: property.join('.'), value: acc.value[curr] || acc.value}), {key: '', value: event as any})).filter(value => !!value);
+  const logMessage = log.map(({ key, value }) => `- ${key}: ${JSON.stringify(value)}`).join('\n');
+  return logMessage;
 }
 
 export const EventHandler = <
   Source extends string,
   DetailType extends string,
   PropertiesShape extends z.ZodRawShape,
-  MetadataShape extends z.ZodRawShape>(
-    event: EventDefinition<Source, DetailType, PropertiesShape, MetadataShape>,
-    cb: (ev: EventPayload<PropertiesShape,MetadataShape>) => Promise<void>) => {
+  MetadataShape extends z.ZodRawShape,
+>(
+  event: EventDefinition<Source, DetailType, PropertiesShape, MetadataShape>,
+  cb: (ev: EventPayload<PropertiesShape, MetadataShape>) => Promise<void>,
+  propertiesToLog: string[] = [],
+) => {
   const { source: targetSource, type: targetDetailType } = event;
   const eventSchema = z.object({
     properties: z.object(event.shape.properties),
     metadata: z.object(event.shape.metadata),
   });
 
-  return async (
-    event: EventBridgeEvent<string, unknown>
-  ) => {
-    if (event["detail-type"] !== targetDetailType || event.source !== targetSource) {
-      console.warn(`Warning: Invalid event handler configuration, expected event ${targetSource}.${targetDetailType} but got ${event.source}.${event["detail-type"]}`);
+  return async (event: EventBridgeEvent<string, unknown>) => {
+    if (
+      event["detail-type"] !== targetDetailType ||
+      event.source !== targetSource
+    ) {
+      console.warn(
+        `Warning: Invalid event handler configuration, expected event ${targetSource}.${targetDetailType} but got ${event.source}.${event["detail-type"]}`,
+      );
     }
     const parseResult = eventSchema.safeParse(event.detail);
-    if (!parseResult.success) return console.error(`ERROR: Failed to parse event detail '${targetSource}.${targetDetailType}'. Reason: ${parseResult.error}`);
-
-    await cb(parseResult.data as EventPayload<PropertiesShape, MetadataShape>);
-  }
-}
+    if (!parseResult.success)
+      return console.error(
+        `ERROR: Failed to parse event detail '${targetSource}.${targetDetailType}'. Reason: ${parseResult.error}`,
+      );
+    try {
+      await cb(
+        parseResult.data as EventPayload<PropertiesShape, MetadataShape>,
+      );
+      console.log('Handled event', createLog(parseResult.data, propertiesToLog));
+    } catch (e) {
+      console.error('Failed to handle event', e, createLog(parseResult.data, propertiesToLog));
+    }
+  };
+};
