@@ -2,12 +2,12 @@ import { sql } from 'drizzle-orm';
 import { sqliteTable, integer, text } from 'drizzle-orm/sqlite-core';
 import { Enum } from './enum-column';
 import { z } from 'zod';
-import { crawls } from './crawls';
+import { instances } from './instances';
 import type { InferSelectModel, InferInsertModel } from 'drizzle-orm';
 
-export const crawlEvents = sqliteTable('crawl_events', {
+export const events = sqliteTable('events', {
   id: integer('id').primaryKey({ autoIncrement: true }),
-  crawlId: integer('crawl_id').notNull().references(() => crawls.id),
+  crawlId: integer('instance_id').notNull().references(() => instances.id),
   type: Enum('type',
     {
       enum:
@@ -59,5 +59,5 @@ export const CrawlInfoSchema = z.object({
   pages: z.number().nonnegative().int(),
 });
 
-export type CrawlEvent = InferSelectModel<typeof crawlEvents>;
-export type NewCrawlEvent = InferInsertModel<typeof crawlEvents>;
+export type Event = InferSelectModel<typeof events>;
+export type NewEvent = InferInsertModel<typeof events>;
