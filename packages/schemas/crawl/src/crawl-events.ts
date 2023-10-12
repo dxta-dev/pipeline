@@ -27,12 +27,12 @@ export const crawlEvents = sqliteTable('crawl_events', {
           'mergeRequestNote.crawlComplete',
           'mergeRequestNote.crawlFailed',
           'mergeRequestNote.crawlInfo',
-          'namespace.crawlComplete',
-          'namespace.crawlFailed',
-          'namespace.crawlInfo',
           'member.crawlComplete',
           'member.crawlFailed',
           'member.crawlInfo',
+          'memberInfo.crawlComplete',
+          'memberInfo.crawlFailed',
+          'memberInfo.crawlInfo',
         ]
     }
   ).notNull(),
