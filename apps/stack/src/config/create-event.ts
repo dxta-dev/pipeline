@@ -97,15 +97,19 @@ type EventPayload<
 
 
 function createLog(event: unknown, propertiesToLog: string[], eventTypeName: string) {
-  if (propertiesToLog.length === 0) return;
-  const props = propertiesToLog.map((property) => property.split('.').reduce((acc, curr) => {
+  try{
+    if (propertiesToLog.length === 0) return;
+    const props = propertiesToLog.map((property) => property.split('.').reduce((acc, curr) => {
     const key = curr;
-    if (!acc?.value) return { key, value: (event as Record<string, unknown>)[curr] };
+    if (acc?.value) return { key, value: (acc.value as Record<string, unknown>)[curr] };
     return { key, value: null }
   }, { key: '', value: event })
   ).filter((prop) => prop.value !== null);
   const logMessage = props.map(({ key, value }) => `- ${key}: ${JSON.stringify(value)}`).join('\n');
   return `${eventTypeName}\n${logMessage}`;
+} catch {
+  return eventTypeName;
+}
 
 }
 
@@ -143,7 +147,7 @@ export const EventHandler = <
       await cb(
         parseResult.data as EventPayload<PropertiesShape, MetadataShape>,
       );
-      console.log('Handled event', createLog(parseResult.data, propertiesToLog, `${targetSource}.${targetDetailType}`));
+      if(propertiesToLog.length !== 0) console.log('Handled event', createLog(parseResult.data, propertiesToLog, `${targetSource}.${targetDetailType}`));
     } catch (e) {
       console.error('Failed to handle event', e, createLog(parseResult.data, propertiesToLog, `${targetSource}.${targetDetailType}`));
     }
