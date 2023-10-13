@@ -1,7 +1,7 @@
-export { crawls } from './crawls';
-export { crawlEvents } from './crawl-events';
+export { instances } from './instances';
+export { events } from './events';
 
-export type { Crawl, NewCrawl } from './crawls';
-export type { CrawlEvent, NewCrawlEvent } from './crawl-events';
+export type { Instance, NewInstance } from './instances';
+export type { Event, NewEvent } from './events';
 
-export { CrawlCompleteSchema, CrawlFailedSchema, CrawlInfoSchema } from './crawl-events';
+export { CrawlCompleteSchema, CrawlFailedSchema, CrawlInfoSchema } from './events';
