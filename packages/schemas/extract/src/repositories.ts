@@ -19,12 +19,8 @@ export const repositories = sqliteTable('repositories', {
 export type Repository = InferSelectModel<typeof repositories>;
 export type NewRepository = InferInsertModel<typeof repositories>;
 export const NewRepositorySchema = createInsertSchema(repositories, {
-  _createdAt: z.coerce.date(),
-  _updatedAt: z.coerce.date(),
   forgeType: z.literal('github').or(z.literal('gitlab')),
 });
 export const RepositorySchema = createSelectSchema(repositories, {
-  _createdAt: z.coerce.date(),
-  _updatedAt: z.coerce.date(),
   forgeType: z.literal('github').or(z.literal('gitlab')),
 });

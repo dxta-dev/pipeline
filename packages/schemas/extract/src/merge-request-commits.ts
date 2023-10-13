@@ -29,13 +29,9 @@ export const MergeRequestCommitSchema = createInsertSchema(mergeRequestCommits, 
   createdAt: z.coerce.date(),
   authoredDate: z.coerce.date(),
   committedDate: z.coerce.date(),
-  _createdAt: z.coerce.date(),
-  _updatedAt: z.coerce.date(),
 });
 export const NewMergeRequestCommitSchema = createInsertSchema(mergeRequestCommits, {
   createdAt: z.coerce.date(),
   authoredDate: z.coerce.date(),
   committedDate: z.coerce.date(),
-  _createdAt: z.coerce.date(),
-  _updatedAt: z.coerce.date(),
 });

@@ -19,12 +19,8 @@ export const namespaces = sqliteTable('namespaces', {
 export type Namespace = InferSelectModel<typeof namespaces>;
 export type NewNamespace = InferInsertModel<typeof namespaces>;
 export const NewNamespaceSchema = createInsertSchema(namespaces, {
-  _createdAt: z.coerce.date(),
-  _updatedAt: z.coerce.date(),
   forgeType: z.literal('github').or(z.literal('gitlab')),
 });
 export const NamespaceSchema = createSelectSchema(namespaces, {
-  _createdAt: z.coerce.date(),
-  _updatedAt: z.coerce.date(),
   forgeType: z.literal('github').or(z.literal('gitlab')),
 });

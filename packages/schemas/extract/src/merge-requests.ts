@@ -40,14 +40,10 @@ export const MergeRequestSchema = createSelectSchema(mergeRequests, {
   updatedAt: z.coerce.date(),
   mergedAt: z.coerce.date(),
   closedAt: z.coerce.date(),
-  _createdAt: z.coerce.date(),
-  _updatedAt: z.coerce.date(),
 });
 export const NewMergeRequestSchema = createInsertSchema(mergeRequests, {
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
   mergedAt: z.coerce.date(),
   closedAt: z.coerce.date(),
-  _createdAt: z.coerce.date(),
-  _updatedAt: z.coerce.date(),
 });
