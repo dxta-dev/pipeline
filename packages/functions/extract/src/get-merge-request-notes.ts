@@ -1,7 +1,7 @@
 import type { SourceControl } from "@acme/source-control"
 import type { ExtractFunction, Entities } from "./config";
 import type { Member, MergeRequestNote, NewMember } from "@acme/extract-schema";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 
 export type GetMergeRequestNotesInput = {
   repositoryId: number;
@@ -49,7 +49,16 @@ export const getMergeRequestNotes: GetMergeRequestNotesFunction = async (
   const insertedMembers = await db.transaction(async (tx) => {
     return Promise.all(mergeRequestNoteUniqueAuthors.map(author =>
       tx.insert(entities.members).values(author)
-        .onConflictDoUpdate({ target: [entities.members.externalId, entities.members.forgeType], set: { username: author.username } })
+        .onConflictDoUpdate({
+          target: [
+            entities.members.externalId,
+            entities.members.forgeType
+          ],
+          set: {
+            username: author.username,
+            _updatedAt: sql`(strftime('%s', 'now'))`,
+          },
+        })
         .returning()
         .get()
     ));
@@ -61,7 +70,8 @@ export const getMergeRequestNotes: GetMergeRequestNotesFunction = async (
         .onConflictDoUpdate({
           target: [entities.mergeRequestNotes.mergeRequestId, entities.mergeRequestNotes.externalId],
           set: {
-            updatedAt: mergeRequestNote.updatedAt
+            updatedAt: mergeRequestNote.updatedAt,
+            _updatedAt: sql`(strftime('%s', 'now'))`,
           }
         })
         .returning()

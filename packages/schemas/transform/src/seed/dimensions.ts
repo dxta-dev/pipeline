@@ -38,7 +38,7 @@ const nullRepository = {
   name: '',
 } satisfies NewRepository;
 
-export async function seed (db: LibSQLDatabase, startDate: Date, endDate: Date) {
+export async function seed(db: LibSQLDatabase, startDate: Date, endDate: Date) {
   await db.insert(forgeUsers).values(nullForgeUser).onConflictDoNothing().run();
   await db.insert(dates).values(nullDate).onConflictDoNothing().run();
   await db.insert(mergeRequests).values(nullMergeRequest).onConflictDoNothing().run();
@@ -61,6 +61,6 @@ function generateDates(startDate: Date, endDate: Date) {
     dates.push(customDate);
     currentDate.setUTCDate(currentDate.getUTCDate() + 1);
   }
-  
+
   return dates;
 }

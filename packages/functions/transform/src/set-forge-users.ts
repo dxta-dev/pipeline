@@ -1,6 +1,7 @@
 import { inArray } from "drizzle-orm";
 import type { ExtractEntities, TransformEntities, TransformFunction } from "./config";
 import type { NewForgeUser } from "@acme/transform-schema";
+import { sql } from "drizzle-orm";
 
 export type SetForgeUsersInput = {
   extractMemberIds?: number[];
@@ -39,8 +40,14 @@ export const setForgeUsers: SetForgeUsersFunction = async (
     forgeUser => transform.db.insert(transform.entities.forgeUsers)
       .values(forgeUser)
       .onConflictDoUpdate({
-        target: [transform.entities.forgeUsers.externalId, transform.entities.forgeUsers.forgeType],
-        set: { name: forgeUser.name }
+        target: [
+          transform.entities.forgeUsers.externalId,
+          transform.entities.forgeUsers.forgeType
+        ],
+        set: {
+          name: forgeUser.name,
+          _updatedAt: sql`(strftime('%s', 'now'))`,
+        }
       })
   );
 

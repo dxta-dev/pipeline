@@ -1,6 +1,7 @@
 import type { Namespace, Repository } from "@acme/extract-schema";
 import type { ExtractFunction, Entities } from "./config";
 import type { SourceControl } from "@acme/source-control";
+import { sql } from 'drizzle-orm';
 
 export type GetRepositoryInput = {
   externalRepositoryId: number;
@@ -23,18 +24,36 @@ export const getRepository: GetRepositoryFunction = async (
   { integrations, db, entities }
 ) => {
 
-  if(!integrations.sourceControl) {
+  if (!integrations.sourceControl) {
     throw new Error("Source control integration not configured");
-  } 
+  }
 
   const { repository, namespace } = await integrations.sourceControl.fetchRepository(externalRepositoryId, namespaceName, repositoryName);
 
   const insertedRepository = await db.insert(entities.repositories).values(repository)
-    .onConflictDoUpdate({ target: [entities.repositories.externalId, entities.repositories.forgeType], set: { name: repository.name } }).returning()
+    .onConflictDoUpdate({
+      target: [
+        entities.repositories.externalId,
+        entities.repositories.forgeType
+      ],
+      set: {
+        name: repository.name,
+        _updatedAt: sql`(strftime('%s', 'now'))`,
+      },
+    }).returning()
     .get();
 
   const insertedNamespace = await db.insert(entities.namespaces).values(namespace)
-    .onConflictDoUpdate({ target: [entities.namespaces.externalId, entities.namespaces.forgeType], set: { name: namespace.name } }).returning()
+    .onConflictDoUpdate({
+      target: [
+        entities.namespaces.externalId,
+        entities.namespaces.forgeType
+      ],
+      set: {
+        name: namespace.name,
+        _updatedAt: sql`(strftime('%s', 'now'))`,
+      },
+    }).returning()
     .get();
 
   return {
