@@ -5,7 +5,7 @@ import { TransformStack } from "stacks/TransformStack";
 export default {
   config(_input) {
     return {
-      name: "extract",
+      name: "mr-tool",
       region: "eu-central-1",
     };
   },
