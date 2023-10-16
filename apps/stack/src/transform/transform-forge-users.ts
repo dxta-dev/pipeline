@@ -13,13 +13,13 @@ import { setForgeUsers } from "@acme/transform-functions";
 
 const context: Context<SetForgeUsersExtractEntities, SetForgeUsersTransformEntities> = {
   extract: {
-    db: drizzle(createClient({ url: Config.DATABASE_URL, authToken: Config.DATABASE_AUTH_TOKEN })),
+    db: drizzle(createClient({ url: Config.EXTRACT_DATABASE_URL, authToken: Config.EXTRACT_DATABASE_AUTH_TOKEN })),
     entities: {
       members: extract.members
     }
   },
   transform: {
-    db: drizzle(createClient({ url: Config.TRANSFORM_DB_URL, authToken: Config.TRANSFORM_DB_AUTH_TOKEN })),
+    db: drizzle(createClient({ url: Config.TRANSFORM_DATABASE_URL, authToken: Config.TRANSFORM_DATABASE_AUTH_TOKEN })),
     entities: {
       forgeUsers: transform.forgeUsers
     }
