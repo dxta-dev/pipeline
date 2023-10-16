@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "d4ab059b-c262-4a55-bc1d-bb0861f79d8a",
+  "id": "4b6605b9-c5a8-4462-9055-a467c72475c9",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "git_identities": {
@@ -112,8 +112,8 @@
           "notNull": false,
           "autoincrement": false
         },
-        "extractedSource": {
-          "name": "extractedSource",
+        "extracted_source": {
+          "name": "extracted_source",
           "type": "integer",
           "primaryKey": false,
           "notNull": false,

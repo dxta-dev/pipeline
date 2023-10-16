@@ -26,11 +26,11 @@ export type GetMergeRequestsFunction = ExtractFunction<GetMergeRequestsInput, Ge
 
 
 export const getMergeRequests: GetMergeRequestsFunction = async (
-  { externalRepositoryId, namespaceName, repositoryName, repositoryId, page, perPage, timePeriod, totalPages},
+  { externalRepositoryId, namespaceName, repositoryName, repositoryId, page, perPage, timePeriod, totalPages },
   { integrations, db, entities },
 ) => {
 
-  if(!integrations.sourceControl) {
+  if (!integrations.sourceControl) {
     throw new Error("Source control integration not configured");
   }
 
@@ -39,14 +39,22 @@ export const getMergeRequests: GetMergeRequestsFunction = async (
   const insertedMergeRequests = await db.transaction(async (tx) => {
     return Promise.all(mergeRequests.map(mergeRequest =>
       tx.insert(entities.mergeRequests).values(mergeRequest)
-        .onConflictDoUpdate({ target: [entities.mergeRequests.externalId, entities.mergeRequests.repositoryId], set: { _updatedAt: sql`(strftime('%s', 'now'))` } })
+        .onConflictDoUpdate({
+          target: [
+            entities.mergeRequests.externalId,
+            entities.mergeRequests.repositoryId,
+          ],
+          set: {
+            _updatedAt: sql`(strftime('%s', 'now'))`,
+          },
+        })
         .returning()
         .get()
     ))
   });
 
-    return {
-      mergeRequests: insertedMergeRequests,
-      paginationInfo: pagination,
-    };
+  return {
+    mergeRequests: insertedMergeRequests,
+    paginationInfo: pagination,
   };
+};

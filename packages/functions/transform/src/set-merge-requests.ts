@@ -2,6 +2,7 @@ import { eq, inArray } from "drizzle-orm";
 import type { ExtractEntities, TransformEntities, TransformFunction } from "./config";
 import type { NewMergeRequest as TransformedMergeRequest } from "@acme/transform-schema";
 import type { MergeRequest as ExtractMergeRequest } from "@acme/extract-schema";
+import { sql } from "drizzle-orm";
 
 export type SetMergeRequestsInput = {
   extractMergeRequestIds: ExtractMergeRequest["id"][];
@@ -36,8 +37,15 @@ export const setMergeRequests: SetMergeRequestsFunction = async (
     mergeRequest => transform.db.insert(transform.entities.mergeRequests)
       .values(mergeRequest)
       .onConflictDoUpdate({
-        target: [transform.entities.mergeRequests.externalId, transform.entities.mergeRequests.forgeType],
-        set: { title: mergeRequest.title, webUrl: mergeRequest.webUrl }
+        target: [
+          transform.entities.mergeRequests.externalId,
+          transform.entities.mergeRequests.forgeType
+        ],
+        set: {
+          title: mergeRequest.title,
+          webUrl: mergeRequest.webUrl,
+          _updatedAt: sql`(strftime('%s', 'now'))`,
+        }
       })
   );
 

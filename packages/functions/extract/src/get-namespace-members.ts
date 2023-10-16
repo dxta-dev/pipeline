@@ -1,6 +1,7 @@
 import type { Member } from "@acme/extract-schema";
 import type { ExtractFunction, Entities } from "./config";
 import type { Pagination, SourceControl } from "@acme/source-control";
+import { sql } from 'drizzle-orm';
 
 export type GetNamespaceMembersInput = {
   externalNamespaceId: number;
@@ -36,7 +37,16 @@ export const getNamespaceMembers: GetNamespaceMembersFunction = async (
   const insertedMembers = await db.transaction(async (tx) => {
     return Promise.all(members.map(member =>
       tx.insert(entities.members).values(member)
-        .onConflictDoUpdate({ target: [entities.members.externalId, entities.members.forgeType], set: { username: member.username } })
+        .onConflictDoUpdate({
+          target: [
+            entities.members.externalId,
+            entities.members.forgeType
+          ],
+          set: {
+            username: member.username,
+            _updatedAt: sql`(strftime('%s', 'now'))`,
+          }
+        })
         .returning()
         .get()
     ));
