@@ -8,8 +8,8 @@ import {
 import { z } from "zod";
 
 export function ExtractStack({ stack }: StackContext) {
-  const DATABASE_URL = new Config.Secret(stack, "DATABASE_URL");
-  const DATABASE_AUTH_TOKEN = new Config.Secret(stack, "DATABASE_AUTH_TOKEN");
+  const EXTRACT_DATABASE_URL = new Config.Secret(stack, "EXTRACT_DATABASE_URL");
+  const EXTRACT_DATABASE_AUTH_TOKEN = new Config.Secret(stack, "EXTRACT_DATABASE_AUTH_TOKEN");
   const CLERK_SECRET_KEY = new Config.Secret(stack, "CLERK_SECRET_KEY");
   const REDIS_URL = new Config.Secret(stack, "REDIS_URL");
   const REDIS_TOKEN = new Config.Secret(stack, "REDIS_TOKEN");
@@ -40,7 +40,7 @@ export function ExtractStack({ stack }: StackContext) {
     defaults: {
       retries: 10,
       function: {
-        bind: [DATABASE_URL, CLERK_SECRET_KEY, DATABASE_AUTH_TOKEN, REDIS_URL, REDIS_TOKEN, REDIS_USER_TOKEN_TTL, PER_PAGE],
+        bind: [EXTRACT_DATABASE_URL, CLERK_SECRET_KEY, EXTRACT_DATABASE_AUTH_TOKEN, REDIS_URL, REDIS_TOKEN, REDIS_USER_TOKEN_TTL, PER_PAGE],
         runtime: "nodejs18.x",
       },
     },
@@ -58,9 +58,9 @@ export function ExtractStack({ stack }: StackContext) {
       bind: [
         bus,
         extractQueue,
-        DATABASE_URL,
+        EXTRACT_DATABASE_URL,
         CLERK_SECRET_KEY,
-        DATABASE_AUTH_TOKEN,
+        EXTRACT_DATABASE_AUTH_TOKEN,
         REDIS_URL, REDIS_TOKEN, REDIS_USER_TOKEN_TTL,
         PER_PAGE
       ],
@@ -130,7 +130,7 @@ export function ExtractStack({ stack }: StackContext) {
     defaults: {
       authorizer: "JwtAuthorizer",
       function: {
-        bind: [bus, DATABASE_URL, DATABASE_AUTH_TOKEN, CLERK_SECRET_KEY, REDIS_URL, REDIS_TOKEN, REDIS_USER_TOKEN_TTL],
+        bind: [bus, EXTRACT_DATABASE_URL, EXTRACT_DATABASE_AUTH_TOKEN, CLERK_SECRET_KEY, REDIS_URL, REDIS_TOKEN, REDIS_USER_TOKEN_TTL],
         runtime: "nodejs18.x",
       },
     },
