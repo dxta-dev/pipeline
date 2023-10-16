@@ -20,7 +20,7 @@ export type TransformEntities = {
   mergeRequests: typeof transform.mergeRequests;
   repositories: typeof transform.repositories;
   dates: typeof transform.dates;
-  mergeRequestReports: typeof transform.mergeRequestReports;
+  mergeRequestFacts: typeof transform.mergeRequestFacts;
 }
 
 export type Context<EE extends Partial<ExtractEntities>, TE extends Partial<TransformEntities>> = {
