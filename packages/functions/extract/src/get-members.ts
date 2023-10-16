@@ -1,6 +1,7 @@
 import type { Member } from "@acme/extract-schema";
 import type { ExtractFunction, Entities } from "./config";
 import type { Pagination, SourceControl } from "@acme/source-control";
+import { sql } from "drizzle-orm";
 
 export type GetMembersInput = {
   externalRepositoryId: number;
@@ -31,12 +32,20 @@ export const getMembers: GetMembersFunction = async (
   }
 
   const { members, pagination } = await integrations.sourceControl.fetchMembers(externalRepositoryId, namespaceName, repositoryName, perPage, page);
- 
-  // TODO: Deki is a wizard
+
   const insertedMembers = await db.transaction(async (tx) => {
     return Promise.all(members.map(member =>
       tx.insert(entities.members).values(member)
-        .onConflictDoUpdate({ target: [entities.members.externalId, entities.members.forgeType], set: { username: member.username } })
+        .onConflictDoUpdate({
+          target: [
+            entities.members.externalId,
+            entities.members.forgeType
+          ],
+          set: {
+            username: member.username,
+            _updatedAt: sql`(strftime('%s', 'now'))`,
+          }
+        })
         .returning()
         .get()
     ));

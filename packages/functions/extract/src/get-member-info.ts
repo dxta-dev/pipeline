@@ -1,7 +1,7 @@
 import type { Member } from "@acme/extract-schema";
 import type { ExtractFunction, Entities } from "./config";
 import type { SourceControl } from "@acme/source-control";
-import { eq } from "drizzle-orm";
+import { eq, sql} from "drizzle-orm";
 
 export type GetMemberInfoInput = {
   memberId: number;
@@ -35,7 +35,10 @@ export const getMemberInfo: GetMemberInfoFunction = async (
   const { member: fetchedMember } = await integrations.sourceControl.fetchUserInfo(member.externalId, member.username);
 
   const insertedMember = await db.update(entities.members)
-    .set(fetchedMember)
+    .set({
+      ...fetchedMember,
+      _updatedAt: sql`(strftime('%s', 'now'))`,
+    })
     .where(eq(entities.members.id, memberId))
     .returning()
     .get()

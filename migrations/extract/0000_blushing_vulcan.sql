@@ -14,7 +14,7 @@ CREATE TABLE `members` (
 	`name` text,
 	`username` text NOT NULL,
 	`email` text,
-	`extractedSource` integer,
+	`extracted_source` integer,
 	`__created_at` integer DEFAULT (strftime('%s', 'now')),
 	`__updated_at` integer DEFAULT (strftime('%s', 'now'))
 );

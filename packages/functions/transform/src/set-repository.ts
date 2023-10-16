@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import type { ExtractEntities, TransformEntities, TransformFunction } from "./config";
 import type { NewRepository as TransformedRepository } from "@acme/transform-schema";
 
@@ -30,6 +30,15 @@ export const setRepository: SetRepositoryFunction = async (
   } satisfies TransformedRepository;
 
   await transform.db.insert(transform.entities.repositories).values(transformedRepository)
-    .onConflictDoNothing()
+    .onConflictDoUpdate({
+      target: [
+        transform.entities.repositories.externalId,
+        transform.entities.repositories.forgeType
+      ],
+      set: {
+        name: transformedRepository.name,
+        _updatedAt: sql`(strftime('%s', 'now'))`,
+      },
+    })
     .run();
 }
