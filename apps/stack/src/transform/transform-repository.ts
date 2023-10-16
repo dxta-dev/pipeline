@@ -12,13 +12,13 @@ import { setRepository } from "@acme/transform-functions";
 
 const context: Context<SetRepositoryExtractEntities, SetRepositoryTransformEntities> = {
   extract: {
-    db: drizzle(createClient({ url: Config.DATABASE_URL, authToken: Config.DATABASE_AUTH_TOKEN })),
+    db: drizzle(createClient({ url: Config.EXTRACT_DATABASE_URL, authToken: Config.EXTRACT_DATABASE_AUTH_TOKEN })),
     entities: {
       repositories: extract.repositories
     }
   },
   transform: {
-    db: drizzle(createClient({ url: Config.TRANSFORM_DB_URL, authToken: Config.TRANSFORM_DB_AUTH_TOKEN })),
+    db: drizzle(createClient({ url: Config.TRANSFORM_DATABASE_URL, authToken: Config.TRANSFORM_DATABASE_AUTH_TOKEN })),
     entities: {
       repositories: transform.repositories
     }

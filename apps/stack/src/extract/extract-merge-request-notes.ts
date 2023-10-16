@@ -11,7 +11,7 @@ import { EventHandler } from "@stack/config/create-event";
 import { extractMembersEvent, extractMergeRequestsEvent } from "./events";
 import { getClerkUserToken } from "./get-clerk-user-token";
 
-const client = createClient({ url: Config.DATABASE_URL, authToken: Config.DATABASE_AUTH_TOKEN });
+const client = createClient({ url: Config.EXTRACT_DATABASE_URL, authToken: Config.EXTRACT_DATABASE_AUTH_TOKEN });
 
 const initSourceControl = async (userId: string, sourceControl: 'github' | 'gitlab') => {
   const accessToken = await getClerkUserToken(userId, `oauth_${sourceControl}`);
