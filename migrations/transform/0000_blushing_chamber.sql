@@ -37,7 +37,7 @@ CREATE TABLE `merge_request_fact_dates_junk` (
 	FOREIGN KEY (`started_review_at`) REFERENCES `dates`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
-CREATE TABLE `merge_request_facts` (
+CREATE TABLE `merge_request_metrics` (
 	`id` integer PRIMARY KEY NOT NULL,
 	`users_junk` integer NOT NULL,
 	`repository` integer NOT NULL,
