@@ -7,14 +7,14 @@ declare module "sst/node/config" {
 }import "sst/node/config";
 declare module "sst/node/config" {
   export interface SecretResources {
-    "DATABASE_URL": {
+    "EXTRACT_DATABASE_URL": {
       value: string;
     }
   }
 }import "sst/node/config";
 declare module "sst/node/config" {
   export interface SecretResources {
-    "DATABASE_AUTH_TOKEN": {
+    "EXTRACT_DB_AUTH_TOKEN": {
       value: string;
     }
   }
