@@ -155,6 +155,7 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (evt) => 
   if (arrayOfExtractMergeRequests.length === 0) return;
 
   await sender.sendAll(arrayOfExtractMergeRequests, {
+    crawlId: evt.metadata.crawlId,
     version: 1,
     caller: 'extract-merge-requests',
     sourceControl,
