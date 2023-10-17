@@ -180,12 +180,8 @@ export class GitHubSourceControl implements SourceControl {
         sort: 'updated',
       });
 
-      const linkHeader = parseLinkHeader(searchResult.headers.link);
-
       return {
         totalCount: searchResult.data.total_count,
-        lastPage: linkHeader?.last?.page,
-        perPage: linkHeader?.next?.per_page,
       }
     }
 
