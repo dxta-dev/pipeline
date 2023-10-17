@@ -33,6 +33,7 @@ export const namespaceMemberSenderHandler = createMessageHandler({
       userId: message.metadata.userId,
       from: message.metadata.from,
       to: message.metadata.to,
+      crawlId: message.metadata.crawlId,
     });
   }
 });
@@ -78,9 +79,10 @@ type ExtractNamespaceMembersPageInput = {
   paginationInput: Pick<Pagination, "page" | "perPage">;
   from: Date;
   to: Date;
+  crawlId: number;
 }
 
-const extractNamespaceMembersPage = async ({ namespace, repositoryId, sourceControl, userId, paginationInput, from, to }: ExtractNamespaceMembersPageInput) => {
+const extractNamespaceMembersPage = async ({ namespace, repositoryId, sourceControl, userId, paginationInput, from, to, crawlId }: ExtractNamespaceMembersPageInput) => {
 
   context.integrations.sourceControl = await initSourceControl(userId, sourceControl);
 
@@ -95,6 +97,7 @@ const extractNamespaceMembersPage = async ({ namespace, repositoryId, sourceCont
   await extractMembersEvent.publish({
     memberIds: members.map(member => member.id)
   }, {
+    crawlId,
     version: 1,
     caller: 'extract-namespace-member',
     sourceControl: sourceControl,
@@ -126,6 +129,7 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
     },
     from: ev.metadata.from,
     to: ev.metadata.to,
+    crawlId: ev.metadata.crawlId,
   });
 
   const arrayOfExtractMemberPageMessageContent = []; 
@@ -152,6 +156,7 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
     timestamp: new Date().getTime(),
     from: ev.metadata.from,
     to: ev.metadata.to,
+    crawlId: ev.metadata.crawlId,
   });
 
 });

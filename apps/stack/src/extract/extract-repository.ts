@@ -12,14 +12,14 @@ import { ApiHandler, useJsonBody } from 'sst/node/api';
 import { getClerkUserToken } from "./get-clerk-user-token";
 import { setInstance } from "@acme/crawl-functions";
 
-const client = createClient({ 
-  url: Config.EXTRACT_DATABASE_URL, 
-  authToken: Config.EXTRACT_DATABASE_AUTH_TOKEN 
+const client = createClient({
+  url: Config.EXTRACT_DATABASE_URL,
+  authToken: Config.EXTRACT_DATABASE_AUTH_TOKEN
 });
 
-const crawlClient = createClient({ 
-  url: Config.CRAWL_DATABASE_URL, 
-  authToken: Config.CRAWL_DATABASE_AUTH_TOKEN 
+const crawlClient = createClient({
+  url: Config.CRAWL_DATABASE_URL,
+  authToken: Config.CRAWL_DATABASE_AUTH_TOKEN
 });
 
 const db = drizzle(client);
@@ -110,21 +110,21 @@ export const handler = ApiHandler(async (ev) => {
 
   const { repository, namespace } = await getRepository({ externalRepositoryId: repositoryId, repositoryName, namespaceName }, context);
 
-  const { instanceId }= await setInstance({ repositoryId: repository.id, userId: sub }, { db: crawlDb, entities: { instances } });
+  const { instanceId } = await setInstance({ repositoryId: repository.id, userId: sub }, { db: crawlDb, entities: { instances } });
 
   await extractRepositoryEvent.publish(
-    { 
-      repositoryId: repository.id, 
-      namespaceId: namespace.id 
-    }, 
-    { 
+    {
+      repositoryId: repository.id,
+      namespaceId: namespace.id
+    },
+    {
       crawlId: instanceId,
-      caller: 'extract-repository', 
-      timestamp: new Date().getTime(), 
-      version: 1, 
-      sourceControl, 
-      userId: sub, 
-      from, 
+      caller: 'extract-repository',
+      timestamp: new Date().getTime(),
+      version: 1,
+      sourceControl,
+      userId: sub,
+      from,
       to,
     }
   );

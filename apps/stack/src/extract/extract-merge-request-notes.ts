@@ -57,6 +57,7 @@ export const mergeRequestNoteSenderHandler = createMessageHandler({
     }, context);
 
     await extractMembersEvent.publish({ memberIds: members.map(member => member.id) }, {
+      crawlId: message.metadata.crawlId,
       version: 1,
       caller: 'extract-merge-request-notes',
       sourceControl,
