@@ -167,7 +167,7 @@ export class GitHubSourceControl implements SourceControl {
       let updated;
 
       if (to === 'today') {
-        updated = `>${from.toISOString().slice(0, 10)}`;
+        updated = `>=${from.toISOString().slice(0, 10)}`;
       } else {
         updated = `${from.toISOString().slice(0, 10)}..${to.toISOString().slice(0, 10)}`;
       }
