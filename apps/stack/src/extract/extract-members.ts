@@ -26,13 +26,14 @@ export const memberSenderHandler = createMessageHandler({
   }).shape,
   handler: async (message) => {
     await extractMembersPage({
+      crawlId: message.metadata.crawlId,
       namespace: message.content.namespace,
       paginationInput: message.content.pagination,
       repository: message.content.repository,
       sourceControl: message.metadata.sourceControl,
       userId: message.metadata.userId,
       from: message.metadata.from,
-      to: message.metadata.to  
+      to: message.metadata.to
     });
   }
 });
@@ -69,10 +70,11 @@ type ExtractMembersPageInput = {
   paginationInput: Pick<Pagination, "page" | "perPage">;
   from: Date;
   to: Date;
+  crawlId: number;
 }
 
-const extractMembersPage = async ({ namespace, repository, sourceControl, userId, paginationInput, from, to }: ExtractMembersPageInput) => {
-  
+const extractMembersPage = async ({ namespace, repository, sourceControl, userId, paginationInput, from, to, crawlId }: ExtractMembersPageInput) => {
+
   context.integrations.sourceControl = await initSourceControl(userId, sourceControl);
 
   const { members, paginationInfo } = await getMembers({
@@ -87,6 +89,7 @@ const extractMembersPage = async ({ namespace, repository, sourceControl, userId
   await extractMembersEvent.publish({
     memberIds: members.map(member => member.id)
   }, {
+    crawlId,
     version: 1,
     caller: 'extract-member',
     sourceControl: sourceControl,
@@ -118,6 +121,7 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
     },
     from: ev.metadata.from,
     to: ev.metadata.to,
+    crawlId: ev.metadata.crawlId,
   });
 
   const arrayOfExtractMemberPageMessageContent: { repository: Repository, namespace: Namespace, pagination: Pagination }[] = [];
@@ -143,7 +147,8 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
     userId: ev.metadata.userId,
     timestamp: new Date().getTime(),
     from: ev.metadata.from,
-    to: ev.metadata.to
+    to: ev.metadata.to,
+    crawlId: ev.metadata.crawlId,
   });
 
 });

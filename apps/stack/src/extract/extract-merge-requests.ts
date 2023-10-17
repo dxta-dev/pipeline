@@ -129,6 +129,7 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (evt) => 
   );
 
   await extractMergeRequestsEvent.publish({ mergeRequestIds: mergeRequests.map(mr => mr.id), namespaceId: namespace.id, repositoryId: repository.id }, {
+    crawlId: evt.metadata.crawlId,
     version: 1,
     caller: 'extract-merge-requests',
     sourceControl,
