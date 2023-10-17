@@ -14,6 +14,7 @@ export const metadataSchema = z.object({
   userId: z.string(),
   from: z.coerce.date(),
   to: z.coerce.date(),
+  crawlId: z.string(),
 });
 
 export enum MessageKind {
