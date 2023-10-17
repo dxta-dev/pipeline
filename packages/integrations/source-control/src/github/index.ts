@@ -202,18 +202,16 @@ export class GitHubSourceControl implements SourceControl {
       if (isToday(timePeriod.to)) {
         return {
           page,
-          totalPages: searchPRsResult.lastPage ? Number(searchPRsResult.lastPage) : page,
-          perPage: searchPRsResult.perPage ? Number(searchPRsResult.perPage) : perPage,
+          totalPages: Math.ceil(searchPRsResult.totalCount / perPage),
+          perPage, // perPage should be calculated from the pulls api not search
         };
       }
       const searchOffsetResult = await serchPRs(namespaceName, repositoryName, page, perPage, timePeriod.from, 'today');
 
-      const calcPerPage = searchOffsetResult.perPage ? Number(searchOffsetResult.perPage) : perPage;
-
       return {
-        page: page + Math.floor((searchOffsetResult.totalCount - searchPRsResult.totalCount) / calcPerPage),
-        totalPages: searchOffsetResult.lastPage ? Number(searchOffsetResult.lastPage) : page,
-        perPage: calcPerPage,
+        page: page + Math.floor((searchOffsetResult.totalCount - searchPRsResult.totalCount) / perPage),
+        totalPages: Math.ceil(searchOffsetResult.totalCount / perPage), // totalPages is actually the last page that contains MRs inside the search period
+        perPage, // perPage should be calculated from pulls api not search
       }
 
     }
@@ -237,12 +235,12 @@ export class GitHubSourceControl implements SourceControl {
     const linkHeader = parseLinkHeader(result.headers.link) || { next: { per_page: perPage } };
 
     const pullsTotalPages = (!('last' in linkHeader)) ? page : Number(linkHeader.last?.page);
-    const pullsPerPage =  ('next' in linkHeader) ? Number(linkHeader.next?.per_page) : Number(linkHeader.prev?.per_page);
-    
+    const pullsPerPage = ('next' in linkHeader) ? Number(linkHeader.next?.per_page) : Number(linkHeader.prev?.per_page);
+
     const pagination = {
       page: firstPagePagination?.page || page,
       perPage: perPage || firstPagePagination?.perPage || pullsPerPage, // Dejan: This can break if firstPagePagination returns different perPage -> check documentation on linkHeader ???
-      totalPages: totalPages || firstPagePagination?.totalPages || pullsTotalPages,
+      totalPages: totalPages || firstPagePagination?.totalPages || pullsTotalPages, // Refactor: should recalculate totalPages here if pulls api returns different perPage
     } satisfies Pagination;
     return {
       mergeRequests: result.data
@@ -265,7 +263,7 @@ export class GitHubSourceControl implements SourceControl {
     }
   }
 
-  async fetchMergeRequestDiffs(repository: Repository, namespace: Namespace, mergeRequest: MergeRequest, perPage: number, page?: number ): Promise<{ mergeRequestDiffs: NewMergeRequestDiff[], pagination: Pagination }> {
+  async fetchMergeRequestDiffs(repository: Repository, namespace: Namespace, mergeRequest: MergeRequest, perPage: number, page?: number): Promise<{ mergeRequestDiffs: NewMergeRequestDiff[], pagination: Pagination }> {
     page = page || 1;
 
     const result = await this.api.pulls.listFiles({
