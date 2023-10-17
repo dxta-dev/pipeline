@@ -3,7 +3,7 @@ import { sql } from 'drizzle-orm';
 import { sqliteTable, integer } from 'drizzle-orm/sqlite-core';
 import { forgeUsers } from './forge-users';
 
-export const userJunk = sqliteTable('user_junk', {
+export const mergeRequestUsersJunk = sqliteTable('merge_request_fact_users_junk', {
   id: integer('id').primaryKey(),
 
   author: integer('author').notNull().references(() => forgeUsers.id),
@@ -43,5 +43,5 @@ export const userJunk = sqliteTable('user_junk', {
   _updatedAt: integer('__updated_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
 });
 
-export type UserJunk = InferSelectModel<typeof userJunk>;
-export type NewUserJunk = InferInsertModel<typeof userJunk>;
+export type MergeRequestUsersJunk = InferSelectModel<typeof mergeRequestUsersJunk>;
+export type NewMergeRequestUsersJunk = InferInsertModel<typeof mergeRequestUsersJunk>;

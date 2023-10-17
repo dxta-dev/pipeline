@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "b064972e-41a2-4ea3-af1c-9cdb4bff010f",
+  "id": "e0be6476-e9f1-4c30-be88-dad7ffcd57fe",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "dates": {
@@ -137,8 +137,8 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "merge_request_reports": {
-      "name": "merge_request_reports",
+    "merge_request_fact_dates_junk": {
+      "name": "merge_request_fact_dates_junk",
       "columns": {
         "id": {
           "name": "id",
@@ -147,29 +147,209 @@
           "notNull": true,
           "autoincrement": false
         },
-        "forge_user_id": {
-          "name": "forge_user_id",
+        "merged_at": {
+          "name": "merged_at",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "repository_id": {
-          "name": "repository_id",
+        "opened_at": {
+          "name": "opened_at",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "merge_request_id": {
-          "name": "merge_request_id",
+        "closed_at": {
+          "name": "closed_at",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "date_id": {
-          "name": "date_id",
+        "last_updated_at": {
+          "name": "last_updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "started_coding_at": {
+          "name": "started_coding_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "started_pickup_at": {
+          "name": "started_pickup_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "started_review_at": {
+          "name": "started_review_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "__created_at": {
+          "name": "__created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        },
+        "__updated_at": {
+          "name": "__updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "merge_request_fact_dates_junk_merged_at_dates_id_fk": {
+          "name": "merge_request_fact_dates_junk_merged_at_dates_id_fk",
+          "tableFrom": "merge_request_fact_dates_junk",
+          "tableTo": "dates",
+          "columnsFrom": [
+            "merged_at"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "merge_request_fact_dates_junk_opened_at_dates_id_fk": {
+          "name": "merge_request_fact_dates_junk_opened_at_dates_id_fk",
+          "tableFrom": "merge_request_fact_dates_junk",
+          "tableTo": "dates",
+          "columnsFrom": [
+            "opened_at"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "merge_request_fact_dates_junk_closed_at_dates_id_fk": {
+          "name": "merge_request_fact_dates_junk_closed_at_dates_id_fk",
+          "tableFrom": "merge_request_fact_dates_junk",
+          "tableTo": "dates",
+          "columnsFrom": [
+            "closed_at"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "merge_request_fact_dates_junk_last_updated_at_dates_id_fk": {
+          "name": "merge_request_fact_dates_junk_last_updated_at_dates_id_fk",
+          "tableFrom": "merge_request_fact_dates_junk",
+          "tableTo": "dates",
+          "columnsFrom": [
+            "last_updated_at"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "merge_request_fact_dates_junk_started_coding_at_dates_id_fk": {
+          "name": "merge_request_fact_dates_junk_started_coding_at_dates_id_fk",
+          "tableFrom": "merge_request_fact_dates_junk",
+          "tableTo": "dates",
+          "columnsFrom": [
+            "started_coding_at"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "merge_request_fact_dates_junk_started_pickup_at_dates_id_fk": {
+          "name": "merge_request_fact_dates_junk_started_pickup_at_dates_id_fk",
+          "tableFrom": "merge_request_fact_dates_junk",
+          "tableTo": "dates",
+          "columnsFrom": [
+            "started_pickup_at"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "merge_request_fact_dates_junk_started_review_at_dates_id_fk": {
+          "name": "merge_request_fact_dates_junk_started_review_at_dates_id_fk",
+          "tableFrom": "merge_request_fact_dates_junk",
+          "tableTo": "dates",
+          "columnsFrom": [
+            "started_review_at"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "merge_request_metrics": {
+      "name": "merge_request_metrics",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "users_junk": {
+          "name": "users_junk",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "repository": {
+          "name": "repository",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "merge_request": {
+          "name": "merge_request",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "dates_junk": {
+          "name": "dates_junk",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "mr_size": {
+          "name": "mr_size",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
@@ -196,8 +376,36 @@
           "notNull": true,
           "autoincrement": false
         },
-        "lines_changed": {
-          "name": "lines_changed",
+        "handover": {
+          "name": "handover",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "review_depth": {
+          "name": "review_depth",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "merged": {
+          "name": "merged",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "closed": {
+          "name": "closed",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "approved": {
+          "name": "approved",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
@@ -205,22 +413,6 @@
         },
         "reviewed": {
           "name": "reviewed",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "default": false
-        },
-        "approved": {
-          "name": "approved",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "default": false
-        },
-        "review_depth": {
-          "name": "review_depth",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
@@ -245,12 +437,12 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "merge_request_reports_forge_user_id_forge_users_id_fk": {
-          "name": "merge_request_reports_forge_user_id_forge_users_id_fk",
-          "tableFrom": "merge_request_reports",
-          "tableTo": "forge_users",
+        "merge_request_metrics_users_junk_merge_request_fact_users_junk_id_fk": {
+          "name": "merge_request_metrics_users_junk_merge_request_fact_users_junk_id_fk",
+          "tableFrom": "merge_request_metrics",
+          "tableTo": "merge_request_fact_users_junk",
           "columnsFrom": [
-            "forge_user_id"
+            "users_junk"
           ],
           "columnsTo": [
             "id"
@@ -258,12 +450,12 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "merge_request_reports_repository_id_repositories_id_fk": {
-          "name": "merge_request_reports_repository_id_repositories_id_fk",
-          "tableFrom": "merge_request_reports",
+        "merge_request_metrics_repository_repositories_id_fk": {
+          "name": "merge_request_metrics_repository_repositories_id_fk",
+          "tableFrom": "merge_request_metrics",
           "tableTo": "repositories",
           "columnsFrom": [
-            "repository_id"
+            "repository"
           ],
           "columnsTo": [
             "id"
@@ -271,12 +463,12 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "merge_request_reports_merge_request_id_merge_requests_id_fk": {
-          "name": "merge_request_reports_merge_request_id_merge_requests_id_fk",
-          "tableFrom": "merge_request_reports",
+        "merge_request_metrics_merge_request_merge_requests_id_fk": {
+          "name": "merge_request_metrics_merge_request_merge_requests_id_fk",
+          "tableFrom": "merge_request_metrics",
           "tableTo": "merge_requests",
           "columnsFrom": [
-            "merge_request_id"
+            "merge_request"
           ],
           "columnsTo": [
             "id"
@@ -284,12 +476,685 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "merge_request_reports_date_id_dates_id_fk": {
-          "name": "merge_request_reports_date_id_dates_id_fk",
-          "tableFrom": "merge_request_reports",
-          "tableTo": "dates",
+        "merge_request_metrics_dates_junk_merge_request_fact_dates_junk_id_fk": {
+          "name": "merge_request_metrics_dates_junk_merge_request_fact_dates_junk_id_fk",
+          "tableFrom": "merge_request_metrics",
+          "tableTo": "merge_request_fact_dates_junk",
           "columnsFrom": [
-            "date_id"
+            "dates_junk"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "merge_request_fact_users_junk": {
+      "name": "merge_request_fact_users_junk",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "author": {
+          "name": "author",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "merged_by": {
+          "name": "merged_by",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "approver1": {
+          "name": "approver1",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "approver2": {
+          "name": "approver2",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "approver3": {
+          "name": "approver3",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "approver4": {
+          "name": "approver4",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "approver5": {
+          "name": "approver5",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "approver6": {
+          "name": "approver6",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "approver7": {
+          "name": "approver7",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "approver8": {
+          "name": "approver8",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "approver9": {
+          "name": "approver9",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "approver10": {
+          "name": "approver10",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "commiter1": {
+          "name": "commiter1",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "commiter2": {
+          "name": "commiter2",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "commiter3": {
+          "name": "commiter3",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "commiter4": {
+          "name": "commiter4",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "commiter5": {
+          "name": "commiter5",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "commiter6": {
+          "name": "commiter6",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "commiter7": {
+          "name": "commiter7",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "commiter8": {
+          "name": "commiter8",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "commiter9": {
+          "name": "commiter9",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "commiter10": {
+          "name": "commiter10",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "reviewer1": {
+          "name": "reviewer1",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "reviewer2": {
+          "name": "reviewer2",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "reviewer3": {
+          "name": "reviewer3",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "reviewer4": {
+          "name": "reviewer4",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "reviewer5": {
+          "name": "reviewer5",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "reviewer6": {
+          "name": "reviewer6",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "reviewer7": {
+          "name": "reviewer7",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "reviewer8": {
+          "name": "reviewer8",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "reviewer9": {
+          "name": "reviewer9",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "reviewer10": {
+          "name": "reviewer10",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "__created_at": {
+          "name": "__created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        },
+        "__updated_at": {
+          "name": "__updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "merge_request_fact_users_junk_author_forge_users_id_fk": {
+          "name": "merge_request_fact_users_junk_author_forge_users_id_fk",
+          "tableFrom": "merge_request_fact_users_junk",
+          "tableTo": "forge_users",
+          "columnsFrom": [
+            "author"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "merge_request_fact_users_junk_merged_by_forge_users_id_fk": {
+          "name": "merge_request_fact_users_junk_merged_by_forge_users_id_fk",
+          "tableFrom": "merge_request_fact_users_junk",
+          "tableTo": "forge_users",
+          "columnsFrom": [
+            "merged_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "merge_request_fact_users_junk_approver1_forge_users_id_fk": {
+          "name": "merge_request_fact_users_junk_approver1_forge_users_id_fk",
+          "tableFrom": "merge_request_fact_users_junk",
+          "tableTo": "forge_users",
+          "columnsFrom": [
+            "approver1"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "merge_request_fact_users_junk_approver2_forge_users_id_fk": {
+          "name": "merge_request_fact_users_junk_approver2_forge_users_id_fk",
+          "tableFrom": "merge_request_fact_users_junk",
+          "tableTo": "forge_users",
+          "columnsFrom": [
+            "approver2"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "merge_request_fact_users_junk_approver3_forge_users_id_fk": {
+          "name": "merge_request_fact_users_junk_approver3_forge_users_id_fk",
+          "tableFrom": "merge_request_fact_users_junk",
+          "tableTo": "forge_users",
+          "columnsFrom": [
+            "approver3"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "merge_request_fact_users_junk_approver4_forge_users_id_fk": {
+          "name": "merge_request_fact_users_junk_approver4_forge_users_id_fk",
+          "tableFrom": "merge_request_fact_users_junk",
+          "tableTo": "forge_users",
+          "columnsFrom": [
+            "approver4"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "merge_request_fact_users_junk_approver5_forge_users_id_fk": {
+          "name": "merge_request_fact_users_junk_approver5_forge_users_id_fk",
+          "tableFrom": "merge_request_fact_users_junk",
+          "tableTo": "forge_users",
+          "columnsFrom": [
+            "approver5"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "merge_request_fact_users_junk_approver6_forge_users_id_fk": {
+          "name": "merge_request_fact_users_junk_approver6_forge_users_id_fk",
+          "tableFrom": "merge_request_fact_users_junk",
+          "tableTo": "forge_users",
+          "columnsFrom": [
+            "approver6"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "merge_request_fact_users_junk_approver7_forge_users_id_fk": {
+          "name": "merge_request_fact_users_junk_approver7_forge_users_id_fk",
+          "tableFrom": "merge_request_fact_users_junk",
+          "tableTo": "forge_users",
+          "columnsFrom": [
+            "approver7"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "merge_request_fact_users_junk_approver8_forge_users_id_fk": {
+          "name": "merge_request_fact_users_junk_approver8_forge_users_id_fk",
+          "tableFrom": "merge_request_fact_users_junk",
+          "tableTo": "forge_users",
+          "columnsFrom": [
+            "approver8"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "merge_request_fact_users_junk_approver9_forge_users_id_fk": {
+          "name": "merge_request_fact_users_junk_approver9_forge_users_id_fk",
+          "tableFrom": "merge_request_fact_users_junk",
+          "tableTo": "forge_users",
+          "columnsFrom": [
+            "approver9"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "merge_request_fact_users_junk_approver10_forge_users_id_fk": {
+          "name": "merge_request_fact_users_junk_approver10_forge_users_id_fk",
+          "tableFrom": "merge_request_fact_users_junk",
+          "tableTo": "forge_users",
+          "columnsFrom": [
+            "approver10"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "merge_request_fact_users_junk_commiter1_forge_users_id_fk": {
+          "name": "merge_request_fact_users_junk_commiter1_forge_users_id_fk",
+          "tableFrom": "merge_request_fact_users_junk",
+          "tableTo": "forge_users",
+          "columnsFrom": [
+            "commiter1"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "merge_request_fact_users_junk_commiter2_forge_users_id_fk": {
+          "name": "merge_request_fact_users_junk_commiter2_forge_users_id_fk",
+          "tableFrom": "merge_request_fact_users_junk",
+          "tableTo": "forge_users",
+          "columnsFrom": [
+            "commiter2"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "merge_request_fact_users_junk_commiter3_forge_users_id_fk": {
+          "name": "merge_request_fact_users_junk_commiter3_forge_users_id_fk",
+          "tableFrom": "merge_request_fact_users_junk",
+          "tableTo": "forge_users",
+          "columnsFrom": [
+            "commiter3"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "merge_request_fact_users_junk_commiter4_forge_users_id_fk": {
+          "name": "merge_request_fact_users_junk_commiter4_forge_users_id_fk",
+          "tableFrom": "merge_request_fact_users_junk",
+          "tableTo": "forge_users",
+          "columnsFrom": [
+            "commiter4"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "merge_request_fact_users_junk_commiter5_forge_users_id_fk": {
+          "name": "merge_request_fact_users_junk_commiter5_forge_users_id_fk",
+          "tableFrom": "merge_request_fact_users_junk",
+          "tableTo": "forge_users",
+          "columnsFrom": [
+            "commiter5"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "merge_request_fact_users_junk_commiter6_forge_users_id_fk": {
+          "name": "merge_request_fact_users_junk_commiter6_forge_users_id_fk",
+          "tableFrom": "merge_request_fact_users_junk",
+          "tableTo": "forge_users",
+          "columnsFrom": [
+            "commiter6"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "merge_request_fact_users_junk_commiter7_forge_users_id_fk": {
+          "name": "merge_request_fact_users_junk_commiter7_forge_users_id_fk",
+          "tableFrom": "merge_request_fact_users_junk",
+          "tableTo": "forge_users",
+          "columnsFrom": [
+            "commiter7"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "merge_request_fact_users_junk_commiter8_forge_users_id_fk": {
+          "name": "merge_request_fact_users_junk_commiter8_forge_users_id_fk",
+          "tableFrom": "merge_request_fact_users_junk",
+          "tableTo": "forge_users",
+          "columnsFrom": [
+            "commiter8"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "merge_request_fact_users_junk_commiter9_forge_users_id_fk": {
+          "name": "merge_request_fact_users_junk_commiter9_forge_users_id_fk",
+          "tableFrom": "merge_request_fact_users_junk",
+          "tableTo": "forge_users",
+          "columnsFrom": [
+            "commiter9"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "merge_request_fact_users_junk_commiter10_forge_users_id_fk": {
+          "name": "merge_request_fact_users_junk_commiter10_forge_users_id_fk",
+          "tableFrom": "merge_request_fact_users_junk",
+          "tableTo": "forge_users",
+          "columnsFrom": [
+            "commiter10"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "merge_request_fact_users_junk_reviewer1_forge_users_id_fk": {
+          "name": "merge_request_fact_users_junk_reviewer1_forge_users_id_fk",
+          "tableFrom": "merge_request_fact_users_junk",
+          "tableTo": "forge_users",
+          "columnsFrom": [
+            "reviewer1"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "merge_request_fact_users_junk_reviewer2_forge_users_id_fk": {
+          "name": "merge_request_fact_users_junk_reviewer2_forge_users_id_fk",
+          "tableFrom": "merge_request_fact_users_junk",
+          "tableTo": "forge_users",
+          "columnsFrom": [
+            "reviewer2"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "merge_request_fact_users_junk_reviewer3_forge_users_id_fk": {
+          "name": "merge_request_fact_users_junk_reviewer3_forge_users_id_fk",
+          "tableFrom": "merge_request_fact_users_junk",
+          "tableTo": "forge_users",
+          "columnsFrom": [
+            "reviewer3"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "merge_request_fact_users_junk_reviewer4_forge_users_id_fk": {
+          "name": "merge_request_fact_users_junk_reviewer4_forge_users_id_fk",
+          "tableFrom": "merge_request_fact_users_junk",
+          "tableTo": "forge_users",
+          "columnsFrom": [
+            "reviewer4"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "merge_request_fact_users_junk_reviewer5_forge_users_id_fk": {
+          "name": "merge_request_fact_users_junk_reviewer5_forge_users_id_fk",
+          "tableFrom": "merge_request_fact_users_junk",
+          "tableTo": "forge_users",
+          "columnsFrom": [
+            "reviewer5"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "merge_request_fact_users_junk_reviewer6_forge_users_id_fk": {
+          "name": "merge_request_fact_users_junk_reviewer6_forge_users_id_fk",
+          "tableFrom": "merge_request_fact_users_junk",
+          "tableTo": "forge_users",
+          "columnsFrom": [
+            "reviewer6"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "merge_request_fact_users_junk_reviewer7_forge_users_id_fk": {
+          "name": "merge_request_fact_users_junk_reviewer7_forge_users_id_fk",
+          "tableFrom": "merge_request_fact_users_junk",
+          "tableTo": "forge_users",
+          "columnsFrom": [
+            "reviewer7"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "merge_request_fact_users_junk_reviewer8_forge_users_id_fk": {
+          "name": "merge_request_fact_users_junk_reviewer8_forge_users_id_fk",
+          "tableFrom": "merge_request_fact_users_junk",
+          "tableTo": "forge_users",
+          "columnsFrom": [
+            "reviewer8"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "merge_request_fact_users_junk_reviewer9_forge_users_id_fk": {
+          "name": "merge_request_fact_users_junk_reviewer9_forge_users_id_fk",
+          "tableFrom": "merge_request_fact_users_junk",
+          "tableTo": "forge_users",
+          "columnsFrom": [
+            "reviewer9"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "merge_request_fact_users_junk_reviewer10_forge_users_id_fk": {
+          "name": "merge_request_fact_users_junk_reviewer10_forge_users_id_fk",
+          "tableFrom": "merge_request_fact_users_junk",
+          "tableTo": "forge_users",
+          "columnsFrom": [
+            "reviewer10"
           ],
           "columnsTo": [
             "id"
