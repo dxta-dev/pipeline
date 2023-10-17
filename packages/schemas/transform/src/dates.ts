@@ -8,6 +8,7 @@ export const dates = sqliteTable('dates', {
   week: integer('week').notNull(),
   month: integer('month').notNull(),
   year: integer('year').notNull(),
+
   _createdAt: integer('__created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
   _updatedAt: integer('__updated_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
 }, (dates) => ({
