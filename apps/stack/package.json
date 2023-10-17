@@ -19,8 +19,10 @@
   "dependencies": {
     "@acme/extract-functions": "*",
     "@acme/extract-schema": "*",
+    "@acme/crawl-schema": "*",
     "@acme/source-control": "*",
     "@acme/transform-functions": "*",
+    "@acme/crawl-functions": "*",
     "@aws-sdk/client-sqs": "^3.395.0",
     "@clerk/clerk-sdk-node": "^4.12.5",
     "@tsconfig/node16": "^16.1.1",

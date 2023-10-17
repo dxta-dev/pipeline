@@ -6,7 +6,7 @@ export type SetInstanceInput = {
 };
 
 export type SetInstaceOutput = {
-  instaceId: number;
+  instanceId: number;
 };
 
 export type SetInstanceEntities = Pick<Entities, "instances">;
@@ -24,6 +24,6 @@ export const setInstance: SetInstanceFunction = async (
     .returning().get();
 
   return {
-    instaceId: insertedInstance.id,
+    instanceId: insertedInstance.id,
   };
 };
