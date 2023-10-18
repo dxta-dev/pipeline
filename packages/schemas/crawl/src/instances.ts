@@ -11,6 +11,6 @@ export const instances = sqliteTable('instances', {
   _updatedAt: integer('__updated_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
 });
 
-export type Instance= InferSelectModel<typeof instances>;
-export type NewInstance= InferInsertModel<typeof instances>;
+export type Instance = InferSelectModel<typeof instances>;
+export type NewInstance = InferInsertModel<typeof instances>;
 
