@@ -77,6 +77,7 @@ export const eventHandler = EventHandler(extractMergeRequestsEvent, async (ev) =
 
   await sender.sendAll(arrayOfExtractMergeRequestData, {
     version: 1,
+    crawlId: ev.metadata.crawlId,
     caller: 'extract-merge-request-diffs',
     sourceControl,
     userId,

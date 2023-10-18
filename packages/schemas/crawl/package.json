@@ -11,8 +11,7 @@
     "studio:turso": "npm run with-env drizzle-kit studio -- --config turso.config.ts",
     "with-env": "dotenv -e ../../../.env --"
   },
-  "dependencies": {
-  },
+  "dependencies": {},
   "devDependencies": {
     "dotenv-cli": "^7.3.0",
     "drizzle-kit": "^0.19.13"

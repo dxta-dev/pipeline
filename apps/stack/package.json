@@ -17,6 +17,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@acme/crawl-functions": "*",
+    "@acme/crawl-schema": "*",
     "@acme/extract-functions": "*",
     "@acme/extract-schema": "*",
     "@acme/source-control": "*",

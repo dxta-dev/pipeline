@@ -56,6 +56,7 @@ export const mergeRequestSenderHandler = createMessageHandler({
     );
 
     await extractMergeRequestsEvent.publish({ mergeRequestIds: mergeRequests.map(mr => mr.id), namespaceId: namespace.id, repositoryId: repository.id }, {
+      crawlId: message.metadata.crawlId,
       version: 1,
       caller: 'extract-merge-requests',
       sourceControl: message.metadata.sourceControl,
@@ -128,6 +129,7 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (evt) => 
   );
 
   await extractMergeRequestsEvent.publish({ mergeRequestIds: mergeRequests.map(mr => mr.id), namespaceId: namespace.id, repositoryId: repository.id }, {
+    crawlId: evt.metadata.crawlId,
     version: 1,
     caller: 'extract-merge-requests',
     sourceControl,
@@ -153,6 +155,7 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (evt) => 
   if (arrayOfExtractMergeRequests.length === 0) return;
 
   await sender.sendAll(arrayOfExtractMergeRequests, {
+    crawlId: evt.metadata.crawlId,
     version: 1,
     caller: 'extract-merge-requests',
     sourceControl,
