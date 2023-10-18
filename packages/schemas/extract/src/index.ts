@@ -10,8 +10,7 @@ export { gitIdentities } from './git-identities';
 export {
   timelineEvents,
   AssignedEventSchema,
-  CommittedEventSchema,
-  ReviewRequestRemovedEventSchema,
+  CommittedEventSchema, ReviewRequestRemovedEventSchema,
   ReviewRequestedEventSchema,
   ReviewedEventSchema,
   UnassignedEventSchema,
