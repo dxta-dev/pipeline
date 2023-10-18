@@ -7,7 +7,15 @@ export { members, MemberSchema, NewMemberSchema } from './members';
 export { repositoriesToMembers } from './repositories-to-members';
 export { mergeRequestNotes} from './merge-request-notes';
 export { gitIdentities } from './git-identities';
-export { timelineEvents } from './timeline-events';
+export {
+  timelineEvents,
+  AssignedEventSchema,
+  CommittedEventSchema,
+  ReviewRequestRemovedEventSchema,
+  ReviewRequestedEventSchema,
+  ReviewedEventSchema,
+  UnassignedEventSchema,
+} from './timeline-events';
 
 export type { Repository, NewRepository } from './repositories';
 export type { Namespace, NewNamespace } from './namespaces';
