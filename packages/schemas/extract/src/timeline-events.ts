@@ -3,27 +3,28 @@ import { type InferInsertModel, type InferSelectModel, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { Enum } from './enum-column';
 
+const TimelineEventTypes = [
+  'assigned',
+  'closed',
+  'commented',
+  'committed',
+  'convert_to_draft',
+  'merged',
+  'ready_for_review',
+  'review_request_removed',
+  'review_requested',
+  'reviewed',
+  'unassigned',
+] as const;
+
+export type TimelineEventType = typeof TimelineEventTypes[number];
+
 export const timelineEvents = sqliteTable('timeline_events', {
   id: integer('id').primaryKey(),
   external_id: integer('external_id').notNull(),
   type: Enum('type',
     {
-      enum:
-        [
-          'assigned',
-          'closed',
-          'commented',
-          'committed',
-          'convert_to_draft',
-          'deployed',
-          'head_ref_force_pushed',
-          'merged',
-          'ready_for_review',
-          'review_request_removed',
-          'review_requested',
-          'reviewed',
-          'unassigned',
-        ]
+      enum: TimelineEventTypes,
     }
   ).notNull(),
   mergeRequestId: integer('merge_request_id').notNull(),
@@ -38,45 +39,51 @@ export const timelineEvents = sqliteTable('timeline_events', {
 
 
 export const AssignedEventSchema = z.object({
-  assignee: z.object({
-    id: z.number(),
-    name: z.string(),
-  }),
+  assigneeId: z.number(),
+  assigneeName: z.string(),
 });
+
+// ClosedEventSchema is empty
+
+// CommentedEventSchema is empty
 
 export const CommittedEventSchema = z.object({
-  committer: z.object({
-    email: z.number(),
-    name: z.string(),
-  }),
-  message: z.string(),
+  commiterEmail: z.string(),
+  commiterName: z.string(),
 });
 
-export const CommentedEventEventSchema = z.object({
-  body: z.string(),
+// ConvertToDraftEventSchema is empty
+
+// MergedEventSchema is empty
+
+// ReadyForReviewEventSchema is empty
+
+
+export const ReviewRequestRemovedEventSchema = z.object({
+  requestedReviewerId: z.number(),
+  requestedReviewerName: z.string(),
 });
 
 export const ReviewRequestedEventSchema = z.object({
-  requestedReviewere: z.object({
-    id: z.number(),
-    name: z.string(),
-  }),
+  requestedReviewerId: z.number(),
+  requestedReviewerName: z.string(),
 });
 
-export const ReviewSchemaEventSchema = z.object({
-  review: z.object({
-    id: z.number(),
-    name: z.string(),
-  }),
-  body: z.string(),
+export const ReviewedEventSchema = z.object({
   state: z.string(),
+});
+
+export const UnassignedEventSchema = z.object({
+  assigneeId: z.number(),
+  assigneeName: z.string(),
 });
 
 export type AssignedEvent = z.infer<typeof AssignedEventSchema>;
 export type CommittedEvent = z.infer<typeof CommittedEventSchema>;
-export type CommentedEventEvent = z.infer<typeof CommentedEventEventSchema>;
+export type ReviewRequestRemovedEvent = z.infer<typeof ReviewRequestRemovedEventSchema>;
 export type ReviewRequestedEvent = z.infer<typeof ReviewRequestedEventSchema>;
-export type ReviewSchemaEvent = z.infer<typeof ReviewSchemaEventSchema>;
+export type ReviewedEvent = z.infer<typeof ReviewedEventSchema>;
+export type UnassignedEvent = z.infer<typeof UnassignedEventSchema>;
 
 export type TimelineEvents = InferSelectModel<typeof timelineEvents>;
 export type NewTimelineEvents = InferInsertModel<typeof timelineEvents>;
