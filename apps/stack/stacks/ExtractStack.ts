@@ -10,11 +10,13 @@ import { z } from "zod";
 export function ExtractStack({ stack }: StackContext) {
   const EXTRACT_DATABASE_URL = new Config.Secret(stack, "EXTRACT_DATABASE_URL");
   const EXTRACT_DATABASE_AUTH_TOKEN = new Config.Secret(stack, "EXTRACT_DATABASE_AUTH_TOKEN");
+  const CRAWL_DATABASE_URL = new Config.Secret(stack, "CRAWL_DATABASE_URL");
+  const CRAWL_DATABASE_AUTH_TOKEN = new Config.Secret(stack, "CRAWL_DATABASE_AUTH_TOKEN");
   const CLERK_SECRET_KEY = new Config.Secret(stack, "CLERK_SECRET_KEY");
   const REDIS_URL = new Config.Secret(stack, "REDIS_URL");
   const REDIS_TOKEN = new Config.Secret(stack, "REDIS_TOKEN");
   const REDIS_USER_TOKEN_TTL = new Config.Parameter(stack, "REDIS_USER_TOKEN_TTL", { value: (20 * 60).toString() });
-  const PER_PAGE = new Config.Parameter(stack, "PER_PAGE", {value: (30).toString()});
+  const PER_PAGE = new Config.Parameter(stack, "PER_PAGE", { value: (30).toString() });
 
   const bus = new EventBus(stack, "ExtractBus", {
     rules: {
@@ -40,7 +42,17 @@ export function ExtractStack({ stack }: StackContext) {
     defaults: {
       retries: 10,
       function: {
-        bind: [EXTRACT_DATABASE_URL, CLERK_SECRET_KEY, EXTRACT_DATABASE_AUTH_TOKEN, REDIS_URL, REDIS_TOKEN, REDIS_USER_TOKEN_TTL, PER_PAGE],
+        bind: [
+          EXTRACT_DATABASE_URL,
+          CLERK_SECRET_KEY,
+          EXTRACT_DATABASE_AUTH_TOKEN,
+          CRAWL_DATABASE_URL,
+          CRAWL_DATABASE_AUTH_TOKEN,
+          REDIS_URL,
+          REDIS_TOKEN,
+          REDIS_USER_TOKEN_TTL,
+          PER_PAGE
+        ],
         runtime: "nodejs18.x",
       },
     },
@@ -61,7 +73,11 @@ export function ExtractStack({ stack }: StackContext) {
         EXTRACT_DATABASE_URL,
         CLERK_SECRET_KEY,
         EXTRACT_DATABASE_AUTH_TOKEN,
-        REDIS_URL, REDIS_TOKEN, REDIS_USER_TOKEN_TTL,
+        CRAWL_DATABASE_URL,
+        CRAWL_DATABASE_AUTH_TOKEN,
+        REDIS_URL,
+        REDIS_TOKEN,
+        REDIS_USER_TOKEN_TTL,
         PER_PAGE
       ],
       handler: "src/extract/queue.handler",
@@ -130,7 +146,17 @@ export function ExtractStack({ stack }: StackContext) {
     defaults: {
       authorizer: "JwtAuthorizer",
       function: {
-        bind: [bus, EXTRACT_DATABASE_URL, EXTRACT_DATABASE_AUTH_TOKEN, CLERK_SECRET_KEY, REDIS_URL, REDIS_TOKEN, REDIS_USER_TOKEN_TTL],
+        bind: [
+          bus, 
+          EXTRACT_DATABASE_URL, 
+          EXTRACT_DATABASE_AUTH_TOKEN, 
+          CRAWL_DATABASE_URL, 
+          CRAWL_DATABASE_AUTH_TOKEN, 
+          CLERK_SECRET_KEY, 
+          REDIS_URL, 
+          REDIS_TOKEN, 
+          REDIS_USER_TOKEN_TTL
+        ],
         runtime: "nodejs18.x",
       },
     },

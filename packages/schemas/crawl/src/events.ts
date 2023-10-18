@@ -5,35 +5,42 @@ import { z } from 'zod';
 import { instances } from './instances';
 import type { InferSelectModel, InferInsertModel } from 'drizzle-orm';
 
+
+const eventDetails = [
+  'crawlComplete',
+  'crawlFailed',
+  'crawlInfo',
+] as const;
+
+const [detailType, ...detailTypeRest] = eventDetails;
+
+export type EventDetailType = typeof eventDetails[number];
+
+const eventNamespaces = [
+  'repository',
+  'mergeRequest',
+  'mergeRequestCommit',
+  'mergeRequestDiff',
+  'mergeRequestNote',
+  'member',
+  'memberInfo',
+] as const;
+
+const [namespaceType, ...nammespaceTypeRest] = eventNamespaces;
+
+export type EventNamespaceType = typeof eventNamespaces[number];
+
 export const events = sqliteTable('events', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   crawlId: integer('instance_id').notNull().references(() => instances.id),
-  type: Enum('type',
+  namespace: Enum('namespace',
     {
-      enum:
-        [
-          'repository.crawlComplete',
-          'repository.crawlFailed',
-          'repository.crawlInfo',
-          'mergeRequest.crawlComplete',
-          'mergeRequest.crawlFailed',
-          'mergeRequest.crawlInfo',
-          'mergeRequestCommit.crawlComplete',
-          'mergeRequestCommit.crawlFailed',
-          'mergeRequestCommit.crawlInfo',
-          'mergeRequestDiff.crawlComplete',
-          'mergeRequestDiff.crawlFailed',
-          'mergeRequestDiff.crawlInfo',
-          'mergeRequestNote.crawlComplete',
-          'mergeRequestNote.crawlFailed',
-          'mergeRequestNote.crawlInfo',
-          'member.crawlComplete',
-          'member.crawlFailed',
-          'member.crawlInfo',
-          'memberInfo.crawlComplete',
-          'memberInfo.crawlFailed',
-          'memberInfo.crawlInfo',
-        ]
+      enum: [namespaceType as string, ...nammespaceTypeRest],
+    }
+  ).notNull(),
+  detail: Enum('detail',
+    {
+      enum: [detailType as string, ...detailTypeRest],
     }
   ).notNull(),
   timestamp: integer('timestamp', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
@@ -58,6 +65,10 @@ export const CrawlInfoSchema = z.object({
   message: z.string().nullable(),
   pages: z.number().nonnegative().int(),
 });
+
+export type CrawlComplete = z.infer<typeof CrawlCompleteSchema>;
+export type CrawlFailed = z.infer<typeof CrawlFailedSchema>;
+export type CrawlInfo = z.infer<typeof CrawlInfoSchema>;
 
 export type Event = InferSelectModel<typeof events>;
 export type NewEvent = InferInsertModel<typeof events>;

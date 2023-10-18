@@ -16,7 +16,8 @@ const metadataSchema = z.object({
   sourceControl: z.literal("github").or(z.literal("gitlab")),
   userId: z.string(),
   from: z.coerce.date(),
-  to: z.coerce.date()
+  to: z.coerce.date(),
+  crawlId: z.number(),
 });
 
 const extractMergeRequestEventSchema = z.object({

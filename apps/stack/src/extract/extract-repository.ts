@@ -3,16 +3,28 @@ import { getRepository } from "@acme/extract-functions";
 import type { Context, GetRepositorySourceControl, GetRepositoryEntities } from "@acme/extract-functions";
 import { GitlabSourceControl, GitHubSourceControl } from "@acme/source-control";
 import { repositories, namespaces } from "@acme/extract-schema";
+import { instances } from "@acme/crawl-schema";
 import { createClient } from '@libsql/client';
 import { drizzle } from 'drizzle-orm/libsql';
 import { z } from "zod";
 import { Config } from "sst/node/config";
 import { ApiHandler, useJsonBody } from 'sst/node/api';
 import { getClerkUserToken } from "./get-clerk-user-token";
+import { setInstance } from "@acme/crawl-functions";
 
-const client = createClient({ url: Config.EXTRACT_DATABASE_URL, authToken: Config.EXTRACT_DATABASE_AUTH_TOKEN });
+const client = createClient({
+  url: Config.EXTRACT_DATABASE_URL,
+  authToken: Config.EXTRACT_DATABASE_AUTH_TOKEN
+});
+
+const crawlClient = createClient({
+  url: Config.CRAWL_DATABASE_URL,
+  authToken: Config.CRAWL_DATABASE_AUTH_TOKEN
+});
 
 const db = drizzle(client);
+
+const crawlDb = drizzle(crawlClient);
 
 const context: Context<GetRepositorySourceControl, GetRepositoryEntities> = {
   entities: {
@@ -98,7 +110,25 @@ export const handler = ApiHandler(async (ev) => {
 
   const { repository, namespace } = await getRepository({ externalRepositoryId: repositoryId, repositoryName, namespaceName }, context);
 
-  await extractRepositoryEvent.publish({ repositoryId: repository.id, namespaceId: namespace.id }, { caller: 'extract-repository', timestamp: new Date().getTime(), version: 1, sourceControl, userId: sub, from, to });
+  const { instanceId } = await setInstance({ repositoryId: repository.id, userId: sub }, { db: crawlDb, entities: { instances } });
+
+  await extractRepositoryEvent.publish(
+    {
+      repositoryId: repository.id,
+      namespaceId: namespace.id
+    },
+    {
+      crawlId: instanceId,
+      caller: 'extract-repository',
+      timestamp: new Date().getTime(),
+      version: 1,
+      sourceControl,
+      userId: sub,
+      from,
+      to,
+    }
+  );
+
 
   return {
     statusCode: 200,

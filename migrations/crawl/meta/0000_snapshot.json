@@ -1,11 +1,11 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "2db63945-4c8c-4990-9f59-a43f23895ad0",
+  "id": "3eddd702-cb7a-44f8-9c64-cceb469b44a1",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
-    "crawl_events": {
-      "name": "crawl_events",
+    "events": {
+      "name": "events",
       "columns": {
         "id": {
           "name": "id",
@@ -14,15 +14,22 @@
           "notNull": true,
           "autoincrement": true
         },
-        "crawl_id": {
-          "name": "crawl_id",
+        "instance_id": {
+          "name": "instance_id",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "type": {
-          "name": "type",
+        "namespace": {
+          "name": "namespace",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "detail": {
+          "name": "detail",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
@@ -62,12 +69,12 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "crawl_events_crawl_id_crawls_id_fk": {
-          "name": "crawl_events_crawl_id_crawls_id_fk",
-          "tableFrom": "crawl_events",
-          "tableTo": "crawls",
+        "events_instance_id_instances_id_fk": {
+          "name": "events_instance_id_instances_id_fk",
+          "tableFrom": "events",
+          "tableTo": "instances",
           "columnsFrom": [
-            "crawl_id"
+            "instance_id"
           ],
           "columnsTo": [
             "id"
@@ -79,8 +86,8 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "crawls": {
-      "name": "crawls",
+    "instances": {
+      "name": "instances",
       "columns": {
         "id": {
           "name": "id",
@@ -99,7 +106,7 @@
         },
         "user_id": {
           "name": "user_id",
-          "type": "integer",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
