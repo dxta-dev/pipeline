@@ -7,6 +7,7 @@ export { members, MemberSchema, NewMemberSchema } from './members';
 export { repositoriesToMembers } from './repositories-to-members';
 export { mergeRequestNotes} from './merge-request-notes';
 export { gitIdentities } from './git-identities';
+export { timelineEvents } from './timeline-events';
 
 export type { Repository, NewRepository } from './repositories';
 export type { Namespace, NewNamespace } from './namespaces';
@@ -17,3 +18,4 @@ export type { Member, NewMember } from './members';
 export type { RepositoryToMember, NewRepositoryToMember } from './repositories-to-members';
 export type { MergeRequestNote, NewMergeRequestNote } from './merge-request-notes';
 export type { GitIdentities, NewGitIdentities } from './git-identities';
+export type { TimelineEvents, NewTimelineEvents } from './timeline-events';
