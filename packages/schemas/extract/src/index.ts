@@ -18,4 +18,19 @@ export type { Member, NewMember } from './members';
 export type { RepositoryToMember, NewRepositoryToMember } from './repositories-to-members';
 export type { MergeRequestNote, NewMergeRequestNote } from './merge-request-notes';
 export type { GitIdentities, NewGitIdentities } from './git-identities';
-export type { TimelineEvents, NewTimelineEvents } from './timeline-events';
+export type { 
+  TimelineEvents, 
+  NewTimelineEvents,
+  AssignedEvent,
+  ClosedEvent,
+  CommentedEvent,
+  CommittedEvent,
+  ConvertToDraftEvent,
+  MergedEvent,
+  ReadyForReviewEvent,
+  ReviewRequestRemovedEvent,
+  ReviewRequestedEvent,
+  ReviewedEvent,
+  UnassignedEvent,
+  TimelineEventType,
+} from './timeline-events';
