@@ -2,7 +2,7 @@ import type { SourceControl } from '..';
 import { Octokit } from '@octokit/rest';
 import parseLinkHeader from "parse-link-header";
 
-import type { NewRepository, NewNamespace, NewMergeRequest, NewMember, NewMergeRequestDiff, Repository, Namespace, MergeRequest, NewMergeRequestCommit, NewMergeRequestNote } from "@acme/extract-schema";
+import type { NewRepository, NewNamespace, NewMergeRequest, NewMember, NewMergeRequestDiff, Repository, Namespace, MergeRequest, NewMergeRequestCommit, NewMergeRequestNote, TimelineEvents } from "@acme/extract-schema";
 import type { Pagination, TimePeriod } from '../source-control';
 
 const FILE_STATUS_FLAGS_MAPPING: Record<
@@ -338,5 +338,18 @@ export class GitHubSourceControl implements SourceControl {
         authorExternalId: mergeRequestNote.user.id,
       }))
     }
+  }
+
+  async fetchTimelineEvents(repository: Repository, namespace: Namespace, mergeRequest: MergeRequest): Promise<{ timelineEvents: TimelineEvents[] }> {
+    const response = await this.api.issues.listEventsForTimeline({
+      owner: namespace.name,
+      repo: repository.name,
+      issue_number: mergeRequest.canonId,
+    });
+    // ToDo parse response.data
+    console.log('RES', response.data)
+    return {
+      timelineEvents: [],
+    };
   }
 }
