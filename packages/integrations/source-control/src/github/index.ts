@@ -328,6 +328,8 @@ export class GitHubSourceControl implements SourceControl {
       pull_number: mergeRequest.canonId,
     });
 
+    await this.fetchTimelineEvents(repository, namespace, mergeRequest);
+
     return {
       mergeRequestNotes: response.data.map(mergeRequestNote => ({
         externalId: mergeRequestNote.id,
@@ -346,8 +348,85 @@ export class GitHubSourceControl implements SourceControl {
       repo: repository.name,
       issue_number: mergeRequest.canonId,
     });
-    // ToDo parse response.data
-    console.log('RES', response.data)
+    const timelineEvents = response.data.filter(
+      (singleResponse) =>
+        singleResponse.event === "assigned" ||
+        singleResponse.event === "closed" ||
+        singleResponse.event === "commented" ||
+        singleResponse.event === "committed" ||
+        singleResponse.event === "convert_to_draft" ||
+        singleResponse.event === "merged" ||
+        singleResponse.event === "ready_for_review" ||
+        singleResponse.event === "review_request_removed" ||
+        singleResponse.event === "review_requested" ||
+        singleResponse.event === "reviewed" ||
+        singleResponse.event === "unassigned"
+    ).map((singleEvent) => {
+      let createdAt = '';
+      let actorName = '';
+      let actorEmail;
+      let actorId;
+      let data;
+      const test = singleEvent.;
+      console.log('TEST', test);
+      switch (singleEvent.event) {
+        case 'assigned':
+        case 'unassigned':
+          createdAt = singleEvent.created_at;
+          actorName = singleEvent.actor.login;
+          actorId = singleEvent.actor.id;
+          data = {
+            assigneeId: singleEvent.assignee.id,
+            assigneeName: singleEvent.assignee.login,
+            };
+          break;
+        case 'committed':
+          createdAt = singleEvent.author.date;
+          actorName = singleEvent.author.name;
+          actorEmail = singleEvent.author.email;
+          data =  {
+            committerEmail: singleEvent.committer.email,
+            committerName: singleEvent.committer.name,
+            committedDate: new Date(singleEvent.committer.date),
+          }
+          break;
+        case 'review_requested':
+        case 'review_request_removed':
+          createdAt = singleEvent.created_at;
+          actorName = singleEvent.actor.login;
+          actorId = singleEvent.actor.id;
+          data = {
+            requestedReviewerId: singleEvent.requested_reviewer.id,
+            requestedReviewerName: singleEvent.requested_reviewer.login,
+          };
+          break;
+        case 'reviewed':
+          createdAt = singleEvent.submitted_at;
+          actorName = singleEvent.user.login;
+          actorId = singleEvent.user.id;
+          data = {
+            state: singleEvent.state,
+          };
+          break;
+        default:
+          createdAt = singleEvent.created_at;
+          actorName = singleEvent.actor.login;
+          actorId = singleEvent.actor.id;
+          break;
+      }
+      const formattedData = {
+        type: singleEvent.event,
+        external_id: singleEvent.id,
+        mergeRequestId: mergeRequest.canonId,
+        timestamp: new Date(createdAt),
+        actorName: actorName,
+        actorId: actorId ? actorId as number : null,
+        actorEmail: actorEmail ? actorEmail as string : null,
+        data: data,
+      };
+      return formattedData;
+    });
+    console.log('TE', timelineEvents);
     return {
       timelineEvents: [],
     };
