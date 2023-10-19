@@ -2,8 +2,10 @@ import type { SourceControl } from '..';
 import { Octokit } from '@octokit/rest';
 import parseLinkHeader from "parse-link-header";
 
-import type { NewRepository, NewNamespace, NewMergeRequest, NewMember, NewMergeRequestDiff, Repository, Namespace, MergeRequest, NewMergeRequestCommit, NewMergeRequestNote, TimelineEvents } from "@acme/extract-schema";
+import type { NewRepository, NewNamespace, NewMergeRequest, NewMember, NewMergeRequestDiff, Repository, Namespace, MergeRequest, NewMergeRequestCommit, NewMergeRequestNote, TimelineEvents, NewTimelineEvents } from "@acme/extract-schema";
 import type { Pagination, TimePeriod } from '../source-control';
+import type { components } from '@octokit/openapi-types';
+import { TimelineEventTypes } from '../../../../../packages/schemas/extract/src/timeline-events';
 
 const FILE_STATUS_FLAGS_MAPPING: Record<
   "added"
@@ -160,7 +162,7 @@ export class GitHubSourceControl implements SourceControl {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+   
   async fetchMergeRequests(externalRepositoryId: number, namespaceName: string, repositoryName: string, repositoryId: number, perPage: number, creationPeriod?: TimePeriod, page?: number, totalPages?: number): Promise<{ mergeRequests: NewMergeRequest[]; pagination: Pagination; }> {
     page = page || 1;
     const serchPRs = async (namespaceName: string, repositoryName: string, page: number, perPage: number, from: Date, to: Date | 'today') => {
@@ -296,7 +298,7 @@ export class GitHubSourceControl implements SourceControl {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+   
   async fetchMergeRequestCommits(repository: Repository, namespace: Namespace, mergeRequest: MergeRequest): Promise<{ mergeRequestCommits: NewMergeRequestCommit[] }> {
     const response = await this.api.pulls.listCommits({
       owner: namespace.name,
@@ -342,93 +344,94 @@ export class GitHubSourceControl implements SourceControl {
     }
   }
 
-  async fetchTimelineEvents(repository: Repository, namespace: Namespace, mergeRequest: MergeRequest): Promise<{ timelineEvents: TimelineEvents[] }> {
+  async fetchTimelineEvents(repository: Repository, namespace: Namespace, mergeRequest: MergeRequest): Promise<{ timelineEvents: NewTimelineEvents[] }> {
     const response = await this.api.issues.listEventsForTimeline({
       owner: namespace.name,
       repo: repository.name,
       issue_number: mergeRequest.canonId,
     });
+
+    const eventArray = TimelineEventTypes;
+
     const timelineEvents = response.data.filter(
       (singleResponse) =>
-        singleResponse.event === "assigned" ||
-        singleResponse.event === "closed" ||
-        singleResponse.event === "commented" ||
-        singleResponse.event === "committed" ||
-        singleResponse.event === "convert_to_draft" ||
-        singleResponse.event === "merged" ||
-        singleResponse.event === "ready_for_review" ||
-        singleResponse.event === "review_request_removed" ||
-        singleResponse.event === "review_requested" ||
-        singleResponse.event === "reviewed" ||
-        singleResponse.event === "unassigned"
+      eventArray.includes(singleResponse.event as string)
     ).map((singleEvent) => {
       let createdAt = '';
       let actorName = '';
       let actorEmail;
       let actorId;
+      let externalId;
       let data;
-      const test = singleEvent.;
-      console.log('TEST', test);
       switch (singleEvent.event) {
         case 'assigned':
         case 'unassigned':
-          createdAt = singleEvent.created_at;
-          actorName = singleEvent.actor.login;
-          actorId = singleEvent.actor.id;
+          const assignedEvent = singleEvent as components["schemas"]["timeline-assigned-issue-event"] | components["schemas"]["timeline-unassigned-issue-event"];
+          createdAt = assignedEvent.created_at;
+          actorName = assignedEvent.actor.login;
+          actorId = assignedEvent.actor.id;
+          externalId = assignedEvent.id;
           data = {
-            assigneeId: singleEvent.assignee.id,
-            assigneeName: singleEvent.assignee.login,
+            assigneeId: assignedEvent.assignee.id,
+            assigneeName: assignedEvent.assignee.login,
             };
           break;
         case 'committed':
-          createdAt = singleEvent.author.date;
-          actorName = singleEvent.author.name;
-          actorEmail = singleEvent.author.email;
+          const committedEvent = singleEvent as components["schemas"]["timeline-committed-event"]
+          createdAt = committedEvent.author.date;
+          actorName = committedEvent.author.name;
+          actorEmail = committedEvent.author.email;
           data =  {
-            committerEmail: singleEvent.committer.email,
-            committerName: singleEvent.committer.name,
-            committedDate: new Date(singleEvent.committer.date),
+            committerEmail: committedEvent.committer.email,
+            committerName: committedEvent.committer.name,
+            committedDate: new Date(committedEvent.committer.date),
           }
           break;
         case 'review_requested':
         case 'review_request_removed':
-          createdAt = singleEvent.created_at;
-          actorName = singleEvent.actor.login;
-          actorId = singleEvent.actor.id;
+          const requestedEvent = singleEvent as components["schemas"]["review-requested-issue-event"] | components["schemas"]["review-request-removed-issue-event"];
+          createdAt = requestedEvent.created_at;
+          actorName = requestedEvent.actor.login;
+          actorId = requestedEvent.actor.id;
+          externalId = requestedEvent.id;
           data = {
-            requestedReviewerId: singleEvent.requested_reviewer.id,
-            requestedReviewerName: singleEvent.requested_reviewer.login,
+            requestedReviewerId: requestedEvent.requested_reviewer?.id,
+            requestedReviewerName: requestedEvent.requested_reviewer?.login,
           };
           break;
         case 'reviewed':
-          createdAt = singleEvent.submitted_at;
-          actorName = singleEvent.user.login;
-          actorId = singleEvent.user.id;
+          const reviewedEvent = singleEvent as components["schemas"]["timeline-reviewed-event"]
+          createdAt = reviewedEvent.submitted_at as string;
+          actorName = reviewedEvent.user.login;
+          actorId = reviewedEvent.user.id;
+          externalId = reviewedEvent.id;
           data = {
-            state: singleEvent.state,
+            state: reviewedEvent.state,
           };
           break;
         default:
-          createdAt = singleEvent.created_at;
-          actorName = singleEvent.actor.login;
-          actorId = singleEvent.actor.id;
+          const event = singleEvent as components["schemas"]["state-change-issue-event"];
+          createdAt = event.created_at;
+          actorName = event.actor.login;
+          actorId = event.actor.id;
+          externalId = event.id;
           break;
       }
       const formattedData = {
-        type: singleEvent.event,
-        external_id: singleEvent.id,
+        type: singleEvent.event as string,
+        external_id: externalId,
         mergeRequestId: mergeRequest.canonId,
         timestamp: new Date(createdAt),
         actorName: actorName,
-        actorId: actorId ? actorId as number : null,
-        actorEmail: actorEmail ? actorEmail as string : null,
+        actorId: actorId,
+        actorEmail: actorEmail,
         data: data,
       };
       return formattedData;
     });
     console.log('TE', timelineEvents);
     return {
-      timelineEvents: [],
+      timelineEvents: timelineEvents,
     };
   }
 }

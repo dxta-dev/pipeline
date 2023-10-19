@@ -3,7 +3,7 @@ import { type InferInsertModel, type InferSelectModel, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { Enum } from './enum-column';
 
-const TimelineEventTypes = [
+export const TimelineEventTypes = [
   'assigned',
   'closed',
   'commented',
