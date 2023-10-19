@@ -48,8 +48,9 @@ export const AssignedEventSchema = z.object({
 // CommentedEventSchema is empty
 
 export const CommittedEventSchema = z.object({
-  commiterEmail: z.string(),
-  commiterName: z.string(),
+  committedDate: z.number(),
+  committerEmail: z.string(),
+  committerName: z.string(),
 });
 
 // ConvertToDraftEventSchema is empty
