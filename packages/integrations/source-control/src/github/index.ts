@@ -330,8 +330,6 @@ export class GitHubSourceControl implements SourceControl {
       pull_number: mergeRequest.canonId,
     });
 
-    await this.fetchTimelineEvents(repository, namespace, mergeRequest);
-
     return {
       mergeRequestNotes: response.data.map(mergeRequestNote => ({
         externalId: mergeRequestNote.id,
@@ -429,7 +427,6 @@ export class GitHubSourceControl implements SourceControl {
       };
       return formattedData;
     });
-    console.log('TE', timelineEvents);
     return {
       timelineEvents: timelineEvents,
     };
