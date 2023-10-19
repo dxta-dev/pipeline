@@ -28,7 +28,7 @@ export const timelineEvents = sqliteTable('timeline_events', {
     }
   ).notNull(),
   mergeRequestId: integer('merge_request_id').notNull(),
-  timestamp: integer('timestamp').notNull(),
+  timestamp: integer('timestamp', { mode: 'timestamp_ms' }).notNull(),
   actorName: text('actor_name').notNull(),
   actorId: integer('actor_id'),
   actorEmail: text('actor_email'),
@@ -48,7 +48,7 @@ export const AssignedEventSchema = z.object({
 // CommentedEventSchema is empty
 
 export const CommittedEventSchema = z.object({
-  committedDate: z.number(),
+  committedDate: z.coerce.date(),
   committerEmail: z.string(),
   committerName: z.string(),
 });
