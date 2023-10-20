@@ -5,6 +5,7 @@ import {
 import type { EventBridgeEvent } from "aws-lambda";
 import { EventBus } from "sst/node/event-bus";
 import { z } from "zod";
+import { log } from "./logger";
 
 const client = new EventBridgeClient({});
 type InferShapeOutput<Shape extends z.ZodRawShape> = z.infer<
@@ -97,19 +98,19 @@ type EventPayload<
 
 
 function createLog(event: unknown, propertiesToLog: string[], eventTypeName: string) {
-  try{
+  try {
     if (propertiesToLog.length === 0) return;
     const props = propertiesToLog.map((property) => property.split('.').reduce((acc, curr) => {
-    const key = curr;
-    if (acc?.value) return { key, value: (acc.value as Record<string, unknown>)[curr] };
-    return { key, value: null }
-  }, { key: '', value: event })
-  ).filter((prop) => prop.value !== null);
-  const logMessage = props.map(({ key, value }) => `- ${key}: ${JSON.stringify(value)}`).join('\n');
-  return `${eventTypeName}\n${logMessage}`;
-} catch {
-  return eventTypeName;
-}
+      const key = curr;
+      if (acc?.value) return { key, value: (acc.value as Record<string, unknown>)[curr] };
+      return { key, value: null }
+    }, { key: '', value: event })
+    ).filter((prop) => prop.value !== null);
+    const logMessage = props.map(({ key, value }) => `- ${key}: ${JSON.stringify(value)}`).join('\n');
+    return `${eventTypeName}\n${logMessage}`;
+  } catch {
+    return eventTypeName;
+  }
 
 }
 
@@ -139,17 +140,31 @@ export const EventHandler = <
       );
     }
     const parseResult = eventSchema.safeParse(event.detail);
-    if (!parseResult.success)
-      return console.error(
-        `ERROR: Failed to parse event detail '${targetSource}.${targetDetailType}'. Reason: ${parseResult.error}`,
-      );
+    if (!parseResult.success) {
+      return log({
+        message: `Failed to parse event detail '${targetSource}.${targetDetailType}'`,
+        error: parseResult.error,
+        shouldRetry: false,
+        hasFailed: true,
+      });
+    }
+
     try {
       await cb(
         parseResult.data as EventPayload<PropertiesShape, MetadataShape>,
       );
-      if(propertiesToLog.length !== 0) console.log('Handled event', createLog(parseResult.data, propertiesToLog, `${targetSource}.${targetDetailType}`));
+      return log({
+        message: createLog(parseResult.data, propertiesToLog, `${targetSource}.${targetDetailType}`),
+        shouldRetry: false,
+        hasFailed: false,
+      });
     } catch (e) {
-      console.error('Failed to handle event', e, createLog(parseResult.data, propertiesToLog, `${targetSource}.${targetDetailType}`));
+      return log({
+        message: createLog(parseResult.data, propertiesToLog, `${targetSource}.${targetDetailType}`),
+        error: e,
+        shouldRetry: true,
+        hasFailed: true,
+      });
     }
   };
 };
