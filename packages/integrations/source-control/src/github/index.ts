@@ -2,7 +2,7 @@ import type { SourceControl } from '..';
 import { Octokit } from '@octokit/rest';
 import parseLinkHeader from "parse-link-header";
 
-import type { NewRepository, NewNamespace, NewMergeRequest, NewMember, NewMergeRequestDiff, Repository, Namespace, MergeRequest, NewMergeRequestCommit, NewMergeRequestNote, TimelineEvents, NewTimelineEvents } from "@acme/extract-schema";
+import type { NewRepository, NewNamespace, NewMergeRequest, NewMember, NewMergeRequestDiff, Repository, Namespace, MergeRequest, NewMergeRequestCommit, NewMergeRequestNote, NewTimelineEvents, TimelineEventType } from "@acme/extract-schema";
 import type { Pagination, TimePeriod } from '../source-control';
 import type { components } from '@octokit/openapi-types';
 import { TimelineEventTypes } from '../../../../../packages/schemas/extract/src/timeline-events';
@@ -349,11 +349,9 @@ export class GitHubSourceControl implements SourceControl {
       issue_number: mergeRequest.canonId,
     });
 
-    const eventArray = TimelineEventTypes;
-
     const timelineEvents = response.data.filter(
       (singleResponse) =>
-      eventArray.includes(singleResponse.event as string)
+        TimelineEventTypes.includes(singleResponse.event as TimelineEventType)
     ).map((singleEvent) => {
       let createdAt = '';
       let actorName = '';
@@ -368,17 +366,18 @@ export class GitHubSourceControl implements SourceControl {
           createdAt = assignedEvent.created_at;
           actorName = assignedEvent.actor.login;
           actorId = assignedEvent.actor.id;
-          externalId = assignedEvent.id;
+          externalId = `${assignedEvent.id}`;
           data = {
             assigneeId: assignedEvent.assignee.id,
             assigneeName: assignedEvent.assignee.login,
-            };
+          };
           break;
         case 'committed':
           const committedEvent = singleEvent as components["schemas"]["timeline-committed-event"]
           createdAt = committedEvent.author.date;
           actorName = committedEvent.author.name;
           actorEmail = committedEvent.author.email;
+          externalId = committedEvent.sha,
           data =  {
             committerEmail: committedEvent.committer.email,
             committerName: committedEvent.committer.name,
@@ -391,7 +390,7 @@ export class GitHubSourceControl implements SourceControl {
           createdAt = requestedEvent.created_at;
           actorName = requestedEvent.actor.login;
           actorId = requestedEvent.actor.id;
-          externalId = requestedEvent.id;
+          externalId = `${requestedEvent.id}`;
           data = {
             requestedReviewerId: requestedEvent.requested_reviewer?.id,
             requestedReviewerName: requestedEvent.requested_reviewer?.login,
@@ -402,7 +401,7 @@ export class GitHubSourceControl implements SourceControl {
           createdAt = reviewedEvent.submitted_at as string;
           actorName = reviewedEvent.user.login;
           actorId = reviewedEvent.user.id;
-          externalId = reviewedEvent.id;
+          externalId = `${reviewedEvent.id}`;
           data = {
             state: reviewedEvent.state,
           };
@@ -412,18 +411,18 @@ export class GitHubSourceControl implements SourceControl {
           createdAt = event.created_at;
           actorName = event.actor.login;
           actorId = event.actor.id;
-          externalId = event.id;
+          externalId = `${event.id}`;
           break;
       }
       const formattedData = {
-        type: singleEvent.event as string,
+        type: singleEvent.event as TimelineEventType,
         external_id: externalId,
         mergeRequestId: mergeRequest.canonId,
         timestamp: new Date(createdAt),
         actorName: actorName,
         actorId: actorId,
         actorEmail: actorEmail,
-        data: data,
+        data: JSON.stringify(data),
       };
       return formattedData;
     });

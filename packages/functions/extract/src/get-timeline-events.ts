@@ -41,7 +41,7 @@ export const getTimelineEvents: GetTimelineEventsFunction = async (
     return Promise.all(timelineEvents.map(event =>
       tx.insert(entities.timelineEvents).values(event)
         .onConflictDoUpdate({
-          target: [entities.timelineEvents.external_id],
+          target: [entities.timelineEvents.external_id, entities.timelineEvents.mergeRequestId],
           set: {
             data: event.data,
             _updatedAt: sql`(strftime('%s', 'now'))`,
