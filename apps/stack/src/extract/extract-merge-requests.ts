@@ -18,6 +18,8 @@ import { MessageKind, metadataSchema, paginationSchema } from "./messages";
 import { z } from "zod";
 import { createMessageHandler } from "@stack/config/create-message";
 import { getClerkUserToken } from "./get-clerk-user-token";
+import { insertEvent } from "@acme/crawl-functions";
+import { events } from "@acme/crawl-schema";
 
 
 export const mergeRequestSenderHandler = createMessageHandler({
@@ -76,6 +78,13 @@ const client = createClient({
   authToken: Config.EXTRACT_DATABASE_AUTH_TOKEN,
 });
 
+const crawlClient = createClient({
+  url: Config.CRAWL_DATABASE_URL,
+  authToken: Config.CRAWL_DATABASE_AUTH_TOKEN
+});
+
+const crawlDb = drizzle(crawlClient);
+
 const db = drizzle(client);
 
 const context: Context<
@@ -127,6 +136,8 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (evt) => 
       timePeriod,
     }, context,
   );
+
+  await insertEvent({ crawlId: evt.metadata.crawlId, eventNamespace: 'mergeRequest', eventDetail: 'crawlInfo', data: {id: "1", name: "MR", message: "MR extraction started", pages: paginationInfo.totalPages}}, {db: crawlDb, entities: { events }})
 
   await extractMergeRequestsEvent.publish({ mergeRequestIds: mergeRequests.map(mr => mr.id), namespaceId: namespace.id, repositoryId: repository.id }, {
     crawlId: evt.metadata.crawlId,
