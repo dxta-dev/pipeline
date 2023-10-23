@@ -1,5 +1,5 @@
 import type { LibSQLDatabase } from 'drizzle-orm/libsql';
-import type { repositories, namespaces, mergeRequests, members, repositoriesToMembers, mergeRequestDiffs, mergeRequestCommits, mergeRequestNotes } from '@acme/extract-schema';
+import type { repositories, namespaces, mergeRequests, members, repositoriesToMembers, mergeRequestDiffs, mergeRequestCommits, mergeRequestNotes, timelineEvents } from '@acme/extract-schema';
 import type { SourceControl } from '@acme/source-control';
 
 
@@ -14,6 +14,7 @@ export type Entities = {
   repositoriesToMembers: typeof repositoriesToMembers;
   mergeRequestCommits: typeof mergeRequestCommits;
   mergeRequestNotes: typeof mergeRequestNotes;
+  timelineEvents: typeof timelineEvents;
 };
 
 export type Context<SC extends Partial<SourceControl>, E extends Partial<Entities>> = {

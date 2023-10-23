@@ -1,4 +1,4 @@
-import type { NewRepository, NewNamespace, NewMergeRequest, NewMember, NewMergeRequestDiff, NewMergeRequestCommit, NewMergeRequestNote } from "@acme/extract-schema";
+import type { NewRepository, NewNamespace, NewMergeRequest, NewMember, NewMergeRequestDiff, NewMergeRequestCommit, NewMergeRequestNote, NewTimelineEvents } from "@acme/extract-schema";
 import type { Repository, Namespace, MergeRequest } from "@acme/extract-schema";
 
 export type Pagination = {
@@ -21,4 +21,5 @@ export interface SourceControl {
   fetchMergeRequestDiffs(repository: Repository, namespace: Namespace, mergeRequest: MergeRequest, perPage: number, page?: number): Promise<{ mergeRequestDiffs: NewMergeRequestDiff[], pagination: Pagination }>;
   fetchMergeRequestCommits(repository: Repository, namespace: Namespace, mergeRequest: MergeRequest): Promise<{ mergeRequestCommits: NewMergeRequestCommit[] }>;
   fetchMergeRequestNotes(repository: Repository, namespace: Namespace, mergeRequest: MergeRequest): Promise<{ mergeRequestNotes: NewMergeRequestNote[] }>
+  fetchTimelineEvents(repository: Repository, namespace: Namespace, mergeRequest: MergeRequest): Promise<{ timelineEvents: NewTimelineEvents[] }>;
 }

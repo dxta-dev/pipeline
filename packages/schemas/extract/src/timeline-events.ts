@@ -1,9 +1,9 @@
-import { sqliteTable, integer, text } from "drizzle-orm/sqlite-core";
+import { sqliteTable, integer, text,uniqueIndex } from "drizzle-orm/sqlite-core";
 import { type InferInsertModel, type InferSelectModel, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { Enum } from './enum-column';
 
-const TimelineEventTypes = [
+export const TimelineEventTypes = [
   'assigned',
   'closed',
   'commented',
@@ -21,7 +21,7 @@ export type TimelineEventType = typeof TimelineEventTypes[number];
 
 export const timelineEvents = sqliteTable('timeline_events', {
   id: integer('id').primaryKey(),
-  external_id: integer('external_id').notNull(),
+  external_id: text('external_id').notNull(),
   type: Enum('type',
     {
       enum: TimelineEventTypes,
@@ -32,10 +32,12 @@ export const timelineEvents = sqliteTable('timeline_events', {
   actorName: text('actor_name').notNull(),
   actorId: integer('actor_id'),
   actorEmail: text('actor_email'),
-  data: text('data', { mode: 'json' }).notNull(),
+  data: text('data', { mode: 'json' }),
   _createdAt: integer('__created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
   _updatedAt: integer('__updated_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
-});
+}, (timelineEvents) => ({
+  uniqueId: uniqueIndex('timeline_events_external_id_merge_request_id_idx').on(timelineEvents.external_id, timelineEvents.mergeRequestId),
+}));
 
 
 export const AssignedEventSchema = z.object({

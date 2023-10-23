@@ -108,6 +108,20 @@ CREATE TABLE `repositories_to_members` (
 	PRIMARY KEY(`member_id`, `repository_id`)
 );
 --> statement-breakpoint
+CREATE TABLE `timeline_events` (
+	`id` integer PRIMARY KEY NOT NULL,
+	`external_id` text NOT NULL,
+	`type` integer NOT NULL,
+	`merge_request_id` integer NOT NULL,
+	`timestamp` integer NOT NULL,
+	`actor_name` text NOT NULL,
+	`actor_id` integer,
+	`actor_email` text,
+	`data` text,
+	`__created_at` integer DEFAULT (strftime('%s', 'now')),
+	`__updated_at` integer DEFAULT (strftime('%s', 'now'))
+);
+--> statement-breakpoint
 CREATE UNIQUE INDEX `repository_id_email_name_idx` ON `git_identities` (`repository_id`,`email`,`name`);--> statement-breakpoint
 CREATE UNIQUE INDEX `members_external_id_idx` ON `members` (`external_id`,`forge_type`);--> statement-breakpoint
 CREATE UNIQUE INDEX `merge_request_commits_external_id_idx` ON `merge_request_commits` (`merge_request_id`,`external_id`);--> statement-breakpoint
@@ -115,4 +129,5 @@ CREATE UNIQUE INDEX `diffs_merge_request_id_newPath_idx` ON `merge_request_diffs
 CREATE UNIQUE INDEX `merge_request_notes_external_id_idx` ON `merge_request_notes` (`merge_request_id`,`external_id`);--> statement-breakpoint
 CREATE UNIQUE INDEX `merge_requests_external_id_idx` ON `merge_requests` (`external_id`,`repository_id`);--> statement-breakpoint
 CREATE UNIQUE INDEX `namespaces_external_id_idx` ON `namespaces` (`external_id`,`forge_type`);--> statement-breakpoint
-CREATE UNIQUE INDEX `repositories_external_id_idx` ON `repositories` (`external_id`,`forge_type`);
+CREATE UNIQUE INDEX `repositories_external_id_idx` ON `repositories` (`external_id`,`forge_type`);--> statement-breakpoint
+CREATE UNIQUE INDEX `timeline_events_external_id_merge_request_id_idx` ON `timeline_events` (`external_id`,`merge_request_id`);
