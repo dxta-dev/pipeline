@@ -132,6 +132,12 @@ export function ExtractStack({ stack }: StackContext) {
         bind: [bus, extractQueue],
         handler: "src/extract/extract-merge-request-notes.eventHandler",
       }
+    },
+    extractTimelineEvents: {
+      function: {
+        bind: [bus, extractQueue],
+        handler: "src/extract/extract-timeline-events.eventHandler",
+      }
     }
   });
 
