@@ -13,6 +13,7 @@ export type ExtractEntities = {
   repositoriesToMembers: typeof extract.repositoriesToMembers;
   mergeRequestCommits: typeof extract.mergeRequestCommits;
   mergeRequestNotes: typeof extract.mergeRequestNotes;
+  timelineEvents: typeof extract.timelineEvents;
 };
 
 export type TransformEntities = {

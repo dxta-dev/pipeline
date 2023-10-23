@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "11ea06bc-bfd3-4452-a642-e87f221000e9",
+  "id": "75f28036-739a-4c38-9a3b-bc7e2f7d1982",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "git_identities": {
@@ -769,7 +769,7 @@
         },
         "external_id": {
           "name": "external_id",
-          "type": "integer",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -820,7 +820,7 @@
           "name": "data",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false
         },
         "__created_at": {
@@ -840,7 +840,16 @@
           "default": "(strftime('%s', 'now'))"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "timeline_events_external_id_merge_request_id_idx": {
+          "name": "timeline_events_external_id_merge_request_id_idx",
+          "columns": [
+            "external_id",
+            "merge_request_id"
+          ],
+          "isUnique": true
+        }
+      },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
