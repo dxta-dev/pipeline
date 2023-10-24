@@ -38,6 +38,17 @@ export function ExtractStack({ stack }: StackContext) {
           detailType: ["members"],
         }
       },
+      githubMergeRequests: {
+        pattern: {
+          source: ["extract"],
+          detailType: ["mergeRequest"],
+          detail: {
+            metadata: {
+              sourceControl: ["github"],
+            }
+          }
+        }
+      },
     },
     defaults: {
       retries: 10,
@@ -131,6 +142,15 @@ export function ExtractStack({ stack }: StackContext) {
       function: {
         bind: [bus, extractQueue],
         handler: "src/extract/extract-merge-request-notes.eventHandler",
+      }
+    },
+  });
+  
+  bus.addTargets(stack, 'githubMergeRequests' , {
+    extractTimelineEvents: {
+      function: {
+        bind: [bus, extractQueue],
+        handler: "src/extract/extract-timeline-events.eventHandler",
       }
     }
   });

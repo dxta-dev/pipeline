@@ -7,6 +7,7 @@ import { memberInfoSenderHandler } from "./extract-member-info";
 import { mergeRequestNoteSenderHandler } from "./extract-merge-request-notes";
 import { memberSenderHandler } from "./extract-members";
 import { namespaceMemberSenderHandler } from "./extract-namespace-members";
+import { timelineEventsSenderHandler } from "./extract-timeline-events";
 
 const messageHandlers = new Map<string, unknown>();
 
@@ -24,6 +25,8 @@ messageHandlers.set(MessageKind.NamespaceMember, namespaceMemberSenderHandler);
 
 messageHandlers.set(MessageKind.MemberInfo, memberInfoSenderHandler);
 
+messageHandlers.set(MessageKind.TimelineEvent, timelineEventsSenderHandler);
+
 const logMap = new Map<string, string[]>();
 
 logMap.set(MessageKind.MergeRequest, ['content.repository.id', 'content.namespace.id', 'content.pagination', 'content.timePeriod']);
@@ -39,5 +42,7 @@ logMap.set(MessageKind.Member, ['content.repository.id', 'content.namespace.id']
 logMap.set(MessageKind.NamespaceMember, ['content.repositoryId', 'content.namespace.id']);
 
 logMap.set(MessageKind.MemberInfo, ['content.memberId']);
+
+logMap.set(MessageKind.TimelineEvent, ['content.repositoryId', 'content.namespaceId', 'content.mergeRequestId']);
 
 export const handler = QueueHandler(messageHandlers, logMap);
