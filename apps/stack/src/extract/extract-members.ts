@@ -18,8 +18,6 @@ import { getClerkUserToken } from "./get-clerk-user-token";
 import { insertEvent } from "@acme/crawl-functions";
 import { events } from "@acme/crawl-schema";
 
-import { CrawlHandler } from "@stack/config/create-crawl";
-
 export const memberSenderHandler = createMessageHandler({
   kind: MessageKind.Member,
   metadataShape: metadataSchema.shape,
@@ -114,14 +112,14 @@ const extractMembersPage = async ({ namespace, repository, sourceControl, userId
   return { members, pagination: paginationInfo };
 };
 
-export const eventHandler = EventHandler(extractRepositoryEvent, CrawlHandler('mergeRequest', async (ev) => {
+export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
   const repository = await db.select().from(repositories).where(eq(repositories.id, ev.properties.repositoryId)).get();
   const namespace = await db.select().from(namespaces).where(eq(namespaces.id, ev.properties.namespaceId)).get();
 
   if (!repository) throw new Error("invalid repo id");
   if (!namespace) throw new Error("Invalid namespace id");
 
-  const { members, pagination } = await extractMembersPage({
+  const { pagination } = await extractMembersPage({
     namespace: namespace,
     repository: repository,
     sourceControl: ev.metadata.sourceControl,
@@ -148,11 +146,7 @@ export const eventHandler = EventHandler(extractRepositoryEvent, CrawlHandler('m
     })
   }
 
-  if (arrayOfExtractMemberPageMessageContent.length === 0)
-    return {
-      page: 1,
-      ids: []
-    };
+  if (arrayOfExtractMemberPageMessageContent.length === 0) return;
 
     await insertEvent({ crawlId: ev.metadata.crawlId, eventNamespace: 'member', eventDetail: 'crawlInfo', data: {calls: pagination.totalPages }}, {db: crawlDb, entities: { events }})
 
@@ -167,9 +161,4 @@ export const eventHandler = EventHandler(extractRepositoryEvent, CrawlHandler('m
     crawlId: ev.metadata.crawlId,
   });
 
-  return {
-    page: 1,
-    ids: members.map(member => member.id),
-  }
-  
-}));
+});

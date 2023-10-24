@@ -5,6 +5,8 @@ import {
 import type { EventBridgeEvent } from "aws-lambda";
 import { EventBus } from "sst/node/event-bus";
 import { z } from "zod";
+import { crawlComplete, crawlFailed } from "./crawl";
+import type { EventNamespaceType } from "@acme/crawl-schema";
 
 const client = new EventBridgeClient({});
 type InferShapeOutput<Shape extends z.ZodRawShape> = z.infer<
@@ -97,19 +99,19 @@ type EventPayload<
 
 
 function createLog(event: unknown, propertiesToLog: string[], eventTypeName: string) {
-  try{
+  try {
     if (propertiesToLog.length === 0) return;
     const props = propertiesToLog.map((property) => property.split('.').reduce((acc, curr) => {
-    const key = curr;
-    if (acc?.value) return { key, value: (acc.value as Record<string, unknown>)[curr] };
-    return { key, value: null }
-  }, { key: '', value: event })
-  ).filter((prop) => prop.value !== null);
-  const logMessage = props.map(({ key, value }) => `- ${key}: ${JSON.stringify(value)}`).join('\n');
-  return `${eventTypeName}\n${logMessage}`;
-} catch {
-  return eventTypeName;
-}
+      const key = curr;
+      if (acc?.value) return { key, value: (acc.value as Record<string, unknown>)[curr] };
+      return { key, value: null }
+    }, { key: '', value: event })
+    ).filter((prop) => prop.value !== null);
+    const logMessage = props.map(({ key, value }) => `- ${key}: ${JSON.stringify(value)}`).join('\n');
+    return `${eventTypeName}\n${logMessage}`;
+  } catch {
+    return eventTypeName;
+  }
 
 }
 
@@ -122,6 +124,7 @@ export const EventHandler = <
   event: EventDefinition<Source, DetailType, PropertiesShape, MetadataShape>,
   cb: (ev: EventPayload<PropertiesShape, MetadataShape>) => Promise<void>,
   propertiesToLog: string[] = [],
+  crawlEntityIdSelector: ((ev: EventPayload<PropertiesShape, MetadataShape>) => number) | null = null
 ) => {
   const { source: targetSource, type: targetDetailType } = event;
   const eventSchema = z.object({
@@ -139,17 +142,32 @@ export const EventHandler = <
       );
     }
     const parseResult = eventSchema.safeParse(event.detail);
-    if (!parseResult.success)
-      return console.error(
+    if (!parseResult.success) {
+      console.error(
         `ERROR: Failed to parse event detail '${targetSource}.${targetDetailType}'. Reason: ${parseResult.error}`,
       );
+      // crawlFailed() // ??? How know metadata.crawlId if no parse ?
+      return;
+    }
+
+    const crawlId = typeof parseResult.data.metadata?.crawlId === 'number' ? parseResult.data.metadata?.crawlId as number : null;
+    if (crawlEntityIdSelector !== null && crawlId === null) {
+      console.error(`Error: crawlId is required but missing from event metadata`);
+      return;
+    }
+
     try {
       await cb(
         parseResult.data as EventPayload<PropertiesShape, MetadataShape>,
       );
-      if(propertiesToLog.length !== 0) console.log('Handled event', createLog(parseResult.data, propertiesToLog, `${targetSource}.${targetDetailType}`));
+      if (propertiesToLog.length !== 0) console.log('Handled event', createLog(parseResult.data, propertiesToLog, `${targetSource}.${targetDetailType}`));
+      if (crawlEntityIdSelector !== null && crawlId !== null)
+        return crawlComplete(crawlId, targetDetailType as EventNamespaceType, crawlEntityIdSelector(parseResult.data as EventPayload<PropertiesShape, MetadataShape>))
     } catch (e) {
       console.error('Failed to handle event', e, createLog(parseResult.data, propertiesToLog, `${targetSource}.${targetDetailType}`));
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      if (crawlEntityIdSelector !== null && crawlId !== null) crawlFailed(crawlId,targetDetailType as EventNamespaceType, crawlEntityIdSelector(parseResult.data as EventPayload<PropertiesShape, MetadataShape>), e);
+      throw e;
     }
   };
 };
