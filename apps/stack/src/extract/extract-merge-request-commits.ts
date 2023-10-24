@@ -10,8 +10,8 @@ import { createMessageHandler } from "@stack/config/create-message";
 import { MessageKind, metadataSchema } from "./messages";
 import { z } from "zod";
 import { getClerkUserToken } from "./get-clerk-user-token";
-// import { insertEvent } from "@acme/crawl-functions";
-// import { events } from "@acme/crawl-schema";
+import { insertEvent } from "@acme/crawl-functions";
+import { events } from "@acme/crawl-schema";
 
 export const mrcsh = createMessageHandler({
   kind: MessageKind.MergeRequestCommit,
@@ -93,6 +93,7 @@ export const eventHandler = EventHandler(extractMergeRequestsEvent, async (evt) 
     })
   }
 
+  await insertEvent({ crawlId: evt.metadata.crawlId, eventNamespace: 'mergeRequestCommit', eventDetail: 'crawlInfo', data: {calls: mergeRequestIds.length }}, {db: crawlDb, entities: { events }})
 
   await sender.sendAll(arrayOfExtractMergeRequestData, {
     crawlId: evt.metadata.crawlId,

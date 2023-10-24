@@ -84,8 +84,7 @@ export const eventHandler = EventHandler(extractMergeRequestsEvent, async (ev) =
       repositoryId,
     })
   }
-
-  await insertEvent({ crawlId: ev.metadata.crawlId, eventNamespace: 'mergeRequest', eventDetail: 'crawlInfo', data: {calls: 2 }}, {db: crawlDb, entities: { events }})
+  await insertEvent({ crawlId: ev.metadata.crawlId, eventNamespace: 'mergeRequestDiff', eventDetail: 'crawlInfo', data: {calls: mergeRequestIds.length }}, {db: crawlDb, entities: { events }})
 
 
   await sender.sendAll(arrayOfExtractMergeRequestData, {
