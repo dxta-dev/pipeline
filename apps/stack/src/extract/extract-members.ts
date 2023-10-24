@@ -15,6 +15,9 @@ import { eq } from "drizzle-orm";
 import { metadataSchema, paginationSchema, MessageKind } from "./messages";
 import { z } from 'zod';
 import { getClerkUserToken } from "./get-clerk-user-token";
+import { insertEvent } from "@acme/crawl-functions";
+import { events } from "@acme/crawl-schema";
+
 
 export const memberSenderHandler = createMessageHandler({
   kind: MessageKind.Member,
@@ -41,6 +44,13 @@ export const memberSenderHandler = createMessageHandler({
 const { sender } = memberSenderHandler;
 
 const client = createClient({ url: Config.EXTRACT_DATABASE_URL, authToken: Config.EXTRACT_DATABASE_AUTH_TOKEN });
+
+const crawlClient = createClient({
+  url: Config.CRAWL_DATABASE_URL,
+  authToken: Config.CRAWL_DATABASE_AUTH_TOKEN
+});
+
+const crawlDb = drizzle(crawlClient);
 
 const initSourceControl = async (userId: string, sourceControl: 'github' | 'gitlab') => {
   const accessToken = await getClerkUserToken(userId, `oauth_${sourceControl}`);
@@ -139,6 +149,8 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
 
   if (arrayOfExtractMemberPageMessageContent.length === 0)
     return;
+
+    await insertEvent({ crawlId: ev.metadata.crawlId, eventNamespace: 'member', eventDetail: 'crawlInfo', data: {calls: pagination.totalPages }}, {db: crawlDb, entities: { events }})
 
   await sender.sendAll(arrayOfExtractMemberPageMessageContent, {
     version: 1,

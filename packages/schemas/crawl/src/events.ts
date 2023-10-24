@@ -60,10 +60,7 @@ export const CrawlFailedSchema = z.object({
 });
 
 export const CrawlInfoSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  message: z.string().nullable(),
-  pages: z.number().nonnegative().int(),
+  calls: z.number().nonnegative().int(),
 });
 
 export type CrawlComplete = z.infer<typeof CrawlCompleteSchema>;
