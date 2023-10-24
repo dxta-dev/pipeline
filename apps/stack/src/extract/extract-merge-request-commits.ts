@@ -10,6 +10,8 @@ import { createMessageHandler } from "@stack/config/create-message";
 import { MessageKind, metadataSchema } from "./messages";
 import { z } from "zod";
 import { getClerkUserToken } from "./get-clerk-user-token";
+// import { insertEvent } from "@acme/crawl-functions";
+// import { events } from "@acme/crawl-schema";
 
 export const mrcsh = createMessageHandler({
   kind: MessageKind.MergeRequestCommit,
@@ -43,6 +45,13 @@ const { sender } = mrcsh;
     url: Config.EXTRACT_DATABASE_URL,
     authToken: Config.EXTRACT_DATABASE_AUTH_TOKEN,
   });
+
+  const crawlClient = createClient({
+    url: Config.CRAWL_DATABASE_URL,
+    authToken: Config.CRAWL_DATABASE_AUTH_TOKEN
+  });
+  
+  const crawlDb = drizzle(crawlClient);
   const db = drizzle(client);
 
   const context: Context<
@@ -83,6 +92,7 @@ export const eventHandler = EventHandler(extractMergeRequestsEvent, async (evt) 
       repositoryId,
     })
   }
+
 
   await sender.sendAll(arrayOfExtractMergeRequestData, {
     crawlId: evt.metadata.crawlId,
