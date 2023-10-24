@@ -11,6 +11,9 @@ import { MessageKind, metadataSchema } from "./messages";
 import { z } from "zod";
 import { getMemberInfo } from "@acme/extract-functions";
 import { getClerkUserToken } from "./get-clerk-user-token";
+import { insertEvent } from "@acme/crawl-functions";
+import { events } from "@acme/crawl-schema";
+
 
 export const memberInfoSenderHandler = createMessageHandler({
   kind: MessageKind.MemberInfo,
@@ -31,6 +34,13 @@ const { sender } = memberInfoSenderHandler;
 
 
 const client = createClient({ url: Config.EXTRACT_DATABASE_URL, authToken: Config.EXTRACT_DATABASE_AUTH_TOKEN });
+
+const crawlClient = createClient({
+  url: Config.CRAWL_DATABASE_URL,
+  authToken: Config.CRAWL_DATABASE_AUTH_TOKEN
+});
+
+const crawlDb = drizzle(crawlClient);
 
 const initSourceControl = async (userId: string, sourceControl: 'github' | 'gitlab') => {
   const accessToken = await getClerkUserToken(userId, `oauth_${sourceControl}`);
@@ -64,4 +74,7 @@ export const eventHandler = EventHandler(extractMembersEvent, async (ev) => {
     from: ev.metadata.from,
     to: ev.metadata.to,
   });
+
+  await insertEvent({ crawlId: ev.metadata.crawlId, eventNamespace: 'mergeRequestNote', eventDetail: 'crawlInfo', data: {calls: memberIds.length }}, {db: crawlDb, entities: { events }})
+
 });
