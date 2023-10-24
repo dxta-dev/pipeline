@@ -36,7 +36,7 @@ export const timelineEvents = sqliteTable('timeline_events', {
   _createdAt: integer('__created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
   _updatedAt: integer('__updated_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
 }, (timelineEvents) => ({
-  uniqueId: uniqueIndex('timeline_events_external_id_merge_request_id_idx_type').on(timelineEvents.external_id, timelineEvents.mergeRequestId),
+  uniqueId: uniqueIndex('timeline_events_external_id_merge_request_id_type_idx').on(timelineEvents.external_id, timelineEvents.mergeRequestId, timelineEvents.type),
 }));
 
 

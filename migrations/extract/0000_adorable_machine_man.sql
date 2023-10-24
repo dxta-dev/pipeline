@@ -132,4 +132,4 @@ CREATE UNIQUE INDEX `merge_request_notes_external_id_idx` ON `merge_request_note
 CREATE UNIQUE INDEX `merge_requests_external_id_idx` ON `merge_requests` (`external_id`,`repository_id`);--> statement-breakpoint
 CREATE UNIQUE INDEX `namespaces_external_id_idx` ON `namespaces` (`external_id`,`forge_type`);--> statement-breakpoint
 CREATE UNIQUE INDEX `repositories_external_id_idx` ON `repositories` (`external_id`,`forge_type`);--> statement-breakpoint
-CREATE UNIQUE INDEX `timeline_events_external_id_merge_request_id_idx` ON `timeline_events` (`external_id`,`merge_request_id`);
+CREATE UNIQUE INDEX `timeline_events_external_id_merge_request_id_type_idx` ON `timeline_events` (`external_id`,`merge_request_id`,`type`);
