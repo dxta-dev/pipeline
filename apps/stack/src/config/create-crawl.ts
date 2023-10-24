@@ -11,14 +11,8 @@ type CrawlHandlerInput = {
     crawlId: number;
   }
 }
+type CrawlHandlerOutput = Promise<CrawlComplete>;
 
-type HandlerResponse = {
-  page: number;
-  ids: number[];
-  metadata: {
-    crawlId: number;
-
-}
 
 const context: Context<InsertEventEntities> = {
   db: drizzle(createClient({
@@ -30,34 +24,28 @@ const context: Context<InsertEventEntities> = {
   }
 };
 
-export const CrawlHandler = (eventNamespace: EventNamespaceType, handler: (input: CrawlHandlerInput) => Promise<void>) => async (input: CrawlHandlerInput) => {
-    let error = null;
+export const CrawlHandler = <TInput extends CrawlHandlerInput, TEventNamespace extends EventNamespaceType>
+  (eventNamespace: TEventNamespace, handler: (input: TInput) => CrawlHandlerOutput) => async (input: TInput) => {
 
     try {
-        await handler(input);
-    } catch (e) {
-      error = e;
-    }
-
-    if (!error) {
+      const crawlResult = await handler(input);
       await insertEvent({
         crawlId: input.metadata.crawlId,
         data: {
-          page: input.page,
-          ids: input.ids,
+          page: crawlResult.page,
+          ids: crawlResult.ids,
         },
         eventDetail: 'crawlComplete',
         eventNamespace: eventNamespace
       }, context);
 
-    } else {
+    } catch (error) {
       const errorMessage = (error instanceof Error) ? error.toString() : `Error: ${JSON.stringify(error)}`;
       await insertEvent({
         crawlId: input.metadata.crawlId,
         eventDetail: 'crawlFailed',
         data: {
-          page: input.page,
-          ids: input.ids,
+          page: 0, // ????????
           message: errorMessage
         },
         eventNamespace
@@ -65,7 +53,3 @@ export const CrawlHandler = (eventNamespace: EventNamespaceType, handler: (input
     }
 
   }
-
-
-export function log() {
-}
