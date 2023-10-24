@@ -353,78 +353,76 @@ export class GitHubSourceControl implements SourceControl {
       (singleResponse) =>
         TimelineEventTypes.includes(singleResponse.event as TimelineEventType)
     ).map((singleEvent) => {
-      let createdAt = '';
-      let actorName = '';
-      let actorEmail;
-      let actorId;
-      let externalId;
-      let data;
       switch (singleEvent.event) {
         case 'assigned':
         case 'unassigned':
           const assignedEvent = singleEvent as components["schemas"]["timeline-assigned-issue-event"] | components["schemas"]["timeline-unassigned-issue-event"];
-          createdAt = assignedEvent.created_at;
-          actorName = assignedEvent.actor.login;
-          actorId = assignedEvent.actor.id;
-          externalId = `${assignedEvent.id}`;
-          data = {
-            assigneeId: assignedEvent.assignee.id,
-            assigneeName: assignedEvent.assignee.login,
+          return {
+            external_id: assignedEvent.id,
+            type: singleEvent.event as TimelineEventType,
+            mergeRequestId: mergeRequest.canonId,
+            timestamp: new Date(assignedEvent.created_at),
+            actorName: assignedEvent.actor.login,
+            actorId: assignedEvent.actor.id,
+            data: JSON.stringify({
+              assigneeId: assignedEvent.assignee.id,
+              assigneeName: assignedEvent.assignee.login,
+            }),
           };
-          break;
         case 'committed':
           const committedEvent = singleEvent as components["schemas"]["timeline-committed-event"]
-          createdAt = committedEvent.author.date;
-          actorName = committedEvent.author.name;
-          actorEmail = committedEvent.author.email;
-          externalId = committedEvent.sha,
-          data =  {
-            committerEmail: committedEvent.committer.email,
-            committerName: committedEvent.committer.name,
-            committedDate: new Date(committedEvent.committer.date),
-          }
-          break;
+          return {
+            external_id: parseInt(committedEvent.sha.slice(0,7), 16),
+            type: singleEvent.event as TimelineEventType,
+            mergeRequestId: mergeRequest.canonId,
+            timestamp: new Date(committedEvent.author.date),
+            actorName: committedEvent.author.name,
+            actorEmail: committedEvent.author.email,
+            data: JSON.stringify({
+              committerEmail: committedEvent.committer.email,
+              committerName: committedEvent.committer.name,
+              committedDate: new Date(committedEvent.committer.date),
+            }),
+          };
         case 'review_requested':
         case 'review_request_removed':
           const requestedEvent = singleEvent as components["schemas"]["review-requested-issue-event"] | components["schemas"]["review-request-removed-issue-event"];
-          createdAt = requestedEvent.created_at;
-          actorName = requestedEvent.actor.login;
-          actorId = requestedEvent.actor.id;
-          externalId = `${requestedEvent.id}`;
-          data = {
-            requestedReviewerId: requestedEvent.requested_reviewer?.id,
-            requestedReviewerName: requestedEvent.requested_reviewer?.login,
+          return {
+            external_id: requestedEvent.id,
+            type: singleEvent.event as TimelineEventType,
+            mergeRequestId: mergeRequest.canonId,
+            timestamp: new Date(requestedEvent.created_at),
+            actorName: requestedEvent.actor.login,
+            actorId: requestedEvent.actor.id,
+            data: JSON.stringify({
+              requestedReviewerId: requestedEvent.requested_reviewer?.id,
+              requestedReviewerName: requestedEvent.requested_reviewer?.login,
+            }),
           };
-          break;
         case 'reviewed':
           const reviewedEvent = singleEvent as components["schemas"]["timeline-reviewed-event"]
-          createdAt = reviewedEvent.submitted_at as string;
-          actorName = reviewedEvent.user.login;
-          actorId = reviewedEvent.user.id;
-          externalId = `${reviewedEvent.id}`;
-          data = {
-            state: reviewedEvent.state,
+          return {
+            external_id: reviewedEvent.id,
+            type: singleEvent.event as TimelineEventType,
+            mergeRequestId: mergeRequest.canonId,
+            timestamp: new Date(reviewedEvent.submitted_at as string),
+            actorName: reviewedEvent.user.login,
+            actorId: reviewedEvent.user.id,
+            data: JSON.stringify({
+              state: reviewedEvent.state,
+            }),
           };
-          break;
         default:
           const event = singleEvent as components["schemas"]["state-change-issue-event"];
-          createdAt = event.created_at;
-          actorName = event.actor.login;
-          actorId = event.actor.id;
-          externalId = `${event.id}`;
-          break;
+          return {
+            external_id: event.id,
+            type: singleEvent.event as TimelineEventType,
+            mergeRequestId: mergeRequest.canonId,
+            timestamp: new Date(event.created_at),
+            actorName: event.actor.login,
+            actorId: event.actor.id,
+          };
       }
-      const formattedData = {
-        type: singleEvent.event as TimelineEventType,
-        external_id: externalId,
-        mergeRequestId: mergeRequest.canonId,
-        timestamp: new Date(createdAt),
-        actorName: actorName,
-        actorId: actorId,
-        actorEmail: actorEmail,
-        data: JSON.stringify(data),
-      };
-      return formattedData;
     });
     return {
       timelineEvents: timelineEvents,

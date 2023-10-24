@@ -783,7 +783,7 @@
         },
         "external_id": {
           "name": "external_id",
-          "type": "text",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false

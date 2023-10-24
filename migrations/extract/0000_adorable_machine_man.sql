@@ -112,7 +112,7 @@ CREATE TABLE `repositories_to_members` (
 --> statement-breakpoint
 CREATE TABLE `timeline_events` (
 	`id` integer PRIMARY KEY NOT NULL,
-	`external_id` text NOT NULL,
+	`external_id` integer NOT NULL,
 	`type` integer NOT NULL,
 	`merge_request_id` integer NOT NULL,
 	`timestamp` integer NOT NULL,
