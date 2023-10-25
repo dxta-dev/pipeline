@@ -359,7 +359,7 @@ export class GitHubSourceControl implements SourceControl {
           const assignedEvent = singleEvent as components["schemas"]["timeline-assigned-issue-event"] | components["schemas"]["timeline-unassigned-issue-event"];
           return {
             external_id: assignedEvent.id,
-            type: singleEvent.event as TimelineEventType,
+            type: assignedEvent.event as TimelineEventType,
             mergeRequestId: mergeRequest.canonId,
             timestamp: new Date(assignedEvent.created_at),
             actorName: assignedEvent.actor.login,
@@ -368,12 +368,12 @@ export class GitHubSourceControl implements SourceControl {
               assigneeId: assignedEvent.assignee.id,
               assigneeName: assignedEvent.assignee.login,
             }),
-          };
+          } satisfies NewTimelineEvents;
         case 'committed':
           const committedEvent = singleEvent as components["schemas"]["timeline-committed-event"]
           return {
             external_id: parseInt(committedEvent.sha.slice(0,7), 16),
-            type: singleEvent.event as TimelineEventType,
+            type: committedEvent.event as TimelineEventType,
             mergeRequestId: mergeRequest.canonId,
             timestamp: new Date(committedEvent.author.date),
             actorName: committedEvent.author.name,
@@ -383,13 +383,13 @@ export class GitHubSourceControl implements SourceControl {
               committerName: committedEvent.committer.name,
               committedDate: new Date(committedEvent.committer.date),
             }),
-          };
+          } satisfies NewTimelineEvents;
         case 'review_requested':
         case 'review_request_removed':
           const requestedEvent = singleEvent as components["schemas"]["review-requested-issue-event"] | components["schemas"]["review-request-removed-issue-event"];
           return {
             external_id: requestedEvent.id,
-            type: singleEvent.event as TimelineEventType,
+            type: requestedEvent.event as TimelineEventType,
             mergeRequestId: mergeRequest.canonId,
             timestamp: new Date(requestedEvent.created_at),
             actorName: requestedEvent.actor.login,
@@ -398,12 +398,12 @@ export class GitHubSourceControl implements SourceControl {
               requestedReviewerId: requestedEvent.requested_reviewer?.id,
               requestedReviewerName: requestedEvent.requested_reviewer?.login,
             }),
-          };
+          } satisfies NewTimelineEvents;
         case 'reviewed':
           const reviewedEvent = singleEvent as components["schemas"]["timeline-reviewed-event"]
           return {
             external_id: reviewedEvent.id,
-            type: singleEvent.event as TimelineEventType,
+            type: reviewedEvent.event as TimelineEventType,
             mergeRequestId: mergeRequest.canonId,
             timestamp: new Date(reviewedEvent.submitted_at as string),
             actorName: reviewedEvent.user.login,
@@ -411,17 +411,17 @@ export class GitHubSourceControl implements SourceControl {
             data: JSON.stringify({
               state: reviewedEvent.state,
             }),
-          };
+          } satisfies NewTimelineEvents;
         default:
-          const event = singleEvent as components["schemas"]["state-change-issue-event"];
+          const generalEvent = singleEvent as components["schemas"]["state-change-issue-event"];
           return {
-            external_id: event.id,
-            type: singleEvent.event as TimelineEventType,
+            external_id: generalEvent.id,
+            type: generalEvent.event as TimelineEventType,
             mergeRequestId: mergeRequest.canonId,
-            timestamp: new Date(event.created_at),
-            actorName: event.actor.login,
-            actorId: event.actor.id,
-          };
+            timestamp: new Date(generalEvent.created_at),
+            actorName: generalEvent.actor.login,
+            actorId: generalEvent.actor.id,
+          } satisfies NewTimelineEvents;
       }
     });
     return {
