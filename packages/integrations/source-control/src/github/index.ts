@@ -358,7 +358,7 @@ export class GitHubSourceControl implements SourceControl {
         case 'unassigned':
           const assignedEvent = singleEvent as components["schemas"]["timeline-assigned-issue-event"] | components["schemas"]["timeline-unassigned-issue-event"];
           return {
-            external_id: assignedEvent.id,
+            externalId: assignedEvent.id,
             type: assignedEvent.event as TimelineEventType,
             mergeRequestId: mergeRequest.canonId,
             timestamp: new Date(assignedEvent.created_at),
@@ -372,7 +372,7 @@ export class GitHubSourceControl implements SourceControl {
         case 'committed':
           const committedEvent = singleEvent as components["schemas"]["timeline-committed-event"]
           return {
-            external_id: parseInt(committedEvent.sha.slice(0,7), 16),
+            externalId: parseInt(committedEvent.sha.slice(0,7), 16),
             type: committedEvent.event as TimelineEventType,
             mergeRequestId: mergeRequest.canonId,
             timestamp: new Date(committedEvent.author.date),
@@ -388,7 +388,7 @@ export class GitHubSourceControl implements SourceControl {
         case 'review_request_removed':
           const requestedEvent = singleEvent as components["schemas"]["review-requested-issue-event"] | components["schemas"]["review-request-removed-issue-event"];
           return {
-            external_id: requestedEvent.id,
+            externalId: requestedEvent.id,
             type: requestedEvent.event as TimelineEventType,
             mergeRequestId: mergeRequest.canonId,
             timestamp: new Date(requestedEvent.created_at),
@@ -402,7 +402,7 @@ export class GitHubSourceControl implements SourceControl {
         case 'reviewed':
           const reviewedEvent = singleEvent as components["schemas"]["timeline-reviewed-event"]
           return {
-            external_id: reviewedEvent.id,
+            externalId: reviewedEvent.id,
             type: reviewedEvent.event as TimelineEventType,
             mergeRequestId: mergeRequest.canonId,
             timestamp: new Date(reviewedEvent.submitted_at as string),
@@ -415,7 +415,7 @@ export class GitHubSourceControl implements SourceControl {
         default:
           const generalEvent = singleEvent as components["schemas"]["state-change-issue-event"];
           return {
-            external_id: generalEvent.id,
+            externalId: generalEvent.id,
             type: generalEvent.event as TimelineEventType,
             mergeRequestId: mergeRequest.canonId,
             timestamp: new Date(generalEvent.created_at),
