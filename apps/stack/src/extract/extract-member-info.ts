@@ -75,6 +75,6 @@ export const eventHandler = EventHandler(extractMembersEvent, async (ev) => {
     to: ev.metadata.to,
   });
 
-  await insertEvent({ crawlId: ev.metadata.crawlId, eventNamespace: 'mergeRequestNote', eventDetail: 'crawlInfo', data: {calls: memberIds.length }}, {db: crawlDb, entities: { events }})
+  await insertEvent({ crawlId: ev.metadata.crawlId, eventNamespace: 'memberInfo', eventDetail: 'crawlInfo', data: {calls: memberIds.length }}, {db: crawlDb, entities: { events }})
 
 });

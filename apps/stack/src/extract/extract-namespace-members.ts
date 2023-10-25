@@ -158,7 +158,7 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
   if (arrayOfExtractMemberPageMessageContent.length === 0)
     return;
 
-  await insertEvent({ crawlId: ev.metadata.crawlId, eventNamespace: 'mergeRequestNote', eventDetail: 'crawlInfo', data: {calls: pagination.totalPages }}, {db: crawlDb, entities: { events }})
+  await insertEvent({ crawlId: ev.metadata.crawlId, eventNamespace: 'member', eventDetail: 'crawlInfo', data: {calls: pagination.totalPages }}, {db: crawlDb, entities: { events }})
 
   await sender.sendAll(arrayOfExtractMemberPageMessageContent, {
     version: 1,
