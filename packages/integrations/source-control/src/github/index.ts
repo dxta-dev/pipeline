@@ -338,7 +338,8 @@ export class GitHubSourceControl implements SourceControl {
         updatedAt: new Date(mergeRequestNote.updated_at),
         authorUsername: mergeRequestNote.user.login,
         authorExternalId: mergeRequestNote.user.id,
-      }))
+        body: '', // since a github note is a review_comment (equivalent do gitlab DiffNote) whose body we don't need not; sure what to place here
+      } satisfies NewMergeRequestNote))
     }
   }
 
