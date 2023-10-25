@@ -29,6 +29,7 @@ const selectTablesFromDatabase = async (/**@type {LibSQLClient}*/client) => {
 
   const shouldIgnoreTable = (/**@type {string}*/tableName) =>
     tableName.startsWith("libsql_") ||
+    tableName.startsWith("sqlite_") ||
     tableName.startsWith("_") && tableName !== "__drizzle_migrations"
     ;
 
