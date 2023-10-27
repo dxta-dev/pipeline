@@ -1,4 +1,4 @@
-import { mergeRequestNotes, mergeRequests, repositories, namespaces, MergeRequestSchema, NamespaceSchema, RepositorySchema, members } from "@acme/extract-schema";
+import { mergeRequestNotes, mergeRequests, repositories, namespaces, MergeRequestSchema, NamespaceSchema, RepositorySchema, members, repositoriesToMembers } from "@acme/extract-schema";
 import { createMessageHandler } from "@stack/config/create-message";
 import { MessageKind, metadataSchema } from "./messages";
 import { z } from "zod";
@@ -40,7 +40,8 @@ const context: Context<GetMergeRequestNotesSourceControl, GetMergeRequestNotesEn
     mergeRequestNotes,
     mergeRequests,
     namespaces,
-    repositories
+    repositories,
+    repositoriesToMembers,
   },
   integrations: {
     sourceControl: null

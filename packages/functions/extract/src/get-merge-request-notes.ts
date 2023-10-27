@@ -1,6 +1,6 @@
 import type { SourceControl } from "@acme/source-control"
 import type { ExtractFunction, Entities } from "./config";
-import type { Member, MergeRequestNote, NewMember } from "@acme/extract-schema";
+import { type Member, type MergeRequestNote, type NewMember } from "@acme/extract-schema";
 import { eq, sql } from "drizzle-orm";
 
 export type GetMergeRequestNotesInput = {
@@ -15,7 +15,7 @@ export type GetMergeRequestNotesOutput = {
 };
 
 export type GetMergeRequestNotesSourceControl = Pick<SourceControl, "fetchMergeRequestNotes">;
-export type GetMergeRequestNotesEntities = Pick<Entities, "namespaces" | "repositories" | "mergeRequests" | "mergeRequestNotes" | "members">;
+export type GetMergeRequestNotesEntities = Pick<Entities, "namespaces" | "repositories" | "mergeRequests" | "mergeRequestNotes" | "members" | "repositoriesToMembers">;
 
 export type GetMergeRequestNotesFunction = ExtractFunction<GetMergeRequestNotesInput, GetMergeRequestNotesOutput, GetMergeRequestNotesSourceControl, GetMergeRequestNotesEntities>;
 
@@ -63,6 +63,15 @@ export const getMergeRequestNotes: GetMergeRequestNotesFunction = async (
         .get()
     ));
   });
+
+  if (insertedMembers.length > 0) {
+    console.log('IM', insertedMembers);
+    await db.insert(entities.repositoriesToMembers)
+      .values(insertedMembers.map(member => ({ memberId: member.id, repositoryId })))
+      .onConflictDoNothing()
+      .run();
+  }
+
 
   const insertedMergeRequestNotes = await db.transaction(async (tx) =>
     Promise.all(mergeRequestNotes.map(mergeRequestNote =>
