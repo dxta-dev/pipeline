@@ -6,7 +6,7 @@ import { createClient } from '@libsql/client';
 import { describe, expect, test } from '@jest/globals';
 import { getMergeRequestNotes } from './get-merge-request-notes';
 
-import { members, mergeRequestNotes, mergeRequests, namespaces, repositories } from "@acme/extract-schema";
+import { members, mergeRequestNotes, mergeRequests, namespaces, repositories, repositoriesToMembers } from "@acme/extract-schema";
 import type { MergeRequest, Namespace, NewMergeRequest, NewNamespace, NewRepository, Repository } from "@acme/extract-schema";
 import type { Context } from './config';
 import type { GetMergeRequestNotesSourceControl, GetMergeRequestNotesEntities } from './get-merge-request-notes';
@@ -77,7 +77,8 @@ beforeAll(async () => {
       mergeRequestNotes,
       mergeRequests,
       namespaces,
-      repositories
+      repositories,
+      repositoriesToMembers,
     },
     integrations: {
       sourceControl: { fetchMergeRequestNotes }
