@@ -3,7 +3,7 @@ import type { InferSelectModel, InferInsertModel } from 'drizzle-orm';
 import { sqliteTable, integer, text } from 'drizzle-orm/sqlite-core';
 
 export const instances = sqliteTable('instances', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
+  id: integer('id').primaryKey(),
   startedAt: integer('started_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
   userId: text('user_id').notNull(),
   repositoryId: integer('repository_id').notNull(),

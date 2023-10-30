@@ -1,5 +1,5 @@
 CREATE TABLE `events` (
-	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`id` integer PRIMARY KEY NOT NULL,
 	`instance_id` integer NOT NULL,
 	`namespace` integer NOT NULL,
 	`detail` integer NOT NULL,
@@ -11,7 +11,7 @@ CREATE TABLE `events` (
 );
 --> statement-breakpoint
 CREATE TABLE `instances` (
-	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`id` integer PRIMARY KEY NOT NULL,
 	`started_at` integer DEFAULT (strftime('%s', 'now')),
 	`user_id` text NOT NULL,
 	`repository_id` integer NOT NULL,
