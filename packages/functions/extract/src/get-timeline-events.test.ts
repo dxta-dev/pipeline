@@ -19,6 +19,7 @@ const TEST_MERGE_REQUEST_1 = { id: 1, externalId: 3000, createdAt: new Date(), c
 
 const dbname = 'get-merge-request-commits';
 
+
 beforeAll(async () => {
   sqlite = createClient({
     url: `file:${dbname}`,
@@ -37,7 +38,7 @@ beforeAll(async () => {
         return Promise.resolve({
           timelineEvents: [
             {
-              external_id: '12345',
+              externalId: 12345,
               type: 'committed',
               mergeRequestId: 1,
               timestamp: new Date('2023-01-02'),
@@ -47,7 +48,7 @@ beforeAll(async () => {
               data: '{"committerEmail":"COMMITTER EMAIL","committerName":"COMMITTER NAME","committedDate":"2023-01-02T00:00:00.000Z"}',
             },
             {
-              external_id: 'sha_value',
+              externalId: 54321,
               type: 'closed',
               mergeRequestId: 1,
               timestamp: new Date('2023-01-30'),
@@ -99,8 +100,9 @@ describe('get-timeline-events:', () => {
 
       for (const timelineEvent of timelineEventsRows) {
         expect(timelineEvents.find(te => te.id === timelineEvent.id)).toBeDefined();
-        expect(timelineEvents.find(te => te.external_id === timelineEvent.external_id)).toBeDefined();
+        expect(timelineEvents.find(te => te.externalId === timelineEvent.externalId)).toBeDefined();
         expect(timelineEvents.find(te => te.mergeRequestId === timelineEvent.mergeRequestId)).toBeDefined();
+        expect(timelineEvents.find(te => te.type === timelineEvent.type)).toBeDefined();
       }
     });
   })

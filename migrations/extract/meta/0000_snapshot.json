@@ -783,7 +783,7 @@
         },
         "external_id": {
           "name": "external_id",
-          "type": "text",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -855,11 +855,12 @@
         }
       },
       "indexes": {
-        "timeline_events_external_id_merge_request_id_idx": {
-          "name": "timeline_events_external_id_merge_request_id_idx",
+        "timeline_events_external_id_merge_request_id_type_idx": {
+          "name": "timeline_events_external_id_merge_request_id_type_idx",
           "columns": [
             "external_id",
-            "merge_request_id"
+            "merge_request_id",
+            "type"
           ],
           "isUnique": true
         }
