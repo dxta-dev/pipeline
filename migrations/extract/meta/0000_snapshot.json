@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "e78980cd-d95b-4e22-9972-e59a8f59a14b",
+  "id": "b417dcf7-412f-410b-9983-61d9b118ca13",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "git_identities": {
@@ -419,6 +419,20 @@
         },
         "author_external_id": {
           "name": "author_external_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "body": {
+          "name": "body",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "system": {
+          "name": "system",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,

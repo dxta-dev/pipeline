@@ -202,7 +202,9 @@ export class GitlabSourceControl implements SourceControl {
         updatedAt: new Date(mergeRequestNote.updated_at),
         authorUsername: mergeRequestNote.author.username,
         authorExternalId: mergeRequestNote.author.id,
-      }))
+        body: mergeRequestNote.body, // TODO: remove body if user comment/review (leaving for now for to test)
+        system: mergeRequestNote.system, // TODO: won't need system if its false for commment/reviews only
+      } satisfies NewMergeRequestNote))
     };
   }
 

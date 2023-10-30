@@ -59,6 +59,8 @@ CREATE TABLE `merge_request_notes` (
 	`updated_at` integer NOT NULL,
 	`author_username` text NOT NULL,
 	`author_external_id` integer NOT NULL,
+	`body` text NOT NULL,
+	`system` integer NOT NULL,
 	`__created_at` integer DEFAULT (strftime('%s', 'now')),
 	`__updated_at` integer DEFAULT (strftime('%s', 'now'))
 );

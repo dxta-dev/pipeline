@@ -45,7 +45,9 @@ beforeAll(async () => {
               createdAt: new Date(),
               updatedAt: new Date(),
               authorUsername: 'dejan-crocoder',
-              authorExternalId: 5000
+              authorExternalId: 5000,
+              body: '',
+              system: false,
             },
             {
               externalId: 4001,
@@ -53,7 +55,9 @@ beforeAll(async () => {
               createdAt: new Date(),
               updatedAt: new Date(),
               authorUsername: 'Ante-Koceic',
-              authorExternalId: 5001
+              authorExternalId: 5001,
+              body: '',
+              system: false,
             },
             {
               externalId: 4002,
@@ -61,7 +65,9 @@ beforeAll(async () => {
               createdAt: new Date(),
               updatedAt: new Date(),
               authorUsername: 'dejan-crocoder',
-              authorExternalId: 5000
+              authorExternalId: 5000,
+              body: '',
+              system: false,
             },
           ]
         });
