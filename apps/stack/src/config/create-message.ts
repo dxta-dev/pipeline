@@ -88,17 +88,22 @@ type MessagePayload<Shape extends ZodRawShape, MetadataShape extends ZodRawShape
   kind: string;
 }
 
-function createLog(kind: string, event: unknown, logMap: Map<string, string[]>) {
-  const propertiesToLog = logMap.get(kind);
-  if (!propertiesToLog) return;
-  const properties = propertiesToLog.map(property => property.split('.'));
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-  const log = properties.map(property => property.reduce((acc, curr) => ({ key: property.join('.'), value: acc.value[curr] || acc.value}), {key: '', value: event as any})).filter(value => !!value);
-  const logMessage = log.map(({ key, value }) => `- ${key}: ${JSON.stringify(value)}`).join('\n');
-  return `${kind}\n${logMessage}`;
+function createLog(event: unknown, propertiesToLog: string[], eventTypeName: string) {
+  try {
+    if (propertiesToLog.length === 0) return eventTypeName;
+    const props = propertiesToLog.map((property) => property.split('.').reduce((acc, curr) => {
+      const key = curr;
+      if (acc?.value) return { key, value: (acc.value as Record<string, unknown>)[curr] };
+      return { key, value: null }
+    }, { key: '', value: event })
+    ).filter((prop) => prop.value !== null);
+    const logMessage = props.map(({ key, value }) => `- ${key}: ${JSON.stringify(value)}`).join('\n');
+    return `${eventTypeName}\n${logMessage}`;
+  } catch {
+    return eventTypeName;
+  }
+
 }
-
-
 
 export function QueueHandler(map: Map<string, unknown>, logMap: Map<string, string[]>) {
 
@@ -113,6 +118,7 @@ export function QueueHandler(map: Map<string, unknown>, logMap: Map<string, stri
         console.error('No handler for message kind', parsedEvent.kind);
         break;
       }
+      const propertiesToLog = logMap.get(parsedEvent.kind) || [];
 
       const schema = z.object({
         content: z.object(sender.shapes.contentShape),
@@ -123,9 +129,9 @@ export function QueueHandler(map: Map<string, unknown>, logMap: Map<string, stri
       const validatedEvent = schema.parse(parsedEvent);
       try {
         await handler(validatedEvent);
-        console.log('Handled message', createLog(validatedEvent.kind, validatedEvent, logMap));
+        console.log('Handled message', createLog(validatedEvent, propertiesToLog, validatedEvent.kind));
       } catch (e) {
-        console.error('Failed to handle message', e, createLog(validatedEvent.kind, validatedEvent, logMap));
+        console.error('Failed to handle message', e, createLog(validatedEvent, propertiesToLog, validatedEvent.kind));
         throw e;
       }
     }
