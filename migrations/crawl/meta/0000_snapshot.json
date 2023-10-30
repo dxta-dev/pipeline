@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "e3fdb99c-3fd6-46b8-a250-2167298c5be1",
+  "id": "b9f3d200-a74a-4bc4-97a1-6e9c3c88f7cc",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "events": {
@@ -12,7 +12,7 @@
           "type": "integer",
           "primaryKey": true,
           "notNull": true,
-          "autoincrement": true
+          "autoincrement": false
         },
         "instance_id": {
           "name": "instance_id",
@@ -94,7 +94,7 @@
           "type": "integer",
           "primaryKey": true,
           "notNull": true,
-          "autoincrement": true
+          "autoincrement": false
         },
         "started_at": {
           "name": "started_at",

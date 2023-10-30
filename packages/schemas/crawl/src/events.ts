@@ -31,7 +31,7 @@ const [namespaceType, ...nammespaceTypeRest] = eventNamespaces;
 export type EventNamespaceType = typeof eventNamespaces[number];
 
 export const events = sqliteTable('events', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
+  id: integer('id').primaryKey(),
   crawlId: integer('instance_id').notNull().references(() => instances.id),
   namespace: Enum('namespace',
     {
