@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "75f28036-739a-4c38-9a3b-bc7e2f7d1982",
+  "id": "e78980cd-d95b-4e22-9972-e59a8f59a14b",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "git_identities": {
@@ -521,8 +521,22 @@
           "notNull": false,
           "autoincrement": false
         },
+        "merger_external_id": {
+          "name": "merger_external_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "closed_at": {
           "name": "closed_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "closer_external_id": {
+          "name": "closer_external_id",
           "type": "integer",
           "primaryKey": false,
           "notNull": false,
@@ -769,7 +783,7 @@
         },
         "external_id": {
           "name": "external_id",
-          "type": "text",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -841,11 +855,12 @@
         }
       },
       "indexes": {
-        "timeline_events_external_id_merge_request_id_idx": {
-          "name": "timeline_events_external_id_merge_request_id_idx",
+        "timeline_events_external_id_merge_request_id_type_idx": {
+          "name": "timeline_events_external_id_merge_request_id_type_idx",
           "columns": [
             "external_id",
-            "merge_request_id"
+            "merge_request_id",
+            "type"
           ],
           "isUnique": true
         }
