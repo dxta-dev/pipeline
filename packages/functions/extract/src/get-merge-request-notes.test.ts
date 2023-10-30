@@ -47,6 +47,7 @@ beforeAll(async () => {
               authorUsername: 'dejan-crocoder',
               authorExternalId: 5000,
               body: '',
+              system: false,
             },
             {
               externalId: 4001,
@@ -56,6 +57,7 @@ beforeAll(async () => {
               authorUsername: 'Ante-Koceic',
               authorExternalId: 5001,
               body: '',
+              system: false,
             },
             {
               externalId: 4002,
@@ -65,6 +67,7 @@ beforeAll(async () => {
               authorUsername: 'dejan-crocoder',
               authorExternalId: 5000,
               body: '',
+              system: false,
             },
           ]
         });
