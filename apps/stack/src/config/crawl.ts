@@ -16,26 +16,22 @@ const context: Context<InsertEventEntities> = {
   }
 };
 
-export const crawlFailed = (crawlId: number, namespace: EventNamespaceType, id: number, error: unknown) => {
+export const crawlFailed = (crawlId: number, namespace: EventNamespaceType, error: unknown) => {
   return insertEvent({
     crawlId: crawlId,
     eventDetail: 'crawlFailed',
     data: {
-      page: id,
       message: (error instanceof Error) ? error.toString() : `Error: ${JSON.stringify(error)}`,
     },
     eventNamespace: namespace
   }, context);
 };
 
-export const crawlComplete = (crawlId: number, namespace: EventNamespaceType, id: number) => {
+export const crawlComplete = (crawlId: number, namespace: EventNamespaceType) => {
   return insertEvent({
     crawlId: crawlId,
     eventDetail: 'crawlComplete',
-    data: {
-      page: id,
-      ids: [], // ???
-    },
+    data: {},
     eventNamespace: namespace
   }, context);
 }
