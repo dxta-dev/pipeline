@@ -65,7 +65,6 @@ export const getMergeRequestNotes: GetMergeRequestNotesFunction = async (
   });
 
   if (insertedMembers.length > 0) {
-    console.log('IM', insertedMembers);
     await db.insert(entities.repositoriesToMembers)
       .values(insertedMembers.map(member => ({ memberId: member.id, repositoryId })))
       .onConflictDoNothing()
