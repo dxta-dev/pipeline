@@ -186,6 +186,7 @@ export const EventHandler = <
     }
 
     try {
+      console.error('Failed to handle event', createLog(parseResult.data, `${targetSource}.${targetDetailType}`, propertiesToLog));
       await crawlFailed(crawlId, crawlEventNamespace, callbackError);
     } catch (e) {
       console.error();
