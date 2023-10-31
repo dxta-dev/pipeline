@@ -224,4 +224,5 @@ export const eventHandler = EventHandler(
     });
   },
   ["properties.repositoryId", "properties.namespaceId"],
+  "mergeRequest"
 );
