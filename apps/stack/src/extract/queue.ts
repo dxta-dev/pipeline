@@ -8,6 +8,7 @@ import { mergeRequestNoteSenderHandler } from "./extract-merge-request-notes";
 import { memberSenderHandler } from "./extract-members";
 import { namespaceMemberSenderHandler } from "./extract-namespace-members";
 import { timelineEventsSenderHandler } from "./extract-timeline-events";
+import type { EventNamespaceType } from "@acme/crawl-schema";
 
 const messageHandlers = new Map<string, unknown>();
 
@@ -45,4 +46,20 @@ logMap.set(MessageKind.MemberInfo, ['content.memberId']);
 
 logMap.set(MessageKind.TimelineEvent, ['content.repositoryId', 'content.namespaceId', 'content.mergeRequestId']);
 
-export const handler = QueueHandler(messageHandlers, logMap);
+const crawlNamespaceMap = new Map<string, EventNamespaceType>();
+
+crawlNamespaceMap.set(MessageKind.MergeRequest, "mergeRequest");
+
+crawlNamespaceMap.set(MessageKind.MergeRequestDiff, "mergeRequestDiff");
+
+crawlNamespaceMap.set(MessageKind.MergeRequestCommit, "mergeRequestCommit");
+
+crawlNamespaceMap.set(MessageKind.MergeRequestNote, "mergeRequestNote");
+
+crawlNamespaceMap.set(MessageKind.Member, "member");
+
+crawlNamespaceMap.set(MessageKind.NamespaceMember, "member");
+
+crawlNamespaceMap.set(MessageKind.MemberInfo, "memberInfo");
+
+export const handler = QueueHandler(messageHandlers, logMap, crawlNamespaceMap);
