@@ -149,8 +149,7 @@ export const EventHandler = <
     const propertiesToLog = logConfig?.propertiesToLog ?? undefined;
     const crawlEventNamespace = logConfig?.crawlEventNamespace ?? undefined;
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access @typescript-eslint/no-explicit-any
-    const crawlId = (event.detail as any).metadata.crawlId as unknown as (number | undefined);
+    const crawlId = (event.detail as EventPayload<PropertiesShape, MetadataShape>).metadata?.crawlId as unknown as (number | undefined);
 
     const parseResult = eventSchema.safeParse(event.detail);
     if (!parseResult.success) {

@@ -222,7 +222,9 @@ export const eventHandler = EventHandler(
       from: evt.metadata.from,
       to: evt.metadata.to,
     });
-  },
-  ["properties.repositoryId", "properties.namespaceId"],
-  "mergeRequest"
+  }, 
+  {
+    propertiesToLog: ["properties.repositoryId", "properties.namespaceId"],
+    crawlEventNamespace: "mergeRequest",
+  }
 );
