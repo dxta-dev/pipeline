@@ -179,7 +179,7 @@ export const EventHandler = <
       try {
         await crawlComplete(crawlId, targetDetailType as EventNamespaceType);
       } catch (e) {
-        console.error();
+        console.error(`Failed to insert crawl complete event for id: ${crawlId} - ${crawlEventNamespace}`, e);
       }
       return;
     }
@@ -188,7 +188,7 @@ export const EventHandler = <
       console.error('Failed to handle event', createLog(parseResult.data, `${targetSource}.${targetDetailType}`, propertiesToLog));
       await crawlFailed(crawlId, crawlEventNamespace, callbackError);
     } catch (e) {
-      console.error();
+      console.error(`Failed to insert crawl failed event for id: ${crawlId} - ${crawlEventNamespace}`, e);
     }
 
     throw callbackError;
