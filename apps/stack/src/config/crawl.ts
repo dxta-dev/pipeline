@@ -16,7 +16,11 @@ const context: Context<InsertEventEntities> = {
   }
 };
 
-export const crawlFailed = (crawlId: number, namespace: EventNamespaceType, error: unknown) => {
+export const crawlFailed = (crawlId: number | undefined, namespace: EventNamespaceType | undefined, error: unknown) => {
+  if(crawlId === undefined || namespace === undefined) {
+    console.error(`ERROR: crawlFailed called with undefined crawlId or namespace`); // what's undefined?
+    return;
+  }
   return insertEvent({
     crawlId: crawlId,
     eventDetail: 'crawlFailed',
@@ -27,7 +31,11 @@ export const crawlFailed = (crawlId: number, namespace: EventNamespaceType, erro
   }, context);
 };
 
-export const crawlComplete = (crawlId: number, namespace: EventNamespaceType) => {
+export const crawlComplete = (crawlId: number | undefined, namespace: EventNamespaceType | undefined) => {
+  if(crawlId === undefined || namespace === undefined) {
+    console.error(`ERROR: crawlComplete called with undefined crawlId or namespace`); // what's undefined?
+    return;
+  }
   return insertEvent({
     crawlId: crawlId,
     eventDetail: 'crawlComplete',

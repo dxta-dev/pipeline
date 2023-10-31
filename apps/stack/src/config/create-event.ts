@@ -98,9 +98,9 @@ type EventPayload<
 };
 
 
-function createLog(event: unknown, propertiesToLog: string[], eventTypeName: string) {
+function createLog(event: unknown, eventTypeName: string, propertiesToLog?: string[]) {
   try {
-    if (propertiesToLog.length === 0) return eventTypeName;
+    if (!propertiesToLog) return eventTypeName;
     const props = propertiesToLog.map((property) => property.split('.').reduce((acc, curr) => {
       const key = curr;
       if (acc?.value) return { key, value: (acc.value as Record<string, unknown>)[curr] };
@@ -115,6 +115,11 @@ function createLog(event: unknown, propertiesToLog: string[], eventTypeName: str
 
 }
 
+type EventLogConfig = {
+  propertiesToLog: string[];
+  crawlEventNamespace?: EventNamespaceType;
+}
+
 export const EventHandler = <
   Source extends string,
   DetailType extends string,
@@ -123,8 +128,7 @@ export const EventHandler = <
 >(
   event: EventDefinition<Source, DetailType, PropertiesShape, MetadataShape>,
   cb: (ev: EventPayload<PropertiesShape, MetadataShape>) => Promise<void>,
-  propertiesToLog: string[] = [],
-  crawlEventNamespace: (EventNamespaceType | null) = null,
+  logConfig?: EventLogConfig
 ) => {
   const { source: targetSource, type: targetDetailType } = event;
   const eventSchema = z.object({
@@ -142,32 +146,51 @@ export const EventHandler = <
       );
     }
 
-    const isCrawlHandler = crawlEventNamespace !== null;
-    const shouldLogHandling = propertiesToLog.length !== 0;
-    const maybeCrawlEventDetail = event.detail as { metadata?: { crawlId?: number } };
-    const crawlId = typeof maybeCrawlEventDetail.metadata?.crawlId === 'number' ? maybeCrawlEventDetail.metadata.crawlId : null;
+    const propertiesToLog = logConfig?.propertiesToLog ?? undefined;
+    const crawlEventNamespace = logConfig?.crawlEventNamespace ?? undefined;
 
-    if (crawlId === null) return console.error(`Error: missing crawlId for event ${targetSource}.${targetDetailType}`);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access @typescript-eslint/no-explicit-any
+    const crawlId = (event.detail as any).metadata.crawlId as unknown as (number | undefined);
 
     const parseResult = eventSchema.safeParse(event.detail);
     if (!parseResult.success) {
       console.error(
         `ERROR: Failed to parse event detail '${targetSource}.${targetDetailType}'. Reason: ${parseResult.error}`,
       );
-      if (isCrawlHandler) return crawlFailed(crawlId, crawlEventNamespace, `Error: Failed to parse event ${targetDetailType} for crawl ${crawlEventNamespace}`);
-      else return;
+
+      await crawlFailed(crawlId, crawlEventNamespace, `Error: Failed to parse event ${targetSource}.${targetDetailType} for crawl id: ${crawlId} - ${crawlEventNamespace}`);
+
+      return;
     }
+
+    let callbackError = null;
 
     try {
       await cb(
         parseResult.data as EventPayload<PropertiesShape, MetadataShape>,
       );
-      if (shouldLogHandling) console.log('Handled event', createLog(parseResult.data, propertiesToLog, `${targetSource}.${targetDetailType}`));
-      if (isCrawlHandler) return crawlComplete(crawlId, targetDetailType as EventNamespaceType);
-    } catch (e) {
-      console.error('Failed to handle event', e, createLog(parseResult.data, propertiesToLog, `${targetSource}.${targetDetailType}`));
-      if (isCrawlHandler) await crawlFailed(crawlId, crawlEventNamespace, e);
-      throw e;
     }
+    catch (e) {
+      callbackError = e;
+    }
+
+
+    if (!callbackError) {
+      console.log('Handled event', createLog(parseResult.data, `${targetSource}.${targetDetailType}`, propertiesToLog));
+      try {
+        await crawlComplete(crawlId, targetDetailType as EventNamespaceType);
+      } catch (e) {
+        console.error();
+      }
+      return;
+    }
+
+    try {
+      await crawlFailed(crawlId, crawlEventNamespace, callbackError);
+    } catch (e) {
+      console.error();
+    }
+
+    throw callbackError;
   };
 };
