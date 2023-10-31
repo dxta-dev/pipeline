@@ -171,4 +171,9 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
     crawlId: ev.metadata.crawlId,
   });
 
-});
+},   
+{
+  propertiesToLog: ["properties.repositoryId", "properties.namespaceId"],
+  crawlEventNamespace: "member"
+}
+);

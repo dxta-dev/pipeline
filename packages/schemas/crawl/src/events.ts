@@ -50,12 +50,9 @@ export const events = sqliteTable('events', {
 });
 
 export const CrawlCompleteSchema = z.object({
-  ids: z.array(z.number().int()),
-  page: z.number().nonnegative().int(),
 });
 
 export const CrawlFailedSchema = z.object({
-  page: z.number().nonnegative().int(),
   message: z.string().nullable(),
 });
 

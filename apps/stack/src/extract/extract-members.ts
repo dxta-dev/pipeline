@@ -18,7 +18,6 @@ import { getClerkUserToken } from "./get-clerk-user-token";
 import { insertEvent } from "@acme/crawl-functions";
 import { events } from "@acme/crawl-schema";
 
-
 export const memberSenderHandler = createMessageHandler({
   kind: MessageKind.Member,
   metadataShape: metadataSchema.shape,
@@ -147,8 +146,7 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
     })
   }
 
-  if (arrayOfExtractMemberPageMessageContent.length === 0)
-    return;
+  if (arrayOfExtractMemberPageMessageContent.length === 0) return;
 
     await insertEvent({ crawlId: ev.metadata.crawlId, eventNamespace: 'member', eventDetail: 'crawlInfo', data: {calls: pagination.totalPages }}, {db: crawlDb, entities: { events }})
 
@@ -163,4 +161,9 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
     crawlId: ev.metadata.crawlId,
   });
 
-});
+},
+{
+  propertiesToLog: ["properties.repositoryId", "properties.namespaceId"],
+  crawlEventNamespace: "member",
+}
+);

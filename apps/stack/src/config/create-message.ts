@@ -5,6 +5,8 @@ import { nanoid } from "nanoid";
 import type { SQSEvent } from "aws-lambda";
 
 import { Queue } from 'sst/node/queue'
+import type { EventNamespaceType } from "@acme/crawl-schema";
+import { crawlComplete, crawlFailed } from "./crawl";
 
 const sqs = new SQSClient();
 
@@ -88,19 +90,24 @@ type MessagePayload<Shape extends ZodRawShape, MetadataShape extends ZodRawShape
   kind: string;
 }
 
-function createLog(kind: string, event: unknown, logMap: Map<string, string[]>) {
-  const propertiesToLog = logMap.get(kind);
-  if (!propertiesToLog) return;
-  const properties = propertiesToLog.map(property => property.split('.'));
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-  const log = properties.map(property => property.reduce((acc, curr) => ({ key: property.join('.'), value: acc.value[curr] || acc.value}), {key: '', value: event as any})).filter(value => !!value);
-  const logMessage = log.map(({ key, value }) => `- ${key}: ${JSON.stringify(value)}`).join('\n');
-  return `${kind}\n${logMessage}`;
+function createLog(event: unknown, eventTypeName: string, propertiesToLog?: string[]) {
+  try {
+    if (!propertiesToLog) return eventTypeName;
+    const props = propertiesToLog.map((property) => property.split('.').reduce((acc, curr) => {
+      const key = curr;
+      if (acc?.value) return { key, value: (acc.value as Record<string, unknown>)[curr] };
+      return { key, value: null }
+    }, { key: '', value: event })
+    ).filter((prop) => prop.value !== null);
+    const logMessage = props.map(({ key, value }) => `- ${key}: ${JSON.stringify(value)}`).join('\n');
+    return `${eventTypeName}\n${logMessage}`;
+  } catch {
+    return eventTypeName;
+  }
+
 }
 
-
-
-export function QueueHandler(map: Map<string, unknown>, logMap: Map<string, string[]>) {
+export function QueueHandler(map: Map<string, unknown>, logMap: Map<string, string[]>, crawlNamespaceMap: Map<string, EventNamespaceType>) {
 
   return async (event: SQSEvent) => {
     if (event.Records.length > 1) console.warn('WARNING: QueueHandler should process 1 message but got', event.Records.length);
@@ -113,6 +120,11 @@ export function QueueHandler(map: Map<string, unknown>, logMap: Map<string, stri
         console.error('No handler for message kind', parsedEvent.kind);
         break;
       }
+      const propertiesToLog = logMap.get(parsedEvent.kind);
+
+      const crawlId = parsedEvent.metadata?.crawlId as unknown as (number | undefined);
+
+      const crawlEventNamespace = crawlNamespaceMap.get(parsedEvent.kind);
 
       const schema = z.object({
         content: z.object(sender.shapes.contentShape),
@@ -120,14 +132,44 @@ export function QueueHandler(map: Map<string, unknown>, logMap: Map<string, stri
         kind: z.string(),
       });
 
-      const validatedEvent = schema.parse(parsedEvent);
-      try {
-        await handler(validatedEvent);
-        console.log('Handled message', createLog(validatedEvent.kind, validatedEvent, logMap));
-      } catch (e) {
-        console.error('Failed to handle message', e, createLog(validatedEvent.kind, validatedEvent, logMap));
-        throw e;
+      const validatedMessage = schema.safeParse(parsedEvent);
+
+      if (!validatedMessage.success) {
+        console.error(
+          `ERROR: Failed to parse message '${parsedEvent.kind}'. Reason: ${validatedMessage.error}`,
+        );
+  
+        await crawlFailed(crawlId, crawlEventNamespace, `Error: Failed to parse message ${parsedEvent.kind} for crawl id: ${crawlId} - ${crawlEventNamespace}`);
+  
+        return;        
       }
+
+      let handlerError = null;
+      
+      try {
+        await handler(validatedMessage.data);
+      } catch (e) {
+        handlerError = e;
+      }
+
+      if (!handlerError) {
+        console.log('Handled message', createLog(validatedMessage.data, parsedEvent.kind, propertiesToLog))
+        try {
+          await crawlComplete(crawlId, crawlEventNamespace);
+        } catch (e) {
+          console.error(`Failed to insert crawl complete event for id: ${crawlId} - ${crawlEventNamespace}`, e);
+        } 
+        return;
+      }
+
+      try {
+        console.error('Failed to handle message', createLog(validatedMessage.data, parsedEvent.kind, propertiesToLog));
+        await crawlFailed(crawlId, crawlEventNamespace, handlerError);
+      } catch (e) {
+        console.error(`Failed to insert crawl failed event for id: ${crawlId} - ${crawlEventNamespace}`, e);
+      }
+
+      throw handlerError;
     }
   }
 } 
