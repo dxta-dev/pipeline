@@ -120,7 +120,7 @@ export function QueueHandler(map: Map<string, unknown>, logMap: Map<string, stri
         console.error('No handler for message kind', parsedEvent.kind);
         break;
       }
-      const propertiesToLog = logMap.get(parsedEvent.kind) || [];
+      const propertiesToLog = logMap.get(parsedEvent.kind);
 
       const crawlId = parsedEvent.metadata?.crawlId as unknown as (number | undefined);
 
