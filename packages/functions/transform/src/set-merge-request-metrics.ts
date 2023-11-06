@@ -1,9 +1,9 @@
 import type { TransformFunction, ExtractEntities, TransformEntities } from "./config";
-import { and, eq, sql } from "drizzle-orm";
-import type { NewMergeRequest } from "@acme/extract-schema";
+import { and, eq, inArray } from "drizzle-orm";
+import type { MergeRequest } from "@acme/extract-schema";
 
 export type SetMergeRequestMetricsInput = {
-  extractMergeRequestIds: NewMergeRequest["id"][];
+  extractMergeRequestIds: MergeRequest["id"][];
 }
 export type SetMergeRequestMetricsOutput = void;
 export type SetMergeRequestMetricsExtractEntities = Pick<ExtractEntities, 'repositories' | 'mergeRequests'>;
@@ -16,24 +16,24 @@ export const setMergeRequestMetrics: SetMergeRequestMetricsFunction = async (
   { extract, transform }
 ) => {
 
-  const transformedMergeRequests = await extract.db.select({
+  const extractMergeRequests = await extract.db.select({
     openedAt: extract.entities.mergeRequests.createdAt,
     mergedAt: extract.entities.mergeRequests.mergedAt,
     closedAt: extract.entities.mergeRequests.closedAt,
-    mergeRequestId: extract.entities.mergeRequests.canonId,
+    externalId: extract.entities.mergeRequests.externalId,
   }).from(extract.entities.mergeRequests)
-    .innerJoin(extract.entities.repositories, eq(extract.entities.mergeRequests.repositoryId, extract.entities.repositories.id))
+    .where(inArray(extract.entities.mergeRequests.id, extractMergeRequestIds))
     .all();
   
-  const dateJunks = await Promise.all(transformedMergeRequests.map(async (mergeRequest) => {
+  const dateJunks = await Promise.all(extractMergeRequests.map(async (mergeRequest) => {
     let datesJunk = {
-      mergedAt: 0,
-      closedAt: 0,
-      openedAt: 0,
-      lastUpdatedAt: 0,
-      startedCodingAt: 0,
-      startedPickupAt: 0,
-      startedReviewAt: 0,
+      mergedAt: 1,
+      closedAt: 1,
+      openedAt: 1,
+      lastUpdatedAt: 1,
+      startedCodingAt: 1,
+      startedPickupAt: 1,
+      startedReviewAt: 1,
     };
     if (mergeRequest.mergedAt) {
       const mergedAtId = await transform.db.select({
@@ -44,7 +44,7 @@ export const setMergeRequestMetrics: SetMergeRequestMetricsFunction = async (
           eq(transform.entities.dates.month, mergeRequest.mergedAt.getMonth() + 1), 
           eq(transform.entities.dates.day, mergeRequest.mergedAt.getDate())
         ));
-      datesJunk = { ...datesJunk, mergedAt: mergedAtId[0]?.id ? mergedAtId[0]?.id : 0};
+      datesJunk = { ...datesJunk, mergedAt: mergedAtId[0]?.id ? mergedAtId[0]?.id : 1};
     }
     if (mergeRequest.closedAt) {
       const closedAtId = await transform.db.select({
@@ -55,7 +55,7 @@ export const setMergeRequestMetrics: SetMergeRequestMetricsFunction = async (
           eq(transform.entities.dates.month, mergeRequest.closedAt.getMonth() + 1),  
           eq(transform.entities.dates.day, mergeRequest.closedAt.getDate())
         ));
-      datesJunk = { ...datesJunk, closedAt: closedAtId[0]?.id ? closedAtId[0]?.id : 0};
+      datesJunk = { ...datesJunk, closedAt: closedAtId[0]?.id ? closedAtId[0]?.id : 1};
     }
     if (mergeRequest.openedAt) {
       const openedAtId = await transform.db.select({
@@ -66,39 +66,33 @@ export const setMergeRequestMetrics: SetMergeRequestMetricsFunction = async (
           eq(transform.entities.dates.month, mergeRequest.openedAt.getMonth() + 1),  
           eq(transform.entities.dates.day, mergeRequest.openedAt.getDate())
         ));
-        datesJunk = { ...datesJunk, openedAt: openedAtId[0]?.id ? openedAtId[0]?.id : 0};
+        datesJunk = { ...datesJunk, openedAt: openedAtId[0]?.id ? openedAtId[0]?.id : 1};
     }
     return datesJunk;
   }));
   
-  if (transformedMergeRequests.length === 0) {
+  if (extractMergeRequests.length === 0) {
     console.error(new Error(`No extracted merge request found for ids: ${extractMergeRequestIds}`));
     return;
   }
 
   if (dateJunks) {
-      console.log('DJ: ', dateJunks);
       try {
-        dateJunks.map(dateJunk =>
-          transform.db.insert(transform.entities.mergeRequestDatesJunk)
-          .values(dateJunk)
-          .onConflictDoUpdate({
-            target: [transform.entities.mergeRequestDatesJunk.mergedAt, transform.entities.mergeRequestDatesJunk.openedAt, transform.entities.mergeRequestDatesJunk.closedAt],
-            set: {
-              mergedAt: dateJunk.mergedAt,
-              openedAt: dateJunk.openedAt,
-              closedAt: dateJunk.closedAt,
-              _updatedAt: sql`(strftime('%s', 'now'))`,
-            }
-          })
-        )
+        const queries = dateJunks.map(dateJunk =>
+            transform.db.insert(transform.entities.mergeRequestDatesJunk)
+            .values(dateJunk)
+        );
+        type Query = typeof queries[number];
+        
+        await transform.db.batch(
+          queries as [Query, ...Query[]]
+        );
       } catch (error) {
         console.log('ERROR', error);
       }
-      
     }
 
-  // const queries = transformedMergeRequests.map(
+  // const queries = extractMergeRequests.map(
   //   mergeRequest => transform.db.insert(transform.entities.mergeRequestMetrics)
   //     .values(mergeRequest)
   //     .onConflictDoUpdate({
@@ -111,9 +105,4 @@ export const setMergeRequestMetrics: SetMergeRequestMetricsFunction = async (
   //     })
   // );
 
-  // type Query = typeof queries[number];
-  
-  // await transform.db.batch(
-  //   queries as [Query, ...Query[]]
-  // );
 }

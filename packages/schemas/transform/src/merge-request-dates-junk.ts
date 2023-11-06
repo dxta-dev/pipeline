@@ -1,6 +1,6 @@
 import type { InferSelectModel, InferInsertModel } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
-import { sqliteTable, integer, uniqueIndex } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, integer } from 'drizzle-orm/sqlite-core';
 import { dates } from './dates';
 
 export const mergeRequestDatesJunk = sqliteTable('merge_request_fact_dates_junk', {
@@ -16,9 +16,7 @@ export const mergeRequestDatesJunk = sqliteTable('merge_request_fact_dates_junk'
 
   _createdAt: integer('__created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
   _updatedAt: integer('__updated_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
-}, (mergeRequestDatesJunk) => ({
-  uniquerDateJunkIndex: uniqueIndex('merge_request_fact_dates_junk_merged_at_opened_at_closed_at_idx').on(mergeRequestDatesJunk.mergedAt, mergeRequestDatesJunk.openedAt, mergeRequestDatesJunk.closedAt)
-}));
+});
 
 export type MergeRequestDatesJunk = InferSelectModel<typeof mergeRequestDatesJunk>;
 export type NewMergeRequestDatesJunk = InferInsertModel<typeof mergeRequestDatesJunk>;

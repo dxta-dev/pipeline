@@ -152,5 +152,6 @@ CREATE TABLE `repositories` (
 --> statement-breakpoint
 CREATE UNIQUE INDEX `dates_day_week_month_year_idx` ON `dates` (`day`,`week`,`month`,`year`);--> statement-breakpoint
 CREATE UNIQUE INDEX `forge_users_external_id_forge_type_idx` ON `forge_users` (`external_id`,`forge_type`);--> statement-breakpoint
+CREATE UNIQUE INDEX `merge_request_metrics_merge_request_idx` ON `merge_request_metrics` (`merge_request`);--> statement-breakpoint
 CREATE UNIQUE INDEX `merge_requests_external_id_forge_type_idx` ON `merge_requests` (`external_id`,`forge_type`);--> statement-breakpoint
 CREATE UNIQUE INDEX `repositories_external_id_forge_type_idx` ON `repositories` (`external_id`,`forge_type`);

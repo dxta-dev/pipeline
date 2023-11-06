@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "e0be6476-e9f1-4c30-be88-dad7ffcd57fe",
+  "id": "33806edd-d82d-45a6-bbd8-fa62373c4b4e",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "dates": {
@@ -435,7 +435,15 @@
           "default": "(strftime('%s', 'now'))"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "merge_request_metrics_merge_request_idx": {
+          "name": "merge_request_metrics_merge_request_idx",
+          "columns": [
+            "merge_request"
+          ],
+          "isUnique": true
+        }
+      },
       "foreignKeys": {
         "merge_request_metrics_users_junk_merge_request_fact_users_junk_id_fk": {
           "name": "merge_request_metrics_users_junk_merge_request_fact_users_junk_id_fk",
