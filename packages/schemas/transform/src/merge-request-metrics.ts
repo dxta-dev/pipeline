@@ -1,6 +1,6 @@
 import type { InferSelectModel, InferInsertModel } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
-import { sqliteTable, integer } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, integer, uniqueIndex } from 'drizzle-orm/sqlite-core';
 import { repositories } from './repositories';
 import { mergeRequests } from './merge-requests';
 import { mergeRequestUsersJunk } from './merge-request-users-junk';
@@ -31,7 +31,9 @@ export const mergeRequestMetrics = sqliteTable('merge_request_metrics', {
 
   _createdAt: integer('__created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
   _updatedAt: integer('__updated_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
-});
+}, (mergeRequestMetrics)=> ({
+  uniqueMergeRequestId: uniqueIndex(`merge_request_metrics_merge_request_idx`).on(mergeRequestMetrics.mergeRequest),
+}));
 
 export type MergeRequestMetric = InferSelectModel<typeof mergeRequestMetrics>;
 export type NewMergeRequestMetric = InferInsertModel<typeof mergeRequestMetrics>;
