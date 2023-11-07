@@ -102,7 +102,7 @@ export const setTimelineEvents: SetTimelineEventsFunction = async (
       case 'reviewed':
         const reviewedEvent = event.data as ReviewedEvent;
         reviewed = true; // Todo: is a comment a review ? I'm so confused now
-        if (reviewedEvent.state === 'approve') approved = true;
+        if (reviewedEvent.state === 'approved') approved = true;
       case 'commented':
         if (firstReviewOrCommentAt === null) firstReviewOrCommentAt = event.timestamp;
         reviewDepth++; // Note: should we count reviewed events without body ? (Investigate how other solutions handle this)
