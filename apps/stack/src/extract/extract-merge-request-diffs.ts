@@ -13,7 +13,6 @@ import { z } from "zod";
 import { getClerkUserToken } from "./get-clerk-user-token";
 import { insertEvent } from "@acme/crawl-functions";
 import { events } from "@acme/crawl-schema";
-import { parseHunks } from "../../../../packages/functions/transform/src/parse-hunks";
 
 
 export const mergeRequestDiffSenderHandler = createMessageHandler({
@@ -29,20 +28,12 @@ export const mergeRequestDiffSenderHandler = createMessageHandler({
     const { mergeRequestId, repositoryId, namespaceId } = message.content;
     context.integrations.sourceControl = await initSourceControl(userId, sourceControl);
 
-    const diffs = await getMergeRequestsDiffs({
+    await getMergeRequestsDiffs({
       mergeRequestId,
       repositoryId,
       namespaceId,
       perPage: Number(Config.PER_PAGE),
     }, context);
-
-    const difovi = diffs.mergeRequestDiffs[0]?.diff;
-    // console.log("tipoviiiiiiiiiiiiiiiiiii", typeof(diffs.mergeRequestDiffs[0]?.diff))
-    // const stringifajed = JSON.stringify(mergeRequestDiffs);
-    // console.log("STRINGIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII", mergeRequestDiffs)
-    const hunkovi = parseHunks(difovi!)
-    console.log("HUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU", hunkovi)
-
   }
 });
 
