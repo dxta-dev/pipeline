@@ -11,6 +11,8 @@ export type SetTimelineEventsTransformEntities = Pick<TransformEntities, 'reposi
 
 export type SetTimelineEventsFunction = TransformFunction<SetTimelineEventsInput, SetTimelineEventsOutput, SetTimelineEventsExtractEntities, SetTimelineEventsTransformEntities>;
 
+const MS_IN_MINUTE = 60 * 1000;
+
 export const setTimelineEvents: SetTimelineEventsFunction = async (
   { mergeRequestId },
   { extract, transform }
@@ -48,17 +50,17 @@ export const setTimelineEvents: SetTimelineEventsFunction = async (
       eq(transform.entities.repositories.forgeType, repository.forgeType),
     ))
     .get();
-    if (!transformRepository) throw new Error(`Repository not yet transformed: ${mergeRequest.repositoryId}`);
+  if (!transformRepository) throw new Error(`Repository not yet transformed: ${mergeRequest.repositoryId}`);
 
   const transformMergeRequest = await transform.db.select({
     id: transform.entities.mergeRequests.id
   })
-  .from(transform.entities.mergeRequests)
-  .where(and(
-    eq(transform.entities.repositories.externalId, repository.externalId),
-    eq(transform.entities.repositories.forgeType, repository.forgeType),
-  ))
-  .get();
+    .from(transform.entities.mergeRequests)
+    .where(and(
+      eq(transform.entities.repositories.externalId, repository.externalId),
+      eq(transform.entities.repositories.forgeType, repository.forgeType),
+    ))
+    .get();
   if (!transformMergeRequest) throw new Error(`Merge request not yet transformed: ${mergeRequestId}`);
 
   // TODO: Instead of this we could query count and select lowest createdAt. This could change if we authors for handovers
@@ -120,7 +122,7 @@ export const setTimelineEvents: SetTimelineEventsFunction = async (
   }
 
   // TODO: what if no first commit ? Shouldn't happen in GitHub. What happens if force push base ref to PR branch ?
-  let startedCodingAt: Date | null = firstCommitAt;
+  const startedCodingAt: Date | null = firstCommitAt;
   let finishedCodingAt: Date | null = lastCommitBeforeFirstReviewAt || lastCommitBeforeFirstReviewCommentAt;
   let startedPickupAt: Date | null = null;
   let startedReviewAt: Date | null = firstReviewOrCommentAt || firstReviewCommentAt;
@@ -146,6 +148,16 @@ export const setTimelineEvents: SetTimelineEventsFunction = async (
 
   if (startedPickupAt === null && startedReviewAt !== null) console.warn("Warning: Review started without pickup for MR", mergeRequestId);
 
+  const now = new Date();
+  let codingDuration = 0;
+  let pickupDuration = 0;
+  let reviewDuration = 0;
+  if (startedCodingAt !== null) codingDuration = ((startedPickupAt || now).getTime() - startedCodingAt.getTime()) / MS_IN_MINUTE;
+  if (startedPickupAt !== null) pickupDuration = ((startedReviewAt || now).getTime() - startedPickupAt.getTime()) / MS_IN_MINUTE;
+  if (startedReviewAt !== null) reviewDuration = ((closedAt || now).getTime() - startedReviewAt.getTime()) / MS_IN_MINUTE;
+
+  // TODO: set dates junk
+
   await transform.db.insert(transform.entities.mergeRequestMetrics).values({
     usersJunk: 1,
     repository: transformRepository.id,
@@ -162,16 +174,16 @@ export const setTimelineEvents: SetTimelineEventsFunction = async (
     closed: false,
     merged: false,
   })
-  .onConflictDoUpdate({
-    target: transform.entities.mergeRequestMetrics.mergeRequest,
-    set: {
-      codingDuration,
-      pickupDuration,
-      reviewDuration,
-      reviewDepth,
-      approved,
-      reviewed,
-    }
-  })
-  .run();
+    .onConflictDoUpdate({
+      target: transform.entities.mergeRequestMetrics.mergeRequest,
+      set: {
+        codingDuration,
+        pickupDuration,
+        reviewDuration,
+        reviewDepth,
+        approved,
+        reviewed,
+      }
+    })
+    .run();
 }
