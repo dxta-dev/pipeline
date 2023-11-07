@@ -1,8 +1,6 @@
 import { eq, and } from "drizzle-orm";
 import type { ExtractEntities, TransformEntities, TransformFunction } from "./config";
-import type { NewMergeRequest as TransformedMergeRequest } from "@acme/transform-schema";
 import type { CommittedEvent, MergeRequest as ExtractMergeRequest, ReviewedEvent } from "@acme/extract-schema";
-import { sql } from "drizzle-orm";
 
 export type SetTimelineEventsInput = {
   mergeRequestId: ExtractMergeRequest["id"];
