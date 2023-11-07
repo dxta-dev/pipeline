@@ -40,7 +40,8 @@ const contextMetrics: Context<SetMergeRequestMetricsExtractEntities, SetMergeReq
     entities: {
       mergeRequestMetrics: transform.mergeRequestMetrics,
       dates: transform.dates,
-      mergeRequestDatesJunk: transform.mergeRequestDatesJunk
+      mergeRequestDatesJunk: transform.mergeRequestDatesJunk,
+      mergeRequests: transform.mergeRequests,
     }
   }
 }
