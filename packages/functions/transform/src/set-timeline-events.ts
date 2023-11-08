@@ -31,7 +31,6 @@ export const setTimelineEvents: SetTimelineEventsFunction = async (
     .where(eq(extract.entities.mergeRequests.id, mergeRequestId))
     .get();
   if (!mergeRequest) throw new Error(`Invalid namespace: ${mergeRequestId}`);
-  if (!mergeRequest) throw new Error("Merge request not found");
 
   const repository = await extract.db.select({
     externalId: extract.entities.repositories.externalId,
@@ -61,7 +60,7 @@ export const setTimelineEvents: SetTimelineEventsFunction = async (
       eq(transform.entities.repositories.forgeType, repository.forgeType),
     ))
     .get();
-  if (!transformMergeRequest) throw new Error(`Merge request not yet transformed: ${mergeRequestId}`);
+  if (!transformMergeRequest) throw new Error(`Merge Request not yet transformed: ${mergeRequestId}`);
 
   // TODO: Instead of this we could query count and select lowest createdAt. This could change if we authors for handovers
   const reviewComments = await extract.db.select()
@@ -101,7 +100,7 @@ export const setTimelineEvents: SetTimelineEventsFunction = async (
         break;
       case 'reviewed':
         const reviewedEvent = event.data as ReviewedEvent;
-        reviewed = true; // Todo: is a comment a review ? I'm so confused now
+        reviewed = true; // TODO: is a comment a review ? I'm so confused now
         if (reviewedEvent.state === 'approved') approved = true;
       case 'commented':
         if (firstReviewOrCommentAt === null) firstReviewOrCommentAt = event.timestamp;
