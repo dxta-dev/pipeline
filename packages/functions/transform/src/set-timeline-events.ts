@@ -56,8 +56,8 @@ export const setTimelineEvents: SetTimelineEventsFunction = async (
   })
     .from(transform.entities.mergeRequests)
     .where(and(
-      eq(transform.entities.repositories.externalId, repository.externalId),
-      eq(transform.entities.repositories.forgeType, repository.forgeType),
+      eq(transform.entities.mergeRequests.externalId, mergeRequest.externalId),
+      eq(transform.entities.mergeRequests.forgeType, repository.forgeType),
     ))
     .get();
   if (!transformMergeRequest) throw new Error(`Merge Request not yet transformed: ${mergeRequestId}`);
