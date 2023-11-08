@@ -1,13 +1,14 @@
 import { eq, and } from "drizzle-orm";
 import type { ExtractEntities, TransformEntities, TransformFunction } from "./config";
 import type { CommittedEvent, MergeRequest as ExtractMergeRequest, ReviewedEvent } from "@acme/extract-schema";
+import type { MergeRequestDatesJunk, NewMergeRequestMetric, TransformDate } from "@acme/transform-schema";
 
 export type SetTimelineEventsInput = {
   mergeRequestId: ExtractMergeRequest["id"];
 }
 export type SetTimelineEventsOutput = void;
 export type SetTimelineEventsExtractEntities = Pick<ExtractEntities, 'repositories' | 'mergeRequests' | 'timelineEvents' | 'mergeRequestNotes'>;
-export type SetTimelineEventsTransformEntities = Pick<TransformEntities, 'repositories' | 'mergeRequests' | 'mergeRequestMetrics'>;
+export type SetTimelineEventsTransformEntities = Pick<TransformEntities, 'repositories' | 'mergeRequests' | 'mergeRequestMetrics' | 'dates' | 'mergeRequestDatesJunk'>;
 
 export type SetTimelineEventsFunction = TransformFunction<SetTimelineEventsInput, SetTimelineEventsOutput, SetTimelineEventsExtractEntities, SetTimelineEventsTransformEntities>;
 
@@ -51,6 +52,7 @@ export const setTimelineEvents: SetTimelineEventsFunction = async (
     .get();
   if (!transformRepository) throw new Error(`Repository not yet transformed: ${mergeRequest.repositoryId}`);
 
+  // Note: can't join transformed repo with merge request like in extract (no reference column)
   const transformMergeRequest = await transform.db.select({
     id: transform.entities.mergeRequests.id
   })
@@ -135,9 +137,12 @@ export const setTimelineEvents: SetTimelineEventsFunction = async (
 
   /**
    * Pickup starts when:
-   * 1. A merge request is ready for review
+   * 1. A merge request is ready for review (*)
    * 2. A team member is requested to review the merge request
    * 3. The last commit before the first review
+   * 
+   * (*) - Note: This is not specified in any document, I think we should discuss it further. I think this depends on handover definitions and how a pickup is a handover ? (first handover ?)
+   * (*) ... Cody keeps suggesting "// TODO: set handover junk" because of the above comment
    */
   if (firstReadyForReviewAt !== null) startedPickupAt = firstReadyForReviewAt;
   else if (firstReviewRequestAt !== null) startedPickupAt = firstReviewRequestAt;
@@ -147,6 +152,79 @@ export const setTimelineEvents: SetTimelineEventsFunction = async (
 
   if (startedPickupAt === null && startedReviewAt !== null) console.warn("Warning: Review started without pickup for MR", mergeRequestId);
 
+  const selectNullDateQuery = transform.db.select()
+    .from(transform.entities.dates)
+    .where(eq(transform.entities.dates.id, 1)); // TODO: no magic numbers ?
+
+  type TransformDateWithId = Pick<TransformDate, 'id'>;
+
+  const [[startedCodingAtDate], [startedPickupAtDate], [startedReviewAtDate]] = await (transform.db.batch([
+    startedCodingAt ? transform.db.select({
+      id: transform.entities.dates.id
+    })
+      .from(transform.entities.dates)
+      .where(and(
+        eq(transform.entities.dates.day, startedCodingAt.getUTCDate()),
+        // TODO: week ??
+        eq(transform.entities.dates.month, startedCodingAt.getUTCMonth()),
+        eq(transform.entities.dates.year, startedCodingAt.getUTCFullYear()),
+      )) : selectNullDateQuery,
+    startedPickupAt ? transform.db.select({
+      id: transform.entities.dates.id
+    })
+      .from(transform.entities.dates)
+      .where(and(
+        eq(transform.entities.dates.day, startedPickupAt.getUTCDate()),
+        // TODO: week ??
+        eq(transform.entities.dates.month, startedPickupAt.getUTCMonth()),
+        eq(transform.entities.dates.year, startedPickupAt.getUTCFullYear()),
+      )) : selectNullDateQuery,
+    startedReviewAt ? transform.db.select({
+      id: transform.entities.dates.id
+    })
+      .from(transform.entities.dates)
+      .where(and(
+        eq(transform.entities.dates.day, startedReviewAt.getUTCDate()),
+        // TODO: week ??
+        eq(transform.entities.dates.month, startedReviewAt.getUTCMonth()),
+        eq(transform.entities.dates.year, startedReviewAt.getUTCFullYear()),
+      )) : selectNullDateQuery
+  ]) as unknown as Promise<[[TransformDateWithId | undefined], [TransformDateWithId | undefined], [TransformDateWithId | undefined]]>);
+
+  const newDatesJunkDates = {
+    startedCodingAt: startedCodingAtDate?.id || 1, // TODO: no magic numbers ?
+    startedPickupAt: startedPickupAtDate?.id || 1, // TODO: no magic numbers ?
+    startedReviewAt: startedReviewAtDate?.id || 1, // TODO: no magic numbers ?    
+  } satisfies Partial<MergeRequestDatesJunk>;
+
+  const existingPRMetrics = await transform.db.select({
+    datesJunk: transform.entities.mergeRequestMetrics.datesJunk,
+  })
+    .from(transform.entities.mergeRequestMetrics)
+    .where(eq(transform.entities.mergeRequestMetrics.mergeRequest, transformMergeRequest.id))
+    .get();
+
+  let datesJunkId = existingPRMetrics?.datesJunk || 1; // TODO: no magic numbers ?
+
+  // If we find existing pr metrics, and the date junk id is not null, we want to update the date junk. Otherwise create a new date junk
+  if (existingPRMetrics !== undefined && existingPRMetrics.datesJunk !== 1) {
+    await transform.db.update(transform.entities.mergeRequestDatesJunk)
+      .set(newDatesJunkDates)
+      .where(eq(transform.entities.dates.id, existingPRMetrics.datesJunk))
+      .run();
+  } else {
+    const insertedDatesJunk = await transform.db.insert(transform.entities.mergeRequestDatesJunk)
+      .values({
+        closedAt: 1, // TODO: no magic numbers ?
+        mergedAt: 1, // TODO: no magic numbers ?
+        openedAt: 1, // TODO: no magic numbers ?
+        lastUpdatedAt: 1, // TODO: no magic numbers ?
+        ...newDatesJunkDates
+      })
+      .returning().get();
+    datesJunkId = insertedDatesJunk.id;
+  }
+
   const now = new Date();
   let codingDuration = 0;
   let pickupDuration = 0;
@@ -155,20 +233,30 @@ export const setTimelineEvents: SetTimelineEventsFunction = async (
   if (startedPickupAt !== null) pickupDuration = ((startedReviewAt || now).getTime() - startedPickupAt.getTime()) / MS_IN_MINUTE;
   if (startedReviewAt !== null) reviewDuration = ((closedAt || now).getTime() - startedReviewAt.getTime()) / MS_IN_MINUTE;
 
-  // TODO: set dates junk
-
-  await transform.db.insert(transform.entities.mergeRequestMetrics).values({
-    usersJunk: 1,
-    repository: transformRepository.id,
-    mergeRequest: transformMergeRequest.id,
-    datesJunk: 1,
-    mrSize: 0,
+  const newPRCycleMetrics = {
     codingDuration,
     pickupDuration,
     reviewDuration,
     reviewDepth,
     approved,
     reviewed,
+  } satisfies Partial<NewMergeRequestMetric>
+
+  // Note: since we know if a metric exists, is an update more efficient then an upsert ? 
+  // ...Another approach is to have 2 upserts, one for the new metrics and one if the datesJunk is null
+  /**
+   * Options:
+   * - Select Metric, Update/Insert DatesJunk, Upsert Metric <- current implementation
+   * - Upsert Metric, Update/Insert DatesJunk, Optional Update Metric
+   * 
+   */
+  await transform.db.insert(transform.entities.mergeRequestMetrics).values({
+    usersJunk: 1,
+    repository: transformRepository.id,
+    mergeRequest: transformMergeRequest.id,
+    datesJunk: datesJunkId,
+    mrSize: 0,
+    ...newPRCycleMetrics,
     handover: 0,
     closed: false,
     merged: false,
