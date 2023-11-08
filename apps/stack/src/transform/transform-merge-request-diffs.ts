@@ -15,8 +15,9 @@ const context: Context<SetMergeRequestDiffsExtractEntities, SetMergeRequestDiffs
   extract: {
     db: drizzle(createClient({ url: Config.EXTRACT_DATABASE_URL, authToken: Config.EXTRACT_DATABASE_AUTH_TOKEN })),
     entities: {
-      mergeRequests: extract.mergeRequests,
-      repositories: extract.repositories
+        mergeRequestDiffs: extract.mergeRequestDiffs,
+        repositories: extract.repositories,
+        mergeRequests: extract.mergeRequests
     }
   },
   transform: {

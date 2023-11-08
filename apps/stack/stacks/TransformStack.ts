@@ -47,6 +47,23 @@ export function TransformStack({ stack }: StackContext) {
   });
 
   ExtractBus.addRules(stack, {
+    "transformMergeRequestDiffs": {
+      pattern: {
+        source: ["extract"],
+        detailType: ["mergeRequest"]
+      },
+      targets: {
+        transformMergeRequestDiffs: {
+          function: {
+            bind: [TRANSFORM_DATABASE_URL, TRANSFORM_DATABASE_AUTH_TOKEN],
+            handler: "src/transform/transform-merge-request-diffs.eventHandler",
+          }
+        }
+      },
+    }
+  });
+
+  ExtractBus.addRules(stack, {
     "transformForgeUsers": {
       pattern: {
         source: ["extract"],
