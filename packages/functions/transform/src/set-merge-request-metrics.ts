@@ -70,30 +70,46 @@ export const setMergeRequestMetrics: SetMergeRequestMetricsFunction = async (
     }
     return datesJunk;
   }));
+
+  const transformMergeRequestIds = await Promise.all(extractMergeRequests.map(async (mergeRequest) => {
+    const mergeRequestId = await transform.db.select({
+      id: transform.entities.mergeRequests.id,
+    }).from(transform.entities.mergeRequests)
+      .where(and(
+        eq(transform.entities.mergeRequests.externalId, mergeRequest.externalId),
+        eq(transform.entities.mergeRequests.forgeType, "github")
+      ));
+    return mergeRequestId[0]?.id;
+  }))
   
   if (extractMergeRequests.length === 0) {
     console.error(new Error(`No extracted merge request found for ids: ${extractMergeRequestIds}`));
     return;
   }
-
+  
   if (dateJunks.length === 0) {
     console.error(new Error(`No date junks found for extractMergeRequests`));
     return;
   }
-
+  
+  if (transformMergeRequestIds.length === 0) {
+    console.error(new Error(`No ids found for extractMergeRequests`));
+    return;
+  }
+  
   const returningData = await transform.db.insert(transform.entities.mergeRequestDatesJunk)
-    .values(dateJunks)
-    .returning();
+  .values(dateJunks)
+  .returning();
   
   const metricData = extractMergeRequests.map((mergeRequest, index) => {
     const data = {
       merged: mergeRequest.mergedAt ? true : false,
       closed: mergeRequest.closedAt ? true : false,
       datesJunk: 1,
+      mergeRequest: 1,
       //----TEST DATA----
       usersJunk: 1,
       repository: 1,
-      mergeRequest: 1,
       mrSize: 1,
       codingDuration: 1,
       pickupDuration: 1,
@@ -104,8 +120,9 @@ export const setMergeRequestMetrics: SetMergeRequestMetricsFunction = async (
       reviewed: false,
       //----TEST DATA----
     };
-    return { ...data, datesJunk: returningData[index]?.id ?? -1 };
+    return { ...data, datesJunk: returningData[index]?.id ?? 1, mergeRequest: transformMergeRequestIds[index] ?? 1 };
   });
+  
 
   const queries = metricData.map(
     (metric) => transform.db.insert(transform.entities.mergeRequestMetrics)
