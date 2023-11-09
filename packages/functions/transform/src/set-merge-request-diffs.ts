@@ -46,7 +46,7 @@ export const setMergeRequestDiffs: SetMergeRequestDiffsFunction = async (
             const codeGenResult = isCodeGen(transformedMergeRequestDiffs[i]?.new_path as string);
 
             if (codeGenResult === true) {
-                console.error(new Error(`Those files are part of codeGen: ${transformedMergeRequestDiffs[i]?.new_path}`));
+                console.error(new Error(`This file is part of codeGen: ${transformedMergeRequestDiffs[i]?.new_path}`));
                 continue;
             }
 
