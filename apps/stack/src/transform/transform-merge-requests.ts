@@ -7,7 +7,7 @@ import { EventHandler } from "@stack/config/create-event";
 import { extractMergeRequestsEvent } from "@stack/extract/events";
 import * as extract from "@acme/extract-schema";
 import * as transform from "@acme/transform-schema";
-import type { Context, SetMergeRequestsTransformEntities, SetMergeRequestsExtractEntities, SetMergeRequestMetricsExtractEntities, SetMergeRequestMetricsTransformEntities } from "@acme/transform-functions";
+import type { Context, SetMergeRequestsTransformEntities, SetMergeRequestsExtractEntities } from "@acme/transform-functions";
 
 import { setMergeRequests } from "@acme/transform-functions";
 
