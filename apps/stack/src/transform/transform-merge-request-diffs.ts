@@ -9,7 +9,7 @@ import * as extract from "@acme/extract-schema";
 import * as transform from "@acme/transform-schema";
 import type { Context, SetMergeRequestDiffsTransformEntities, SetMergeRequestDiffsExtractEntities } from "@acme/transform-functions";
 
-import { setMergeRequestDiffs } from "@acme/transform-functions";
+import { calculateMergeRequestSize } from "@acme/transform-functions";
 
 const context: Context<SetMergeRequestDiffsExtractEntities, SetMergeRequestDiffsTransformEntities> = {
   extract: {
@@ -29,5 +29,5 @@ const context: Context<SetMergeRequestDiffsExtractEntities, SetMergeRequestDiffs
 }
 
 export const eventHandler = EventHandler(extractMergeRequestsEvent, async (evt) => {
-  await setMergeRequestDiffs({ extractMergeRequestIds: evt.properties.mergeRequestIds }, context);
+  await calculateMergeRequestSize({ extractMergeRequestIds: evt.properties.mergeRequestIds }, context);
 });

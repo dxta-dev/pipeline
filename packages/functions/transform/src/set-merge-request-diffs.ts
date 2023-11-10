@@ -13,7 +13,7 @@ export type SetMergeRequestDiffsTransformEntities = Pick<TransformEntities, 'mer
 
 export type SetMergeRequestDiffsFunction = TransformFunction<SetMergeRequestDiffsInput, SetMergeRequestDiffsOutput, SetMergeRequestDiffsExtractEntities, SetMergeRequestDiffsTransformEntities>;
 
-export const setMergeRequestDiffs: SetMergeRequestDiffsFunction = async (
+export const calculateMergeRequestSize: SetMergeRequestDiffsFunction = async (
     { extractMergeRequestIds },
     { extract }
 ) => {
