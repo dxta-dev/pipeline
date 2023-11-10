@@ -7,7 +7,7 @@ import { eq } from "drizzle-orm";
 export type SetMergeRequestDiffsInput = {
   extractMergeRequestId: ExtractMergeRequest["id"];
 }
-export type SetMergeRequestDiffsOutput = void;
+export type SetMergeRequestDiffsOutput = number | undefined;
 export type SetMergeRequestDiffsExtractEntities = Pick<ExtractEntities, 'repositories' | 'mergeRequests' | 'mergeRequestDiffs'>;
 export type SetMergeRequestDiffsTransformEntities = Pick<TransformEntities, 'mergeRequests'>;
 
@@ -32,14 +32,9 @@ export const calculateMergeRequestSize: SetMergeRequestDiffsFunction = async (
         return;  
     }
 
-    const mergeRequestSizes: Record<number, number> = {}; 
+    let mergeRequestSize = 0; 
 
     for (let i = 0; i < transformedMergeRequestDiffs.length; i++) {
-        const mergeRequestId = transformedMergeRequestDiffs[i]?.mergeRequestId as number;
-
-        if (!mergeRequestSizes[mergeRequestId]) {
-            mergeRequestSizes[mergeRequestId] = 0;
-        }
 
         if (transformedMergeRequestDiffs[i] && transformedMergeRequestDiffs[i]?.new_path && transformedMergeRequestDiffs[i]?.diff) {
             const codeGenResult = isCodeGen(transformedMergeRequestDiffs[i]?.new_path as string);
@@ -50,8 +45,6 @@ export const calculateMergeRequestSize: SetMergeRequestDiffsFunction = async (
             }
 
             const linesChanged = parseHunks(transformedMergeRequestDiffs[i]?.diff as string);
-            let additionsTotal = 0;
-            let deletionsTotal = 0;
 
             for (let j = 0; j < linesChanged.length; j++) {
                 const line = linesChanged[j];
@@ -59,17 +52,13 @@ export const calculateMergeRequestSize: SetMergeRequestDiffsFunction = async (
                 const deletions = line?.deletions;
 
                 if (additions) {
-                    additionsTotal += additions;
+                    mergeRequestSize += additions;
                 }
                 if (deletions) {
-                    deletionsTotal += deletions;
+                    mergeRequestSize += deletions;
                 }
             }
-
-            const mergeRequestSizePerIteration = additionsTotal + deletionsTotal;
-            mergeRequestSizes[mergeRequestId] += mergeRequestSizePerIteration;
         }
     }
-
-    console.log('Merge Request Sizes:', mergeRequestSizes);
+    return mergeRequestSize;
 }
