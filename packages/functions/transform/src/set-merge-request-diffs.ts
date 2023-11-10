@@ -1,6 +1,5 @@
 import { inArray } from "drizzle-orm";
 import type { ExtractEntities, TransformEntities, TransformFunction } from "./config";
-import type { NewMergeRequest as TransformedMergeRequest } from "@acme/transform-schema";
 import type { MergeRequest as ExtractMergeRequest} from "@acme/extract-schema";
 import { isCodeGen } from "./is-codegen";
 import { parseHunks } from "./parse-hunks";
@@ -16,7 +15,7 @@ export type SetMergeRequestDiffsFunction = TransformFunction<SetMergeRequestDiff
 
 export const setMergeRequestDiffs: SetMergeRequestDiffsFunction = async (
     { extractMergeRequestIds },
-    { extract, transform }
+    { extract }
 ) => {
 
     const transformedMergeRequestDiffs = await extract.db.select({
@@ -72,5 +71,5 @@ export const setMergeRequestDiffs: SetMergeRequestDiffsFunction = async (
         }
     }
 
-    // console.log('Merge Request Sizes:', mergeRequestSizes);
+    console.log('Merge Request Sizes:', mergeRequestSizes);
 }
