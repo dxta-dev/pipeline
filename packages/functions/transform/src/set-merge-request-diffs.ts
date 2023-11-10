@@ -1,11 +1,11 @@
-import { inArray } from "drizzle-orm";
 import type { ExtractEntities, TransformEntities, TransformFunction } from "./config";
 import type { MergeRequest as ExtractMergeRequest} from "@acme/extract-schema";
 import { isCodeGen } from "./is-codegen";
 import { parseHunks } from "./parse-hunks";
+import { eq } from "drizzle-orm";
 
 export type SetMergeRequestDiffsInput = {
-  extractMergeRequestIds: ExtractMergeRequest["id"][];
+  extractMergeRequestId: ExtractMergeRequest["id"];
 }
 export type SetMergeRequestDiffsOutput = void;
 export type SetMergeRequestDiffsExtractEntities = Pick<ExtractEntities, 'repositories' | 'mergeRequests' | 'mergeRequestDiffs'>;
@@ -14,7 +14,7 @@ export type SetMergeRequestDiffsTransformEntities = Pick<TransformEntities, 'mer
 export type SetMergeRequestDiffsFunction = TransformFunction<SetMergeRequestDiffsInput, SetMergeRequestDiffsOutput, SetMergeRequestDiffsExtractEntities, SetMergeRequestDiffsTransformEntities>;
 
 export const calculateMergeRequestSize: SetMergeRequestDiffsFunction = async (
-    { extractMergeRequestIds },
+    { extractMergeRequestId },
     { extract }
 ) => {
 
@@ -24,11 +24,11 @@ export const calculateMergeRequestSize: SetMergeRequestDiffsFunction = async (
         diff: extract.entities.mergeRequestDiffs.diff,
         mergeRequestId: extract.entities.mergeRequestDiffs.mergeRequestId,
     }).from(extract.entities.mergeRequestDiffs)
-      .where(inArray(extract.entities.mergeRequestDiffs.mergeRequestId, extractMergeRequestIds))
+      .where(eq(extract.entities.mergeRequestDiffs.mergeRequestId, extractMergeRequestId))
       .all();
 
     if (transformedMergeRequestDiffs.length === 0) {
-        console.error(new Error(`No extracted merge request diffs found for ids: ${extractMergeRequestIds}`));
+        console.error(new Error(`No extracted merge request diffs found for ids: ${extractMergeRequestId}`));
         return;  
     }
 

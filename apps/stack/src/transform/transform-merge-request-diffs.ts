@@ -29,5 +29,8 @@ const context: Context<SetMergeRequestDiffsExtractEntities, SetMergeRequestDiffs
 }
 
 export const eventHandler = EventHandler(extractMergeRequestsEvent, async (evt) => {
-  await calculateMergeRequestSize({ extractMergeRequestIds: evt.properties.mergeRequestIds }, context);
+  for (let i = 0; i < evt.properties.mergeRequestIds.length; i++)
+  {
+    await calculateMergeRequestSize({ extractMergeRequestId: evt.properties.mergeRequestIds[i] as number }, context);
+  }
 });
