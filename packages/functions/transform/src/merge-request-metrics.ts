@@ -4,7 +4,11 @@ import type { Database } from './config';
 import { sql } from "drizzle-orm";
 import { SQLiteSelect } from 'drizzle-orm/sqlite-core';
 
-function upsertRepositoryDimension(db: Database, repo: transform.NewRepository) {
+function insertMergeMetrics(db: Database, mergeMetrics: transform.NewMergeMetrics): SQLiteInsert<any> {
+  throw new Error('Not implemented');
+}
+
+function upsertRepository(db: Database, repo: transform.NewRepository) {
   return db.insert(transform.repositories)
     .values(repo)
     .onConflictDoUpdate({
@@ -19,7 +23,7 @@ function upsertRepositoryDimension(db: Database, repo: transform.NewRepository) 
     });
 }
 
-function upsertMergeRequestDimension(db: Database, mergeRequest: transform.NewMergeRequest) {
+function upsertMergeRequest(db: Database, mergeRequest: transform.NewMergeRequest) {
   return db.insert(transform.mergeRequests)
     .values(mergeRequest)
     .onConflictDoUpdate({
