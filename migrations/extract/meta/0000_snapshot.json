@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "b417dcf7-412f-410b-9983-61d9b118ca13",
+  "id": "7bcf29aa-8330-4df9-b857-006284ae2c3a",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "git_identities": {
@@ -63,7 +63,21 @@
           "isUnique": true
         }
       },
-      "foreignKeys": {},
+      "foreignKeys": {
+        "git_identities_repository_id_repositories_id_fk": {
+          "name": "git_identities_repository_id_repositories_id_fk",
+          "tableFrom": "git_identities",
+          "tableTo": "repositories",
+          "columnsFrom": [
+            "repository_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
@@ -264,7 +278,21 @@
           "isUnique": true
         }
       },
-      "foreignKeys": {},
+      "foreignKeys": {
+        "merge_request_commits_merge_request_id_merge_requests_id_fk": {
+          "name": "merge_request_commits_merge_request_id_merge_requests_id_fk",
+          "tableFrom": "merge_request_commits",
+          "tableTo": "merge_requests",
+          "columnsFrom": [
+            "merge_request_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
@@ -368,7 +396,21 @@
           "isUnique": true
         }
       },
-      "foreignKeys": {},
+      "foreignKeys": {
+        "merge_request_diffs_merge_request_id_merge_requests_id_fk": {
+          "name": "merge_request_diffs_merge_request_id_merge_requests_id_fk",
+          "tableFrom": "merge_request_diffs",
+          "tableTo": "merge_requests",
+          "columnsFrom": [
+            "merge_request_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
@@ -465,7 +507,21 @@
           "isUnique": true
         }
       },
-      "foreignKeys": {},
+      "foreignKeys": {
+        "merge_request_notes_merge_request_id_merge_requests_id_fk": {
+          "name": "merge_request_notes_merge_request_id_merge_requests_id_fk",
+          "tableFrom": "merge_request_notes",
+          "tableTo": "merge_requests",
+          "columnsFrom": [
+            "merge_request_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
@@ -611,7 +667,21 @@
           "isUnique": true
         }
       },
-      "foreignKeys": {},
+      "foreignKeys": {
+        "merge_requests_repository_id_repositories_id_fk": {
+          "name": "merge_requests_repository_id_repositories_id_fk",
+          "tableFrom": "merge_requests",
+          "tableTo": "repositories",
+          "columnsFrom": [
+            "repository_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
@@ -774,7 +844,34 @@
         }
       },
       "indexes": {},
-      "foreignKeys": {},
+      "foreignKeys": {
+        "repositories_to_members_repository_id_repositories_id_fk": {
+          "name": "repositories_to_members_repository_id_repositories_id_fk",
+          "tableFrom": "repositories_to_members",
+          "tableTo": "repositories",
+          "columnsFrom": [
+            "repository_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "repositories_to_members_member_id_members_id_fk": {
+          "name": "repositories_to_members_member_id_members_id_fk",
+          "tableFrom": "repositories_to_members",
+          "tableTo": "members",
+          "columnsFrom": [
+            "member_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {
         "repositories_to_members_repository_id_member_id_pk": {
           "columns": [
@@ -879,7 +976,21 @@
           "isUnique": true
         }
       },
-      "foreignKeys": {},
+      "foreignKeys": {
+        "timeline_events_merge_request_id_merge_requests_id_fk": {
+          "name": "timeline_events_merge_request_id_merge_requests_id_fk",
+          "tableFrom": "timeline_events",
+          "tableTo": "merge_requests",
+          "columnsFrom": [
+            "merge_request_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     }
