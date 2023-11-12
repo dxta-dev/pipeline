@@ -1,14 +1,21 @@
 import type * as extract from '@acme/extract-schema';
 import * as transform from '@acme/transform-schema';
-import type { Database } from './config';
 import { sql } from "drizzle-orm";
 import { SQLiteSelect } from 'drizzle-orm/sqlite-core';
+import type { LibSQLDatabase } from 'drizzle-orm/libsql';
 
-function insertMergeMetrics(db: Database, mergeMetrics: transform.NewMergeMetrics): SQLiteInsert<any> {
+type BrandedDatabase<T> =  LibSQLDatabase<Record<string, unknown>> & { __brand: T }
+
+export type TransformDatabase = BrandedDatabase<'transform'>;
+export type ExtractDatabase = BrandedDatabase<'extract'>;
+
+
+
+function insertMergeMetrics(db: TransformDatabase, mergeMetrics: transform.NewMergeMetrics): SQLiteInsert<any> {
   throw new Error('Not implemented');
 }
 
-function upsertRepository(db: Database, repo: transform.NewRepository) {
+function upsertRepository(db: TransformDatabase, repo: transform.NewRepository) {
   return db.insert(transform.repositories)
     .values(repo)
     .onConflictDoUpdate({
@@ -23,7 +30,7 @@ function upsertRepository(db: Database, repo: transform.NewRepository) {
     });
 }
 
-function upsertMergeRequest(db: Database, mergeRequest: transform.NewMergeRequest) {
+function upsertMergeRequest(db: TransformDatabase, mergeRequest: transform.NewMergeRequest) {
   return db.insert(transform.mergeRequests)
     .values(mergeRequest)
     .onConflictDoUpdate({
@@ -39,7 +46,7 @@ function upsertMergeRequest(db: Database, mergeRequest: transform.NewMergeReques
     })
 }
 
-function upsertForgeUser(db: Database, forgeUser: transform.NewForgeUser) {
+function upsertForgeUser(db: TransformDatabase, forgeUser: transform.NewForgeUser) {
     return db.insert(transform.forgeUsers)
       .values(forgeUser)
       .onConflictDoUpdate({
@@ -54,36 +61,36 @@ function upsertForgeUser(db: Database, forgeUser: transform.NewForgeUser) {
       })
 }
 
-function insertUserJunk(_db: Database, _users: any): SQLiteInsert<any> {
+function insertUserJunk(_db: TransformDatabase, _users: any): SQLiteInsert<any> {
   throw new Error('Not implemented');
 }
 
-function updateUserJunk(_db: Database, _users: any): SQLiteUpdate<any> {
+function updateUserJunk(_db: TransformDatabase, _users: any): SQLiteUpdate<any> {
   throw new Error('Not implemented');
 }
 
-function insertDateJunk(_db: Database, _dates: any): SQLiteInsert<any> {
+function insertDateJunk(_db: TransformDatabase, _dates: any): SQLiteInsert<any> {
   throw new Error('Not implemented');
 }
 
-function updateDateJunk(_db: Database, _dates: any): SQLiteUpdate<any> {
+function updateDateJunk(_db: TransformDatabase, _dates: any): SQLiteUpdate<any> {
   throw new Error('Not implemented');
 }
 
-function selectDates(_db: Database, _dates: any): SQLiteSelect<any> {
+function selectDates(_db: TransformDatabase, _dates: any): SQLiteSelect<any> {
   throw new Error('Not implemented');
 }
 
-function selectExtractData(_db: Database, _extractMergeRequestId: number): any {
+function selectExtractData(_db: ExtractDatabase, _extractMergeRequestId: number): any {
   throw new Error('Not implemented');
 }
 
 export type RunContext = {
-  extractDB: Database;
-  transformDB: Database;
+  extractDatabase: ExtractDatabase;
+  transformDatabase: TransformDatabase;
 };
 
 export async function run(extractMergeRequestId: number, ctx: RunContext) {
-  const extractData = await selectExtractData(ctx.extractDB, extractMergeRequestId);
+  const extractData = await selectExtractData(ctx.extractDatabase, extractMergeRequestId);
 }
 
