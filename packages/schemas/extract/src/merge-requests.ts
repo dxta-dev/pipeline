@@ -3,6 +3,7 @@ import { sql } from "drizzle-orm";
 import { integer, sqliteTable, uniqueIndex, text } from "drizzle-orm/sqlite-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
+import { repositories } from "./repositories";
 
 export const mergeRequests = sqliteTable(
   "merge_requests",
@@ -11,7 +12,7 @@ export const mergeRequests = sqliteTable(
     externalId: integer("external_id").notNull(),
     /* Gitlab -> iid, GitHub -> number */
     canonId: integer("canon_id").notNull(),
-    repositoryId: integer("repository_id").notNull(),
+    repositoryId: integer("repository_id").references(() => repositories.id).notNull(),
     title: text("title").notNull(),
     webUrl: text("web_url").notNull(),
     createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),

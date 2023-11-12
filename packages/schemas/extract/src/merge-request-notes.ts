@@ -1,11 +1,12 @@
 import type { InferSelectModel, InferInsertModel } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
 import { sqliteTable, integer, uniqueIndex, text } from 'drizzle-orm/sqlite-core';
+import { mergeRequests } from './merge-requests';
 
 export const mergeRequestNotes = sqliteTable('merge_request_notes', {
   id: integer('id').primaryKey(),
   externalId: integer('external_id').notNull(),
-  mergeRequestId: integer('merge_request_id').notNull(),
+  mergeRequestId: integer('merge_request_id').references(() => mergeRequests.id).notNull(),
   createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),
   updatedAt: integer('updated_at', { mode: 'timestamp_ms' }).notNull(),
   authorUsername: text('author_username').notNull(),

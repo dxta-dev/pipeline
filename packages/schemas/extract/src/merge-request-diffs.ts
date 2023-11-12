@@ -1,10 +1,11 @@
 import type { InferSelectModel, InferInsertModel } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
 import { sqliteTable, text, integer, uniqueIndex } from 'drizzle-orm/sqlite-core';
+import { mergeRequests } from './merge-requests';
 
 export const mergeRequestDiffs = sqliteTable('merge_request_diffs', {
   id: integer('id').primaryKey(),
-  mergeRequestId: integer('merge_request_id').notNull(),
+  mergeRequestId: integer('merge_request_id').references(() => mergeRequests.id).notNull(),
   newPath: text('new_path').notNull(),
   oldPath: text('old_path').notNull(),
   aMode: text('a_mode').notNull(),

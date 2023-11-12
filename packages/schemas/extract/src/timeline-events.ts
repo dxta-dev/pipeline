@@ -2,6 +2,7 @@ import { sqliteTable, integer, text,uniqueIndex } from "drizzle-orm/sqlite-core"
 import { type InferInsertModel, type InferSelectModel, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { Enum } from './enum-column';
+import { mergeRequests } from './merge-requests';
 
 export const TimelineEventTypes = [
   'assigned',
@@ -27,7 +28,7 @@ export const timelineEvents = sqliteTable('timeline_events', {
       enum: TimelineEventTypes,
     }
   ).notNull(),
-  mergeRequestId: integer('merge_request_id').notNull(),
+  mergeRequestId: integer('merge_request_id').references(() => mergeRequests.id).notNull(),
   timestamp: integer('timestamp', { mode: 'timestamp_ms' }).notNull(),
   actorName: text('actor_name').notNull(),
   actorId: integer('actor_id'),

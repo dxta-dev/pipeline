@@ -3,10 +3,11 @@ import { sql } from 'drizzle-orm';
 import { sqliteTable, text, integer, uniqueIndex } from 'drizzle-orm/sqlite-core';
 import { createInsertSchema } from 'drizzle-zod';
 import { z } from 'zod';
+import { mergeRequests } from './merge-requests';
 
 export const mergeRequestCommits = sqliteTable('merge_request_commits', {
   id: integer('id').primaryKey(),
-  mergeRequestId: integer('merge_request_id').notNull(),
+  mergeRequestId: integer('merge_request_id').references(() => mergeRequests.id).notNull(),
   externalId: text('external_id').notNull(),
   createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),
   authoredDate: integer('authored_date', { mode: 'timestamp_ms' }).notNull(),
