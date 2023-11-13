@@ -102,4 +102,11 @@ declare module "sst/node/config" {
       value: string;
     }
   }
+}import "sst/node/api";
+declare module "sst/node/api" {
+  export interface ApiResources {
+    "TransformApi": {
+      url: string;
+    }
+  }
 }
