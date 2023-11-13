@@ -162,7 +162,7 @@ export class GitHubSourceControl implements SourceControl {
     }
   }
 
-   
+
   async fetchMergeRequests(externalRepositoryId: number, namespaceName: string, repositoryName: string, repositoryId: number, perPage: number, creationPeriod?: TimePeriod, page?: number, totalPages?: number): Promise<{ mergeRequests: NewMergeRequest[]; pagination: Pagination; }> {
     page = page || 1;
     const serchPRs = async (namespaceName: string, repositoryName: string, page: number, perPage: number, from: Date, to: Date | 'today') => {
@@ -298,7 +298,7 @@ export class GitHubSourceControl implements SourceControl {
     }
   }
 
-   
+
   async fetchMergeRequestCommits(repository: Repository, namespace: Namespace, mergeRequest: MergeRequest): Promise<{ mergeRequestCommits: NewMergeRequestCommit[] }> {
     const response = await this.api.pulls.listCommits({
       owner: namespace.name,
@@ -362,7 +362,7 @@ export class GitHubSourceControl implements SourceControl {
           return {
             externalId: assignedEvent.id,
             type: assignedEvent.event as TimelineEventType,
-            mergeRequestId: mergeRequest.canonId,
+            mergeRequestId: mergeRequest.id,
             timestamp: new Date(assignedEvent.created_at),
             actorName: assignedEvent.actor.login,
             actorId: assignedEvent.actor.id,
@@ -374,9 +374,9 @@ export class GitHubSourceControl implements SourceControl {
         case 'committed':
           const committedEvent = singleEvent as components["schemas"]["timeline-committed-event"]
           return {
-            externalId: parseInt(committedEvent.sha.slice(0,7), 16),
+            externalId: parseInt(committedEvent.sha.slice(0, 7), 16),
             type: committedEvent.event as TimelineEventType,
-            mergeRequestId: mergeRequest.canonId,
+            mergeRequestId: mergeRequest.id,
             timestamp: new Date(committedEvent.author.date),
             actorName: committedEvent.author.name,
             actorEmail: committedEvent.author.email,
@@ -392,7 +392,7 @@ export class GitHubSourceControl implements SourceControl {
           return {
             externalId: requestedEvent.id,
             type: requestedEvent.event as TimelineEventType,
-            mergeRequestId: mergeRequest.canonId,
+            mergeRequestId: mergeRequest.id,
             timestamp: new Date(requestedEvent.created_at),
             actorName: requestedEvent.actor.login,
             actorId: requestedEvent.actor.id,
@@ -406,7 +406,7 @@ export class GitHubSourceControl implements SourceControl {
           return {
             externalId: reviewedEvent.id,
             type: reviewedEvent.event as TimelineEventType,
-            mergeRequestId: mergeRequest.canonId,
+            mergeRequestId: mergeRequest.id,
             timestamp: new Date(reviewedEvent.submitted_at as string),
             actorName: reviewedEvent.user.login,
             actorId: reviewedEvent.user.id,
@@ -419,7 +419,7 @@ export class GitHubSourceControl implements SourceControl {
           return {
             externalId: generalEvent.id,
             type: generalEvent.event as TimelineEventType,
-            mergeRequestId: mergeRequest.canonId,
+            mergeRequestId: mergeRequest.id,
             timestamp: new Date(generalEvent.created_at),
             actorName: generalEvent.actor.login,
             actorId: generalEvent.actor.id,
