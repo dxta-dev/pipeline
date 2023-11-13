@@ -10,7 +10,7 @@ type BrandedDatabase<T> = LibSQLDatabase<Record<string, unknown>> & { __brand: T
 export type TransformDatabase = BrandedDatabase<'transform'>;
 export type ExtractDatabase = BrandedDatabase<'extract'>;
 
-function insertMergeMetrics(_db: TransformDatabase, _mergeMetrics: transform.NewMergeRequestMetric): any {
+function _insertMergeMetrics(_db: TransformDatabase, _mergeMetrics: transform.NewMergeRequestMetric): any {
   throw new Error('Not implemented');
 }
 
