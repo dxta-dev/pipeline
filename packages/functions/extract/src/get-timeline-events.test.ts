@@ -17,7 +17,7 @@ const TEST_REPO_1 = { id: 1, externalId: 1000, name: 'TEST_REPO_NAME', forgeType
 const TEST_NAMESPACE_1 = { id: 1, externalId: 2000, name: 'TEST_NAMESPACE_NAME', forgeType: 'github' } satisfies NewNamespace;
 const TEST_MERGE_REQUEST_1 = { id: 1, externalId: 3000, createdAt: new Date(), canonId: 1, repositoryId: 1, title: "TEST_MR", webUrl: "localhost" } satisfies NewMergeRequest;
 
-const dbname = 'get-merge-request-commits';
+const dbname = 'get-timeline-events';
 
 
 beforeAll(async () => {
