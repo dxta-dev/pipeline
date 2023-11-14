@@ -1,6 +1,6 @@
 import * as extract from '@acme/extract-schema';
 import * as transform from '@acme/transform-schema';
-import { sql, eq } from "drizzle-orm";
+import { sql, eq, or, and } from "drizzle-orm";
 import type { LibSQLDatabase } from 'drizzle-orm/libsql';
 import { isCodeGen } from './is-codegen';
 import { parseHunks } from './parse-hunks';
@@ -76,8 +76,123 @@ function _updateDateJunk(_db: TransformDatabase, _dates: any): any {
   throw new Error('Not implemented');
 }
 
-function _selectDates(_db: TransformDatabase, _dates: any): any {
-  throw new Error('Not implemented');
+async function selectNullRows(db: TransformDatabase) {
+  const { nullRows } = transform;
+
+  const nullRowsData = await db.select({
+    dateId: nullRows.dateId,
+    userId: nullRows.userId,
+    mergeRequestId: nullRows.mergeRequestId,
+    repositoryId: nullRows.repositoryId,
+  }).from(nullRows)
+    .get();
+
+  if (!nullRowsData) {
+    throw new Error('No null rows found');
+  }
+
+  return nullRowsData;
+
+}
+
+type mapDatesToTransformedDatesArgs = {
+  openedAt: Date,
+  mergedAt: Date | null,
+  closedAt: Date | null,
+};
+
+type DMY = {
+  year: number,
+  month: number,
+  day: number,
+};
+
+type selectDatesArgs = {
+  openedAt: DMY | null,
+  mergedAt: DMY | null,
+  closedAt: DMY | null,
+};
+
+async function mapDatesToTransformedDates(db: TransformDatabase, dates: mapDatesToTransformedDatesArgs, nullDateId: number) {
+  function getDMY(date: Date | null) {
+    if (date === null) {
+      return null;
+    }
+    return {
+      year: date.getFullYear(),
+      month: date.getMonth() + 1,
+      day: date.getDate(),
+    };
+  }
+
+  const transformDates = await selectDates(db, {
+    openedAt: getDMY(dates.openedAt),
+    mergedAt: getDMY(dates.mergedAt),
+    closedAt: getDMY(dates.closedAt),
+  }, nullDateId);
+
+  return transformDates;
+}
+
+
+async function selectDates(db: TransformDatabase, dates: selectDatesArgs, nullDateId: number) {
+
+  const { dates: transformDates } = transform;
+
+
+  function getDMYQuery(dmy: DMY | null) {
+    if (dmy === null) {
+      return undefined;
+    }
+    return and(
+      eq(transformDates.year, dmy.year),
+      eq(transformDates.month, dmy.month),
+      eq(transformDates.day, dmy.day),
+    );
+  }
+
+  const datesData = await db.select({
+    id: transformDates.id,
+    year: transformDates.year,
+    month: transformDates.month,
+    day: transformDates.day,
+  }).from(transformDates)
+    .where(
+      or(
+        getDMYQuery(dates.openedAt),
+        getDMYQuery(dates.mergedAt),
+        getDMYQuery(dates.closedAt),
+      )
+    )
+    .all();
+
+  function getDateIdOrNullDateId(dmy: DMY | null) {
+    if (dmy === null) {
+      return {
+        id: nullDateId,
+      };
+    }
+    const date = datesData.find(({ year, month, day }) => year === dmy.year && month === dmy.month && day === dmy.day);
+    if (!date) {
+      console.error(`No date found for ${JSON.stringify(dmy)}`);
+      return {
+        id: nullDateId,
+      };
+    }
+    return {
+      id: date.id,
+      day: date.day,
+      month: date.month,
+      year: date.year,
+    };
+  }
+
+
+  return {
+    openedAt: getDateIdOrNullDateId(dates.openedAt),
+    mergedAt: getDateIdOrNullDateId(dates.mergedAt),
+    closedAt: getDateIdOrNullDateId(dates.closedAt),
+  };
 }
 
 function calculateMrSize(mergeRequestId: number, diffs: { stringifiedHunks: string, newPath: string }[]): number | null {
@@ -108,23 +223,43 @@ function calculateMrSize(mergeRequestId: number, diffs: { stringifiedHunks: stri
 }
 
 async function selectExtractData(db: ExtractDatabase, extractMergeRequestId: number) {
-  const { mergeRequests, mergeRequestDiffs } = extract;
-  const extractData = await db.select({
-    diffs: {
-      stringifiedHunks: mergeRequestDiffs.diff,
-      newPath: mergeRequestDiffs.newPath,
-    },
+  const { mergeRequests, mergeRequestDiffs, mergeRequestNotes, timelineEvents } = extract;
+
+  const mergeRequestData = await db.select({
+    mergeRequest: {
+      openedAt: mergeRequests.createdAt,
+      mergedAt: mergeRequests.mergedAt,
+      closedAt: mergeRequests.closedAt,
+      externalId: mergeRequests.externalId,
+    }
+  }).from(mergeRequests)
+    .where(eq(mergeRequests.id, extractMergeRequestId))
+    .get();
+
+  const mergerRequestDiffsData = await db.select({
+    stringifiedHunks: mergeRequestDiffs.diff,
+    newPath: mergeRequestDiffs.newPath,
   })
     .from(mergeRequests)
-    .leftJoin(mergeRequestDiffs, eq(mergeRequests.id, mergeRequestDiffs.mergeRequestId))
-    .where(eq(mergeRequests.id, extractMergeRequestId))
+    .where(eq(mergeRequestDiffs.mergeRequestId, extractMergeRequestId))
     .all();
 
-  if (!extractData) {
-    return null;
-  }
+  const mergeRequestNotesData = await db.select() // specify columns
+    .from(mergeRequestNotes)
+    .where(eq(mergeRequestNotes.mergeRequestId, extractMergeRequestId))
+    .all();
 
-  return extractData;
+  const timelineEventsData = await db.select() // specify columns
+    .from(timelineEvents)
+    .where(eq(timelineEvents.mergeRequestId, extractMergeRequestId))
+    .all();
+
+  return {
+    diffs: mergerRequestDiffsData,
+    ...mergeRequestData || { mergeRequest: null },
+    notes: mergeRequestNotesData,
+    timelineEvents: timelineEventsData,
+  };
 }
 
 export type RunContext = {
@@ -140,7 +275,27 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
     return null;
   }
 
-  const _mrSize = calculateMrSize(extractMergeRequestId, extractData.map(({ diffs }) => diffs).filter(Boolean));
+
+  if (extractData.mergeRequest === null) {
+    throw new Error(`No merge request found for id ${extractMergeRequestId}`);
+  }
+
+  const {
+    dateId: nullDateId,
+    userId: _nullUserId,
+    mergeRequestId: _nullMergeRequestId,
+    repositoryId: _nullRepositoryId
+  } = await selectNullRows(ctx.transformDatabase);
+
+  const _transformDates = await mapDatesToTransformedDates(ctx.transformDatabase, {
+    openedAt: extractData.mergeRequest.openedAt,
+    mergedAt: extractData.mergeRequest.mergedAt,
+    closedAt: extractData.mergeRequest.closedAt,
+  }, nullDateId);
+
+
+  const _mrSize = calculateMrSize(extractMergeRequestId, extractData.diffs.filter(Boolean));
+
 
   /*
   insertMergeMetrics(ctx.transformDatabase, {
