@@ -23,14 +23,10 @@ export const setMergeRequestMetrics: SetMergeRequestMetricsFunction = async (
     externalId: extract.entities.mergeRequests.externalId,
   }).from(extract.entities.mergeRequests)
     .where(eq(extract.entities.mergeRequests.id, extractMergeRequestId))
-    .all();
+    .get();
   
-  if (extractMergeRequest.length === 0) {
+  if (!extractMergeRequest) {
     console.error(`No extracted merge request found for id: ${extractMergeRequestId}`);
-    return;
-  }
-
-  if (!extractMergeRequest[0]) {
     return;
   }
   
@@ -44,40 +40,40 @@ export const setMergeRequestMetrics: SetMergeRequestMetricsFunction = async (
     startedReviewAt: 1,
   };
 
-  if (extractMergeRequest[0].mergedAt) {
+  if (extractMergeRequest.mergedAt) {
     const mergedAtId = await transform.db.select({
       id: transform.entities.dates.id,
     }).from(transform.entities.dates)
     .where(and(
-      eq(transform.entities.dates.year, extractMergeRequest[0].mergedAt.getFullYear()), 
-      eq(transform.entities.dates.month, extractMergeRequest[0].mergedAt.getMonth() + 1), 
-      eq(transform.entities.dates.day, extractMergeRequest[0].mergedAt.getDate())
+      eq(transform.entities.dates.year, extractMergeRequest.mergedAt.getFullYear()), 
+      eq(transform.entities.dates.month, extractMergeRequest.mergedAt.getMonth() + 1), 
+      eq(transform.entities.dates.day, extractMergeRequest.mergedAt.getDate())
     ));
-    dateJunk = {...dateJunk, mergedAt: mergedAtId[0]?.id ?? 1}
+    dateJunk = {...dateJunk, mergedAt: mergedAtId[0]?.id as number}
   }
 
-  if (extractMergeRequest[0].closedAt) {
+  if (extractMergeRequest.closedAt) {
     const closedAtId = await transform.db.select({
       id: transform.entities.dates.id,
     }).from(transform.entities.dates)
     .where(and(
-      eq(transform.entities.dates.year, extractMergeRequest[0].closedAt.getFullYear()),
-      eq(transform.entities.dates.month, extractMergeRequest[0].closedAt.getMonth() + 1),
-      eq(transform.entities.dates.day, extractMergeRequest[0].closedAt.getDate())
+      eq(transform.entities.dates.year, extractMergeRequest.closedAt.getFullYear()),
+      eq(transform.entities.dates.month, extractMergeRequest.closedAt.getMonth() + 1),
+      eq(transform.entities.dates.day, extractMergeRequest.closedAt.getDate())
     ));
-    dateJunk = {...dateJunk, closedAt: closedAtId[0]?.id ?? 1}
+    dateJunk = {...dateJunk, closedAt: closedAtId[0]?.id as number}
   }
 
-  if (extractMergeRequest[0].openedAt) {
+  if (extractMergeRequest.openedAt) {
     const openedAtId = await transform.db.select({
       id: transform.entities.dates.id,
     }).from(transform.entities.dates)
     .where(and(
-      eq(transform.entities.dates.year, extractMergeRequest[0].openedAt.getFullYear()), 
-      eq(transform.entities.dates.month, extractMergeRequest[0].openedAt.getMonth() + 1),  
-      eq(transform.entities.dates.day, extractMergeRequest[0].openedAt.getDate())
+      eq(transform.entities.dates.year, extractMergeRequest.openedAt.getFullYear()), 
+      eq(transform.entities.dates.month, extractMergeRequest.openedAt.getMonth() + 1),  
+      eq(transform.entities.dates.day, extractMergeRequest.openedAt.getDate())
     ));
-    dateJunk = {...dateJunk, openedAt: openedAtId[0]?.id ?? 1}
+    dateJunk = {...dateJunk, openedAt: openedAtId[0]?.id as number}
   }
   
   const returningData = await transform.db.insert(transform.entities.mergeRequestDatesJunk)
@@ -88,19 +84,20 @@ export const setMergeRequestMetrics: SetMergeRequestMetricsFunction = async (
     id: transform.entities.mergeRequests.id,
   }).from(transform.entities.mergeRequests)
   .where(
-    eq(transform.entities.mergeRequests.externalId, extractMergeRequest[0].externalId),
-  );
+    eq(transform.entities.mergeRequests.externalId, extractMergeRequest.externalId)
+  )
+  .get();
   
-  if (!transformMergeRequestId[0] || !returningData[0]) {
+  if (!transformMergeRequestId || !returningData[0]) {
     console.error(`No ids found for extractMergeRequests`);
     return;
   }
   
   const metricData = {
-    merged: extractMergeRequest[0].mergedAt ? true : false,
-    closed: extractMergeRequest[0].closedAt ? true : false,
+    merged: extractMergeRequest.mergedAt ? true : false,
+    closed: extractMergeRequest.closedAt ? true : false,
     datesJunk: returningData[0].id,
-    mergeRequest: transformMergeRequestId[0].id,
+    mergeRequest: transformMergeRequestId.id,
     //----TEST DATA----
     usersJunk: 1,
     repository: 1,
