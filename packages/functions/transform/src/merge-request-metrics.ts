@@ -105,6 +105,7 @@ type DMY = {
   year: number,
   month: number,
   day: number,
+  week: number,
 };
 
 type selectDatesArgs = {
@@ -114,14 +115,20 @@ type selectDatesArgs = {
 };
 
 async function mapDatesToTransformedDates(db: TransformDatabase, dates: mapDatesToTransformedDatesArgs, nullDateId: number) {
+  function getWeek(date: Date): number {
+    // Logic copied from dimensions.ts
+    return Math.ceil(((+date - +new Date(date.getUTCFullYear(), 0, 1)) / (24 * 60 * 60 * 1000)) / 7);
+  }
+
   function getDMY(date: Date | null) {
     if (date === null) {
       return null;
     }
     return {
-      year: date.getFullYear(),
-      month: date.getMonth() + 1,
-      day: date.getDate(),
+      year: date.getUTCFullYear(),
+      month: date.getUTCMonth() + 1,
+      day: date.getUTCDate(),
+      week: getWeek(date),
     };
   }
 
@@ -148,6 +155,7 @@ async function selectDates(db: TransformDatabase, dates: selectDatesArgs, nullDa
       eq(transformDates.year, dmy.year),
       eq(transformDates.month, dmy.month),
       eq(transformDates.day, dmy.day),
+      eq(transformDates.week, dmy.week),
     );
   }
 
@@ -156,6 +164,7 @@ async function selectDates(db: TransformDatabase, dates: selectDatesArgs, nullDa
     year: transformDates.year,
     month: transformDates.month,
     day: transformDates.day,
+    week: transformDates.week,
   }).from(transformDates)
     .where(
       or(
@@ -172,7 +181,7 @@ async function selectDates(db: TransformDatabase, dates: selectDatesArgs, nullDa
         id: nullDateId,
       };
     }
-    const date = datesData.find(({ year, month, day }) => year === dmy.year && month === dmy.month && day === dmy.day);
+    const date = datesData.find(({ year, month, day, week }) => year === dmy.year && month === dmy.month && day === dmy.day && week === dmy.week);
     if (!date) {
       console.error(`No date found for ${JSON.stringify(dmy)}`);
       return {
@@ -184,6 +193,7 @@ async function selectDates(db: TransformDatabase, dates: selectDatesArgs, nullDa
       day: date.day,
       month: date.month,
       year: date.year,
+      week: date.week,
     };
   }
 
