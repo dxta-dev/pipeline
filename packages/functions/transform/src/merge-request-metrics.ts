@@ -125,6 +125,7 @@ type mapDatesToTransformedDatesArgs = {
   openedAt: Date,
   mergedAt: Date | null,
   closedAt: Date | null,
+  startedCodingAt: Date | null,
 };
 
 type DMY = {
@@ -138,6 +139,7 @@ type selectDatesArgs = {
   openedAt: DMY | null,
   mergedAt: DMY | null,
   closedAt: DMY | null,
+  startedCodingAt: DMY | null,
 };
 
 async function mapDatesToTransformedDates(db: TransformDatabase, dates: mapDatesToTransformedDatesArgs, nullDateId: number) {
@@ -162,6 +164,7 @@ async function mapDatesToTransformedDates(db: TransformDatabase, dates: mapDates
     openedAt: getDMY(dates.openedAt),
     mergedAt: getDMY(dates.mergedAt),
     closedAt: getDMY(dates.closedAt),
+    startedCodingAt: getDMY(dates.startedCodingAt),
   }, nullDateId);
 
   return transformDates;
@@ -323,13 +326,19 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
     repositoryId: _nullRepositoryId
   } = await selectNullRows(ctx.transformDatabase);
 
+  const startedCodingAt = getTimelineStartedCodingAt(extractData.timelineEvents);
+
   const _transformDates = await mapDatesToTransformedDates(ctx.transformDatabase, {
     openedAt: extractData.mergeRequest.openedAt,
     mergedAt: extractData.mergeRequest.mergedAt,
     closedAt: extractData.mergeRequest.closedAt,
+    startedCodingAt
   }, nullDateId);
 
 
+  const _reviewDepth = getTimelineReviewDepth(extractData.notes, extractData.timelineEvents);
+  const _mrApproved = getTimelineApproved(extractData.timelineEvents);
+  const _mrReviewed = getTimelineReviewed(extractData.timelineEvents);
   const _mrSize = calculateMrSize(extractMergeRequestId, extractData.diffs.filter(Boolean));
 
 
