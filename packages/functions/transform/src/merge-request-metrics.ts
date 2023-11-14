@@ -102,6 +102,15 @@ function getTimelineReviewDepth(reviewComments: extract.MergeRequestNote[], time
   return numberOfReviewComments + numberOfReviewsOrComments;
 }
 
+function getTimelineApproved(timeline: extract.TimelineEvents[]) {
+return !!timeline.find(event => event.type === 'reviewed'
+  && (JSON.parse(event.data as string) as extract.ReviewedEvent).state === 'approved');
+}
+
+function getTimelineReviewed(timeline: extract.TimelineEvents[]) {
+  return !!timeline.find(event => event.type ==='reviewed'); // TODO: event.type === 'commented' ?
+}
+
 type mapDatesToTransformedDatesArgs = {
   openedAt: Date,
   mergedAt: Date | null,
