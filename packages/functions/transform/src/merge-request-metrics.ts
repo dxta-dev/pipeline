@@ -118,11 +118,12 @@ type selectDatesArgs = {
   startedCodingAt: DMY | null,
 };
 
+function getWeek(date: Date): number {
+  // Logic copied from dimensions.ts
+  return Math.ceil(((+date - +new Date(date.getUTCFullYear(), 0, 1)) / (24 * 60 * 60 * 1000)) / 7);
+}
+
 async function mapDatesToTransformedDates(db: TransformDatabase, dates: mapDatesToTransformedDatesArgs, nullDateId: number) {
-  function getWeek(date: Date): number {
-    // Logic copied from dimensions.ts
-    return Math.ceil(((+date - +new Date(date.getUTCFullYear(), 0, 1)) / (24 * 60 * 60 * 1000)) / 7);
-  }
 
   function getDMY(date: Date | null) {
     if (date === null) {
@@ -282,32 +283,6 @@ export type RunContext = {
   transformDatabase: TransformDatabase;
 };
 
-function setupTimeline(timelineEvents: extract.TimelineEvents[], notes: extract.MergeRequestNote[]) {
-  const timeline = new Map<{
-    type: extract.TimelineEvents['type'] | 'note',
-    timestamp: Date,
-  },
-    extract.TimelineEvents | extract.MergeRequestNote
-  >();
-
-
-  for (const timelineEvent of timelineEvents) {
-    timeline.set({
-      type: timelineEvent.type,
-      timestamp: timelineEvent.timestamp,
-    }, timelineEvent);
-  }
-
-  for (const note of notes) {
-    timeline.set({
-      type: 'note',
-      timestamp: note.createdAt,
-    }, note);
-  }
-
-  return timeline;
-
-}
 /*
 function getTimelineReviewDepth(reviewComments: extract.MergeRequestNote[], timeline: extract.TimelineEvents[]) {
   // TODO: review depth should be avg of conversation length ??? Not sure if a PR has only one review or we count individual reviews/threads
@@ -348,11 +323,36 @@ function getTimelineStartedCodingAt(timeline: extract.TimelineEvents[]) {
 }
 */
 
+function setupTimeline(timelineEvents: extract.TimelineEvents[], notes: extract.MergeRequestNote[]) {
+  const timeline = new Map<{
+    type: extract.TimelineEvents['type'] | 'note',
+    timestamp: Date,
+  },
+    extract.TimelineEvents | extract.MergeRequestNote
+  >();
+
+
+  for (const timelineEvent of timelineEvents) {
+    timeline.set({
+      type: timelineEvent.type,
+      timestamp: timelineEvent.timestamp,
+    }, timelineEvent);
+  }
+
+  for (const note of notes) {
+    timeline.set({
+      type: 'note',
+      timestamp: note.createdAt,
+    }, note);
+  }
+
+  return timeline;
+
+}
 
 function runTimeline(timelineEvents: extract.TimelineEvents[], notes: extract.MergeRequestNote[]) {
 
   const timelineMap = setupTimeline(timelineEvents, notes);
-
 
   //start coding at
 
@@ -360,7 +360,7 @@ function runTimeline(timelineEvents: extract.TimelineEvents[], notes: extract.Me
 
   let startedCodingAt: Date | null = null;
 
-  if(commitedEvents.length > 0) {
+  if (commitedEvents.length > 0) {
 
     for (const commitedEvent of commitedEvents) {
       if (startedCodingAt && commitedEvent.timestamp.getTime() < startedCodingAt.getTime()) {
@@ -369,7 +369,6 @@ function runTimeline(timelineEvents: extract.TimelineEvents[], notes: extract.Me
     }
 
   }
-  
 
   return {
     startedCodingAt,
@@ -390,7 +389,7 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
     throw new Error(`No merge request found for id ${extractMergeRequestId}`);
   }
 
-  const _ = runTimeline(extractData.timelineEvents, extractData.notes);
+  const timeline = runTimeline(extractData.timelineEvents, extractData.notes);
 
   const {
     dateId: nullDateId,
@@ -404,6 +403,7 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
     openedAt: extractData.mergeRequest.openedAt,
     mergedAt: extractData.mergeRequest.mergedAt,
     closedAt: extractData.mergeRequest.closedAt,
+    startedCodingAt: timeline.startedCodingAt,
   }, nullDateId);
 
   const _mrSize = calculateMrSize(extractMergeRequestId, extractData.diffs.filter(Boolean));
