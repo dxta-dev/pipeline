@@ -95,6 +95,13 @@ async function selectNullRows(db: TransformDatabase) {
 
 }
 
+function getTimelineReviewDepth(reviewComments: extract.MergeRequestNote[], timeline: extract.TimelineEvents[]) {
+  // TODO: review depth should be avg of conversation length ??? Not sure if a PR has only one review or we count individual reviews/threads
+  const numberOfReviewComments = reviewComments.length;
+  const numberOfReviewsOrComments = timeline.filter(event => event.type === 'reviewed' || event.type === 'commented').length;
+  return numberOfReviewComments + numberOfReviewsOrComments;
+}
+
 type mapDatesToTransformedDatesArgs = {
   openedAt: Date,
   mergedAt: Date | null,
