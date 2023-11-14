@@ -103,12 +103,22 @@ function getTimelineReviewDepth(reviewComments: extract.MergeRequestNote[], time
 }
 
 function getTimelineApproved(timeline: extract.TimelineEvents[]) {
-return !!timeline.find(event => event.type === 'reviewed'
-  && (JSON.parse(event.data as string) as extract.ReviewedEvent).state === 'approved');
+  return !!timeline.find(event => event.type === 'reviewed'
+    && (JSON.parse(event.data as string) as extract.ReviewedEvent).state === 'approved');
 }
 
 function getTimelineReviewed(timeline: extract.TimelineEvents[]) {
-  return !!timeline.find(event => event.type ==='reviewed'); // TODO: event.type === 'commented' ?
+  return !!timeline.find(event => event.type === 'reviewed'); // TODO: event.type === 'commented' ?
+}
+
+function getTimelineStartedCodingAt(timeline: extract.TimelineEvents[]) {
+  const firstCommit = timeline.reduce<extract.TimelineEvents | null>(
+    (commit, event) =>
+      event.type === 'committed' && (commit === null || event.timestamp.getTime() < commit.timestamp.getTime()) ? event : commit
+    , null
+  );
+
+  return firstCommit?.timestamp || null;
 }
 
 type mapDatesToTransformedDatesArgs = {
