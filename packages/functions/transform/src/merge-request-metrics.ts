@@ -95,31 +95,7 @@ async function selectNullRows(db: TransformDatabase) {
 
 }
 
-function getTimelineReviewDepth(reviewComments: extract.MergeRequestNote[], timeline: extract.TimelineEvents[]) {
-  // TODO: review depth should be avg of conversation length ??? Not sure if a PR has only one review or we count individual reviews/threads
-  const numberOfReviewComments = reviewComments.length;
-  const numberOfReviewsOrComments = timeline.filter(event => event.type === 'reviewed' || event.type === 'commented').length;
-  return numberOfReviewComments + numberOfReviewsOrComments;
-}
 
-function getTimelineApproved(timeline: extract.TimelineEvents[]) {
-  return !!timeline.find(event => event.type === 'reviewed'
-    && (JSON.parse(event.data as string) as extract.ReviewedEvent).state === 'approved');
-}
-
-function getTimelineReviewed(timeline: extract.TimelineEvents[]) {
-  return !!timeline.find(event => event.type === 'reviewed'); // TODO: event.type === 'commented' ?
-}
-
-function getTimelineStartedCodingAt(timeline: extract.TimelineEvents[]) {
-  const firstCommit = timeline.reduce<extract.TimelineEvents | null>(
-    (commit, event) =>
-      event.type === 'committed' && (commit === null || event.timestamp.getTime() < commit.timestamp.getTime()) ? event : commit
-    , null
-  );
-
-  return firstCommit?.timestamp || null;
-}
 
 type mapDatesToTransformedDatesArgs = {
   openedAt: Date,
@@ -306,6 +282,101 @@ export type RunContext = {
   transformDatabase: TransformDatabase;
 };
 
+function setupTimeline(timelineEvents: extract.TimelineEvents[], notes: extract.MergeRequestNote[]) {
+  const timeline = new Map<{
+    type: extract.TimelineEvents['type'] | 'note',
+    timestamp: Date,
+  },
+    extract.TimelineEvents | extract.MergeRequestNote
+  >();
+
+
+  for (const timelineEvent of timelineEvents) {
+    timeline.set({
+      type: timelineEvent.type,
+      timestamp: timelineEvent.timestamp,
+    }, timelineEvent);
+  }
+
+  for (const note of notes) {
+    timeline.set({
+      type: 'note',
+      timestamp: note.createdAt,
+    }, note);
+  }
+
+  return timeline;
+
+}
+/*
+function getTimelineReviewDepth(reviewComments: extract.MergeRequestNote[], timeline: extract.TimelineEvents[]) {
+  // TODO: review depth should be avg of conversation length ??? Not sure if a PR has only one review or we count individual reviews/threads
+  const numberOfReviewComments = reviewComments.length;
+  const numberOfReviewsOrComments = timeline.filter(event => event.type === 'reviewed' || event.type === 'commented').length;
+  return numberOfReviewComments + numberOfReviewsOrComments;
+}
+
+function getTimelineApproved(timeline: extract.TimelineEvents[]) {
+  const { ReviewedEventSchema } = extract;
+
+  const reviewedEvent = timeline.find((event) => {
+    if (event.type !== 'reviewed') {
+      return false;
+    }
+
+    const { state } = ReviewedEventSchema.parse(event.data as string);
+
+    return state === 'approved';
+  });
+
+  return reviewedEvent || null;
+}
+
+function getTimelineReviewed(timeline: extract.TimelineEvents[]) {
+  return !!timeline.find(event => event.type === 'reviewed'); // TODO: event.type === 'commented' ?
+}
+
+function getTimelineStartedCodingAt(timeline: extract.TimelineEvents[]) {
+
+  const firstCommit = timeline.reduce<extract.TimelineEvents | null>(
+    (commit, event) =>
+      event.type === 'committed' && (commit === null || event.timestamp.getTime() < commit.timestamp.getTime()) ? event : commit
+    , null
+  );
+
+  return firstCommit?.timestamp || null;
+}
+*/
+
+
+function runTimeline(timelineEvents: extract.TimelineEvents[], notes: extract.MergeRequestNote[]) {
+
+  const timelineMap = setupTimeline(timelineEvents, notes);
+
+
+  //start coding at
+
+  const commitedEvents = [...timelineMap.keys()].filter(({ type }) => type === 'committed') as { type: 'committed', timestamp: Date }[];
+
+  let startedCodingAt: Date | null = null;
+
+  if(commitedEvents.length > 0) {
+
+    for (const commitedEvent of commitedEvents) {
+      if (startedCodingAt && commitedEvent.timestamp.getTime() < startedCodingAt.getTime()) {
+        startedCodingAt = commitedEvent.timestamp;
+      }
+    }
+
+  }
+  
+
+  return {
+    startedCodingAt,
+  };
+}
+
+
 export async function run(extractMergeRequestId: number, ctx: RunContext) {
   const extractData = await selectExtractData(ctx.extractDatabase, extractMergeRequestId);
 
@@ -319,6 +390,8 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
     throw new Error(`No merge request found for id ${extractMergeRequestId}`);
   }
 
+  const _ = runTimeline(extractData.timelineEvents, extractData.notes);
+
   const {
     dateId: nullDateId,
     userId: _nullUserId,
@@ -326,21 +399,14 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
     repositoryId: _nullRepositoryId
   } = await selectNullRows(ctx.transformDatabase);
 
-  const startedCodingAt = getTimelineStartedCodingAt(extractData.timelineEvents);
 
   const _transformDates = await mapDatesToTransformedDates(ctx.transformDatabase, {
     openedAt: extractData.mergeRequest.openedAt,
     mergedAt: extractData.mergeRequest.mergedAt,
     closedAt: extractData.mergeRequest.closedAt,
-    startedCodingAt
   }, nullDateId);
 
-
-  const _reviewDepth = getTimelineReviewDepth(extractData.notes, extractData.timelineEvents);
-  const _mrApproved = getTimelineApproved(extractData.timelineEvents);
-  const _mrReviewed = getTimelineReviewed(extractData.timelineEvents);
   const _mrSize = calculateMrSize(extractMergeRequestId, extractData.diffs.filter(Boolean));
-
 
   /*
   insertMergeMetrics(ctx.transformDatabase, {
