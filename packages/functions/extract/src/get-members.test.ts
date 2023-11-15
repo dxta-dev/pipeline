@@ -7,7 +7,7 @@ import { createClient } from '@libsql/client';
 import { describe, expect, test } from '@jest/globals';
 import { getMembers } from './get-members';
 
-import { members, repositoriesToMembers } from '@acme/extract-schema';
+import { type NewRepository, members, repositoriesToMembers, repositories } from '@acme/extract-schema';
 import type { Context } from './config';
 import type { GetMembersSourceControl, GetMembersEntities } from './get-members';
 import type { SourceControl } from '@acme/source-control';
@@ -18,6 +18,7 @@ let db: ReturnType<typeof drizzle>;
 let context: Context<GetMembersSourceControl, GetMembersEntities>;
 let fetchMembers: SourceControl['fetchMembers'];
 
+const TEST_REPO = { id: 1, externalId: 1000, name: 'TEST_REPO_NAME', forgeType: 'github' } satisfies NewRepository;
 
 const dbname = "get-members";
 
@@ -28,6 +29,7 @@ beforeAll(async () => {
   db = drizzle(sqlite);
 
   await migrate(db, { migrationsFolder: "../../../migrations/extract" });
+  await db.insert(repositories).values(TEST_REPO).run();
 
   fetchMembers = jest.fn((externalRepositoryId, namespaceName, repositoryName, perPage: number, page?: number) => {
     switch (externalRepositoryId) {
@@ -71,7 +73,7 @@ describe('get-members:', () => {
         externalRepositoryId: 1000,
         namespaceName: '',
         repositoryName: '',
-        repositoryId: 2000,
+        repositoryId: 1,
         perPage: 1000
       }, context);
 
