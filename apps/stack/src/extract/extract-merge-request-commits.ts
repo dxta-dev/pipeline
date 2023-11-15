@@ -14,6 +14,7 @@ import { insertEvent } from "@acme/crawl-functions";
 import { events } from "@acme/crawl-schema";
 
 export const mrcsh = createMessageHandler({
+  queueId: 'ExtractQueue',
   kind: MessageKind.MergeRequestCommit,
   metadataShape: metadataSchema.shape,
   contentShape: z.object({

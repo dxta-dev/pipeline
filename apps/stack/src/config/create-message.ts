@@ -26,16 +26,16 @@ type MessageProps<Shape extends ZodRawShape, MetadataShape extends ZodRawShape> 
   contentShape: Shape;
   metadataShape: MetadataShape;
   kind: string;
+  queueId: keyof typeof Queue
 };
 
 export function createMessage<Shape extends ZodRawShape, MetadataShape extends ZodRawShape>({
   kind,
   contentShape,
   metadataShape,
+  queueId
 }: MessageProps<Shape, MetadataShape>) {
-
-  const queueUrl = Queue.ExtractQueue.queueUrl;
-
+  
   const messageSchema = z.object({
     kind: z.literal(kind),
     content: z.object(contentShape),
@@ -44,7 +44,7 @@ export function createMessage<Shape extends ZodRawShape, MetadataShape extends Z
 
   const send: Send<Shape, MetadataShape> = async (content, metadata) => {
     await sqs.send(new SendMessageCommand({
-      QueueUrl: queueUrl,
+      QueueUrl: Queue[queueId].queueUrl,
       MessageBody: JSON.stringify(messageSchema.parse({ content, metadata, kind })),
     }))
   }
@@ -61,7 +61,7 @@ export function createMessage<Shape extends ZodRawShape, MetadataShape extends Z
       batches.push(Entries);
     }
     const result = await Promise.allSettled(batches.map(batch => sqs.send(new SendMessageBatchCommand({
-      QueueUrl: queueUrl,
+      QueueUrl: Queue[queueId].queueUrl,
       Entries: batch,
     }))));
 
@@ -180,6 +180,7 @@ type CreateMessageHandlerProps<Shape extends ZodRawShape, MetadataShape extends 
   contentShape: Shape;
   metadataShape: MetadataShape;
   kind: string;
+  queueId: keyof typeof Queue;
   handler: (message: MessagePayload<Shape, MetadataShape>) => Promise<void> | Promise<unknown>;
 };
 
@@ -187,9 +188,10 @@ export function createMessageHandler<Shape extends ZodRawShape, MetadataShape ex
   kind,
   contentShape,
   metadataShape,
+  queueId,
   handler,
 }: CreateMessageHandlerProps<Shape, MetadataShape>) {
-  const sender = createMessage({ kind, contentShape, metadataShape });
+  const sender = createMessage({ kind, contentShape, metadataShape, queueId });
   return {
     sender,
     handler,
