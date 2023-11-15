@@ -362,7 +362,7 @@ export class GitHubSourceControl implements SourceControl {
           return {
             externalId: assignedEvent.id,
             type: assignedEvent.event as TimelineEventType,
-            mergeRequestId: mergeRequest.canonId,
+            mergeRequestId: mergeRequest.id,
             timestamp: new Date(assignedEvent.created_at),
             actorName: assignedEvent.actor.login,
             actorId: assignedEvent.actor.id,
@@ -376,7 +376,7 @@ export class GitHubSourceControl implements SourceControl {
           return {
             externalId: parseInt(committedEvent.sha.slice(0,7), 16),
             type: committedEvent.event as TimelineEventType,
-            mergeRequestId: mergeRequest.canonId,
+            mergeRequestId: mergeRequest.id,
             timestamp: new Date(committedEvent.author.date),
             actorName: committedEvent.author.name,
             actorEmail: committedEvent.author.email,
@@ -392,7 +392,7 @@ export class GitHubSourceControl implements SourceControl {
           return {
             externalId: requestedEvent.id,
             type: requestedEvent.event as TimelineEventType,
-            mergeRequestId: mergeRequest.canonId,
+            mergeRequestId: mergeRequest.id,
             timestamp: new Date(requestedEvent.created_at),
             actorName: requestedEvent.actor.login,
             actorId: requestedEvent.actor.id,
@@ -406,7 +406,7 @@ export class GitHubSourceControl implements SourceControl {
           return {
             externalId: reviewedEvent.id,
             type: reviewedEvent.event as TimelineEventType,
-            mergeRequestId: mergeRequest.canonId,
+            mergeRequestId: mergeRequest.id,
             timestamp: new Date(reviewedEvent.submitted_at as string),
             actorName: reviewedEvent.user.login,
             actorId: reviewedEvent.user.id,
@@ -419,7 +419,7 @@ export class GitHubSourceControl implements SourceControl {
           return {
             externalId: generalEvent.id,
             type: generalEvent.event as TimelineEventType,
-            mergeRequestId: mergeRequest.canonId,
+            mergeRequestId: mergeRequest.id,
             timestamp: new Date(generalEvent.created_at),
             actorName: generalEvent.actor.login,
             actorId: generalEvent.actor.id,
