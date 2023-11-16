@@ -238,6 +238,13 @@ function calculateMrSize(mergeRequestId: number, diffs: { stringifiedHunks: stri
   return mrSize;
 }
 
+type MergeRequestData = {
+  openedAt: extract.MergeRequest['createdAt'],
+  mergedAt: extract.MergeRequest['mergedAt'],
+  closedAt: extract.MergeRequest['closedAt'],
+  externalId: extract.MergeRequest['externalId'],
+  authorExternalId: extract.MergeRequest['authorExternalId']
+}
 async function selectExtractData(db: ExtractDatabase, extractMergeRequestId: number) {
   const { mergeRequests, mergeRequestDiffs, mergeRequestNotes, timelineEvents } = extract;
 
@@ -247,6 +254,7 @@ async function selectExtractData(db: ExtractDatabase, extractMergeRequestId: num
       mergedAt: mergeRequests.mergedAt,
       closedAt: mergeRequests.closedAt,
       externalId: mergeRequests.externalId,
+      authorExternalId: mergeRequests.authorExternalId,
     }
   }).from(mergeRequests)
     .where(eq(mergeRequests.id, extractMergeRequestId))
@@ -323,11 +331,13 @@ function getTimelineStartedCodingAt(timeline: extract.TimelineEvents[]) {
 }
 */
 
+type TimelineMapKey = {
+  type: extract.TimelineEvents['type'] | 'note',
+  timestamp: Date,
+  actorId: extract.TimelineEvents['actorId'] | extract.MergeRequestNote['authorExternalId'] | null,
+}
 function setupTimeline(timelineEvents: extract.TimelineEvents[], notes: extract.MergeRequestNote[]) {
-  const timeline = new Map<{
-    type: extract.TimelineEvents['type'] | 'note',
-    timestamp: Date,
-  },
+  const timeline = new Map<TimelineMapKey,
     extract.TimelineEvents | extract.MergeRequestNote
   >();
 
@@ -336,6 +346,7 @@ function setupTimeline(timelineEvents: extract.TimelineEvents[], notes: extract.
     timeline.set({
       type: timelineEvent.type,
       timestamp: timelineEvent.timestamp,
+      actorId: timelineEvent.actorId,
     }, timelineEvent);
   }
 
@@ -343,6 +354,7 @@ function setupTimeline(timelineEvents: extract.TimelineEvents[], notes: extract.
     timeline.set({
       type: 'note',
       timestamp: note.createdAt,
+      actorId: note.authorExternalId,
     }, note);
   }
 
@@ -350,28 +362,53 @@ function setupTimeline(timelineEvents: extract.TimelineEvents[], notes: extract.
 
 }
 
-function runTimeline(timelineEvents: extract.TimelineEvents[], notes: extract.MergeRequestNote[]) {
+function runTimeline(extractMergeRequest: MergeRequestData, timelineEvents: extract.TimelineEvents[], notes: extract.MergeRequestNote[]) {
 
   const timelineMap = setupTimeline(timelineEvents, notes);
+  const timelineMapKeys = [...timelineMap.keys()];
 
   //start coding at
 
-  const commitedEvents = [...timelineMap.keys()].filter(({ type }) => type === 'committed') as { type: 'committed', timestamp: Date }[];
+  const commitedEvents = timelineMapKeys.filter(({ type }) => type === 'committed') as (TimelineMapKey & { type: 'committed' })[];
 
   let startedCodingAt: Date | null = null;
 
   if (commitedEvents.length > 0) {
 
     for (const commitedEvent of commitedEvents) {
-      if (startedCodingAt && commitedEvent.timestamp.getTime() < startedCodingAt.getTime()) {
+      if (!startedCodingAt) {
+        startedCodingAt = commitedEvent.timestamp;
+      } 
+      else if (commitedEvent.timestamp.getTime() < startedCodingAt.getTime()) {
         startedCodingAt = commitedEvent.timestamp;
       }
     }
 
   }
 
+  // start review at
+
+  const reviewEvents = timelineMapKeys.filter(({ type }) => type === 'note' || type === 'reviewed' || type === 'commented') as (TimelineMapKey & { type: 'note' | 'reviewed' | 'commented'})[];
+  let startedReviewAt: Date | null = null;
+
+  if (reviewEvents.length > 0) {
+    for (const reviewEvent of reviewEvents) {
+      if (!startedReviewAt && reviewEvent.actorId !== extractMergeRequest.authorExternalId) {
+        startedReviewAt = reviewEvent.timestamp;
+      }
+      if (startedReviewAt && reviewEvent.timestamp.getTime() < startedReviewAt.getTime()) {
+        startedReviewAt = reviewEvent.timestamp;
+      }
+    }
+  }
+
+  // start pickup at
+  let startedPickupAt: Date | null = null;
+
   return {
     startedCodingAt,
+    startedReviewAt,
+    reviewDepth: reviewEvents.length,
   };
 }
 
@@ -389,7 +426,7 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
     throw new Error(`No merge request found for id ${extractMergeRequestId}`);
   }
 
-  const timeline = runTimeline(extractData.timelineEvents, extractData.notes);
+  const timeline = runTimeline(extractData.mergeRequest, extractData.timelineEvents, extractData.notes);
 
   const {
     dateId: nullDateId,
