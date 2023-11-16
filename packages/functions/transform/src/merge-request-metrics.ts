@@ -102,6 +102,8 @@ type mapDatesToTransformedDatesArgs = {
   mergedAt: Date | null,
   closedAt: Date | null,
   startedCodingAt: Date | null,
+  startedPickupAt: Date | null,
+  startedReviewAt: Date | null,
 };
 
 type DMY = {
@@ -116,6 +118,8 @@ type selectDatesArgs = {
   mergedAt: DMY | null,
   closedAt: DMY | null,
   startedCodingAt: DMY | null,
+  startedPickupAt: DMY | null,
+  startedReviewAt: DMY | null,
 };
 
 function getWeek(date: Date): number {
@@ -142,6 +146,8 @@ async function mapDatesToTransformedDates(db: TransformDatabase, dates: mapDates
     mergedAt: getDMY(dates.mergedAt),
     closedAt: getDMY(dates.closedAt),
     startedCodingAt: getDMY(dates.startedCodingAt),
+    startedPickupAt: getDMY(dates.startedPickupAt),
+    startedReviewAt: getDMY(dates.startedReviewAt),
   }, nullDateId);
 
   return transformDates;
@@ -473,6 +479,8 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
     mergedAt: extractData.mergeRequest.mergedAt,
     closedAt: extractData.mergeRequest.closedAt,
     startedCodingAt: timeline.startedCodingAt,
+    startedPickupAt: timeline.startedPickupAt,
+    startedReviewAt: timeline.startedReviewAt,
   }, nullDateId);
 
   const _mrSize = calculateMrSize(extractMergeRequestId, extractData.diffs.filter(Boolean));
