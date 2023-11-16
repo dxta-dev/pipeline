@@ -251,6 +251,16 @@ type MergeRequestData = {
   externalId: extract.MergeRequest['externalId'],
   authorExternalId: extract.MergeRequest['authorExternalId']
 }
+type TimelineEventData = {
+  type: extract.TimelineEvents['type'];
+  timestamp: extract.TimelineEvents['timestamp'];
+  actorId: extract.TimelineEvents['actorId'];
+  data: extract.TimelineEvents['data'];
+}
+type MergeRequestNoteData = {
+  createdAt: extract.MergeRequestNote['createdAt'];
+  authorExternalId: extract.MergeRequestNote['authorExternalId'];
+}
 async function selectExtractData(db: ExtractDatabase, extractMergeRequestId: number) {
   const { mergeRequests, mergeRequestDiffs, mergeRequestNotes, timelineEvents } = extract;
 
@@ -274,15 +284,23 @@ async function selectExtractData(db: ExtractDatabase, extractMergeRequestId: num
     .where(eq(mergeRequestDiffs.mergeRequestId, extractMergeRequestId))
     .all();
 
-  const mergeRequestNotesData = await db.select() // specify columns
+  const mergeRequestNotesData = await db.select({
+    createdAt: mergeRequestNotes.createdAt,
+    authorExternalId: mergeRequestNotes.authorExternalId,
+  })
     .from(mergeRequestNotes)
     .where(eq(mergeRequestNotes.mergeRequestId, extractMergeRequestId))
-    .all();
+    .all() satisfies MergeRequestNoteData[];
 
-  const timelineEventsData = await db.select() // specify columns
+  const timelineEventsData = await db.select({
+    type: timelineEvents.type,
+    timestamp: timelineEvents.timestamp,
+    actorId: timelineEvents.actorId,
+    data: timelineEvents.data
+  })
     .from(timelineEvents)
     .where(eq(timelineEvents.mergeRequestId, extractMergeRequestId))
-    .all();
+    .all() satisfies TimelineEventData[];
 
   return {
     diffs: mergerRequestDiffsData,
@@ -297,54 +315,14 @@ export type RunContext = {
   transformDatabase: TransformDatabase;
 };
 
-/*
-function getTimelineReviewDepth(reviewComments: extract.MergeRequestNote[], timeline: extract.TimelineEvents[]) {
-  // TODO: review depth should be avg of conversation length ??? Not sure if a PR has only one review or we count individual reviews/threads
-  const numberOfReviewComments = reviewComments.length;
-  const numberOfReviewsOrComments = timeline.filter(event => event.type === 'reviewed' || event.type === 'commented').length;
-  return numberOfReviewComments + numberOfReviewsOrComments;
-}
-
-function getTimelineApproved(timeline: extract.TimelineEvents[]) {
-  const { ReviewedEventSchema } = extract;
-
-  const reviewedEvent = timeline.find((event) => {
-    if (event.type !== 'reviewed') {
-      return false;
-    }
-
-    const { state } = ReviewedEventSchema.parse(event.data as string);
-
-    return state === 'approved';
-  });
-
-  return reviewedEvent || null;
-}
-
-function getTimelineReviewed(timeline: extract.TimelineEvents[]) {
-  return !!timeline.find(event => event.type === 'reviewed'); // TODO: event.type === 'commented' ?
-}
-
-function getTimelineStartedCodingAt(timeline: extract.TimelineEvents[]) {
-
-  const firstCommit = timeline.reduce<extract.TimelineEvents | null>(
-    (commit, event) =>
-      event.type === 'committed' && (commit === null || event.timestamp.getTime() < commit.timestamp.getTime()) ? event : commit
-    , null
-  );
-
-  return firstCommit?.timestamp || null;
-}
-*/
-
 type TimelineMapKey = {
   type: extract.TimelineEvents['type'] | 'note',
   timestamp: Date,
   actorId: extract.TimelineEvents['actorId'] | extract.MergeRequestNote['authorExternalId'] | null,
 }
-function setupTimeline(timelineEvents: extract.TimelineEvents[], notes: extract.MergeRequestNote[]) {
+function setupTimeline(timelineEvents: TimelineEventData[], notes: MergeRequestNoteData[]) {
   const timeline = new Map<TimelineMapKey,
-    extract.TimelineEvents | extract.MergeRequestNote
+    TimelineEventData | MergeRequestNoteData
   >();
 
 
