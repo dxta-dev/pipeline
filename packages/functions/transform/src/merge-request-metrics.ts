@@ -431,10 +431,15 @@ function runTimeline(extractMergeRequest: MergeRequestData, timelineEvents: extr
     startedPickupAt = extractMergeRequest.openedAt; // if no commits before first review, set it to openedAt. Should only happen if there is a wierd force push
   }
 
+  // TODO: can this be optimized with the map ?
+  const approved = timelineEvents.find(ev => ev.type === 'reviewed' && (JSON.parse(ev.data as string) as extract.ReviewedEvent).state === 'approved') !== undefined;
+
   return {
     startedCodingAt,
     startedReviewAt,
     startedPickupAt,
+    reviewed: startedReviewAt !== null,
+    approved,
     reviewDepth: reviewEvents.length,
   };
 }
