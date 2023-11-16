@@ -346,7 +346,7 @@ function setupTimeline(timelineEvents: TimelineEventData[], notes: MergeRequestN
 
 }
 
-function runTimeline(extractMergeRequest: MergeRequestData, timelineEvents: extract.TimelineEvents[], notes: extract.MergeRequestNote[]) {
+function runTimeline(extractMergeRequest: MergeRequestData, timelineEvents: TimelineEventData[], notes: MergeRequestNoteData[]) {
 
   const timelineMap = setupTimeline(timelineEvents, notes);
   const timelineMapKeys = [...timelineMap.keys()];
