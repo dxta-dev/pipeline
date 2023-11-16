@@ -403,11 +403,38 @@ function runTimeline(extractMergeRequest: MergeRequestData, timelineEvents: extr
   }
 
   // start pickup at
+
   let startedPickupAt: Date | null = null;
+  const pickupEventsBeforeReview = timelineMapKeys.filter(({ type, timestamp }) => type === 'ready_for_review' || type === 'review_requested' || type === 'convert_to_draft'
+    && (!startedReviewAt || timestamp.getTime() < startedReviewAt.getTime())) as (TimelineMapKey & { type: 'ready_for_review' | 'review_requested' | 'convert_to_draft' })[];
+
+  if (pickupEventsBeforeReview.length > 0) {
+    for (const pickupEvent of pickupEventsBeforeReview) {
+      if (pickupEvent.type === 'convert_to_draft') {
+        startedPickupAt = null;
+      } else if (!startedPickupAt) { 
+        startedPickupAt = pickupEvent.timestamp;
+      } else if (pickupEvent.timestamp.getTime() < startedPickupAt.getTime()) {
+        startedPickupAt = pickupEvent.timestamp;
+      }
+    }
+  }
+
+  if (startedReviewAt && !startedPickupAt && commitedEvents.length > 0) {
+    for(const commitedEvent of commitedEvents) {
+      if (!startedPickupAt && commitedEvent.timestamp.getTime() < startedReviewAt.getTime()) startedPickupAt = commitedEvent.timestamp;
+      if (startedPickupAt && commitedEvent.timestamp.getTime() < startedPickupAt.getTime()) startedPickupAt = commitedEvent.timestamp;
+    }
+  }
+
+  if (startedReviewAt && !startedPickupAt) {
+    startedPickupAt = extractMergeRequest.openedAt; // if no commits before first review, set it to openedAt. Should only happen if there is a wierd force push
+  }
 
   return {
     startedCodingAt,
     startedReviewAt,
+    startedPickupAt,
     reviewDepth: reviewEvents.length,
   };
 }
