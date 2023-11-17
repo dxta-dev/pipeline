@@ -104,6 +104,7 @@ type mapDatesToTransformedDatesArgs = {
   startedCodingAt: Date | null,
   startedPickupAt: Date | null,
   startedReviewAt: Date | null,
+  lastUpdatedAt: Date | null,
 };
 
 type DMY = {
@@ -120,6 +121,7 @@ type selectDatesArgs = {
   startedCodingAt: DMY | null,
   startedPickupAt: DMY | null,
   startedReviewAt: DMY | null,
+  lastUpdatedAt: DMY | null,
 };
 
 function getWeek(date: Date): number {
@@ -148,6 +150,7 @@ async function mapDatesToTransformedDates(db: TransformDatabase, dates: mapDates
     startedCodingAt: getDMY(dates.startedCodingAt),
     startedPickupAt: getDMY(dates.startedPickupAt),
     startedReviewAt: getDMY(dates.startedReviewAt),
+    lastUpdatedAt: getDMY(dates.lastUpdatedAt),
   }, nullDateId);
 
   return transformDates;
@@ -183,6 +186,10 @@ async function selectDates(db: TransformDatabase, dates: selectDatesArgs, nullDa
         getDMYQuery(dates.openedAt),
         getDMYQuery(dates.mergedAt),
         getDMYQuery(dates.closedAt),
+        getDMYQuery(dates.startedCodingAt),
+        getDMYQuery(dates.startedPickupAt),
+        getDMYQuery(dates.startedReviewAt),
+        getDMYQuery(dates.lastUpdatedAt),
       )
     )
     .all();
@@ -214,6 +221,10 @@ async function selectDates(db: TransformDatabase, dates: selectDatesArgs, nullDa
     openedAt: getDateIdOrNullDateId(dates.openedAt),
     mergedAt: getDateIdOrNullDateId(dates.mergedAt),
     closedAt: getDateIdOrNullDateId(dates.closedAt),
+    startedCodingAt: getDateIdOrNullDateId(dates.startedCodingAt),
+    startedPickupAt: getDateIdOrNullDateId(dates.startedPickupAt),
+    startedReviewAt: getDateIdOrNullDateId(dates.startedReviewAt),
+    lastUpdatedAt: getDateIdOrNullDateId(dates.lastUpdatedAt),
   };
 }
 
@@ -459,9 +470,43 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
     startedCodingAt: timeline.startedCodingAt,
     startedPickupAt: timeline.startedPickupAt,
     startedReviewAt: timeline.startedReviewAt,
+    // ToDo add last updated
+    lastUpdatedAt: new Date(),
   }, nullDateId);
 
   const _mrSize = calculateMrSize(extractMergeRequestId, extractData.diffs.filter(Boolean));
+
+  const returningDate = await ctx.transformDatabase.insert(transform.mergeRequestDatesJunk)
+  .values({
+    mergedAt: _transformDates.mergedAt.id,
+    closedAt: _transformDates.closedAt.id,
+    openedAt: _transformDates.openedAt.id,
+    startedCodingAt: _transformDates.startedCodingAt.id,
+    lastUpdatedAt: _transformDates.lastUpdatedAt.id,
+    startedPickupAt: _transformDates.startedPickupAt.id,
+    startedReviewAt: _transformDates.startedReviewAt.id,
+  })
+  .returning()
+  .get();
+
+  await ctx.transformDatabase.insert(transform.mergeRequestMetrics)
+  .values({
+    usersJunk: _nullUserId,
+    repository: _nullRepositoryId,
+    mergeRequest: _nullMergeRequestId,
+    datesJunk: returningDate.id,
+    mrSize: _mrSize || -1,
+    codingDuration: 0,
+    pickupDuration: 0,
+    reviewDuration: 0,
+    handover: 0,
+    reviewDepth: 0,
+    merged: _transformDates.mergedAt ? true : false,
+    closed: _transformDates.closedAt ? true : false,
+    approved: timeline.approved,
+    reviewed: timeline.approved,
+  })
+  .run();
 
   /*
   insertMergeMetrics(ctx.transformDatabase, {
