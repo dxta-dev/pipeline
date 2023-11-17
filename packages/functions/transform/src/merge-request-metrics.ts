@@ -14,35 +14,35 @@ type TableMeta = {
   _updatedAt: Date | null;
 }
 
-function _selectMetricInfo(_db: TransformDatabase, transformMergeRequestId: number) {
-  return _db.select({
-      usersJunk: transform.mergeRequestMetrics.usersJunk,
-      datesJunk: transform.mergeRequestMetrics.datesJunk,
-      id: transform.mergeRequestMetrics.id,
-    })
+function selectMetricInfo(db: TransformDatabase, transformMergeRequestId: number) {
+  return db.select({
+    usersJunk: transform.mergeRequestMetrics.usersJunk,
+    datesJunk: transform.mergeRequestMetrics.datesJunk,
+    id: transform.mergeRequestMetrics.id,
+  })
     .from(transform.mergeRequestMetrics)
     .where(
       eq(transform.mergeRequestMetrics.mergeRequest, transformMergeRequestId),
     );
 }
 
-function _insertMergeMetrics(_db: TransformDatabase, _mergeMetrics: transform.NewMergeRequestMetric) {
-  return _db.insert(transform.mergeRequestMetrics)
-    .values(_mergeMetrics);
+function insertMergeMetrics(db: TransformDatabase, mergeMetrics: transform.NewMergeRequestMetric) {
+  return db.insert(transform.mergeRequestMetrics)
+    .values(mergeMetrics);
 }
 
-function _updateMergeMetrics(_db:TransformDatabase, _mergeMetrics: Omit<transform.MergeRequestMetric, keyof TableMeta>) {
-  return _db.update(transform.mergeRequestMetrics)
+function updateMergeMetrics(db: TransformDatabase, mergeMetrics: Omit<transform.MergeRequestMetric, keyof TableMeta>) {
+  return db.update(transform.mergeRequestMetrics)
     .set({
-      ..._mergeMetrics,
+      ...mergeMetrics,
       _updatedAt: sql`(strftime('%s', 'now'))`,
     })
     .where(
-      eq(transform.mergeRequestMetrics.id, _mergeMetrics.id)
+      eq(transform.mergeRequestMetrics.id, mergeMetrics.id)
     );
 }
 
-function _upsertRepository(db: TransformDatabase, repo: transform.NewRepository) {
+function upsertRepository(db: TransformDatabase, repo: transform.NewRepository) {
   return db.insert(transform.repositories)
     .values(repo)
     .onConflictDoUpdate({
@@ -58,7 +58,7 @@ function _upsertRepository(db: TransformDatabase, repo: transform.NewRepository)
     .returning();
 }
 
-function _upsertMergeRequest(db: TransformDatabase, mergeRequest: transform.NewMergeRequest) {
+function upsertMergeRequest(db: TransformDatabase, mergeRequest: transform.NewMergeRequest) {
   return db.insert(transform.mergeRequests)
     .values(mergeRequest)
     .onConflictDoUpdate({
@@ -90,34 +90,34 @@ function _upsertForgeUser(db: TransformDatabase, forgeUser: transform.NewForgeUs
     })
 }
 
-function _insertUserJunk(_db: TransformDatabase, _users: transform.NewMergeRequestUsersJunk) {
-  return _db.insert(transform.mergeRequestUsersJunk)
-    .values(_users)
+function insertUserJunk(db: TransformDatabase, users: transform.NewMergeRequestUsersJunk) {
+  return db.insert(transform.mergeRequestUsersJunk)
+    .values(users)
     .returning();
 }
 
-function _updateUserJunk(_db: TransformDatabase, _users: Omit<transform.MergeRequestUsersJunk, keyof TableMeta>) {
-  return _db.update(transform.mergeRequestUsersJunk)
+function updateUserJunk(db: TransformDatabase, users: Omit<transform.MergeRequestUsersJunk, keyof TableMeta>) {
+  return db.update(transform.mergeRequestUsersJunk)
     .set({
-      ..._users,
+      ...users,
       _updatedAt: sql`(strftime('%s', 'now'))`,
     })
-    .where(eq(transform.mergeRequestUsersJunk.id, _users.id))
+    .where(eq(transform.mergeRequestUsersJunk.id, users.id))
 }
 
-function _insertDateJunk(_db: TransformDatabase, _dates: transform.NewMergeRequestDatesJunk) {
-  return _db.insert(transform.mergeRequestDatesJunk)
-    .values(_dates)
+function insertDateJunk(db: TransformDatabase, dates: transform.NewMergeRequestDatesJunk) {
+  return db.insert(transform.mergeRequestDatesJunk)
+    .values(dates)
     .returning();
 }
 
-function _updateDateJunk(_db: TransformDatabase, _dates: Omit<transform.MergeRequestDatesJunk, keyof TableMeta>) {
-  return _db.update(transform.mergeRequestDatesJunk)
+function updateDateJunk(db: TransformDatabase, dates: Omit<transform.MergeRequestDatesJunk, keyof TableMeta>) {
+  return db.update(transform.mergeRequestDatesJunk)
     .set({
-      ..._dates,
+      ...dates,
       _updatedAt: sql`(strftime('%s', 'now'))`,
     })
-    .where(eq(transform.mergeRequestDatesJunk.id, _dates.id))
+    .where(eq(transform.mergeRequestDatesJunk.id, dates.id))
 }
 
 async function selectNullRows(db: TransformDatabase) {
@@ -280,7 +280,7 @@ type MapUsersToJunksArgs = {
   reviewers: transform.ForgeUser['id'][]
 }
 
-function _mapUsersToJunk({ author, mergedBy, approvers, committers, reviewers}: MapUsersToJunksArgs, nullForgeUserId: number) {
+function mapUsersToJunk({ author, mergedBy, approvers, committers, reviewers }: MapUsersToJunksArgs, nullForgeUserId: number) {
   return {
     author: author || nullForgeUserId,
     mergedBy: mergedBy || nullForgeUserId,
@@ -358,16 +358,19 @@ type MergeRequestData = {
   externalId: extract.MergeRequest['externalId'],
   authorExternalId: extract.MergeRequest['authorExternalId']
 }
+
 type TimelineEventData = {
   type: extract.TimelineEvents['type'];
   timestamp: extract.TimelineEvents['timestamp'];
   actorId: extract.TimelineEvents['actorId'];
   data: extract.TimelineEvents['data'];
 }
+
 type MergeRequestNoteData = {
   createdAt: extract.MergeRequestNote['createdAt'];
   authorExternalId: extract.MergeRequestNote['authorExternalId'];
 }
+
 async function selectExtractData(db: ExtractDatabase, extractMergeRequestId: number) {
   const { mergeRequests, mergeRequestDiffs, mergeRequestNotes, timelineEvents, repositories } = extract;
 
@@ -386,7 +389,7 @@ async function selectExtractData(db: ExtractDatabase, extractMergeRequestId: num
   }).from(mergeRequests)
     .where(eq(mergeRequests.id, extractMergeRequestId))
     .get();
-  
+
   const repositoryData = await db.select({
     repository: {
       externalId: repositories.externalId,
@@ -484,7 +487,7 @@ function runTimeline(extractMergeRequest: MergeRequestData, timelineEvents: Time
     for (const commitedEvent of commitedEvents) {
       if (!startedCodingAt) {
         startedCodingAt = commitedEvent.timestamp;
-      } 
+      }
       else if (commitedEvent.timestamp.getTime() < startedCodingAt.getTime()) {
         startedCodingAt = commitedEvent.timestamp;
       }
@@ -494,7 +497,7 @@ function runTimeline(extractMergeRequest: MergeRequestData, timelineEvents: Time
 
   // start review at
 
-  const reviewEvents = timelineMapKeys.filter(({ type }) => type === 'note' || type === 'reviewed' || type === 'commented') as (TimelineMapKey & { type: 'note' | 'reviewed' | 'commented'})[];
+  const reviewEvents = timelineMapKeys.filter(({ type }) => type === 'note' || type === 'reviewed' || type === 'commented') as (TimelineMapKey & { type: 'note' | 'reviewed' | 'commented' })[];
   let startedReviewAt: Date | null = null;
 
   if (reviewEvents.length > 0) {
@@ -514,20 +517,18 @@ function runTimeline(extractMergeRequest: MergeRequestData, timelineEvents: Time
   const pickupEventsBeforeReview = timelineMapKeys.filter(({ type, timestamp }) => type === 'ready_for_review' || type === 'review_requested' || type === 'convert_to_draft'
     && (!startedReviewAt || timestamp.getTime() < startedReviewAt.getTime())) as (TimelineMapKey & { type: 'ready_for_review' | 'review_requested' | 'convert_to_draft' })[];
 
-  if (pickupEventsBeforeReview.length > 0) {
-    for (const pickupEvent of pickupEventsBeforeReview) {
-      if (pickupEvent.type === 'convert_to_draft') {
-        startedPickupAt = null;
-      } else if (!startedPickupAt) { 
-        startedPickupAt = pickupEvent.timestamp;
-      } else if (pickupEvent.timestamp.getTime() < startedPickupAt.getTime()) {
-        startedPickupAt = pickupEvent.timestamp;
-      }
+  for (const pickupEvent of pickupEventsBeforeReview) {
+    if (pickupEvent.type === 'convert_to_draft') {
+      startedPickupAt = null;
+    } else if (!startedPickupAt) {
+      startedPickupAt = pickupEvent.timestamp;
+    } else if (pickupEvent.timestamp.getTime() < startedPickupAt.getTime()) {
+      startedPickupAt = pickupEvent.timestamp;
     }
   }
 
   if (startedReviewAt && !startedPickupAt && commitedEvents.length > 0) {
-    for(const commitedEvent of commitedEvents) {
+    for (const commitedEvent of commitedEvents) {
       if (!startedPickupAt && commitedEvent.timestamp.getTime() < startedReviewAt.getTime()) startedPickupAt = commitedEvent.timestamp;
       if (startedPickupAt && commitedEvent.timestamp.getTime() < startedPickupAt.getTime()) startedPickupAt = commitedEvent.timestamp;
     }
@@ -572,13 +573,13 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
 
   const {
     dateId: nullDateId,
-    userId: _nullUserId,
+    userId: nullUserId,
     mergeRequestId: _nullMergeRequestId,
     repositoryId: _nullRepositoryId
   } = await selectNullRows(ctx.transformDatabase);
 
 
-  const _transformDates = await mapDatesToTransformedDates(ctx.transformDatabase, {
+  const transformDates = await mapDatesToTransformedDates(ctx.transformDatabase, {
     openedAt: extractData.mergeRequest.openedAt,
     mergedAt: extractData.mergeRequest.mergedAt,
     closedAt: extractData.mergeRequest.closedAt,
@@ -588,87 +589,89 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
     lastUpdatedAt: extractData.mergeRequest.updatedAt,
   }, nullDateId);
 
-  const _mrSize = calculateMrSize(extractMergeRequestId, extractData.diffs.filter(Boolean));
+  const mrSize = calculateMrSize(extractMergeRequestId, extractData.diffs.filter(Boolean));
 
-  const _codingDuration = calculateDuration(timeline.startedCodingAt, timeline.startedPickupAt);
-  const _pickupDuration = calculateDuration(timeline.startedPickupAt, timeline.startedReviewAt);
-  const _reviewDuration = calculateDuration(timeline.startedReviewAt, extractData.mergeRequest.closedAt);
+  const codingDuration = calculateDuration(timeline.startedCodingAt, timeline.startedPickupAt);
+  const pickupDuration = calculateDuration(timeline.startedPickupAt, timeline.startedReviewAt);
+  const reviewDuration = calculateDuration(timeline.startedReviewAt, extractData.mergeRequest.closedAt);
 
-  const usersJunk = _mapUsersToJunk({
+  const usersJunk = mapUsersToJunk({
     author: null,
     mergedBy: null,
     approvers: [],
     committers: [],
     reviewers: [],
-  }, _nullUserId);
+  }, nullUserId);
 
-  const { id: transformRepositoryId } = await _upsertRepository(ctx.transformDatabase, extractData.repository).get();
+  const { id: transformRepositoryId } = await upsertRepository(ctx.transformDatabase, extractData.repository).get();
 
-  const { id: transformMergeRequestId } = await _upsertMergeRequest(ctx.transformDatabase, {
+  const { id: transformMergeRequestId } = await upsertMergeRequest(ctx.transformDatabase, {
     externalId: extractData.mergeRequest.externalId,
     forgeType: extractData.repository.forgeType,
     title: extractData.mergeRequest.title,
     webUrl: extractData.mergeRequest.webUrl,
   })
-  .get();
+    .get();
 
   const metricData = {
-    repository: transformRepositoryId,
-    mergeRequest: transformMergeRequestId,
-    mrSize: _mrSize || -1,
-    codingDuration: _codingDuration,
-    pickupDuration: _pickupDuration,
-    reviewDuration: _reviewDuration,
+    mrSize: mrSize || -1,
+    codingDuration: codingDuration,
+    pickupDuration: pickupDuration,
+    reviewDuration: reviewDuration,
     handover: 0,
     reviewDepth: timeline.reviewDepth,
-    merged: _transformDates.mergedAt ? true : false,
-    closed: _transformDates.closedAt ? true : false,
+    merged: transformDates.mergedAt ? true : false,
+    closed: transformDates.closedAt ? true : false,
     approved: timeline.approved,
     reviewed: timeline.approved,
   }
-  const metricInfo = await _selectMetricInfo(ctx.transformDatabase, transformMergeRequestId).get();
-  
+  const metricInfo = await selectMetricInfo(ctx.transformDatabase, transformMergeRequestId).get();
+
   if (metricInfo) {
-    await _updateDateJunk(ctx.transformDatabase,{
+    await updateDateJunk(ctx.transformDatabase, {
       id: metricInfo.datesJunk,
-      mergedAt: _transformDates.mergedAt.id,
-      closedAt: _transformDates.closedAt.id,
-      openedAt: _transformDates.openedAt.id,
-      startedCodingAt: _transformDates.startedCodingAt.id,
-      lastUpdatedAt: _transformDates.lastUpdatedAt.id,
-      startedPickupAt: _transformDates.startedPickupAt.id,
-      startedReviewAt: _transformDates.startedReviewAt.id,
+      mergedAt: transformDates.mergedAt.id,
+      closedAt: transformDates.closedAt.id,
+      openedAt: transformDates.openedAt.id,
+      startedCodingAt: transformDates.startedCodingAt.id,
+      lastUpdatedAt: transformDates.lastUpdatedAt.id,
+      startedPickupAt: transformDates.startedPickupAt.id,
+      startedReviewAt: transformDates.startedReviewAt.id,
     }).run();
 
-    await _updateUserJunk(ctx.transformDatabase,{
+    await updateUserJunk(ctx.transformDatabase, {
       id: metricInfo.usersJunk,
       ...usersJunk
     }).run();
 
-    await _updateMergeMetrics(ctx.transformDatabase, {
+    await updateMergeMetrics(ctx.transformDatabase, {
       ...metricInfo,
-      ...metricData
+      ...metricData,
+      repository: transformRepositoryId,
+      mergeRequest: transformMergeRequestId,
     }).run();
   } else {
-    const { id: dateJunkId } = await _insertDateJunk(ctx.transformDatabase, {
-      mergedAt: _transformDates.mergedAt.id,
-      closedAt: _transformDates.closedAt.id,
-      openedAt: _transformDates.openedAt.id,
-      startedCodingAt: _transformDates.startedCodingAt.id,
-      lastUpdatedAt: _transformDates.lastUpdatedAt.id,
-      startedPickupAt: _transformDates.startedPickupAt.id,
-      startedReviewAt: _transformDates.startedReviewAt.id,
+    const { id: dateJunkId } = await insertDateJunk(ctx.transformDatabase, {
+      mergedAt: transformDates.mergedAt.id,
+      closedAt: transformDates.closedAt.id,
+      openedAt: transformDates.openedAt.id,
+      startedCodingAt: transformDates.startedCodingAt.id,
+      lastUpdatedAt: transformDates.lastUpdatedAt.id,
+      startedPickupAt: transformDates.startedPickupAt.id,
+      startedReviewAt: transformDates.startedReviewAt.id,
     }).get();
-    
-    const { id: userJunkId } = await _insertUserJunk(ctx.transformDatabase, usersJunk).get();
-  
-    await _insertMergeMetrics(ctx.transformDatabase, {
+
+    const { id: userJunkId } = await insertUserJunk(ctx.transformDatabase, usersJunk).get();
+
+    await insertMergeMetrics(ctx.transformDatabase, {
+      ...metricData,
       usersJunk: userJunkId,
       datesJunk: dateJunkId,
-      ...metricData,
+      repository: transformRepositoryId,
+      mergeRequest: transformMergeRequestId,
     })
-    .run()
-    }
+      .run()
+  }
 
 }
 
