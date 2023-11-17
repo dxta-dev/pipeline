@@ -28,6 +28,7 @@ import { getClerkUserToken } from "./get-clerk-user-token";
 import { MessageKind, metadataSchema, paginationSchema } from "./messages";
 
 export const mergeRequestSenderHandler = createMessageHandler({
+  queueId: 'ExtractQueue',
   kind: MessageKind.MergeRequest,
   metadataShape: metadataSchema.shape,
   contentShape: z.object({

@@ -14,6 +14,7 @@ import { getClerkUserToken } from "./get-clerk-user-token";
 import { MessageKind, metadataSchema } from "./messages";
 
 export const timelineEventsSenderHandler = createMessageHandler({
+  queueId: 'ExtractQueue',
   kind: MessageKind.TimelineEvent,
   metadataShape: metadataSchema.shape,
   contentShape: z.object({

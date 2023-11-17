@@ -16,6 +16,7 @@ import { events } from "@acme/crawl-schema";
 
 
 export const mergeRequestDiffSenderHandler = createMessageHandler({
+  queueId: 'ExtractQueue',
   kind: MessageKind.MergeRequestDiff,
   metadataShape: metadataSchema.shape,
   contentShape: z.object({
