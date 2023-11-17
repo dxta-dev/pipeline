@@ -18,6 +18,8 @@ const fingersCrossedMode = command === 'fingers-crossed';
 const yoloMode = command === 'yolo';
 const noMigrationMode = !fingersCrossedMode && !yoloMode;
 
+const DISABLE_FOREIGN_KEYS_SQL = "PRAGMA foreign_keys=OFF";
+
 /**
  * @typedef MigrationState
  * @property {string[]} files
@@ -41,16 +43,18 @@ const selectTablesFromDatabase = async (/**@type {LibSQLClient}*/client) => {
 
 const dropAllDatabaseTables = async (/**@type {LibSQLClient}*/client) => {
   const tableNames = await selectTablesFromDatabase(client);
-  if (tableNames.length === 1) return console.log('No tables to drop...');
+  if (tableNames.length === 0) return console.log('No tables to drop...');
+
   for (const tableName of tableNames) {
     try {
       console.warn('Dropping table:\x1b[31m', tableName, '\x1b[0m...');
-      await client.execute(`drop table '${tableName}'`);
+      await client.executeMultiple(`${DISABLE_FOREIGN_KEYS_SQL};drop table '${tableName}';`);
     } catch (error) {
       console.error('FAILED TO DROP TABLE');
       throw error;
     }
   }
+
 }
 const upstreamMigrationStatePath = (/**@type {string}*/databaseId) => `scripts/out/${databaseId}-migrations.upstream-ref.json`;
 const upstreamMigrationStateExists = (/**@type {string}*/databaseId) => fs.existsSync(upstreamMigrationStatePath(databaseId));
