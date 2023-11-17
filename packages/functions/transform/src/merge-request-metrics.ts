@@ -255,6 +255,13 @@ function calculateMrSize(mergeRequestId: number, diffs: { stringifiedHunks: stri
   return mrSize;
 }
 
+function calculateDuration(start: Date | null, end: Date | null) {
+  if (!start || !end) {
+    return 0;
+  }
+  return end.getTime() - start.getDate();
+}
+
 type MergeRequestData = {
   openedAt: extract.MergeRequest['createdAt'],
   mergedAt: extract.MergeRequest['mergedAt'],
@@ -476,6 +483,11 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
 
   const _mrSize = calculateMrSize(extractMergeRequestId, extractData.diffs.filter(Boolean));
 
+  const _codingDuration = calculateDuration(timeline.startedCodingAt, timeline.startedPickupAt);
+  const _pickupDuration = calculateDuration(timeline.startedPickupAt, timeline.startedReviewAt);
+  // ToDo add end of review duration
+  const _reviewDuration = calculateDuration(timeline.startedReviewAt, null);
+
   const returningDate = await ctx.transformDatabase.insert(transform.mergeRequestDatesJunk)
   .values({
     mergedAt: _transformDates.mergedAt.id,
@@ -496,11 +508,11 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
     mergeRequest: _nullMergeRequestId,
     datesJunk: returningDate.id,
     mrSize: _mrSize || -1,
-    codingDuration: 0,
-    pickupDuration: 0,
-    reviewDuration: 0,
+    codingDuration: _codingDuration,
+    pickupDuration: _pickupDuration,
+    reviewDuration: _reviewDuration,
     handover: 0,
-    reviewDepth: 0,
+    reviewDepth: timeline.reviewDepth,
     merged: _transformDates.mergedAt ? true : false,
     closed: _transformDates.closedAt ? true : false,
     approved: timeline.approved,
