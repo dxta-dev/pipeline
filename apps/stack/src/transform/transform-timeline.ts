@@ -2,12 +2,10 @@ import { ApiHandler } from "sst/node/api";
 import { z } from "zod";
 import * as extract from "@acme/extract-schema";
 import * as transform from "@acme/transform-schema";
-import { type LibSQLDatabase, drizzle } from "drizzle-orm/libsql";
+import { drizzle } from "drizzle-orm/libsql";
 import { createClient } from "@libsql/client";
 import type { Context, ExtractEntities, TransformEntities } from "@acme/transform-functions";
 import { Config } from "sst/node/config";
-
-import { seed } from "@acme/transform-schema/src/seed/dimensions";
 
 const apiContextSchema = z.object({
   authorizer: z.object({
@@ -41,17 +39,6 @@ export const apiHandler = ApiHandler(async (ev) => {
     statusCode: 401,
     body: JSON.stringify(lambdaContextValidation.error),
   }
-
-  // TODO: To seed or not to seed.. ?
-  const A_YEAR = 12 * 30 * 24 * 60 * 60 * 1000;
-  const nowInMs = new Date().getTime();
-  const firstDates = await context.transform.db.select({
-    id: context.transform.entities.dates.id
-  })
-    .from(context.transform.entities.dates)
-    .limit(1)
-    .all();
-  if (firstDates.length === 0) await seed(context.transform.db as LibSQLDatabase, new Date(nowInMs - A_YEAR), new Date(nowInMs + A_YEAR));
 
   const allMergeRequests = await context.extract.db.select({
     mergeRequestId: context.extract.entities.mergeRequests.id
