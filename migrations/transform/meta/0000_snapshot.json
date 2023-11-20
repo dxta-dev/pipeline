@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "e0be6476-e9f1-4c30-be88-dad7ffcd57fe",
+  "id": "fc830090-6b2e-48b6-b79d-16da42389086",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "dates": {
@@ -587,71 +587,71 @@
           "notNull": true,
           "autoincrement": false
         },
-        "commiter1": {
-          "name": "commiter1",
+        "committer1": {
+          "name": "committer1",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "commiter2": {
-          "name": "commiter2",
+        "committer2": {
+          "name": "committer2",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "commiter3": {
-          "name": "commiter3",
+        "committer3": {
+          "name": "committer3",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "commiter4": {
-          "name": "commiter4",
+        "committer4": {
+          "name": "committer4",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "commiter5": {
-          "name": "commiter5",
+        "committer5": {
+          "name": "committer5",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "commiter6": {
-          "name": "commiter6",
+        "committer6": {
+          "name": "committer6",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "commiter7": {
-          "name": "commiter7",
+        "committer7": {
+          "name": "committer7",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "commiter8": {
-          "name": "commiter8",
+        "committer8": {
+          "name": "committer8",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "commiter9": {
-          "name": "commiter9",
+        "committer9": {
+          "name": "committer9",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "commiter10": {
-          "name": "commiter10",
+        "committer10": {
+          "name": "committer10",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
@@ -902,12 +902,12 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "merge_request_fact_users_junk_commiter1_forge_users_id_fk": {
-          "name": "merge_request_fact_users_junk_commiter1_forge_users_id_fk",
+        "merge_request_fact_users_junk_committer1_forge_users_id_fk": {
+          "name": "merge_request_fact_users_junk_committer1_forge_users_id_fk",
           "tableFrom": "merge_request_fact_users_junk",
           "tableTo": "forge_users",
           "columnsFrom": [
-            "commiter1"
+            "committer1"
           ],
           "columnsTo": [
             "id"
@@ -915,12 +915,12 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "merge_request_fact_users_junk_commiter2_forge_users_id_fk": {
-          "name": "merge_request_fact_users_junk_commiter2_forge_users_id_fk",
+        "merge_request_fact_users_junk_committer2_forge_users_id_fk": {
+          "name": "merge_request_fact_users_junk_committer2_forge_users_id_fk",
           "tableFrom": "merge_request_fact_users_junk",
           "tableTo": "forge_users",
           "columnsFrom": [
-            "commiter2"
+            "committer2"
           ],
           "columnsTo": [
             "id"
@@ -928,12 +928,12 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "merge_request_fact_users_junk_commiter3_forge_users_id_fk": {
-          "name": "merge_request_fact_users_junk_commiter3_forge_users_id_fk",
+        "merge_request_fact_users_junk_committer3_forge_users_id_fk": {
+          "name": "merge_request_fact_users_junk_committer3_forge_users_id_fk",
           "tableFrom": "merge_request_fact_users_junk",
           "tableTo": "forge_users",
           "columnsFrom": [
-            "commiter3"
+            "committer3"
           ],
           "columnsTo": [
             "id"
@@ -941,12 +941,12 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "merge_request_fact_users_junk_commiter4_forge_users_id_fk": {
-          "name": "merge_request_fact_users_junk_commiter4_forge_users_id_fk",
+        "merge_request_fact_users_junk_committer4_forge_users_id_fk": {
+          "name": "merge_request_fact_users_junk_committer4_forge_users_id_fk",
           "tableFrom": "merge_request_fact_users_junk",
           "tableTo": "forge_users",
           "columnsFrom": [
-            "commiter4"
+            "committer4"
           ],
           "columnsTo": [
             "id"
@@ -954,12 +954,12 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "merge_request_fact_users_junk_commiter5_forge_users_id_fk": {
-          "name": "merge_request_fact_users_junk_commiter5_forge_users_id_fk",
+        "merge_request_fact_users_junk_committer5_forge_users_id_fk": {
+          "name": "merge_request_fact_users_junk_committer5_forge_users_id_fk",
           "tableFrom": "merge_request_fact_users_junk",
           "tableTo": "forge_users",
           "columnsFrom": [
-            "commiter5"
+            "committer5"
           ],
           "columnsTo": [
             "id"
@@ -967,12 +967,12 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "merge_request_fact_users_junk_commiter6_forge_users_id_fk": {
-          "name": "merge_request_fact_users_junk_commiter6_forge_users_id_fk",
+        "merge_request_fact_users_junk_committer6_forge_users_id_fk": {
+          "name": "merge_request_fact_users_junk_committer6_forge_users_id_fk",
           "tableFrom": "merge_request_fact_users_junk",
           "tableTo": "forge_users",
           "columnsFrom": [
-            "commiter6"
+            "committer6"
           ],
           "columnsTo": [
             "id"
@@ -980,12 +980,12 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "merge_request_fact_users_junk_commiter7_forge_users_id_fk": {
-          "name": "merge_request_fact_users_junk_commiter7_forge_users_id_fk",
+        "merge_request_fact_users_junk_committer7_forge_users_id_fk": {
+          "name": "merge_request_fact_users_junk_committer7_forge_users_id_fk",
           "tableFrom": "merge_request_fact_users_junk",
           "tableTo": "forge_users",
           "columnsFrom": [
-            "commiter7"
+            "committer7"
           ],
           "columnsTo": [
             "id"
@@ -993,12 +993,12 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "merge_request_fact_users_junk_commiter8_forge_users_id_fk": {
-          "name": "merge_request_fact_users_junk_commiter8_forge_users_id_fk",
+        "merge_request_fact_users_junk_committer8_forge_users_id_fk": {
+          "name": "merge_request_fact_users_junk_committer8_forge_users_id_fk",
           "tableFrom": "merge_request_fact_users_junk",
           "tableTo": "forge_users",
           "columnsFrom": [
-            "commiter8"
+            "committer8"
           ],
           "columnsTo": [
             "id"
@@ -1006,12 +1006,12 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "merge_request_fact_users_junk_commiter9_forge_users_id_fk": {
-          "name": "merge_request_fact_users_junk_commiter9_forge_users_id_fk",
+        "merge_request_fact_users_junk_committer9_forge_users_id_fk": {
+          "name": "merge_request_fact_users_junk_committer9_forge_users_id_fk",
           "tableFrom": "merge_request_fact_users_junk",
           "tableTo": "forge_users",
           "columnsFrom": [
-            "commiter9"
+            "committer9"
           ],
           "columnsTo": [
             "id"
@@ -1019,12 +1019,12 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "merge_request_fact_users_junk_commiter10_forge_users_id_fk": {
-          "name": "merge_request_fact_users_junk_commiter10_forge_users_id_fk",
+        "merge_request_fact_users_junk_committer10_forge_users_id_fk": {
+          "name": "merge_request_fact_users_junk_committer10_forge_users_id_fk",
           "tableFrom": "merge_request_fact_users_junk",
           "tableTo": "forge_users",
           "columnsFrom": [
-            "commiter10"
+            "committer10"
           ],
           "columnsTo": [
             "id"
