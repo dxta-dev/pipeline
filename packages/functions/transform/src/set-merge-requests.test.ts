@@ -34,10 +34,6 @@ beforeAll(async () => {
 
   await migrate(extractDb, { migrationsFolder: "../../../migrations/extract" });
   await migrate(transformDb, { migrationsFolder: "../../../migrations/transform" });
-  await extractDb.insert(extract.namespaces).values([
-    { id: 1, externalId: 2000, forgeType: 'github', name: 'crocoder-dev' }
-  ]);
-
 
   context = {
     extract: {
@@ -64,6 +60,9 @@ afterAll(() => {
 });
 
 beforeEach(async () => {
+  await extractDb.insert(extract.namespaces).values([
+    { id: 1, externalId: 2000, forgeType: 'github', name: 'crocoder-dev' }
+  ]);
   await extractDb.insert(context.extract.entities.repositories).values([
     { id: 1, externalId: 1000, forgeType: 'github', name: 'Repo-repo', namespaceId: 1 }
   ]);
@@ -77,6 +76,7 @@ beforeEach(async () => {
 afterEach(async () => {
   await extractDb.delete(context.extract.entities.mergeRequests).run();
   await extractDb.delete(context.extract.entities.repositories).run();
+  await extractDb.delete(extract.namespaces).run();
   await transformDb.delete(context.transform.entities.mergeRequests).run();
 });
 
