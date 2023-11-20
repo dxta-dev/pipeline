@@ -294,16 +294,16 @@ function mapUsersToJunk({ author, mergedBy, approvers, committers, reviewers }: 
     approver8: approvers[7] || nullForgeUserId,
     approver9: approvers[8] || nullForgeUserId,
     approver10: approvers[9] || nullForgeUserId,
-    commiter1: committers[0] || nullForgeUserId,
-    commiter2: committers[1] || nullForgeUserId,
-    commiter3: committers[2] || nullForgeUserId,
-    commiter4: committers[3] || nullForgeUserId,
-    commiter5: committers[4] || nullForgeUserId,
-    commiter6: committers[5] || nullForgeUserId,
-    commiter7: committers[6] || nullForgeUserId,
-    commiter8: committers[7] || nullForgeUserId,
-    commiter9: committers[8] || nullForgeUserId,
-    commiter10: committers[9] || nullForgeUserId,
+    committer1: committers[0] || nullForgeUserId,
+    committer2: committers[1] || nullForgeUserId,
+    committer3: committers[2] || nullForgeUserId,
+    committer4: committers[3] || nullForgeUserId,
+    committer5: committers[4] || nullForgeUserId,
+    committer6: committers[5] || nullForgeUserId,
+    committer7: committers[6] || nullForgeUserId,
+    committer8: committers[7] || nullForgeUserId,
+    committer9: committers[8] || nullForgeUserId,
+    committer10: committers[9] || nullForgeUserId,
     reviewer1: reviewers[0] || nullForgeUserId,
     reviewer2: reviewers[1] || nullForgeUserId,
     reviewer3: reviewers[2] || nullForgeUserId,
@@ -478,18 +478,18 @@ function runTimeline(extractMergeRequest: MergeRequestData, timelineEvents: Time
 
   //start coding at
 
-  const commitedEvents = timelineMapKeys.filter(({ type }) => type === 'committed') as (TimelineMapKey & { type: 'committed' })[];
+  const committedEvents = timelineMapKeys.filter(({ type }) => type === 'committed') as (TimelineMapKey & { type: 'committed' })[];
 
   let startedCodingAt: Date | null = null;
 
-  if (commitedEvents.length > 0) {
+  if (committedEvents.length > 0) {
 
-    for (const commitedEvent of commitedEvents) {
+    for (const committedEvent of committedEvents) {
       if (!startedCodingAt) {
-        startedCodingAt = commitedEvent.timestamp;
+        startedCodingAt = committedEvent.timestamp;
       }
-      else if (commitedEvent.timestamp.getTime() < startedCodingAt.getTime()) {
-        startedCodingAt = commitedEvent.timestamp;
+      else if (committedEvent.timestamp.getTime() < startedCodingAt.getTime()) {
+        startedCodingAt = committedEvent.timestamp;
       }
     }
 
@@ -527,10 +527,10 @@ function runTimeline(extractMergeRequest: MergeRequestData, timelineEvents: Time
     }
   }
 
-  if (startedReviewAt && !startedPickupAt && commitedEvents.length > 0) {
-    for (const commitedEvent of commitedEvents) {
-      if (!startedPickupAt && commitedEvent.timestamp.getTime() < startedReviewAt.getTime()) startedPickupAt = commitedEvent.timestamp;
-      if (startedPickupAt && commitedEvent.timestamp.getTime() < startedPickupAt.getTime()) startedPickupAt = commitedEvent.timestamp;
+  if (startedReviewAt && !startedPickupAt && committedEvents.length > 0) {
+    for (const committedEvent of committedEvents) {
+      if (!startedPickupAt && committedEvent.timestamp.getTime() < startedReviewAt.getTime()) startedPickupAt = committedEvent.timestamp;
+      if (startedPickupAt && committedEvent.timestamp.getTime() < startedPickupAt.getTime()) startedPickupAt = committedEvent.timestamp;
     }
   }
 
