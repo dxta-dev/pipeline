@@ -21,7 +21,8 @@ let context: Context<SetRepositoryExtractEntities, SetRepositoryTransformEntitie
 const extractDbName = 'extract-set-repository';
 const transformDbName = 'transform-set-repository';
 
-const TEST_REPO_1 = { id: 1, externalId: 1000, name: 'TEST_REPO_NAME', forgeType: 'github' } satisfies extract.NewRepository;
+const TEST_NAMESPACE_1 = { id: 1, externalId: 2000, name: 'TEST_NAMESPACE_NAME', forgeType: 'github' } satisfies extract.NewNamespace;
+const TEST_REPO_1 = { id: 1, externalId: 1000, name: 'TEST_REPO_NAME', forgeType: 'github', namespaceId: 1 } satisfies extract.NewRepository;
 
 beforeAll(async () => {
   extractSqlite = createClient({
@@ -37,6 +38,7 @@ beforeAll(async () => {
   await migrate(extractDb, { migrationsFolder: "../../../migrations/extract" });
   await migrate(transformDb, { migrationsFolder: "../../../migrations/transform" });
 
+  await extractDb.insert(extract.namespaces).values(TEST_NAMESPACE_1).run();
   await extractDb.insert(extract.repositories).values(TEST_REPO_1).run();
 
   context = {
