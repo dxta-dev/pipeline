@@ -17,8 +17,8 @@ let db: ReturnType<typeof drizzle>;
 let context: Context<GetMergeRequestNotesSourceControl, GetMergeRequestNotesEntities>;
 let fetchMergeRequestNotes: jest.MockedFunction<GetMergeRequestNotesSourceControl['fetchMergeRequestNotes']>;
 
-const TEST_REPO_1 = { id: 1, externalId: 1000, name: 'TEST_REPO_NAME', forgeType: 'github' } satisfies NewRepository;
 const TEST_NAMESPACE_1 = { id: 1, externalId: 2000, name: 'TEST_NAMESPACE_NAME', forgeType: 'github' } satisfies NewNamespace;
+const TEST_REPO_1 = { id: 1, externalId: 1000, name: 'TEST_REPO_NAME', forgeType: 'github', namespaceId: 1 } satisfies NewRepository;
 const TEST_MERGE_REQUEST_1 = { id: 1, externalId: 3000, createdAt: new Date(), canonId: 1, repositoryId: 1, title: "TEST_MR", webUrl: "localhost" } satisfies NewMergeRequest;
 
 const dbname = 'get-merge-request-notes';
@@ -30,8 +30,8 @@ beforeAll(async () => {
   db = drizzle(sqlite);
 
   await migrate(db, { migrationsFolder: "../../../migrations/extract" });
-  await db.insert(repositories).values([TEST_REPO_1]).run();
   await db.insert(namespaces).values([TEST_NAMESPACE_1]).run();
+  await db.insert(repositories).values([TEST_REPO_1]).run();
   await db.insert(mergeRequests).values([TEST_MERGE_REQUEST_1]).run();
 
   fetchMergeRequestNotes = jest.fn((repository: Repository, namespace: Namespace, mergeRequest: MergeRequest): ReturnType<GetMergeRequestNotesSourceControl["fetchMergeRequestNotes"]> => {
