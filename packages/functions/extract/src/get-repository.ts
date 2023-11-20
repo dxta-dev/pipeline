@@ -30,9 +30,8 @@ export const getRepository: GetRepositoryFunction = async (
 
   const { repository, namespace } = await integrations.sourceControl.fetchRepository(externalRepositoryId, namespaceName, repositoryName);
 
-  console.log('fetchd');
-
-  const insertedNamespace = await db.insert(entities.namespaces).values(namespace)
+  return await db.transaction(async (tx)=> {
+    const insertedNamespace = await tx.insert(entities.namespaces).values(namespace)
     .onConflictDoUpdate({
       target: [
         entities.namespaces.externalId,
@@ -45,27 +44,26 @@ export const getRepository: GetRepositoryFunction = async (
     }).returning()
     .get();
 
-    console.log('nsed',namespace);
+    const insertedRepository = await tx.insert(entities.repositories).values({
+      ...repository,
+      namespaceId: insertedNamespace.id,
+    })
+      .onConflictDoUpdate({
+        target: [
+          entities.repositories.externalId,
+          entities.repositories.forgeType
+        ],
+        set: {
+          name: repository.name,
+          _updatedAt: sql`(strftime('%s', 'now'))`,
+        },
+      }).returning()
+      .get();
 
+    return {
+      namespace: insertedNamespace,
+      repository: insertedRepository,
+    };
+  });
 
-  const insertedRepository = await db.insert(entities.repositories).values({
-    ...repository,
-    namespaceId: insertedNamespace.id,
-  })
-    .onConflictDoUpdate({
-      target: [
-        entities.repositories.externalId,
-        entities.repositories.forgeType
-      ],
-      set: {
-        name: repository.name,
-        _updatedAt: sql`(strftime('%s', 'now'))`,
-      },
-    }).returning()
-    .get();
-
-  return {
-    repository: insertedRepository,
-    namespace: insertedNamespace,
-  };
 };
