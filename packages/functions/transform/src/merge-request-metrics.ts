@@ -515,16 +515,25 @@ function runTimeline(extractMergeRequest: MergeRequestData, timelineEvents: Time
 
   // start pickup at
 
+  const convertToDraftEvents = timelineMapKeys.filter(({ type }) => type === 'convert_to_draft') as (TimelineMapKey & { type: 'convert_to_draft' })[];
+  let lastConvertToDraftBeforeReview: Date | null = null;
+  
+  for(const convertToDraft of convertToDraftEvents) {
+    if (
+      (!lastConvertToDraftBeforeReview || convertToDraft.timestamp.getTime() > lastConvertToDraftBeforeReview.getTime())
+      && (!startedReviewAt || convertToDraft.timestamp.getTime() < startedReviewAt.getTime())
+    ) {
+      lastConvertToDraftBeforeReview = convertToDraft.timestamp;
+    }
+  }
+  
   let startedPickupAt: Date | null = null;
-  const pickupEventsBeforeReview = timelineMapKeys.filter(({ type, timestamp }) => type === 'ready_for_review' || type === 'review_requested' || type === 'convert_to_draft'
-    && (!startedReviewAt || timestamp.getTime() < startedReviewAt.getTime())) as (TimelineMapKey & { type: 'ready_for_review' | 'review_requested' | 'convert_to_draft' })[];
+  const initialPickupEvents = timelineMapKeys.filter(({ type, timestamp }) => type === 'ready_for_review' || type === 'review_requested'
+    && (!lastConvertToDraftBeforeReview || timestamp.getTime() > lastConvertToDraftBeforeReview.getTime())
+    && (!startedReviewAt || timestamp.getTime() < startedReviewAt.getTime())) as (TimelineMapKey & { type: 'ready_for_review' | 'review_requested' })[];
 
-  for (const pickupEvent of pickupEventsBeforeReview) {
-    if (pickupEvent.type === 'convert_to_draft') {
-      startedPickupAt = null;
-    } else if (!startedPickupAt) {
-      startedPickupAt = pickupEvent.timestamp;
-    } else if (pickupEvent.timestamp.getTime() < startedPickupAt.getTime()) {
+  for (const pickupEvent of initialPickupEvents) {
+    if (!startedPickupAt || pickupEvent.timestamp.getTime() < startedPickupAt.getTime()) {
       startedPickupAt = pickupEvent.timestamp;
     }
   }
@@ -562,7 +571,7 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
     return null;
   }
 
-
+  
   if (extractData.mergeRequest === null) {
     throw new Error(`No merge request found for id ${extractMergeRequestId}`);
   }
