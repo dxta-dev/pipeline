@@ -52,7 +52,7 @@ export class GitlabSourceControl implements SourceControl {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async fetchRepository(externalRepositoryId: number, namespaceName: string, repositoryName: string): Promise<{ repository: NewRepository, namespace: NewNamespace }> {
+  async fetchRepository(externalRepositoryId: number, namespaceName: string, repositoryName: string): Promise<{ repository: Omit<NewRepository, "namespaceId">, namespace: NewNamespace }> {
     const project = await this.api.Projects.show(externalRepositoryId);
     const namespace = project.namespace;
 
@@ -60,8 +60,8 @@ export class GitlabSourceControl implements SourceControl {
       repository: {
         externalId: project.id,
         forgeType: 'gitlab',
-        name: project.name
-      } satisfies NewRepository,
+        name: project.name,
+      } satisfies Omit<NewRepository, "namespaceId">,
       namespace: {
         externalId: namespace.id,
         forgeType: 'gitlab',

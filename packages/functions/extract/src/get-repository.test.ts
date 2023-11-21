@@ -16,7 +16,7 @@ let sqlite: ReturnType<typeof createClient>;
 let db: ReturnType<typeof drizzle>;
 let context: Context<GetRepositorySourceControl, GetRepositoryEntities>;
 let fetchRepository: jest.Mock<Promise<{
-  repository: NewRepository,
+  repository: Omit<NewRepository, 'namespaceId'>,
   namespace: NewNamespace
 }>>
 
@@ -68,19 +68,21 @@ describe('get-repository', () => {
       expect(repository).toBeDefined();
       expect(fetchRepository).toHaveBeenCalledTimes(1);
 
-      const repositoryRow = await db.select().from(repositories)
-        .where(eq(repositories.externalId, repository.externalId)).get();
-
-      expect(repositoryRow).toBeDefined();
-      expect(repositoryRow?.externalId).toEqual(repository.externalId);
-      expect(repositoryRow?.id).toEqual(repository.id);
-
       const namespaceRow = await db.select().from(namespaces)
         .where(eq(namespaces.externalId, namespace.externalId)).get();
 
       expect(namespaceRow).toBeDefined();
       expect(namespaceRow?.externalId).toEqual(namespace.externalId);
       expect(namespaceRow?.id).toEqual(namespace.id);
+
+      const repositoryRow = await db.select().from(repositories)
+        .where(eq(repositories.externalId, repository.externalId)).get();
+
+      expect(repositoryRow).toBeDefined();
+      expect(repositoryRow?.externalId).toEqual(repository.externalId);
+      expect(repositoryRow?.id).toEqual(repository.id);
+      expect(repositoryRow?.namespaceId).toEqual(namespace.id);
+
     });
   });
 });

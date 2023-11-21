@@ -60,8 +60,11 @@ afterAll(() => {
 });
 
 beforeEach(async () => {
+  await extractDb.insert(extract.namespaces).values([
+    { id: 1, externalId: 2000, forgeType: 'github', name: 'crocoder-dev' }
+  ]);
   await extractDb.insert(context.extract.entities.repositories).values([
-    { id: 1, externalId: 1000, forgeType: 'github', name: 'Repo-repo' }
+    { id: 1, externalId: 1000, forgeType: 'github', name: 'Repo-repo', namespaceId: 1 }
   ]);
   await extractDb.insert(context.extract.entities.mergeRequests).values([
     { id: 1, canonId: 1, createdAt: new Date(), externalId: 2000, repositoryId: 1, title: "Test", webUrl: "http://localhost/Test" },
@@ -73,6 +76,7 @@ beforeEach(async () => {
 afterEach(async () => {
   await extractDb.delete(context.extract.entities.mergeRequests).run();
   await extractDb.delete(context.extract.entities.repositories).run();
+  await extractDb.delete(extract.namespaces).run();
   await transformDb.delete(context.transform.entities.mergeRequests).run();
 });
 

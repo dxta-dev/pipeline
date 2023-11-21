@@ -98,10 +98,12 @@ CREATE TABLE `namespaces` (
 CREATE TABLE `repositories` (
 	`id` integer PRIMARY KEY NOT NULL,
 	`external_id` integer NOT NULL,
+	`namespace_id` integer NOT NULL,
 	`forge_type` integer NOT NULL,
 	`name` text NOT NULL,
 	`__created_at` integer DEFAULT (strftime('%s', 'now')),
-	`__updated_at` integer DEFAULT (strftime('%s', 'now'))
+	`__updated_at` integer DEFAULT (strftime('%s', 'now')),
+	FOREIGN KEY (`namespace_id`) REFERENCES `namespaces`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
 CREATE TABLE `repositories_to_members` (

@@ -10,6 +10,7 @@ import type { Context } from './config';
 import type { GetNamespaceMembersSourceControl, GetNamespaceMembersEntities } from './get-namespace-members';
 import type { SourceControl } from '@acme/source-control';
 import fs from 'fs';
+import { namespaces } from "@acme/extract-schema/src/namespaces";
 
 let sqlite: ReturnType<typeof createClient>;
 let db: ReturnType<typeof drizzle>;
@@ -26,9 +27,17 @@ beforeAll(async () => {
 
   await migrate(db, { migrationsFolder: "../../../migrations/extract" });
  
-  await db.insert(repositories).values({
+  await db.insert(namespaces).values({
     id: 1,
     name: 'crocoder-dev',
+    externalId: 2000,
+    forgeType: 'github',
+  }).run();
+
+  await db.insert(repositories).values({
+    id: 1,
+    namespaceId: 1,
+    name: 'mr-tool-monorepo',
     externalId: 1000,
     forgeType: 'github',
   }).run();
