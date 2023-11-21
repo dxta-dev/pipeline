@@ -1,8 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "7bcf29aa-8330-4df9-b857-006284ae2c3a",
-  "id": "a32acdeb-db5c-4dc5-a180-8ffc39137a9e",
+  "id": "1389d00b-f2cd-45af-87ad-91c678a3f8b3",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "git_identities": {
