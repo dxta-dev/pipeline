@@ -1,9 +1,11 @@
 import * as extract from '@acme/extract-schema';
 import * as transform from '@acme/transform-schema';
-import { sql, eq, or, and } from "drizzle-orm";
+import { sql, eq, or, and, type ExtractTablesWithRelations } from "drizzle-orm";
 import type { LibSQLDatabase } from 'drizzle-orm/libsql';
 import { isCodeGen } from './is-codegen';
 import { parseHunks } from './parse-hunks';
+import { type SQLiteTransaction } from 'drizzle-orm/sqlite-core';
+import { type ResultSet } from '@libsql/client/.';
 
 type BrandedDatabase<T> = LibSQLDatabase<Record<string, unknown>> & { __brand: T }
 
@@ -26,13 +28,13 @@ function selectMetricInfo(db: TransformDatabase, transformMergeRequestId: number
     );
 }
 
-function insertMergeMetrics(db: TransformDatabase, mergeMetrics: transform.NewMergeRequestMetric) {
-  return db.insert(transform.mergeRequestMetrics)
+function insertMergeMetrics(tx: SQLiteTransaction<"async", ResultSet, Record<string, unknown>, ExtractTablesWithRelations<Record<string, unknown>>>, mergeMetrics: transform.NewMergeRequestMetric) {
+  return tx.insert(transform.mergeRequestMetrics)
     .values(mergeMetrics);
 }
 
-function updateMergeMetrics(db: TransformDatabase, mergeMetrics: Omit<transform.MergeRequestMetric, keyof TableMeta>) {
-  return db.update(transform.mergeRequestMetrics)
+function updateMergeMetrics(tx: SQLiteTransaction<"async", ResultSet, Record<string, unknown>, ExtractTablesWithRelations<Record<string, unknown>>>, mergeMetrics: Omit<transform.MergeRequestMetric, keyof TableMeta>) {
+  return tx.update(transform.mergeRequestMetrics)
     .set({
       ...mergeMetrics,
       _updatedAt: sql`(strftime('%s', 'now'))`,
@@ -90,13 +92,13 @@ function _upsertForgeUser(db: TransformDatabase, forgeUser: transform.NewForgeUs
     })
 }
 
-function insertUserJunk(db: TransformDatabase, users: transform.NewMergeRequestUsersJunk) {
-  return db.insert(transform.mergeRequestUsersJunk)
+function insertUserJunk(tx: SQLiteTransaction<"async", ResultSet, Record<string, unknown>, ExtractTablesWithRelations<Record<string, unknown>>>, users: transform.NewMergeRequestUsersJunk) {
+  return tx.insert(transform.mergeRequestUsersJunk)
     .values(users)
     .returning();
 }
 
-function updateUserJunk(db: TransformDatabase, users: Omit<transform.MergeRequestUsersJunk, keyof TableMeta>) {
+function updateUserJunk(db: SQLiteTransaction<"async", ResultSet, Record<string, unknown>, ExtractTablesWithRelations<Record<string, unknown>>>, users: Omit<transform.MergeRequestUsersJunk, keyof TableMeta>) {
   return db.update(transform.mergeRequestUsersJunk)
     .set({
       ...users,
@@ -105,14 +107,14 @@ function updateUserJunk(db: TransformDatabase, users: Omit<transform.MergeReques
     .where(eq(transform.mergeRequestUsersJunk.id, users.id))
 }
 
-function insertDateJunk(db: TransformDatabase, dates: transform.NewMergeRequestDatesJunk) {
-  return db.insert(transform.mergeRequestDatesJunk)
+function insertDateJunk(tx: SQLiteTransaction<"async", ResultSet, Record<string, unknown>, ExtractTablesWithRelations<Record<string, unknown>>>, dates: transform.NewMergeRequestDatesJunk) {
+  return tx.insert(transform.mergeRequestDatesJunk)
     .values(dates)
     .returning();
 }
 
-function updateDateJunk(db: TransformDatabase, dates: Omit<transform.MergeRequestDatesJunk, keyof TableMeta>) {
-  return db.update(transform.mergeRequestDatesJunk)
+function updateDateJunk(tx: SQLiteTransaction<"async", ResultSet, Record<string, unknown>, ExtractTablesWithRelations<Record<string, unknown>>>, dates: Omit<transform.MergeRequestDatesJunk, keyof TableMeta>) {
+  return tx.update(transform.mergeRequestDatesJunk)
     .set({
       ...dates,
       _updatedAt: sql`(strftime('%s', 'now'))`,
@@ -628,50 +630,59 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
   const metricInfo = await selectMetricInfo(ctx.transformDatabase, transformMergeRequestId).get();
 
   if (metricInfo) {
-    await updateDateJunk(ctx.transformDatabase, {
-      id: metricInfo.datesJunk,
-      mergedAt: transformDates.mergedAt.id,
-      closedAt: transformDates.closedAt.id,
-      openedAt: transformDates.openedAt.id,
-      startedCodingAt: transformDates.startedCodingAt.id,
-      lastUpdatedAt: transformDates.lastUpdatedAt.id,
-      startedPickupAt: transformDates.startedPickupAt.id,
-      startedReviewAt: transformDates.startedReviewAt.id,
-    }).run();
+    await ctx.transformDatabase.transaction(
+      async (tx) => {
+        await updateDateJunk(tx, {
+          id: metricInfo.datesJunk,
+          mergedAt: transformDates.mergedAt.id,
+          closedAt: transformDates.closedAt.id,
+          openedAt: transformDates.openedAt.id,
+          startedCodingAt: transformDates.startedCodingAt.id,
+          lastUpdatedAt: transformDates.lastUpdatedAt.id,
+          startedPickupAt: transformDates.startedPickupAt.id,
+          startedReviewAt: transformDates.startedReviewAt.id,
+        }).run();
+        
+        await updateUserJunk(tx, {
+          id: metricInfo.usersJunk,
+          ...usersJunk
+        }).run();
 
-    await updateUserJunk(ctx.transformDatabase, {
-      id: metricInfo.usersJunk,
-      ...usersJunk
-    }).run();
+        await updateMergeMetrics(tx, {
+          ...metricInfo,
+          ...metricData,
+          repository: transformRepositoryId,
+          mergeRequest: transformMergeRequestId,
+        }).run();
+      }
+    )
 
-    await updateMergeMetrics(ctx.transformDatabase, {
-      ...metricInfo,
-      ...metricData,
-      repository: transformRepositoryId,
-      mergeRequest: transformMergeRequestId,
-    }).run();
+
   } else {
-    const { id: dateJunkId } = await insertDateJunk(ctx.transformDatabase, {
-      mergedAt: transformDates.mergedAt.id,
-      closedAt: transformDates.closedAt.id,
-      openedAt: transformDates.openedAt.id,
-      startedCodingAt: transformDates.startedCodingAt.id,
-      lastUpdatedAt: transformDates.lastUpdatedAt.id,
-      startedPickupAt: transformDates.startedPickupAt.id,
-      startedReviewAt: transformDates.startedReviewAt.id,
-    }).get();
+    await ctx.transformDatabase.transaction(
+      async (tx) => {
+        const { id: dateJunkId } = await insertDateJunk(tx, {
+          mergedAt: transformDates.mergedAt.id,
+          closedAt: transformDates.closedAt.id,
+          openedAt: transformDates.openedAt.id,
+          startedCodingAt: transformDates.startedCodingAt.id,
+          lastUpdatedAt: transformDates.lastUpdatedAt.id,
+          startedPickupAt: transformDates.startedPickupAt.id,
+          startedReviewAt: transformDates.startedReviewAt.id,
+        }).get();
+    
+        const { id: userJunkId } = await insertUserJunk(tx, usersJunk).get();
 
-    const { id: userJunkId } = await insertUserJunk(ctx.transformDatabase, usersJunk).get();
-
-    await insertMergeMetrics(ctx.transformDatabase, {
-      ...metricData,
-      usersJunk: userJunkId,
-      datesJunk: dateJunkId,
-      repository: transformRepositoryId,
-      mergeRequest: transformMergeRequestId,
-    })
-      .run()
-  }
+        await insertMergeMetrics(tx, {
+          ...metricData,
+          usersJunk: userJunkId,
+          datesJunk: dateJunkId,
+          repository: transformRepositoryId,
+          mergeRequest: transformMergeRequestId,
+        }).run()
+      }
+      )
+    }
 
 }
 
