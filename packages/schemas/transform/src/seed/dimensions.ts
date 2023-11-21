@@ -7,6 +7,7 @@ import { forgeUsers } from "../forge-users";
 import { dates } from "../dates";
 import { mergeRequests } from "../merge-requests";
 import { repositories } from "../repositories";
+import { nullRows } from "../null-rows";
 
 const nullForgeUser = {
   id: 1,
@@ -38,12 +39,25 @@ const nullRepository = {
   name: '',
 } satisfies NewRepository;
 
-export async function seed(db: LibSQLDatabase, startDate: Date, endDate: Date) {
-  await db.insert(forgeUsers).values(nullForgeUser).onConflictDoNothing().run();
-  await db.insert(dates).values(nullDate).onConflictDoNothing().run();
-  await db.insert(mergeRequests).values(nullMergeRequest).onConflictDoNothing().run();
-  await db.insert(repositories).values(nullRepository).onConflictDoNothing().run();
+export async function seed(db: LibSQLDatabase, startDate: Date, endDate: Date): Promise<undefined> {
+  const insertedNullForgeUser = await db.insert(forgeUsers).values(nullForgeUser).onConflictDoNothing().returning().get();
+  const insertedNullDate = await db.insert(dates).values(nullDate).onConflictDoNothing().returning().get();
+  const insertedNullMergeRequest = await db.insert(mergeRequests).values(nullMergeRequest).onConflictDoNothing().returning().get();
+  const insertedNullRepo = await db.insert(repositories).values(nullRepository).onConflictDoNothing().returning().get();
   await db.insert(dates).values(generateDates(startDate, endDate)).onConflictDoNothing().run();
+  
+  // TODO: ???
+  if (!insertedNullForgeUser || !insertedNullDate || !insertedNullMergeRequest || !insertedNullRepo) return undefined;
+
+  console.log('nullRows', insertedNullForgeUser.id, insertedNullDate.id, insertedNullMergeRequest.id, insertedNullRepo.id);
+  await db.insert(nullRows).values({
+    userId: insertedNullForgeUser.id,
+    dateId: insertedNullDate.id,
+    mergeRequestId: insertedNullMergeRequest.id,
+    repositoryId: insertedNullRepo.id,
+  }).onConflictDoNothing().run();
+  return undefined;
+
 }
 
 function generateDates(startDate: Date, endDate: Date) {
