@@ -406,7 +406,7 @@ async function selectExtractData(db: ExtractDatabase, extractMergeRequestId: num
     stringifiedHunks: mergeRequestDiffs.diff,
     newPath: mergeRequestDiffs.newPath,
   })
-    .from(mergeRequests)
+    .from(mergeRequestDiffs)
     .where(eq(mergeRequestDiffs.mergeRequestId, extractMergeRequestId))
     .all();
 
@@ -566,6 +566,7 @@ function runTimeline(extractMergeRequest: MergeRequestData, timelineEvents: Time
 
 
 export async function run(extractMergeRequestId: number, ctx: RunContext) {
+  console.log('extracting???');
   const extractData = await selectExtractData(ctx.extractDatabase, extractMergeRequestId);
 
   if (!extractData) {
