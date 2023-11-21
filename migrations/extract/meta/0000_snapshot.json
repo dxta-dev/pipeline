@@ -2,6 +2,7 @@
   "version": "5",
   "dialect": "sqlite",
   "id": "7bcf29aa-8330-4df9-b857-006284ae2c3a",
+  "id": "a32acdeb-db5c-4dc5-a180-8ffc39137a9e",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "git_identities": {
@@ -764,6 +765,13 @@
           "notNull": true,
           "autoincrement": false
         },
+        "namespace_id": {
+          "name": "namespace_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
         "forge_type": {
           "name": "forge_type",
           "type": "integer",
@@ -805,7 +813,21 @@
           "isUnique": true
         }
       },
-      "foreignKeys": {},
+      "foreignKeys": {
+        "repositories_namespace_id_namespaces_id_fk": {
+          "name": "repositories_namespace_id_namespaces_id_fk",
+          "tableFrom": "repositories",
+          "tableTo": "namespaces",
+          "columnsFrom": [
+            "namespace_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },

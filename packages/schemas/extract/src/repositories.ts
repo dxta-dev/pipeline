@@ -4,10 +4,12 @@ import { sqliteTable, integer, text, uniqueIndex } from 'drizzle-orm/sqlite-core
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import { z } from 'zod';
 import { Enum } from './enum-column';
+import { namespaces } from './namespaces';
 
 export const repositories = sqliteTable('repositories', {
   id: integer('id').primaryKey(),
   externalId: integer('external_id').notNull(),
+  namespaceId: integer('namespace_id').references(() => namespaces.id).notNull(),
   forgeType: Enum('forge_type', { enum: ['github', 'gitlab'] }).notNull(),
   name: text('name').notNull(),
   _createdAt: integer('__created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
