@@ -517,8 +517,8 @@ function runTimeline(extractMergeRequest: MergeRequestData, timelineEvents: Time
 
   const convertToDraftEvents = timelineMapKeys.filter(({ type }) => type === 'convert_to_draft') as (TimelineMapKey & { type: 'convert_to_draft' })[];
   let lastConvertToDraftBeforeReview: Date | null = null;
-  
-  for(const convertToDraft of convertToDraftEvents) {
+
+  for (const convertToDraft of convertToDraftEvents) {
     if (
       (!lastConvertToDraftBeforeReview || convertToDraft.timestamp.getTime() > lastConvertToDraftBeforeReview.getTime())
       && (!startedReviewAt || convertToDraft.timestamp.getTime() < startedReviewAt.getTime())
@@ -526,7 +526,7 @@ function runTimeline(extractMergeRequest: MergeRequestData, timelineEvents: Time
       lastConvertToDraftBeforeReview = convertToDraft.timestamp;
     }
   }
-  
+
   let startedPickupAt: Date | null = null;
   const initialPickupEvents = timelineMapKeys.filter(({ type, timestamp }) => type === 'ready_for_review' || type === 'review_requested'
     && (!lastConvertToDraftBeforeReview || timestamp.getTime() > lastConvertToDraftBeforeReview.getTime())
@@ -538,15 +538,17 @@ function runTimeline(extractMergeRequest: MergeRequestData, timelineEvents: Time
     }
   }
 
-  if (startedReviewAt && !startedPickupAt && committedEvents.length > 0) {
+  if (startedReviewAt && !startedPickupAt) {
     for (const committedEvent of committedEvents) {
       if (!startedPickupAt && committedEvent.timestamp.getTime() < startedReviewAt.getTime()) startedPickupAt = committedEvent.timestamp;
-      if (startedPickupAt && committedEvent.timestamp.getTime() < startedPickupAt.getTime()) startedPickupAt = committedEvent.timestamp;
+      if (startedPickupAt
+        && committedEvent.timestamp.getTime() > startedPickupAt.getTime()
+        && committedEvent.timestamp.getTime() < startedReviewAt.getTime()) startedPickupAt = committedEvent.timestamp;
     }
   }
 
   if (startedReviewAt && !startedPickupAt) {
-    startedPickupAt = extractMergeRequest.openedAt; // if no commits before first review, set it to openedAt. Should only happen if there is a wierd force push
+    startedPickupAt = extractMergeRequest.openedAt;
   }
 
   // TODO: can this be optimized with the map ?
@@ -571,7 +573,7 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
     return null;
   }
 
-  
+
   if (extractData.mergeRequest === null) {
     throw new Error(`No merge request found for id ${extractMergeRequestId}`);
   }
@@ -651,7 +653,7 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
           startedPickupAt: transformDates.startedPickupAt.id,
           startedReviewAt: transformDates.startedReviewAt.id,
         }).run();
-        
+
         await updateUserJunk(tx, {
           id: metricInfo.usersJunk,
           ...usersJunk
@@ -679,7 +681,7 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
           startedPickupAt: transformDates.startedPickupAt.id,
           startedReviewAt: transformDates.startedReviewAt.id,
         }).get();
-    
+
         const { id: userJunkId } = await insertUserJunk(tx, usersJunk).get();
 
         await insertMergeMetrics(tx, {
@@ -690,8 +692,8 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
           mergeRequest: transformMergeRequestId,
         }).run()
       }
-      )
-    }
+    )
+  }
 
 }
 
