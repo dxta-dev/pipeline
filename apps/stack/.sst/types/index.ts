@@ -102,6 +102,13 @@ declare module "sst/node/config" {
       value: string;
     }
   }
+}import "sst/node/queue";
+declare module "sst/node/queue" {
+  export interface QueueResources {
+    "TransformTestQueue": {
+      queueUrl: string;
+    }
+  }
 }import "sst/node/api";
 declare module "sst/node/api" {
   export interface ApiResources {
