@@ -6,7 +6,7 @@ import { createClient } from '@libsql/client';
 import { describe, expect, test } from '@jest/globals';
 import { getMergeRequests } from './get-merge-requests';
 
-import { type NewMergeRequest, mergeRequests, type NewRepository, repositories } from '@acme/extract-schema';
+import { type NewMergeRequest, mergeRequests, type NewRepository, repositories, type NewNamespace, namespaces } from '@acme/extract-schema';
 import type { Context } from './config';
 import type { GetMergeRequestsSourceControl, GetMergeRequestsEntities } from './get-merge-requests';
 import type { SourceControl, TimePeriod } from '@acme/source-control';
@@ -17,7 +17,8 @@ let db: ReturnType<typeof drizzle>;
 let context: Context<GetMergeRequestsSourceControl, GetMergeRequestsEntities>;
 let fetchMergeRequests: SourceControl['fetchMergeRequests'];
 
-const TEST_REPO = { id: 1, externalId: 1000, name: 'TEST_REPO_NAME', forgeType: 'github' } satisfies NewRepository;
+const TEST_NAMESPACE = { id: 1, externalId: 2000, name: 'TEST_NAMESPACE_NAME', forgeType: 'github' } satisfies NewNamespace;
+const TEST_REPO = { id: 1, externalId: 1000, name: 'TEST_REPO_NAME', forgeType: 'github', namespaceId: 1 } satisfies NewRepository;
 
 const dbname = "get-merge-requests";
 
@@ -28,6 +29,7 @@ beforeAll(async () => {
   db = drizzle(sqlite);
 
   await migrate(db, { migrationsFolder: "../../../migrations/extract" });
+  await db.insert(namespaces).values(TEST_NAMESPACE).run();
   await db.insert(repositories).values(TEST_REPO).run();
 
   fetchMergeRequests = jest.fn((externalRepositoryId: number, namespaceName:string, repositoryName: string, repositoryId: number, perPage: number, timePeriod?: TimePeriod, page?: number) => {
