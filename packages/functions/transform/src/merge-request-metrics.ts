@@ -350,7 +350,7 @@ function calculateDuration(start: Date | null, end: Date | null) {
   if (!start || !end) {
     return 0;
   }
-  return end.getTime() - start.getDate();
+  return end.getTime() - start.getTime();
 }
 
 type MergeRequestData = {
@@ -566,7 +566,6 @@ function runTimeline(extractMergeRequest: MergeRequestData, timelineEvents: Time
 
 
 export async function run(extractMergeRequestId: number, ctx: RunContext) {
-  console.log('extracting???');
   const extractData = await selectExtractData(ctx.extractDatabase, extractMergeRequestId);
 
   if (!extractData) {
@@ -610,7 +609,10 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
   const reviewDuration = calculateDuration(timeline.startedReviewAt, extractData.mergeRequest.closedAt);
 
   const usersJunk = mapUsersToJunk({
-    author: null,
+    author: (await ctx.transformDatabase.select().from(transform.forgeUsers).where(and(
+      eq(transform.forgeUsers.externalId, extractData.mergeRequest.authorExternalId || 0),
+      eq(transform.forgeUsers.forgeType, extractData.repository.forgeType),
+    )).get())?.id || null, // TODO: ???
     mergedBy: null,
     approvers: [],
     committers: [],
