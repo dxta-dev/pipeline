@@ -561,8 +561,6 @@ function runTimeline(mergeRequestData: MergeRequestData, timelineEvents: Timelin
   const timelineMap = setupTimeline(timelineEvents, notes);
   const timelineMapKeys = [...timelineMap.keys()];
 
-  console.log(timelineMapKeys, timelineMap, mergeRequestData.authorExternalId, prUrl);
-
   const { startedCodingAt, startedReviewAt, startedPickupAt, reviewed, reviewDepth } = calculateTimeline(
     timelineMapKeys,
     timelineMap,
