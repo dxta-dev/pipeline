@@ -4,8 +4,11 @@ import * as extract from "@acme/extract-schema";
 import * as transform from "@acme/transform-schema";
 import { drizzle } from "drizzle-orm/libsql";
 import { createClient } from "@libsql/client";
-import type { Context, ExtractEntities, TransformEntities } from "@acme/transform-functions";
+import type { Context, ExtractEntities, TransformEntities, TransformDatabase, ExtractDatabase } from "@acme/transform-functions";
+import { run } from "@acme/transform-functions";
 import { Config } from "sst/node/config";
+import { createMessage } from "@stack/config/create-message";
+import type { SQSEvent } from "aws-lambda";
 
 const apiContextSchema = z.object({
   authorizer: z.object({
@@ -32,6 +35,20 @@ const context = {
   }
 } satisfies Context<Partial<ExtractEntities>, Partial<TransformEntities>>;
 
+const timelineMessageSchema = z.object({ 
+  content: z.object({
+    mergeRequestId: z.number(),
+  }),
+  metadata: z.object({}),
+  kind: z.string()
+ });
+const timelineMessage = createMessage({
+  kind: 'transform-timeline',
+  contentShape: timelineMessageSchema.shape.content.shape,
+  metadataShape: timelineMessageSchema.shape.metadata.shape,
+  queueId: 'TransformTestQueue',
+});
+
 export const apiHandler = ApiHandler(async (ev) => {
 
   const lambdaContextValidation = apiContextSchema.safeParse(ev.requestContext);
@@ -51,9 +68,25 @@ export const apiHandler = ApiHandler(async (ev) => {
     body: JSON.stringify({ error: new Error("No extracted merge request found").toString() }),
   }
 
-  // TODO: This endpoint shouldn't be a teapot
+  await timelineMessage.sendAll(allMergeRequests, {});
+
   return {
-    statusCode: 418,
-    body: JSON.stringify({ message: 'teapot' })
-  }
+    statusCode: 200,
+    body: JSON.stringify({ message: 'started transform' })
+  };
 });
+
+export const queueHandler = async (event:SQSEvent) => {
+  if (event.Records.length > 1) console.warn('WARNING: QueueHandler should process 1 message but got', event.Records.length);
+  for (const record of event.Records) {
+    const messageValidationResult = timelineMessageSchema.safeParse(JSON.parse(record.body));
+    if (!messageValidationResult.success) continue;
+
+    const messageContent = messageValidationResult.data.content;
+
+    await run(messageContent.mergeRequestId, {
+      extractDatabase: context.extract.db as ExtractDatabase,
+      transformDatabase: context.transform.db as TransformDatabase,
+    });
+  }
+}

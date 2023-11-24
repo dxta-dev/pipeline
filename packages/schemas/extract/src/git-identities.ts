@@ -1,10 +1,11 @@
 import type { InferSelectModel, InferInsertModel } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
 import { sqliteTable, text, integer, uniqueIndex } from 'drizzle-orm/sqlite-core';
+import { repositories } from './repositories';
 
 export const gitIdentities = sqliteTable('git_identities', {
     id: integer('id').primaryKey(),
-    repositoryId: integer('repository_id').notNull(),
+    repositoryId: integer('repository_id').notNull().references(() => repositories.id),
     email: text('email').notNull(), 
     name: text('name').notNull(),
     _createdAt: integer('__created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),

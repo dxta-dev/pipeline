@@ -3,6 +3,7 @@ import {
   Config,
   type StackContext,
   Api,
+  Queue
 } from "sst/constructs";
 import { ExtractStack } from "./ExtractStack";
 import { z } from "zod";
@@ -71,6 +72,28 @@ export function TransformStack({ stack }: StackContext) {
     }
   });
 
+  const transformTestingQueue = new Queue(stack, "TransformTestQueue");
+  transformTestingQueue.addConsumer(stack, {
+    cdk: {
+      eventSource: {
+        batchSize: 1,
+        maxConcurrency: 20,
+      },
+    },
+    function: {
+      bind: [
+        TRANSFORM_DATABASE_URL,
+        TRANSFORM_DATABASE_AUTH_TOKEN,  
+        EXTRACT_DATABASE_URL,
+        EXTRACT_DATABASE_AUTH_TOKEN,
+        CRAWL_DATABASE_AUTH_TOKEN,
+        CRAWL_DATABASE_URL,
+    ],
+      handler: "src/transform/transform-timeline.queueHandler",
+    },
+
+  })
+
   const ENVSchema = z.object({
     CLERK_JWT_ISSUER: z.string(),
     CLERK_JWT_AUDIENCE: z.string(),
@@ -83,6 +106,7 @@ export function TransformStack({ stack }: StackContext) {
       authorizer: "JwtAuthorizer",
       function: {
         bind: [
+          transformTestingQueue,
           TRANSFORM_DATABASE_URL,
           TRANSFORM_DATABASE_AUTH_TOKEN,  
           EXTRACT_DATABASE_URL,
