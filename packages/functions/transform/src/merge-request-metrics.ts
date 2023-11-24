@@ -342,7 +342,6 @@ function calculateMrSize(mergeRequestId: number, diffs: { stringifiedHunks: stri
       .reduce((a, b) => a + b, 0);
   }
 
-
   return mrSize;
 }
 
@@ -442,22 +441,20 @@ export type RunContext = {
   transformDatabase: TransformDatabase;
 };
 
-type TimelineMapKey = {
+export type TimelineMapKey = {
   type: extract.TimelineEvents['type'] | 'note',
   timestamp: Date,
-  actorId: extract.TimelineEvents['actorId'] | extract.MergeRequestNote['authorExternalId'] | null,
 }
+
 function setupTimeline(timelineEvents: TimelineEventData[], notes: MergeRequestNoteData[]) {
   const timeline = new Map<TimelineMapKey,
     TimelineEventData | MergeRequestNoteData
   >();
 
-
   for (const timelineEvent of timelineEvents) {
     timeline.set({
       type: timelineEvent.type,
       timestamp: timelineEvent.timestamp,
-      actorId: timelineEvent.actorId,
     }, timelineEvent);
   }
 
@@ -465,7 +462,6 @@ function setupTimeline(timelineEvents: TimelineEventData[], notes: MergeRequestN
     timeline.set({
       type: 'note',
       timestamp: note.createdAt,
-      actorId: note.authorExternalId,
     }, note);
   }
 
@@ -473,10 +469,11 @@ function setupTimeline(timelineEvents: TimelineEventData[], notes: MergeRequestN
 
 }
 
-function runTimeline(extractMergeRequest: MergeRequestData, timelineEvents: TimelineEventData[], notes: MergeRequestNoteData[]) {
+type calcTimelineArgs = {
+  authorExternalId: extract.MergeRequest['authorExternalId'],
+}
 
-  const timelineMap = setupTimeline(timelineEvents, notes);
-  const timelineMapKeys = [...timelineMap.keys()];
+function calculateTimeline(timelineMapKeys: TimelineMapKey[], timelineMap: Map<TimelineMapKey, MergeRequestNoteData | TimelineEventData>, { authorExternalId }: calcTimelineArgs) {
 
   //start coding at
 
@@ -484,33 +481,35 @@ function runTimeline(extractMergeRequest: MergeRequestData, timelineEvents: Time
 
   let startedCodingAt: Date | null = null;
 
-  if (committedEvents.length > 0) {
 
-    for (const committedEvent of committedEvents) {
-      if (!startedCodingAt) {
-        startedCodingAt = committedEvent.timestamp;
-      }
-      else if (committedEvent.timestamp.getTime() < startedCodingAt.getTime()) {
-        startedCodingAt = committedEvent.timestamp;
-      }
+  for (const committedEvent of committedEvents) {
+    if (!startedCodingAt) {
+      startedCodingAt = committedEvent.timestamp;
     }
-
+    else if (committedEvent.timestamp.getTime() < startedCodingAt.getTime()) {
+      startedCodingAt = committedEvent.timestamp;
+    }
   }
+
 
   // start review at
 
   const reviewEvents = timelineMapKeys.filter(({ type }) => type === 'note' || type === 'reviewed' || type === 'commented') as (TimelineMapKey & { type: 'note' | 'reviewed' | 'commented' })[];
   let startedReviewAt: Date | null = null;
 
-  if (reviewEvents.length > 0) {
-    for (const reviewEvent of reviewEvents) {
-      if (!startedReviewAt && reviewEvent.actorId !== extractMergeRequest.authorExternalId) {
-        startedReviewAt = reviewEvent.timestamp;
-      }
-      if (startedReviewAt && reviewEvent.timestamp.getTime() < startedReviewAt.getTime()) {
-        startedReviewAt = reviewEvent.timestamp;
-      }
+  for (const reviewEvent of reviewEvents) {
+
+    const eventData = (timelineMap.get(reviewEvent) as TimelineEventData | MergeRequestNoteData);
+
+    const reviewerExternalId = (eventData as TimelineEventData).actorId || (eventData as MergeRequestNoteData | { authorExternalId: null }).authorExternalId;
+
+    if (
+      (!startedReviewAt || reviewEvent.timestamp.getTime() < startedReviewAt.getTime())
+      && (reviewerExternalId === null || authorExternalId === null || reviewerExternalId !== authorExternalId)
+    ) {
+      startedReviewAt = reviewEvent.timestamp;
     }
+
   }
 
   // start pickup at
@@ -547,9 +546,29 @@ function runTimeline(extractMergeRequest: MergeRequestData, timelineEvents: Time
     }
   }
 
-  if (startedReviewAt && !startedPickupAt) {
-    startedPickupAt = extractMergeRequest.openedAt;
-  }
+  return {
+    startedCodingAt,
+    startedReviewAt,
+    startedPickupAt,
+    reviewed: startedReviewAt !== null,
+    reviewDepth: reviewEvents.length,
+  };
+}
+
+
+
+function runTimeline(mergeRequestData: MergeRequestData, timelineEvents: TimelineEventData[], notes: MergeRequestNoteData[]) {
+  const timelineMap = setupTimeline(timelineEvents, notes);
+  const timelineMapKeys = [...timelineMap.keys()];
+
+  console.log(timelineMapKeys, timelineMap, mergeRequestData.authorExternalId, prUrl);
+
+  const { startedCodingAt, startedReviewAt, startedPickupAt, reviewed, reviewDepth } = calculateTimeline(
+    timelineMapKeys,
+    timelineMap,
+    {
+      authorExternalId: mergeRequestData.authorExternalId,
+    });
 
   // TODO: can this be optimized with the map ?
   const approved = timelineEvents.find(ev => ev.type === 'reviewed' && (JSON.parse(ev.data as string) as extract.ReviewedEvent).state === 'approved') !== undefined;
@@ -558,11 +577,12 @@ function runTimeline(extractMergeRequest: MergeRequestData, timelineEvents: Time
     startedCodingAt,
     startedReviewAt,
     startedPickupAt,
-    reviewed: startedReviewAt !== null,
+    reviewed,
+    reviewDepth,
     approved,
-    reviewDepth: reviewEvents.length,
-  };
+  }
 }
+
 
 
 export async function run(extractMergeRequestId: number, ctx: RunContext) {
