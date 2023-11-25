@@ -360,14 +360,14 @@ type MergeRequestData = {
   authorExternalId: extract.MergeRequest['authorExternalId']
 }
 
-type TimelineEventData = {
+export type TimelineEventData = {
   type: extract.TimelineEvents['type'];
   timestamp: extract.TimelineEvents['timestamp'];
   actorId: extract.TimelineEvents['actorId'];
   data: extract.TimelineEvents['data'];
 }
 
-type MergeRequestNoteData = {
+export type MergeRequestNoteData = {
   createdAt: extract.MergeRequestNote['createdAt'];
   authorExternalId: extract.MergeRequestNote['authorExternalId'];
 }
@@ -473,7 +473,7 @@ type calcTimelineArgs = {
   authorExternalId: extract.MergeRequest['authorExternalId'],
 }
 
-function calculateTimeline(timelineMapKeys: TimelineMapKey[], timelineMap: Map<TimelineMapKey, MergeRequestNoteData | TimelineEventData>, { authorExternalId }: calcTimelineArgs) {
+export function calculateTimeline(timelineMapKeys: TimelineMapKey[], timelineMap: Map<TimelineMapKey, MergeRequestNoteData | TimelineEventData>, { authorExternalId }: calcTimelineArgs) {
 
   //start coding at
 
