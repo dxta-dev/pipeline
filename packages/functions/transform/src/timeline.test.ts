@@ -538,11 +538,13 @@ const pr143 = {
       "actorId": 4
     },
     {
+      "type": "note",
       "createdAt": "2023-08-30T17:21:04.000Z",
       "authorExternalId": 1,
       "timestamp": 180
     },
     {
+      "type": "note",
       "createdAt": "2023-08-31T08:11:15.000Z",
       "authorExternalId": 4,
       "timestamp": 210
@@ -556,7 +558,7 @@ const pr143Expected = {
   startedReviewAt: new Date(200),
   mergedAt: new Date(270),
   reviewed: true,
-  reviewDepth: 5,
+  reviewDepth: 4,
 };
 
 

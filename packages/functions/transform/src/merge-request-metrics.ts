@@ -368,7 +368,8 @@ export type TimelineEventData = {
 }
 
 export type MergeRequestNoteData = {
-  createdAt: extract.MergeRequestNote['createdAt'];
+  type: 'note';
+  timestamp: extract.MergeRequestNote['createdAt'];
   authorExternalId: extract.MergeRequestNote['authorExternalId'];
 }
 
@@ -410,12 +411,12 @@ async function selectExtractData(db: ExtractDatabase, extractMergeRequestId: num
     .all();
 
   const mergeRequestNotesData = await db.select({
-    createdAt: mergeRequestNotes.createdAt,
+    timestamp: mergeRequestNotes.createdAt,
     authorExternalId: mergeRequestNotes.authorExternalId,
   })
     .from(mergeRequestNotes)
     .where(eq(mergeRequestNotes.mergeRequestId, extractMergeRequestId))
-    .all() satisfies MergeRequestNoteData[];
+    .all() satisfies Omit<MergeRequestNoteData,'type'>[];
 
   const timelineEventsData = await db.select({
     type: timelineEvents.type,
@@ -430,7 +431,7 @@ async function selectExtractData(db: ExtractDatabase, extractMergeRequestId: num
   return {
     diffs: mergerRequestDiffsData,
     ...mergeRequestData || { mergeRequest: null },
-    notes: mergeRequestNotesData,
+    notes: mergeRequestNotesData.map(note => ({ ...note, type: 'note' as const })),
     timelineEvents: timelineEventsData,
     ...repositoryData || { repository: null },
   };
@@ -461,7 +462,7 @@ function setupTimeline(timelineEvents: TimelineEventData[], notes: MergeRequestN
   for (const note of notes) {
     timeline.set({
       type: 'note',
-      timestamp: note.createdAt,
+      timestamp: note.timestamp,
     }, note);
   }
 
@@ -514,11 +515,27 @@ export function calculateTimeline(timelineMapKeys: TimelineMapKey[], timelineMap
     return null;
   })();
 
-  const reviewedEvents = timelineMapKeys.filter(key=> key.type ==='reviewed');
   let firstReviewedEvent = null;
   let reviewed = false;
   let reviewDepth = 0;
+  
+  const noteEvents = timelineMapKeys.filter(key => key.type === 'note');
+  for(const noteEvent of noteEvents) {
+    const eventData = timelineMap.get(noteEvent) as MergeRequestNoteData | undefined;
+    if (!eventData) {
+      console.error('note event data not found', noteEvent);
+      continue;
+    }
 
+    const afterStartedPickupAt = startedPickupAt ? noteEvent.timestamp > startedPickupAt : true;
+    const beforeMergedEvent = mergedAt? noteEvent.timestamp < mergedAt : true;
+    const isAuthorReviewer = eventData.authorExternalId === authorExternalId;
+    if (afterStartedPickupAt && beforeMergedEvent && !isAuthorReviewer) {
+      reviewDepth++;
+    }
+  }
+  
+  const reviewedEvents = timelineMapKeys.filter(key => key.type === 'reviewed');
   for(const reviewedEvent of reviewedEvents) {
     const eventData = timelineMap.get(reviewedEvent);
     if (!eventData) {
