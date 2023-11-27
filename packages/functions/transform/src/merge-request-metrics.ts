@@ -473,86 +473,18 @@ type calcTimelineArgs = {
   authorExternalId: extract.MergeRequest['authorExternalId'],
 }
 
-export function calculateTimeline(timelineMapKeys: TimelineMapKey[], timelineMap: Map<TimelineMapKey, MergeRequestNoteData | TimelineEventData>, { authorExternalId }: calcTimelineArgs) {
-
-  //start coding at
-
-  const committedEvents = timelineMapKeys.filter(({ type }) => type === 'committed') as (TimelineMapKey & { type: 'committed' })[];
-
-  let startedCodingAt: Date | null = null;
+export function calculateTimeline(_timelineMapKeys: TimelineMapKey[], _timelineMap: Map<TimelineMapKey, MergeRequestNoteData | TimelineEventData>, { authorExternalId: _authorExternalId }: calcTimelineArgs) {
 
 
-  for (const committedEvent of committedEvents) {
-    if (!startedCodingAt) {
-      startedCodingAt = committedEvent.timestamp;
-    }
-    else if (committedEvent.timestamp.getTime() < startedCodingAt.getTime()) {
-      startedCodingAt = committedEvent.timestamp;
-    }
-  }
-
-
-  // start review at
-
-  const reviewEvents = timelineMapKeys.filter(({ type }) => type === 'note' || type === 'reviewed' || type === 'commented') as (TimelineMapKey & { type: 'note' | 'reviewed' | 'commented' })[];
-  let startedReviewAt: Date | null = null;
-
-  for (const reviewEvent of reviewEvents) {
-
-    const eventData = (timelineMap.get(reviewEvent) as TimelineEventData | MergeRequestNoteData);
-
-    const reviewerExternalId = (eventData as TimelineEventData).actorId || (eventData as MergeRequestNoteData | { authorExternalId: null }).authorExternalId;
-
-    if (
-      (!startedReviewAt || reviewEvent.timestamp.getTime() < startedReviewAt.getTime())
-      && (reviewerExternalId === null || authorExternalId === null || reviewerExternalId !== authorExternalId)
-    ) {
-      startedReviewAt = reviewEvent.timestamp;
-    }
-
-  }
-
-  // start pickup at
-
-  const convertToDraftEvents = timelineMapKeys.filter(({ type }) => type === 'convert_to_draft') as (TimelineMapKey & { type: 'convert_to_draft' })[];
-  let lastConvertToDraftBeforeReview: Date | null = null;
-
-  for (const convertToDraft of convertToDraftEvents) {
-    if (
-      (!lastConvertToDraftBeforeReview || convertToDraft.timestamp.getTime() > lastConvertToDraftBeforeReview.getTime())
-      && (!startedReviewAt || convertToDraft.timestamp.getTime() < startedReviewAt.getTime())
-    ) {
-      lastConvertToDraftBeforeReview = convertToDraft.timestamp;
-    }
-  }
-
-  let startedPickupAt: Date | null = null;
-  const initialPickupEvents = timelineMapKeys.filter(({ type, timestamp }) => type === 'ready_for_review' || type === 'review_requested'
-    && (!lastConvertToDraftBeforeReview || timestamp.getTime() > lastConvertToDraftBeforeReview.getTime())
-    && (!startedReviewAt || timestamp.getTime() < startedReviewAt.getTime())) as (TimelineMapKey & { type: 'ready_for_review' | 'review_requested' })[];
-
-  for (const pickupEvent of initialPickupEvents) {
-    if (!startedPickupAt || pickupEvent.timestamp.getTime() < startedPickupAt.getTime()) {
-      startedPickupAt = pickupEvent.timestamp;
-    }
-  }
-
-  if (startedReviewAt && !startedPickupAt) {
-    for (const committedEvent of committedEvents) {
-      if (!startedPickupAt && committedEvent.timestamp.getTime() < startedReviewAt.getTime()) startedPickupAt = committedEvent.timestamp;
-      if (startedPickupAt
-        && committedEvent.timestamp.getTime() > startedPickupAt.getTime()
-        && committedEvent.timestamp.getTime() < startedReviewAt.getTime()) startedPickupAt = committedEvent.timestamp;
-    }
-  }
+  
 
   return {
-    startedCodingAt,
-    startedReviewAt,
-    startedPickupAt,
-    mergedAt: new Date(0) as Date | null,
-    reviewed: startedReviewAt !== null,
-    reviewDepth: reviewEvents.length,
+    startedCodingAt: null as Date | null,
+    startedReviewAt: null as Date | null,
+    startedPickupAt: null as Date | null,
+    mergedAt: null as Date | null,
+    reviewed: false,
+    reviewDepth: 0,
   };
 }
 
