@@ -490,17 +490,25 @@ export function calculateTimeline(timelineMapKeys: TimelineMapKey[], timelineMap
 
   const readyForReviewEvents = timelineMapKeys.filter(key=> key.type === 'ready_for_review' || key.type === 'review_requested');
   readyForReviewEvents.sort((a,b)=>a.timestamp.getTime() - b.timestamp.getTime());
-  const lastReadyForReview = readyForReviewEvents[readyForReviewEvents.length - 1] || null;
+  const lastReadyForReviewEvent = readyForReviewEvents[readyForReviewEvents.length - 1] || null;
 
   const startedPickupAt = (() => {
-    if (lastCommit === null && lastReadyForReview === null) {
+    if (lastCommit === null && lastReadyForReviewEvent === null) {
       return null;
     }
-    if (lastReadyForReview === null && lastCommit) {
+    if (lastReadyForReviewEvent === null && lastCommit) {
       return lastCommit.timestamp;
     }
-    if (lastReadyForReview && lastCommit) {
-      return lastReadyForReview.timestamp > lastCommit.timestamp ? lastReadyForReview.timestamp : lastCommit.timestamp;
+    if (lastReadyForReviewEvent && lastCommit) {
+      // problematic code: there could be a commit between last commit and lastReadyForReviewEvent
+      const reviewedEventsAfterLastReadyForReviewEvent = timelineMapKeys.filter(key => key.type === 'reviewed' && key.timestamp > lastReadyForReviewEvent.timestamp && key.timestamp < lastCommit.timestamp);
+      reviewedEventsAfterLastReadyForReviewEvent.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+      const firstReviewedEventAfterLastReadyForReviewEvent = reviewedEventsAfterLastReadyForReviewEvent[0]
+      if (firstReviewedEventAfterLastReadyForReviewEvent) {
+        return lastReadyForReviewEvent.timestamp;
+      }
+
+      return lastReadyForReviewEvent.timestamp > lastCommit.timestamp ? lastReadyForReviewEvent.timestamp : lastCommit.timestamp;
     }
 
     return null;
@@ -525,10 +533,15 @@ export function calculateTimeline(timelineMapKeys: TimelineMapKey[], timelineMap
     const isValidState = res.data.state === 'approved' || res.data.state === 'changes_requested' || res.data.state === 'commented';
     const afterStartedPickupAt = startedPickupAt ? reviewedEvent.timestamp > startedPickupAt : true;
     const beforeFirstReviewedEvent = firstReviewedEvent? reviewedEvent.timestamp < firstReviewedEvent.timestamp : true;
+    const beforeMergedEvent = mergedAt? reviewedEvent.timestamp < mergedAt : true;
     const isAuthorReviewer = (eventData as TimelineEventData).actorId === authorExternalId;
 
-    if (isValidState && afterStartedPickupAt && beforeFirstReviewedEvent && !isAuthorReviewer) {
+    if (isValidState && afterStartedPickupAt && beforeMergedEvent && !isAuthorReviewer) {
+      reviewed = true;
       reviewDepth++;
+    }
+
+    if (isValidState && afterStartedPickupAt && beforeFirstReviewedEvent && !isAuthorReviewer) {
       reviewed = true;
       firstReviewedEvent = reviewedEvent;
     }
