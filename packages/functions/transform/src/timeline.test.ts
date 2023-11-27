@@ -580,14 +580,330 @@ const pr20Expected = {
   reviewDepth: 0
 };
 
+const pr73 = {
+  "authorExternalId": 1,
+  "timeline": [
+    {
+      "type": "committed",
+      "timestamp": 10,
+      "actorId": null,
+      "data": {
+        "committerEmail": "Msmpt@dontemailme.com",
+        "committerName": "Mr. Hhcvn",
+        "committedDate": 10
+      }
+    },
+    {
+      "type": "convert_to_draft",
+      "timestamp": 20,
+      "actorId": 1
+    },
+    {
+      "type": "committed",
+      "timestamp": 30,
+      "actorId": null,
+      "data": {
+        "committerEmail": "Lozxg@dontemailme.com",
+        "committerName": "Mr. Ckktp",
+        "committedDate": 30
+      }
+    },
+    {
+      "type": "committed",
+      "timestamp": 40,
+      "actorId": null,
+      "data": {
+        "committerEmail": "Msmpt@dontemailme.com",
+        "committerName": "Mr. Wlpzl",
+        "committedDate": 40
+      }
+    },
+    {
+      "type": "ready_for_review",
+      "timestamp": 50,
+      "actorId": 1
+    },
+    {
+      "type": "reviewed",
+      "timestamp": 60,
+      "actorId": 3,
+      "data": {
+        "state": "approved"
+      }
+    },
+    {
+      "type": "committed",
+      "timestamp": 70,
+      "actorId": null,
+      "data": {
+        "committerEmail": "Msmpt@dontemailme.com",
+        "committerName": "Mr. Rhwdv",
+        "committedDate": 70
+      }
+    },
+    {
+      "type": "committed",
+      "timestamp": 80,
+      "actorId": null,
+      "data": {
+        "committerEmail": "Msmpt@dontemailme.com",
+        "committerName": "Mr. Hibtu",
+        "committedDate": 80
+      }
+    },
+    {
+      "type": "reviewed",
+      "timestamp": 90,
+      "actorId": 4,
+      "data": {
+        "state": "approved"
+      }
+    },
+    {
+      "type": "merged",
+      "timestamp": 100,
+      "actorId": 1
+    },
+    {
+      "type": "closed",
+      "timestamp": 110,
+      "actorId": 1
+    }
+  ]
+};
+
+const pr73Expected = {
+  startedCodingAt: new Date(10),
+  startedPickupAt: new Date(50),
+  startedReviewAt: new Date(60),
+  mergedAt: new Date(100),
+  reviewed: true,
+  reviewDepth: 2
+};
+
+const pr99 = {
+  "authorExternalId": 3,
+  "timeline": [
+    {
+      "type": "committed",
+      "timestamp": 10,
+      "actorId": null,
+      "data": {
+        "committerEmail": "Bivxr@dontemailme.com",
+        "committerName": "Mr. Rltpc",
+        "committedDate": 10
+      }
+    },
+    {
+      "type": "review_requested",
+      "timestamp": 20,
+      "actorId": 3,
+      "data": {
+        "requestedReviewerId": 5,
+        "requestedReviewerName": "Mr. Wldts"
+      }
+    },
+    {
+      "type": "review_requested",
+      "timestamp": 30,
+      "actorId": 3,
+      "data": {
+        "requestedReviewerId": 4,
+        "requestedReviewerName": "Mr. Ghoie"
+      }
+    },
+    {
+      "type": "committed",
+      "timestamp": 40,
+      "actorId": null,
+      "data": {
+        "committerEmail": "Lozxg@dontemailme.com",
+        "committerName": "Mr. Mzpby",
+        "committedDate": 40
+      }
+    },
+    {
+      "type": "reviewed",
+      "timestamp": 50,
+      "actorId": 5,
+      "data": {
+        "state": "approved"
+      }
+    },
+    {
+      "type": "merged",
+      "timestamp": 60,
+      "actorId": 1
+    },
+    {
+      "type": "closed",
+      "timestamp": 70,
+      "actorId": 1
+    }
+  ]
+};
+
+const pr99Expected = {
+  startedCodingAt: new Date(10),
+  startedPickupAt: new Date(40),
+  startedReviewAt: new Date(50),
+  mergedAt: new Date(60),
+  reviewed: true,
+  reviewDepth: 1
+};
+
+const pr100 = {
+  "authorExternalId": 1,
+  "timeline": [
+    {
+      "type": "committed",
+      "timestamp": 10,
+      "actorId": null,
+      "data": {
+        "committerEmail": "Msmpt@dontemailme.com",
+        "committerName": "Mr. Cqevr",
+        "committedDate": 10
+      }
+    },
+    {
+      "type": "committed",
+      "timestamp": 20,
+      "actorId": null,
+      "data": {
+        "committerEmail": "Msmpt@dontemailme.com",
+        "committerName": "Mr. Pxhck",
+        "committedDate": 20
+      }
+    },
+    {
+      "type": "committed",
+      "timestamp": 30,
+      "actorId": null,
+      "data": {
+        "committerEmail": "Lozxg@dontemailme.com",
+        "committerName": "Mr. Hvbgh",
+        "committedDate": 30
+      }
+    },
+    {
+      "type": "committed",
+      "timestamp": 40,
+      "actorId": null,
+      "data": {
+        "committerEmail": "Lozxg@dontemailme.com",
+        "committerName": "Mr. Ypeeg",
+        "committedDate": 40
+      }
+    },
+    {
+      "type": "reviewed",
+      "timestamp": 50,
+      "actorId": 3,
+      "data": {
+        "state": "approved"
+      }
+    },
+    {
+      "type": "commented",
+      "timestamp": 60,
+      "actorId": 1
+    },
+    {
+      "type": "committed",
+      "timestamp": 70,
+      "actorId": null,
+      "data": {
+        "committerEmail": "Lozxg@dontemailme.com",
+        "committerName": "Mr. Gowhm",
+        "committedDate": 70
+      }
+    },
+    {
+      "type": "merged",
+      "timestamp": 80,
+      "actorId": 1
+    },
+    {
+      "type": "closed",
+      "timestamp": 90,
+      "actorId": 1
+    }
+  ]
+};
+  
+const pr100Expected = {
+  startedCodingAt: new Date(10),
+  startedPickupAt: new Date(40),
+  startedReviewAt: new Date(50),
+  mergedAt: new Date(80),
+  reviewed: true,
+  reviewDepth: 1
+};
+
+const pr101 = {
+  "authorExternalId": 3,
+  "timeline": [
+    {
+      "type": "committed",
+      "timestamp": 10,
+      "actorId": null,
+      "data": {
+        "committerEmail": "Bivxr@dontemailme.com",
+        "committerName": "Mr. Siynx",
+        "committedDate": 10
+      }
+    },
+    {
+      "type": "review_requested",
+      "timestamp": 20,
+      "actorId": 3,
+      "data": {
+        "requestedReviewerId": 5,
+        "requestedReviewerName": "Mr. Okmbb"
+      }
+    },
+    {
+      "type": "reviewed",
+      "timestamp": 30,
+      "actorId": 5,
+      "data": {
+        "state": "approved"
+      }
+    },
+    {
+      "type": "merged",
+      "timestamp": 40,
+      "actorId": 5
+    },
+    {
+      "type": "closed",
+      "timestamp": 50,
+      "actorId": 5
+    }
+  ]
+};
+
+const pr101Expected = {
+  startedCodingAt: new Date(10),
+  startedPickupAt: new Date(20),
+  startedReviewAt: new Date(30),
+  mergedAt: new Date(40),
+  reviewed: true,
+  reviewDepth: 1
+};
+
 
 const fixtures = [
   ['pr1', { pr: pr1, expected: pr1Expected }],
   ['pr5', { pr: pr5, expected: pr5Expected }],
   ['pr20', { pr: pr20, expected: pr20Expected }],
   ['pr39', { pr: pr39, expected: pr39Expected }],
+  ['pr73', { pr: pr73, expected: pr73Expected }],
   ['pr74', { pr: pr74, expected: pr74Expected }],
   ['pr83', { pr: pr83, expected: pr83Expected }],
+  ['pr99', { pr: pr99, expected: pr99Expected }],
+  ['pr100', { pr: pr100, expected: pr100Expected }],
+  ['pr101', { pr: pr101, expected: pr101Expected }],
   ['pr143', { pr: pr143, expected: pr143Expected }],
 ] as [string, { pr: typeof pr1 | typeof pr5, expected: typeof pr1Expected | typeof pr5Expected }][]
 
