@@ -478,16 +478,33 @@ export function calculateTimeline(timelineMapKeys: TimelineMapKey[], _timelineMa
   const commitedEvents = timelineMapKeys.filter(key => key.type === 'committed');
   commitedEvents.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
   
-  const firstCommit = commitedEvents[0];
-  const lastCommit = commitedEvents[commitedEvents.length - 1];
+  const firstCommit = commitedEvents[0] || null;
+  const lastCommit = commitedEvents[commitedEvents.length - 1] || null;
 
   const startedCodingAt = firstCommit? firstCommit.timestamp : null;
-  const startedPickupAt = lastCommit? lastCommit.timestamp : null;
   
   const mergedEvents = timelineMapKeys.filter(key => key.type ==='merged');
   mergedEvents.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
 
   const mergedAt = mergedEvents[0]?.timestamp || null;
+
+  const readyForReviewEvents = timelineMapKeys.filter(key=> key.type === 'ready_for_review');
+  readyForReviewEvents.sort((a,b)=>a.timestamp.getTime() - b.timestamp.getTime());
+  const lastReadyForReview = readyForReviewEvents[readyForReviewEvents.length - 1] || null;
+
+  const startedPickupAt = (() => {
+    if (lastCommit === null && lastReadyForReview === null) {
+      return null;
+    }
+    if (lastReadyForReview === null && lastCommit) {
+      return lastCommit.timestamp;
+    }
+    if (lastReadyForReview && lastCommit) {
+      return lastReadyForReview.timestamp > lastCommit.timestamp ? lastReadyForReview.timestamp : lastCommit.timestamp;
+    }
+
+    return null;
+  })();
 
 
   return {
