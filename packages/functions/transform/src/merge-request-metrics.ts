@@ -488,7 +488,7 @@ export function calculateTimeline(timelineMapKeys: TimelineMapKey[], timelineMap
 
   const mergedAt = mergedEvents[0]?.timestamp || null;
 
-  const readyForReviewEvents = timelineMapKeys.filter(key=> key.type === 'ready_for_review');
+  const readyForReviewEvents = timelineMapKeys.filter(key=> key.type === 'ready_for_review' || key.type === 'review_requested');
   readyForReviewEvents.sort((a,b)=>a.timestamp.getTime() - b.timestamp.getTime());
   const lastReadyForReview = readyForReviewEvents[readyForReviewEvents.length - 1] || null;
 
