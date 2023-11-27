@@ -473,7 +473,7 @@ type calcTimelineArgs = {
   authorExternalId: extract.MergeRequest['authorExternalId'],
 }
 
-export function calculateTimeline(timelineMapKeys: TimelineMapKey[], _timelineMap: Map<TimelineMapKey, MergeRequestNoteData | TimelineEventData>, { authorExternalId: _authorExternalId }: calcTimelineArgs) {
+export function calculateTimeline(timelineMapKeys: TimelineMapKey[], timelineMap: Map<TimelineMapKey, MergeRequestNoteData | TimelineEventData>, { authorExternalId }: calcTimelineArgs) {
 
   const commitedEvents = timelineMapKeys.filter(key => key.type === 'committed');
   commitedEvents.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
@@ -506,14 +506,41 @@ export function calculateTimeline(timelineMapKeys: TimelineMapKey[], _timelineMa
     return null;
   })();
 
+  const reviewedEvents = timelineMapKeys.filter(key=> key.type ==='reviewed');
+  let firstReviewedEvent = null;
+  let reviewed = false;
+  let reviewDepth = 0;
+
+  for(const reviewedEvent of reviewedEvents) {
+    const eventData = timelineMap.get(reviewedEvent);
+    if (!eventData) {
+      console.error('reviewed event data not found', reviewedEvent);
+      continue;
+    }
+    const res = extract.ReviewedEventSchema.safeParse((eventData as TimelineEventData).data);
+    if (!res.success) {
+      console.error(res.error);
+      continue;
+    }
+    const isValidState = res.data.state === 'approved' || res.data.state === 'changes_requested' || res.data.state === 'commented';
+    const afterStartedPickupAt = startedPickupAt ? reviewedEvent.timestamp > startedPickupAt : true;
+    const beforeFirstReviewedEvent = firstReviewedEvent? reviewedEvent.timestamp < firstReviewedEvent.timestamp : true;
+    const isAuthorReviewer = (eventData as TimelineEventData).actorId === authorExternalId;
+
+    if (isValidState && afterStartedPickupAt && beforeFirstReviewedEvent && !isAuthorReviewer) {
+      reviewDepth++;
+      reviewed = true;
+      firstReviewedEvent = reviewedEvent;
+    }
+  }
 
   return {
     startedCodingAt,
     startedPickupAt,
-    startedReviewAt: null as Date | null,
+    startedReviewAt: firstReviewedEvent ? firstReviewedEvent.timestamp : null,
     mergedAt,
-    reviewed: false,
-    reviewDepth: 0,
+    reviewed,
+    reviewDepth,
   };
 }
 

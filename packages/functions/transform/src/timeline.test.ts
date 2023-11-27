@@ -913,13 +913,14 @@ describe("timelines", () => {
 
     const authorExternalId = pr.authorExternalId;
     
-    const keys = pr.timeline.map((pr) => ({ type: pr.type, timestamp: new Date(pr.timestamp) }));
-
+    
     const map = new Map();
-
+    
     for (const ev of pr.timeline) {
-      map.set({ type: ev.type, timestamp: new Date(ev.timestamp) }, pr);
+      map.set({ type: ev.type, timestamp: new Date(ev.timestamp) }, ev);
     }
+
+    const keys = [...map.keys()];
 
     const result = calculateTimeline(keys as unknown as TimelineMapKey[], map as Map<TimelineMapKey, MergeRequestNoteData | TimelineEventData>, { authorExternalId });
 
