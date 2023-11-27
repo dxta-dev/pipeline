@@ -1248,6 +1248,74 @@ const pr193Expected = {
   reviewDepth: 1
 };
 
+const pr270 = {
+  "authorExternalId": 1,
+  "timeline": [
+    {
+      "type": "committed",
+      "timestamp": 10,
+      "actorId": null,
+      "data": {
+        "committerEmail": "Lbfvu@dontemailme.com",
+        "committerName": "Mr. Ywdbo",
+        "committedDate": 10
+      }
+    },
+    {
+      "type": "committed",
+      "timestamp": 20,
+      "actorId": null,
+      "data": {
+        "committerEmail": "Lbfvu@dontemailme.com",
+        "committerName": "Mr. Ennxr",
+        "committedDate": 20
+      }
+    },
+    {
+      "type": "committed",
+      "timestamp": 30,
+      "actorId": null,
+      "data": {
+        "committerEmail": "Lbfvu@dontemailme.com",
+        "committerName": "Mr. Mrzuv",
+        "committedDate": 30
+      }
+    },
+    {
+      "type": "merged",
+      "timestamp": 40,
+      "actorId": 1
+    },
+    {
+      "type": "closed",
+      "timestamp": 50,
+      "actorId": 1
+    },
+    {
+      "type": "reviewed",
+      "timestamp": 60,
+      "actorId": 5,
+      "data": {
+        "state": "approved"
+      }
+    },
+    {
+      "type": "commented",
+      "timestamp": 70,
+      "actorId": 3
+    }
+  ]
+};
+
+const pr270Expected = {
+  startedCodingAt: new Date(10),
+  startedPickupAt: new Date(30),
+  startedReviewAt: null,
+  mergedAt: new Date(40),
+  reviewed: false,
+  reviewDepth: 0,
+};
+
 const fixtures = [
   ['pr1', { pr: pr1, expected: pr1Expected }],
   ['pr5', { pr: pr5, expected: pr5Expected }],
@@ -1264,6 +1332,7 @@ const fixtures = [
   ['pr143', { pr: pr143, expected: pr143Expected }],
   ['pr173', { pr: pr173, expected: pr173Expected }],
   ['pr193', { pr: pr193, expected: pr193Expected }],
+  ['pr270', { pr: pr270, expected: pr270Expected }],
   ['pr312', { pr: pr312, expected: pr312Expected }], 
 ] as [string, { pr: typeof pr1 | typeof pr5 | typeof pr143, expected: typeof pr1Expected | typeof pr5Expected | typeof pr143Expected }][]
 
