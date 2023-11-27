@@ -912,33 +912,35 @@ describe("timelines", () => {
   describe.each(fixtures)("%s", (_name, { pr, expected }) => {
 
     const authorExternalId = pr.authorExternalId;
-
-    const keys = pr1.timeline.map((pr) => ({ type: pr.type, timestamp: new Date(pr.timestamp) }));
+    
+    const keys = pr.timeline.map((pr) => ({ type: pr.type, timestamp: new Date(pr.timestamp) }));
 
     const map = new Map();
 
-    for (const pr of pr1.timeline) {
-      map.set({ type: pr.type, timestamp: new Date(pr.timestamp) }, pr);
+    for (const ev of pr.timeline) {
+      map.set({ type: ev.type, timestamp: new Date(ev.timestamp) }, pr);
     }
 
     const result = calculateTimeline(keys as unknown as TimelineMapKey[], map as Map<TimelineMapKey, MergeRequestNoteData | TimelineEventData>, { authorExternalId });
 
     const { startedCodingAt, startedPickupAt, startedReviewAt, mergedAt, reviewed, reviewDepth } = result;
 
+    const getTime = (date: Date | null) => date?.getTime() || null;
+
     test('startedCodingAt', () => {
-      expect(startedCodingAt?.getTime()).toEqual(expected.startedCodingAt?.getTime());
+      expect(getTime(startedCodingAt)).toEqual(getTime(expected.startedCodingAt ));
     });
 
     test('startedPickupAt', () => {
-      expect(startedPickupAt?.getTime()).toEqual(expected.startedPickupAt?.getTime());
+      expect(getTime(startedPickupAt)).toEqual(getTime(expected.startedPickupAt));
     });
 
     test('startedReviewAt', () => {
-      expect(startedReviewAt?.getTime()).toEqual(expected.startedReviewAt?.getTime());
+      expect(getTime(startedReviewAt)).toEqual(getTime(expected.startedReviewAt));
     });
 
     test('mergedAt', () => {
-      expect(mergedAt?.getTime()).toEqual(expected.mergedAt?.getTime());
+      expect(getTime(mergedAt)).toEqual(getTime(expected.mergedAt));
     });
 
     test('reviewed', () => {

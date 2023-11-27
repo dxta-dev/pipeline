@@ -473,16 +473,28 @@ type calcTimelineArgs = {
   authorExternalId: extract.MergeRequest['authorExternalId'],
 }
 
-export function calculateTimeline(_timelineMapKeys: TimelineMapKey[], _timelineMap: Map<TimelineMapKey, MergeRequestNoteData | TimelineEventData>, { authorExternalId: _authorExternalId }: calcTimelineArgs) {
+export function calculateTimeline(timelineMapKeys: TimelineMapKey[], _timelineMap: Map<TimelineMapKey, MergeRequestNoteData | TimelineEventData>, { authorExternalId: _authorExternalId }: calcTimelineArgs) {
 
-
+  const commitedEvents = timelineMapKeys.filter(key => key.type === 'committed');
+  commitedEvents.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
   
+  const firstCommit = commitedEvents[0];
+  const lastCommit = commitedEvents[commitedEvents.length - 1];
+
+  const startedCodingAt = firstCommit? firstCommit.timestamp : null;
+  const startedPickupAt = lastCommit? lastCommit.timestamp : null;
+  
+  const mergedEvents = timelineMapKeys.filter(key => key.type ==='merged');
+  mergedEvents.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+
+  const mergedAt = mergedEvents[0]?.timestamp || null;
+
 
   return {
-    startedCodingAt: null as Date | null,
+    startedCodingAt,
+    startedPickupAt,
     startedReviewAt: null as Date | null,
-    startedPickupAt: null as Date | null,
-    mergedAt: null as Date | null,
+    mergedAt,
     reviewed: false,
     reviewDepth: 0,
   };
