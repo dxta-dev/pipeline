@@ -479,10 +479,10 @@ export function calculateTimeline(timelineMapKeys: TimelineMapKey[], timelineMap
   const commitedEvents = timelineMapKeys.filter(key => key.type === 'committed');
   commitedEvents.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
   
-  const firstCommit = commitedEvents[0] || null;
-  const lastCommit = commitedEvents[commitedEvents.length - 1] || null;
+  const firstCommitEvent = commitedEvents[0] || null;
+  const lastCommitEvent = commitedEvents[commitedEvents.length - 1] || null;
 
-  const startedCodingAt = firstCommit? firstCommit.timestamp : null;
+  const startedCodingAt = firstCommitEvent? firstCommitEvent.timestamp : null;
   
   const mergedEvents = timelineMapKeys.filter(key => key.type ==='merged');
   mergedEvents.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
@@ -494,22 +494,30 @@ export function calculateTimeline(timelineMapKeys: TimelineMapKey[], timelineMap
   const lastReadyForReviewEvent = readyForReviewEvents[readyForReviewEvents.length - 1] || null;
 
   const startedPickupAt = (() => {
-    if (lastCommit === null && lastReadyForReviewEvent === null) {
+    if (lastCommitEvent === null && lastReadyForReviewEvent === null) {
       return null;
     }
-    if (lastReadyForReviewEvent === null && lastCommit) {
-      return lastCommit.timestamp;
+    // problematic code: everything below is problematic
+    if (lastReadyForReviewEvent === null && lastCommitEvent) {
+      const reviewedEventsBeforeLastCommitEvent = timelineMapKeys.filter(key => key.type === 'reviewed' && key.timestamp < lastCommitEvent.timestamp);
+      reviewedEventsBeforeLastCommitEvent.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+      const firstReviewedEventBeforeLastCommitEvent = reviewedEventsBeforeLastCommitEvent[0];
+      if (firstReviewedEventBeforeLastCommitEvent) {
+        return [...commitedEvents].reverse().find(event => event.timestamp < firstReviewedEventBeforeLastCommitEvent.timestamp)?.timestamp || null;
+      }
+
+      return lastCommitEvent.timestamp;
     }
-    if (lastReadyForReviewEvent && lastCommit) {
+    if (lastReadyForReviewEvent && lastCommitEvent) {
       // problematic code: there could be a commit between last commit and lastReadyForReviewEvent
-      const reviewedEventsAfterLastReadyForReviewEvent = timelineMapKeys.filter(key => key.type === 'reviewed' && key.timestamp > lastReadyForReviewEvent.timestamp && key.timestamp < lastCommit.timestamp);
+      const reviewedEventsAfterLastReadyForReviewEvent = timelineMapKeys.filter(key => key.type === 'reviewed' && key.timestamp > lastReadyForReviewEvent.timestamp && key.timestamp < lastCommitEvent.timestamp);
       reviewedEventsAfterLastReadyForReviewEvent.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
       const firstReviewedEventAfterLastReadyForReviewEvent = reviewedEventsAfterLastReadyForReviewEvent[0]
       if (firstReviewedEventAfterLastReadyForReviewEvent) {
         return lastReadyForReviewEvent.timestamp;
       }
 
-      return lastReadyForReviewEvent.timestamp > lastCommit.timestamp ? lastReadyForReviewEvent.timestamp : lastCommit.timestamp;
+      return lastReadyForReviewEvent.timestamp > lastCommitEvent.timestamp ? lastReadyForReviewEvent.timestamp : lastCommitEvent.timestamp;
     }
 
     return null;
