@@ -905,11 +905,11 @@ const fixtures = [
   ['pr100', { pr: pr100, expected: pr100Expected }],
   ['pr101', { pr: pr101, expected: pr101Expected }],
   ['pr143', { pr: pr143, expected: pr143Expected }],
-] as [string, { pr: typeof pr1 | typeof pr5, expected: typeof pr1Expected | typeof pr5Expected }][]
+] as [string, { pr: typeof pr1 | typeof pr5 | typeof pr143, expected: typeof pr1Expected | typeof pr5Expected | typeof pr143Expected }][]
 
 
 describe("timelines", () => {
-  test.each(fixtures)("timeline %p", (_name, { pr, expected }) => {
+  describe.each(fixtures)("%s", (_name, { pr, expected }) => {
 
     const authorExternalId = pr.authorExternalId;
 
@@ -923,6 +923,31 @@ describe("timelines", () => {
 
     const result = calculateTimeline(keys as unknown as TimelineMapKey[], map as Map<TimelineMapKey, MergeRequestNoteData | TimelineEventData>, { authorExternalId });
 
-    expect(result).toBe(expected);
+    const { startedCodingAt, startedPickupAt, startedReviewAt, mergedAt, reviewed, reviewDepth } = result;
+
+    test('startedCodingAt', () => {
+      expect(startedCodingAt?.getTime()).toEqual(expected.startedCodingAt?.getTime());
+    });
+
+    test('startedPickupAt', () => {
+      expect(startedPickupAt?.getTime()).toEqual(expected.startedPickupAt?.getTime());
+    });
+
+    test('startedReviewAt', () => {
+      expect(startedReviewAt?.getTime()).toEqual(expected.startedReviewAt?.getTime());
+    });
+
+    test('mergedAt', () => {
+      expect(mergedAt?.getTime()).toEqual(expected.mergedAt?.getTime());
+    });
+
+    test('reviewed', () => {
+      expect(reviewed).toEqual(expected.reviewed);
+    });
+
+    test('reviewDepth', () => {
+      expect(reviewDepth).toEqual(expected.reviewDepth);
+    });
+
   });
 });

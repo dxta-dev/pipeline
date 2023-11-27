@@ -550,6 +550,7 @@ export function calculateTimeline(timelineMapKeys: TimelineMapKey[], timelineMap
     startedCodingAt,
     startedReviewAt,
     startedPickupAt,
+    mergedAt: new Date(0) as Date | null,
     reviewed: startedReviewAt !== null,
     reviewDepth: reviewEvents.length,
   };
