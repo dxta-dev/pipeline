@@ -553,7 +553,7 @@ const pr143 = {
 const pr143Expected = {
   startedCodingAt: new Date(10),
   startedPickupAt: new Date(160),
-  startedReviewAt: new Date(170),
+  startedReviewAt: new Date(200),
   mergedAt: new Date(270),
   reviewed: true,
   reviewDepth: 5,
