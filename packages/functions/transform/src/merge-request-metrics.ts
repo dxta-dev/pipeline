@@ -416,7 +416,7 @@ async function selectExtractData(db: ExtractDatabase, extractMergeRequestId: num
   })
     .from(mergeRequestNotes)
     .where(eq(mergeRequestNotes.mergeRequestId, extractMergeRequestId))
-    .all() satisfies Omit<MergeRequestNoteData,'type'>[];
+    .all() satisfies Omit<MergeRequestNoteData, 'type'>[];
 
   const timelineEventsData = await db.select({
     type: timelineEvents.type,
@@ -478,27 +478,27 @@ export function calculateTimeline(timelineMapKeys: TimelineMapKey[], timelineMap
 
   const commitedEvents = timelineMapKeys.filter(key => key.type === 'committed');
   commitedEvents.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
-  
+
   const firstCommitEvent = commitedEvents[0] || null;
   const lastCommitEvent = commitedEvents[commitedEvents.length - 1] || null;
 
-  const startedCodingAt = firstCommitEvent? firstCommitEvent.timestamp : null;
-  
-  const mergedEvents = timelineMapKeys.filter(key => key.type ==='merged');
+  const startedCodingAt = firstCommitEvent ? firstCommitEvent.timestamp : null;
+
+  const mergedEvents = timelineMapKeys.filter(key => key.type === 'merged');
   mergedEvents.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
 
   const mergedAt = mergedEvents[0]?.timestamp || null;
 
-  const readyForReviewEvents = timelineMapKeys.filter(key=> key.type === 'ready_for_review' || key.type === 'review_requested');
-  readyForReviewEvents.sort((a,b)=>a.timestamp.getTime() - b.timestamp.getTime());
+  const readyForReviewEvents = timelineMapKeys.filter(key => key.type === 'ready_for_review' || key.type === 'review_requested');
+  readyForReviewEvents.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
   const lastReadyForReviewEvent = readyForReviewEvents[readyForReviewEvents.length - 1] || null;
 
   const startedPickupAt = (() => {
     if (lastCommitEvent === null && lastReadyForReviewEvent === null) {
       return null;
     }
-    // problematic code: everything below is problematic
     if (lastReadyForReviewEvent === null && lastCommitEvent) {
+      // problematic code: everything below is problematic
       const reviewedEventsBeforeLastCommitEvent = timelineMapKeys.filter(key => key.type === 'reviewed' && key.timestamp < lastCommitEvent.timestamp);
       reviewedEventsBeforeLastCommitEvent.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
       const firstReviewedEventBeforeLastCommitEvent = reviewedEventsBeforeLastCommitEvent[0];
@@ -510,13 +510,27 @@ export function calculateTimeline(timelineMapKeys: TimelineMapKey[], timelineMap
     }
     if (lastReadyForReviewEvent && lastCommitEvent) {
       // problematic code: there could be a commit between last commit and lastReadyForReviewEvent
-      const reviewedEventsAfterLastReadyForReviewEvent = timelineMapKeys.filter(key => key.type === 'reviewed' && key.timestamp > lastReadyForReviewEvent.timestamp && key.timestamp < lastCommitEvent.timestamp);
+      const reviewedEventsAfterLastReadyForReviewEvent = timelineMapKeys.filter(
+        key =>
+          key.type === 'reviewed'
+          && key.timestamp > lastReadyForReviewEvent.timestamp
+          && key.timestamp < lastCommitEvent.timestamp
+      );
       reviewedEventsAfterLastReadyForReviewEvent.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
       const firstReviewedEventAfterLastReadyForReviewEvent = reviewedEventsAfterLastReadyForReviewEvent[0]
+
       if (firstReviewedEventAfterLastReadyForReviewEvent) {
+        const temp = [...commitedEvents].reverse().find(
+          event => event.timestamp > lastReadyForReviewEvent.timestamp
+            && event.timestamp < firstReviewedEventAfterLastReadyForReviewEvent.timestamp
+
+        )?.timestamp || null;
+
+        if (temp) {
+          return temp;
+        }
         return lastReadyForReviewEvent.timestamp;
       }
-
       return lastReadyForReviewEvent.timestamp > lastCommitEvent.timestamp ? lastReadyForReviewEvent.timestamp : lastCommitEvent.timestamp;
     }
 
@@ -526,9 +540,9 @@ export function calculateTimeline(timelineMapKeys: TimelineMapKey[], timelineMap
   let firstReviewedEvent = null;
   let reviewed = false;
   let reviewDepth = 0;
-  
+
   const noteEvents = timelineMapKeys.filter(key => key.type === 'note');
-  for(const noteEvent of noteEvents) {
+  for (const noteEvent of noteEvents) {
     const eventData = timelineMap.get(noteEvent) as MergeRequestNoteData | undefined;
     if (!eventData) {
       console.error('note event data not found', noteEvent);
@@ -536,15 +550,15 @@ export function calculateTimeline(timelineMapKeys: TimelineMapKey[], timelineMap
     }
 
     const afterStartedPickupAt = startedPickupAt ? noteEvent.timestamp > startedPickupAt : true;
-    const beforeMergedEvent = mergedAt? noteEvent.timestamp < mergedAt : true;
+    const beforeMergedEvent = mergedAt ? noteEvent.timestamp < mergedAt : true;
     const isAuthorReviewer = eventData.authorExternalId === authorExternalId;
     if (afterStartedPickupAt && beforeMergedEvent && !isAuthorReviewer) {
       reviewDepth++;
     }
   }
-  
+
   const reviewedEvents = timelineMapKeys.filter(key => key.type === 'reviewed');
-  for(const reviewedEvent of reviewedEvents) {
+  for (const reviewedEvent of reviewedEvents) {
     const eventData = timelineMap.get(reviewedEvent);
     if (!eventData) {
       console.error('reviewed event data not found', reviewedEvent);
@@ -557,8 +571,8 @@ export function calculateTimeline(timelineMapKeys: TimelineMapKey[], timelineMap
     }
     const isValidState = res.data.state === 'approved' || res.data.state === 'changes_requested' || res.data.state === 'commented';
     const afterStartedPickupAt = startedPickupAt ? reviewedEvent.timestamp > startedPickupAt : true;
-    const beforeFirstReviewedEvent = firstReviewedEvent? reviewedEvent.timestamp < firstReviewedEvent.timestamp : true;
-    const beforeMergedEvent = mergedAt? reviewedEvent.timestamp < mergedAt : true;
+    const beforeFirstReviewedEvent = firstReviewedEvent ? reviewedEvent.timestamp < firstReviewedEvent.timestamp : true;
+    const beforeMergedEvent = mergedAt ? reviewedEvent.timestamp < mergedAt : true;
     const isAuthorReviewer = (eventData as TimelineEventData).actorId === authorExternalId;
 
     if (isValidState && afterStartedPickupAt && beforeMergedEvent && !isAuthorReviewer) {
