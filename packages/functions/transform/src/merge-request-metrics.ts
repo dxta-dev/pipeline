@@ -557,7 +557,7 @@ export function calculateTimeline(timelineMapKeys: TimelineMapKey[], timelineMap
     }
   }
 
-  const reviewedEvents = timelineMapKeys.filter(key => key.type === 'reviewed');
+  const reviewedEvents = timelineMapKeys.filter(key => key.type === 'reviewed' && key.timestamp < (mergedAt || new Date()));
   for (const reviewedEvent of reviewedEvents) {
     const eventData = timelineMap.get(reviewedEvent);
     if (!eventData) {
