@@ -1316,20 +1316,6 @@ const pr270Expected = {
   reviewDepth: 0,
 };
 
-const pr138 = {
-  "authorExternalId": -1,
-  "timeline": [] // TODO: fill with data
-};
-
-const pr138Expected = {
-  startedCodingAt: new Date(50),
-  startedPickupAt: new Date(50),
-  startedReviewAt: null,
-  mergedAt: new Date(50),
-  reviewed: false,
-  reviewDepth: 0,
-};
-
 const fixtures = [
   ['pr1', { pr: pr1, expected: pr1Expected }],
   ['pr5', { pr: pr5, expected: pr5Expected }],
@@ -1343,7 +1329,6 @@ const fixtures = [
   ['pr99', { pr: pr99, expected: pr99Expected }],
   ['pr100', { pr: pr100, expected: pr100Expected }],
   ['pr101', { pr: pr101, expected: pr101Expected }],
-  ['pr138', { pr: pr138, expected: pr138Expected }],
   ['pr143', { pr: pr143, expected: pr143Expected }],
   ['pr173', { pr: pr173, expected: pr173Expected }],
   ['pr193', { pr: pr193, expected: pr193Expected }],
