@@ -294,8 +294,6 @@ async function getUserIds(timelineEvents: TimelineEventData[], extractDb: Extrac
   const committers: number[] = [];
   let mergedBy;
 
-  console.log(extractMergeRequestId,'timelineEvents', timelineEvents);
-
   for (const timelineEvent of timelineEvents) {
     if (timelineEvent.type === 'reviewed' && timelineEvent.actorId) {
       const reviewer = await transformDb.select({
@@ -325,7 +323,6 @@ async function getUserIds(timelineEvents: TimelineEventData[], extractDb: Extrac
         eq(extract.members.username, data.committerName),
         eq(extract.members.name, data.committerName))
       ).get();
-      console.log(extractMergeRequestId, 'FINALE_TEST_IDS', data.committerName, extractUserExternalId);
       if (extractUserExternalId) {
         const committer = await transformDb.select({
           id: transform.forgeUsers.id,
