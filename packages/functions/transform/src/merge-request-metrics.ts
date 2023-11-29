@@ -288,6 +288,13 @@ function addUnique(newElement: number, currentArray: number[]) {
   }
 }
 
+async function getId(actorId: number, db: TransformDatabase) {
+  return await db.select({
+    id: transform.forgeUsers.id,
+  }).from(transform.forgeUsers)
+  .where(eq(transform.forgeUsers.externalId, actorId)).get();
+}
+
 async function getUserIds(timelineEvents: TimelineEventData[], extractDb: ExtractDatabase, transformDb: TransformDatabase) {
   const reviewers: number[] = [];
   const approvers: number[] = [];
@@ -295,48 +302,43 @@ async function getUserIds(timelineEvents: TimelineEventData[], extractDb: Extrac
   let mergedBy;
 
   for (const timelineEvent of timelineEvents) {
-    if (timelineEvent.type === 'reviewed' && timelineEvent.actorId) {
-      const reviewer = await transformDb.select({
-        id: transform.forgeUsers.id,
-      }).from(transform.forgeUsers)
-      .where(eq(transform.forgeUsers.externalId, timelineEvent.actorId)).get();
-      if (reviewer) {
-        addUnique(reviewer.id, reviewers);
-      }
-      if (timelineEvent.data) {
-        if ((timelineEvent.data as string).includes('approved')) {
-          const approver = await transformDb.select({
-            id: transform.forgeUsers.id,
-          }).from(transform.forgeUsers)
-          .where(eq(transform.forgeUsers.externalId, timelineEvent.actorId)).get();
-          if (approver) {
-            addUnique(approver.id, approvers);
+    switch (timelineEvent.type) {
+      case 'reviewed':
+        if (!timelineEvent.actorId) {
+          break;
+        }
+        const reviewer = await getId(timelineEvent.actorId, transformDb);
+        if (reviewer) {
+          addUnique(reviewer.id, reviewers);
+          if (timelineEvent.data && (timelineEvent.data as string).includes('approved')) {
+            addUnique(reviewer?.id, approvers);
           }
         }
-      }
-    } else if (timelineEvent.type === 'committed') {
-      const data = JSON.parse(timelineEvent.data as string) as { committerName: string, committerEmail: string, committedDate: Date };
-      const extractUserExternalId = await extractDb.select({
-        id: extract.members.externalId,
-      }).from(extract.members)
-      .where(or(
-        eq(extract.members.username, data.committerName),
-        eq(extract.members.name, data.committerName))
-      ).get();
-      if (extractUserExternalId) {
-        const committer = await transformDb.select({
-          id: transform.forgeUsers.id,
-        }).from(transform.forgeUsers)
-        .where(eq(transform.forgeUsers.externalId, extractUserExternalId?.id)).get();
-        if (committer) {
-          addUnique(committer.id, committers);
+        break;
+      case 'committed':
+        const data = JSON.parse(timelineEvent.data as string) as { committerName: string, committerEmail: string, committedDate: Date };
+        const extractUserExternalId = await extractDb.select({
+          id: extract.members.externalId,
+        }).from(extract.members)
+        .where(or(
+          eq(extract.members.username, data.committerName),
+          eq(extract.members.name, data.committerName))
+        ).get();
+        if (extractUserExternalId) {
+          const committer = await getId(extractUserExternalId.id, transformDb);
+          if (committer) {
+            addUnique(committer.id, committers);
+          }
         }
-      }
-    } else if (timelineEvent.type === 'merged' && timelineEvent.actorId) {
-      mergedBy = await transformDb.select({
-        id: transform.forgeUsers.id,
-      }).from(transform.forgeUsers)
-      .where(eq(transform.forgeUsers.externalId, timelineEvent.actorId)).get();
+        break;
+      case 'merged':
+        if (!timelineEvent.actorId) {
+          break;
+        }
+        mergedBy = await getId(timelineEvent.actorId, transformDb);
+        break;
+      default:
+        break;
     }
   }
 
