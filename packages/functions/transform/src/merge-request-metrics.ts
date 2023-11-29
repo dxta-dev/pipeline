@@ -472,6 +472,63 @@ function setupTimeline(timelineEvents: TimelineEventData[], notes: MergeRequestN
 
 type calcTimelineArgs = {
   authorExternalId: extract.MergeRequest['authorExternalId'],
+  createdAt: extract.MergeRequest['createdAt'] | null,
+}
+
+
+function getStartedCodingAt(timelineMapKeys: TimelineMapKey[], createdAt: Date | null) {
+  const firstCommitEvent = timelineMapKeys.find(key => key.type === 'committed');
+
+  if (!createdAt) {
+    return firstCommitEvent ? firstCommitEvent.timestamp : null;
+  }
+
+  if (firstCommitEvent) {
+    return firstCommitEvent.timestamp < createdAt ? firstCommitEvent.timestamp : createdAt;
+  }
+
+  return createdAt;
+}
+
+function getMergedAt(timelineMapKeys: TimelineMapKey[]) {
+  const firstMergedEvent = timelineMapKeys.find(key => key.type === 'merged');
+
+  if (firstMergedEvent) {
+    return firstMergedEvent.timestamp;
+  }
+
+  return null;
+}
+
+export function calculateTimelineNew(timelineMapKeys: TimelineMapKey[], timelineMap: Map<TimelineMapKey, MergeRequestNoteData | TimelineEventData>, { authorExternalId, createdAt }: calcTimelineArgs) {
+
+  timelineMapKeys.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+
+  const startedCodingAt = getStartedCodingAt(timelineMapKeys, createdAt);
+  const mergedAt = getMergedAt(timelineMapKeys);
+
+  const events = timelineMapKeys.filter(key => key.timestamp > (startedCodingAt || new Date(0)) && key.timestamp < (mergedAt || new Date()));
+
+  // ready_for_review -> ready_for_review, review_requested
+  // reviewd -> reviewed, commented, note
+
+  // 1. ['ready_for_review', 'reviewed']
+  // 3. ['reviewed', 'ready_for_review', 'reviewed']
+  // 4. ['reviewed', 'ready_for_review']
+  // 5. ['converted_to_draft', 'reviewed']
+  // 6. ['ready_for_review', 'converted_to_draft', 'reviewed'] -> 5.
+  // 7. ['converted_to_draft', 'ready_for_review', 'reviewed']
+  // 8. ['ready_for_review', 'converted_to_draft', 'ready_for_review', 'reviewed'] -> 7.
+
+
+  return {
+    startedCodingAt,
+    startedPickupAt: new Date(0) as Date | null,
+    startedReviewAt: new Date(0) as Date | null,
+    mergedAt,
+    reviewed: false,
+    reviewDepth: 0,
+  };
 }
 
 export function calculateTimeline(timelineMapKeys: TimelineMapKey[], timelineMap: Map<TimelineMapKey, MergeRequestNoteData | TimelineEventData>, { authorExternalId }: calcTimelineArgs) {
@@ -606,6 +663,7 @@ function runTimeline(mergeRequestData: MergeRequestData, timelineEvents: Timelin
     timelineMapKeys,
     timelineMap,
     {
+      createdAt: mergeRequestData.openedAt,
       authorExternalId: mergeRequestData.authorExternalId,
     });
 
