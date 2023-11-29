@@ -4,7 +4,8 @@ CREATE TABLE `git_identities` (
 	`email` text NOT NULL,
 	`name` text NOT NULL,
 	`__created_at` integer DEFAULT (strftime('%s', 'now')),
-	`__updated_at` integer DEFAULT (strftime('%s', 'now'))
+	`__updated_at` integer DEFAULT (strftime('%s', 'now')),
+	FOREIGN KEY (`repository_id`) REFERENCES `repositories`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
 CREATE TABLE `members` (
@@ -33,7 +34,8 @@ CREATE TABLE `merge_request_commits` (
 	`committer_name` text,
 	`committer_email` text,
 	`__created_at` integer DEFAULT (strftime('%s', 'now')),
-	`__updated_at` integer DEFAULT (strftime('%s', 'now'))
+	`__updated_at` integer DEFAULT (strftime('%s', 'now')),
+	FOREIGN KEY (`merge_request_id`) REFERENCES `merge_requests`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
 CREATE TABLE `merge_request_diffs` (
@@ -48,7 +50,8 @@ CREATE TABLE `merge_request_diffs` (
 	`deleted_file` integer NOT NULL,
 	`diff` text NOT NULL,
 	`__created_at` integer DEFAULT (strftime('%s', 'now')),
-	`__updated_at` integer DEFAULT (strftime('%s', 'now'))
+	`__updated_at` integer DEFAULT (strftime('%s', 'now')),
+	FOREIGN KEY (`merge_request_id`) REFERENCES `merge_requests`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
 CREATE TABLE `merge_request_notes` (
@@ -62,7 +65,8 @@ CREATE TABLE `merge_request_notes` (
 	`body` text NOT NULL,
 	`system` integer NOT NULL,
 	`__created_at` integer DEFAULT (strftime('%s', 'now')),
-	`__updated_at` integer DEFAULT (strftime('%s', 'now'))
+	`__updated_at` integer DEFAULT (strftime('%s', 'now')),
+	FOREIGN KEY (`merge_request_id`) REFERENCES `merge_requests`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
 CREATE TABLE `merge_requests` (
@@ -83,7 +87,8 @@ CREATE TABLE `merge_requests` (
 	`target_branch` text,
 	`source_branch` text,
 	`__created_at` integer DEFAULT (strftime('%s', 'now')),
-	`__updated_at` integer DEFAULT (strftime('%s', 'now'))
+	`__updated_at` integer DEFAULT (strftime('%s', 'now')),
+	FOREIGN KEY (`repository_id`) REFERENCES `repositories`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
 CREATE TABLE `namespaces` (
@@ -98,10 +103,12 @@ CREATE TABLE `namespaces` (
 CREATE TABLE `repositories` (
 	`id` integer PRIMARY KEY NOT NULL,
 	`external_id` integer NOT NULL,
+	`namespace_id` integer NOT NULL,
 	`forge_type` integer NOT NULL,
 	`name` text NOT NULL,
 	`__created_at` integer DEFAULT (strftime('%s', 'now')),
-	`__updated_at` integer DEFAULT (strftime('%s', 'now'))
+	`__updated_at` integer DEFAULT (strftime('%s', 'now')),
+	FOREIGN KEY (`namespace_id`) REFERENCES `namespaces`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
 CREATE TABLE `repositories_to_members` (
@@ -109,7 +116,9 @@ CREATE TABLE `repositories_to_members` (
 	`member_id` integer NOT NULL,
 	`__created_at` integer DEFAULT (strftime('%s', 'now')),
 	`__updated_at` integer DEFAULT (strftime('%s', 'now')),
-	PRIMARY KEY(`member_id`, `repository_id`)
+	PRIMARY KEY(`member_id`, `repository_id`),
+	FOREIGN KEY (`repository_id`) REFERENCES `repositories`(`id`) ON UPDATE no action ON DELETE no action,
+	FOREIGN KEY (`member_id`) REFERENCES `members`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
 CREATE TABLE `timeline_events` (
@@ -123,7 +132,8 @@ CREATE TABLE `timeline_events` (
 	`actor_email` text,
 	`data` text,
 	`__created_at` integer DEFAULT (strftime('%s', 'now')),
-	`__updated_at` integer DEFAULT (strftime('%s', 'now'))
+	`__updated_at` integer DEFAULT (strftime('%s', 'now')),
+	FOREIGN KEY (`merge_request_id`) REFERENCES `merge_requests`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `repository_id_email_name_idx` ON `git_identities` (`repository_id`,`email`,`name`);--> statement-breakpoint

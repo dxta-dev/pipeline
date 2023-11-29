@@ -201,5 +201,9 @@ export function ExtractStack({ stack }: StackContext) {
 
   return {
     ExtractBus: bus,
+    EXTRACT_DATABASE_URL,
+    EXTRACT_DATABASE_AUTH_TOKEN,
+    CRAWL_DATABASE_URL,
+    CRAWL_DATABASE_AUTH_TOKEN,
   };
 }

@@ -50,6 +50,7 @@ const context: Context<GetMergeRequestNotesSourceControl, GetMergeRequestNotesEn
 
 
 export const mergeRequestNoteSenderHandler = createMessageHandler({
+  queueId: 'ExtractQueue',
   kind: MessageKind.MergeRequestNote,
   metadataShape: metadataSchema.shape,
   contentShape: z.object({

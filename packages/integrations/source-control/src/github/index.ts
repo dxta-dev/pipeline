@@ -110,7 +110,7 @@ export class GitHubSourceControl implements SourceControl {
 
   }
 
-  async fetchRepository(externalRepositoryId: number, namespaceName: string, repositoryName: string): Promise<{ repository: NewRepository; namespace: NewNamespace }> {
+  async fetchRepository(externalRepositoryId: number, namespaceName: string, repositoryName: string): Promise<{ repository: Omit<NewRepository, "namespaceId">, namespace: NewNamespace }> {
     const result = await this.api.repos.get({
       owner: namespaceName,
       repo: repositoryName
@@ -121,12 +121,12 @@ export class GitHubSourceControl implements SourceControl {
         externalId: result.data.id,
         forgeType: 'github',
         name: result.data.name,
-      },
+      } satisfies Omit<NewRepository, "namespaceId">,
       namespace: {
         externalId: result.data.owner.id,
         forgeType: 'github',
         name: result.data.owner.login
-      }
+      } satisfies NewNamespace,
     }
   }
 

@@ -19,6 +19,7 @@ import { insertEvent } from "@acme/crawl-functions";
 import { events } from "@acme/crawl-schema";
 
 export const memberSenderHandler = createMessageHandler({
+  queueId: 'ExtractQueue',
   kind: MessageKind.Member,
   metadataShape: metadataSchema.shape,
   contentShape: z.object({

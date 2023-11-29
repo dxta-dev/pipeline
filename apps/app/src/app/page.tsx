@@ -2,6 +2,7 @@ import { UserButton, OrganizationSwitcher } from "@clerk/nextjs";
 import { MainNav } from "~/components/ui/main-nav";
 import { GenerateToken } from "~/components/generate-token";
 import { ExtractStartForm } from "~/components/extract-start-form";
+import { TransformStartForm } from "~/components/transform-start-form";
 
 export default function Page() {
   return (
@@ -19,6 +20,7 @@ export default function Page() {
       </div>
       <GenerateToken />
       <ExtractStartForm/>
+      <TransformStartForm/>
     </>
   );
 }
