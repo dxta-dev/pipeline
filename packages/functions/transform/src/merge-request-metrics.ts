@@ -650,7 +650,7 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
 
   const timeline = runTimeline(extractData.mergeRequest, extractData.timelineEvents, extractData.notes);
 
-  const users = await getUserIds(extractData.timelineEvents, ctx.extractDatabase, ctx.transformDatabase, extractMergeRequestId);
+  const users = await getUserIds(extractData.timelineEvents, ctx.extractDatabase, ctx.transformDatabase);
 
   const {
     dateId: nullDateId,
