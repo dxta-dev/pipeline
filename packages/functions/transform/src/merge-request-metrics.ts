@@ -288,7 +288,7 @@ function addUnique(newElement: number, currentArray: number[]) {
   }
 }
 
-async function getUserIds(timelineEvents: TimelineEventData[], extractDb: ExtractDatabase, transformDb: TransformDatabase, extractMergeRequestId: number) {
+async function getUserIds(timelineEvents: TimelineEventData[], extractDb: ExtractDatabase, transformDb: TransformDatabase) {
   const reviewers: number[] = [];
   const approvers: number[] = [];
   const committers: number[] = [];
