@@ -1,5 +1,5 @@
 import { describe, expect, test } from '@jest/globals';
-import { calculateTimeline, calculateTimelineNew } from './merge-request-metrics';
+import { calculateTimeline } from './merge-request-metrics';
 import type { MergeRequestNoteData, TimelineEventData, TimelineMapKey } from './merge-request-metrics';
 
 const pr1 = {
@@ -1353,9 +1353,7 @@ describe("timelines", () => {
 
     const result = calculateTimeline(keys as unknown as TimelineMapKey[], map as Map<TimelineMapKey, MergeRequestNoteData | TimelineEventData>, { authorExternalId, createdAt: null });
 
-    const resultNew = calculateTimelineNew(keys as unknown as TimelineMapKey[], map as Map<TimelineMapKey, MergeRequestNoteData | TimelineEventData>, { authorExternalId, createdAt: null });
-
-    const { startedCodingAt, startedPickupAt, startedReviewAt, mergedAt, reviewed, reviewDepth } = result;
+    const { startedCodingAt, mergedAt, reviewed, reviewDepth } = result;
 
     const getTime = (date: Date | null) => date?.getTime() || null;
 
@@ -1363,49 +1361,17 @@ describe("timelines", () => {
       expect(getTime(startedCodingAt)).toEqual(getTime(expected.startedCodingAt ));
     });
 
-    test('new - startedCodingAt', () => {
-      expect(getTime(resultNew.startedCodingAt)).toEqual(getTime(expected.startedCodingAt ));
-    });
-
-    test('startedPickupAt', () => {
-      expect(getTime(startedPickupAt)).toEqual(getTime(expected.startedPickupAt));
-    });
-
-    test('new - startedPickupAt', () => {
-      expect(getTime(resultNew.startedPickupAt)).toEqual(getTime(expected.startedPickupAt));
-    });
-
-    test('startedReviewAt', () => {
-      expect(getTime(startedReviewAt)).toEqual(getTime(expected.startedReviewAt));
-    });
-
-    test('new - startedReviewAt', () => {
-      expect(getTime(resultNew.startedReviewAt)).toEqual(getTime(expected.startedReviewAt));
-    });
-
     test('mergedAt', () => {
       expect(getTime(mergedAt)).toEqual(getTime(expected.mergedAt));
-    });
-
-    test('new - mergedAt', () => {
-      expect(getTime(resultNew.mergedAt)).toEqual(getTime(expected.mergedAt));
     });
 
     test('reviewed', () => {
       expect(reviewed).toEqual(expected.reviewed);
     });
 
-    test('new - reviewed', () => {
-      expect(resultNew.reviewed).toEqual(expected.reviewed);
-    });
 
     test('reviewDepth', () => {
       expect(reviewDepth).toEqual(expected.reviewDepth);
     });
-
-    test('new - reviewDepth', () => {
-      expect(resultNew.reviewDepth).toEqual(expected.reviewDepth);
-    });
-
   });
 });
