@@ -310,13 +310,13 @@ async function getUserIds(timelineEvents: TimelineEventData[], extractDb: Extrac
         const reviewer = await getId(timelineEvent.actorId, transformDb);
         if (reviewer) {
           addUnique(reviewer.id, reviewers);
-          if (timelineEvent.data && (timelineEvent.data as string).includes('approved')) {
+          if (timelineEvent.data && ((timelineEvent.data as extract.ReviewedEvent).state === 'approved')) {
             addUnique(reviewer?.id, approvers);
           }
         }
         break;
       case 'committed':
-        const data = JSON.parse(timelineEvent.data as string) as { committerName: string, committerEmail: string, committedDate: Date };
+        const data = timelineEvent.data as extract.CommittedEvent;
         const extractUserExternalId = await extractDb.select({
           id: extract.members.externalId,
         }).from(extract.members)
@@ -543,7 +543,6 @@ type calcTimelineArgs = {
 }
 
 export function calculateTimeline(timelineMapKeys: TimelineMapKey[], timelineMap: Map<TimelineMapKey, MergeRequestNoteData | TimelineEventData>, { authorExternalId }: calcTimelineArgs) {
-
   const commitedEvents = timelineMapKeys.filter(key => key.type === 'committed');
   commitedEvents.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
 
@@ -678,7 +677,9 @@ function runTimeline(mergeRequestData: MergeRequestData, timelineEvents: Timelin
     });
 
   // TODO: can this be optimized with the map ?
-  const approved = timelineEvents.find(ev => ev.type === 'reviewed' && (JSON.parse(ev.data as string) as extract.ReviewedEvent).state === 'approved') !== undefined;
+  console.log('timelineEvents', timelineEvents);
+  
+  const approved = timelineEvents.find(ev => ev.type === 'reviewed' && (ev.data as extract.ReviewedEvent).state === 'approved') !== undefined;
 
   return {
     startedCodingAt,
