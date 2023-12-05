@@ -282,6 +282,74 @@ type MapUsersToJunksArgs = {
   reviewers: transform.ForgeUser['id'][]
 }
 
+function addUnique(newElement: number, currentArray: number[]) {
+  if (!currentArray.includes(newElement)) {
+    currentArray.push(newElement);
+  }
+}
+
+async function getId(actorId: number, db: TransformDatabase) {
+  return await db.select({
+    id: transform.forgeUsers.id,
+  }).from(transform.forgeUsers)
+  .where(eq(transform.forgeUsers.externalId, actorId)).get();
+}
+
+async function getUserIds(timelineEvents: TimelineEventData[], extractDb: ExtractDatabase, transformDb: TransformDatabase) {
+  const reviewers: number[] = [];
+  const approvers: number[] = [];
+  const committers: number[] = [];
+  let mergedBy;
+
+  for (const timelineEvent of timelineEvents) {
+    switch (timelineEvent.type) {
+      case 'reviewed':
+        if (!timelineEvent.actorId) {
+          break;
+        }
+        const reviewer = await getId(timelineEvent.actorId, transformDb);
+        if (reviewer) {
+          addUnique(reviewer.id, reviewers);
+          if (timelineEvent.data && ((timelineEvent.data as extract.ReviewedEvent).state === 'approved')) {
+            addUnique(reviewer?.id, approvers);
+          }
+        }
+        break;
+      case 'committed':
+        const data = timelineEvent.data as extract.CommittedEvent;
+        const extractUserExternalId = await extractDb.select({
+          id: extract.members.externalId,
+        }).from(extract.members)
+        .where(or(
+          eq(extract.members.username, data.committerName),
+          eq(extract.members.name, data.committerName))
+        ).get();
+        if (extractUserExternalId) {
+          const committer = await getId(extractUserExternalId.id, transformDb);
+          if (committer) {
+            addUnique(committer.id, committers);
+          }
+        }
+        break;
+      case 'merged':
+        if (!timelineEvent.actorId) {
+          break;
+        }
+        mergedBy = await getId(timelineEvent.actorId, transformDb);
+        break;
+      default:
+        break;
+    }
+  }
+
+  return {
+    mergedBy: mergedBy?.id,
+    approvers,
+    committers,
+    reviewers,
+  };
+}
+
 function mapUsersToJunk({ author, mergedBy, approvers, committers, reviewers }: MapUsersToJunksArgs, nullForgeUserId: number) {
   return {
     author: author || nullForgeUserId,
@@ -475,12 +543,12 @@ type calcTimelineArgs = {
 }
 
 export function calculateTimeline(timelineMapKeys: TimelineMapKey[], timelineMap: Map<TimelineMapKey, MergeRequestNoteData | TimelineEventData>, { authorExternalId }: calcTimelineArgs) {
+  
+  const committedEvents = timelineMapKeys.filter(key => key.type === 'committed');
+  committedEvents.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
 
-  const commitedEvents = timelineMapKeys.filter(key => key.type === 'committed');
-  commitedEvents.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
-
-  const firstCommitEvent = commitedEvents[0] || null;
-  const lastCommitEvent = commitedEvents[commitedEvents.length - 1] || null;
+  const firstCommitEvent = committedEvents[0] || null;
+  const lastCommitEvent = committedEvents[committedEvents.length - 1] || null;
 
   const startedCodingAt = firstCommitEvent ? firstCommitEvent.timestamp : null;
 
@@ -503,7 +571,7 @@ export function calculateTimeline(timelineMapKeys: TimelineMapKey[], timelineMap
       reviewedEventsBeforeLastCommitEvent.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
       const firstReviewedEventBeforeLastCommitEvent = reviewedEventsBeforeLastCommitEvent[0];
       if (firstReviewedEventBeforeLastCommitEvent) {
-        return [...commitedEvents].reverse().find(event => event.timestamp < firstReviewedEventBeforeLastCommitEvent.timestamp)?.timestamp || null;
+        return [...committedEvents].reverse().find(event => event.timestamp < firstReviewedEventBeforeLastCommitEvent.timestamp)?.timestamp || null;
       }
 
       return lastCommitEvent.timestamp;
@@ -520,7 +588,7 @@ export function calculateTimeline(timelineMapKeys: TimelineMapKey[], timelineMap
       const firstReviewedEventAfterLastReadyForReviewEvent = reviewedEventsAfterLastReadyForReviewEvent[0]
 
       if (firstReviewedEventAfterLastReadyForReviewEvent) {
-        const temp = [...commitedEvents].reverse().find(
+        const temp = [...committedEvents].reverse().find(
           event => event.timestamp > lastReadyForReviewEvent.timestamp
             && event.timestamp < firstReviewedEventAfterLastReadyForReviewEvent.timestamp
 
@@ -610,7 +678,7 @@ function runTimeline(mergeRequestData: MergeRequestData, timelineEvents: Timelin
     });
 
   // TODO: can this be optimized with the map ?
-  const approved = timelineEvents.find(ev => ev.type === 'reviewed' && (JSON.parse(ev.data as string) as extract.ReviewedEvent).state === 'approved') !== undefined;
+  const approved = timelineEvents.find(ev => ev.type === 'reviewed' && (ev.data as extract.ReviewedEvent).state === 'approved') !== undefined;
 
   return {
     startedCodingAt,
@@ -643,6 +711,8 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
 
   const timeline = runTimeline(extractData.mergeRequest, extractData.timelineEvents, extractData.notes);
 
+  const users = await getUserIds(extractData.timelineEvents, ctx.extractDatabase, ctx.transformDatabase);
+
   const {
     dateId: nullDateId,
     userId: nullUserId,
@@ -672,10 +742,10 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
       eq(transform.forgeUsers.externalId, extractData.mergeRequest.authorExternalId || 0),
       eq(transform.forgeUsers.forgeType, extractData.repository.forgeType),
     )).get())?.id || null, // TODO: ???
-    mergedBy: null,
-    approvers: [],
-    committers: [],
-    reviewers: [],
+    mergedBy: users.mergedBy,
+    approvers: users.approvers,
+    committers: users.committers,
+    reviewers: users.reviewers,
   }, nullUserId);
 
   const { id: transformRepositoryId } = await upsertRepository(ctx.transformDatabase, extractData.repository).get();
