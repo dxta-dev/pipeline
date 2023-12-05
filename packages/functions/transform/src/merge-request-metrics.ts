@@ -544,21 +544,19 @@ type calcTimelineArgs = {
 }
 
 
-function _getStartedCodingAt(timelineMapKeys: TimelineMapKey[], createdAt: Date | null) {
+function getStartedCodingAt(timelineMapKeys: TimelineMapKey[], createdAt: Date | null) {
   const firstCommitEvent = timelineMapKeys.find(key => key.type === 'committed');
 
+  if (!firstCommitEvent) return null;
+
   if (!createdAt) {
-    return firstCommitEvent ? firstCommitEvent.timestamp : null;
+    return firstCommitEvent.timestamp;
   }
 
-  if (firstCommitEvent) {
-    return firstCommitEvent.timestamp < createdAt ? firstCommitEvent.timestamp : createdAt;
-  }
-
-  return createdAt;
+  return firstCommitEvent.timestamp < createdAt ? firstCommitEvent.timestamp : createdAt;
 }
 
-function _getMergedAt(timelineMapKeys: TimelineMapKey[]) {
+function getMergedAt(timelineMapKeys: TimelineMapKey[]) {
   const firstMergedEvent = timelineMapKeys.find(key => key.type === 'merged');
 
   if (firstMergedEvent) {
@@ -568,20 +566,19 @@ function _getMergedAt(timelineMapKeys: TimelineMapKey[]) {
   return null;
 }
 
-export function calculateTimeline(timelineMapKeys: TimelineMapKey[], timelineMap: Map<TimelineMapKey, MergeRequestNoteData | TimelineEventData>, { authorExternalId }: calcTimelineArgs) {
+export function calculateTimeline(timelineMapKeys: TimelineMapKey[], timelineMap: Map<TimelineMapKey, MergeRequestNoteData | TimelineEventData>, { authorExternalId, createdAt }: calcTimelineArgs) {
   
   const committedEvents = timelineMapKeys.filter(key => key.type === 'committed');
   committedEvents.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
 
-  const firstCommitEvent = committedEvents[0] || null;
   const lastCommitEvent = committedEvents[committedEvents.length - 1] || null;
 
-  const startedCodingAt = firstCommitEvent ? firstCommitEvent.timestamp : null;
+  const startedCodingAt = getStartedCodingAt(committedEvents, createdAt);
 
   const mergedEvents = timelineMapKeys.filter(key => key.type === 'merged');
   mergedEvents.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
 
-  const mergedAt = mergedEvents[0]?.timestamp || null;
+  const mergedAt = getMergedAt(mergedEvents);
 
   const readyForReviewEvents = timelineMapKeys.filter(key => key.type === 'ready_for_review' || key.type === 'review_requested');
   readyForReviewEvents.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());

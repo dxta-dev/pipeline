@@ -1368,7 +1368,7 @@ describe("timelines", () => {
 
     const keys = [...map.keys()];
 
-    const result = calculateTimeline(keys as unknown as TimelineMapKey[], map as Map<TimelineMapKey, MergeRequestNoteData | TimelineEventData>, { authorExternalId, createdAt: null });
+    const result = calculateTimeline(keys as unknown as TimelineMapKey[], map as Map<TimelineMapKey, MergeRequestNoteData | TimelineEventData>, { authorExternalId, createdAt: new Date(pr.openedAt) });
 
     const { startedCodingAt, mergedAt, reviewed, reviewDepth } = result;
 
