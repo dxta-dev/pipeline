@@ -543,11 +543,12 @@ type calcTimelineArgs = {
 }
 
 export function calculateTimeline(timelineMapKeys: TimelineMapKey[], timelineMap: Map<TimelineMapKey, MergeRequestNoteData | TimelineEventData>, { authorExternalId }: calcTimelineArgs) {
-  const commitedEvents = timelineMapKeys.filter(key => key.type === 'committed');
-  commitedEvents.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+  
+  const committedEvents = timelineMapKeys.filter(key => key.type === 'committed');
+  committedEvents.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
 
-  const firstCommitEvent = commitedEvents[0] || null;
-  const lastCommitEvent = commitedEvents[commitedEvents.length - 1] || null;
+  const firstCommitEvent = committedEvents[0] || null;
+  const lastCommitEvent = committedEvents[committedEvents.length - 1] || null;
 
   const startedCodingAt = firstCommitEvent ? firstCommitEvent.timestamp : null;
 
@@ -570,7 +571,7 @@ export function calculateTimeline(timelineMapKeys: TimelineMapKey[], timelineMap
       reviewedEventsBeforeLastCommitEvent.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
       const firstReviewedEventBeforeLastCommitEvent = reviewedEventsBeforeLastCommitEvent[0];
       if (firstReviewedEventBeforeLastCommitEvent) {
-        return [...commitedEvents].reverse().find(event => event.timestamp < firstReviewedEventBeforeLastCommitEvent.timestamp)?.timestamp || null;
+        return [...committedEvents].reverse().find(event => event.timestamp < firstReviewedEventBeforeLastCommitEvent.timestamp)?.timestamp || null;
       }
 
       return lastCommitEvent.timestamp;
@@ -587,7 +588,7 @@ export function calculateTimeline(timelineMapKeys: TimelineMapKey[], timelineMap
       const firstReviewedEventAfterLastReadyForReviewEvent = reviewedEventsAfterLastReadyForReviewEvent[0]
 
       if (firstReviewedEventAfterLastReadyForReviewEvent) {
-        const temp = [...commitedEvents].reverse().find(
+        const temp = [...committedEvents].reverse().find(
           event => event.timestamp > lastReadyForReviewEvent.timestamp
             && event.timestamp < firstReviewedEventAfterLastReadyForReviewEvent.timestamp
 
@@ -677,8 +678,6 @@ function runTimeline(mergeRequestData: MergeRequestData, timelineEvents: Timelin
     });
 
   // TODO: can this be optimized with the map ?
-  console.log('timelineEvents', timelineEvents);
-  
   const approved = timelineEvents.find(ev => ev.type === 'reviewed' && (ev.data as extract.ReviewedEvent).state === 'approved') !== undefined;
 
   return {
