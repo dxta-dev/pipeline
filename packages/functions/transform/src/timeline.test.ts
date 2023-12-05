@@ -94,7 +94,7 @@ const pr83 = {
 
 const pr83Expected = {
   startedCodingAt: new Date(10),
-  startedPickupAt: new Date(10), // Question: would in this case be startedPickupAt 20 ?
+  startedPickupAt: new Date(10),
   startedReviewAt: null,
   mergedAt: new Date(30),
   reviewed: false,
@@ -146,7 +146,7 @@ const pr74 = {
 
 const pr74Expected = {
   startedCodingAt: new Date(10),
-  startedPickupAt: new Date(10),  // Question: would in this case be startedPickupAt 20 ?
+  startedPickupAt: new Date(10),
   startedReviewAt: new Date(30),
   mergedAt: new Date(40),
   reviewed: true,
@@ -961,7 +961,7 @@ const pr312 = {
 
 const pr312Expected = {
   startedCodingAt: new Date(10),
-  startedPickupAt: new Date(10),  // Question: would in this case be startedPickupAt 20 ?
+  startedPickupAt: new Date(10),
   startedReviewAt: new Date(30),
   mergedAt: new Date(60),
   reviewed: true,
@@ -1192,7 +1192,7 @@ const pr41 = {
 };
 
 const pr41Expected = {
-  startedCodingAt: new Date(40), // Question: do we respect reopened, or what is here ?
+  startedCodingAt: new Date(10),
   startedPickupAt: new Date(40),
   startedReviewAt: null,
   mergedAt: new Date(50),
@@ -1255,11 +1255,11 @@ const pr193 = {
   ]
 };
 
-const pr193Expected = { // Question: not sure about this one
-  startedCodingAt: new Date(20),
-  startedPickupAt: new Date(20),
+const pr193Expected = {
+  startedCodingAt: new Date(10),
+  startedPickupAt: new Date(10),
   startedReviewAt: new Date(30),
-  mergedAt: new Date(50),
+  mergedAt: new Date(60),
   reviewed: true,
   reviewDepth: 1
 };
