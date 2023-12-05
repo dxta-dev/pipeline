@@ -366,10 +366,10 @@ export class GitHubSourceControl implements SourceControl {
             timestamp: new Date(assignedEvent.created_at),
             actorName: assignedEvent.actor.login,
             actorId: assignedEvent.actor.id,
-            data: JSON.stringify({
+            data: {
               assigneeId: assignedEvent.assignee.id,
               assigneeName: assignedEvent.assignee.login,
-            }),
+            },
           } satisfies NewTimelineEvents;
         case 'committed':
           const committedEvent = singleEvent as components["schemas"]["timeline-committed-event"]
@@ -380,11 +380,11 @@ export class GitHubSourceControl implements SourceControl {
             timestamp: new Date(committedEvent.author.date),
             actorName: committedEvent.author.name,
             actorEmail: committedEvent.author.email,
-            data: JSON.stringify({
+            data: {
               committerEmail: committedEvent.committer.email,
               committerName: committedEvent.committer.name,
               committedDate: new Date(committedEvent.committer.date),
-            }),
+            },
           } satisfies NewTimelineEvents;
         case 'review_requested':
         case 'review_request_removed':
@@ -396,10 +396,10 @@ export class GitHubSourceControl implements SourceControl {
             timestamp: new Date(requestedEvent.created_at),
             actorName: requestedEvent.actor.login,
             actorId: requestedEvent.actor.id,
-            data: JSON.stringify({
+            data: {
               requestedReviewerId: requestedEvent.requested_reviewer?.id,
               requestedReviewerName: requestedEvent.requested_reviewer?.login,
-            }),
+            },
           } satisfies NewTimelineEvents;
         case 'reviewed':
           const reviewedEvent = singleEvent as components["schemas"]["timeline-reviewed-event"]
@@ -410,9 +410,9 @@ export class GitHubSourceControl implements SourceControl {
             timestamp: new Date(reviewedEvent.submitted_at as string),
             actorName: reviewedEvent.user.login,
             actorId: reviewedEvent.user.id,
-            data: JSON.stringify({
+            data: {
               state: reviewedEvent.state,
-            }),
+            },
           } satisfies NewTimelineEvents;
         default:
           const generalEvent = singleEvent as components["schemas"]["state-change-issue-event"];
