@@ -282,17 +282,12 @@ type MapUsersToJunksArgs = {
   reviewers: transform.ForgeUser['id'][]
 }
 
-function addUnique(newElement: number, currentArray: number[]) {
-  if (!currentArray.includes(newElement)) {
-    currentArray.push(newElement);
-  }
-}
-
-type ExtractUserArgs = {
-  externalId: extract.Member['externalId'];
-  name: extract.Member['name'];
-  forgeType: extract.Member['forgeType'];
-  userName: extract.Member['username'];
+type MappedUsersTypesArgs = {
+  author: number,
+  mergedBy: number | null,
+  approvers: number[],
+  committers: string[],
+  reviewers: number[]
 }
 
 type TransformUserArgs = {
@@ -301,41 +296,12 @@ type TransformUserArgs = {
   forgeType: transform.ForgeUser['forgeType'];
 }
 
-async function getExtractUsers(db: ExtractDatabase, userIds: number[]) {
-  return await db.select({
-    externalId: extract.members.externalId,
-    name: extract.members.name,
-    forgeType: extract.members.forgeType,
-    userName: extract.members.username,
-  }).from(extract.members)
-  .where(inArray(extract.members.externalId, userIds))
-  .all();
-}
-
-async function getExtractUserByName(db: ExtractDatabase, name: string) {
-  return await db.select({
-    externalId: extract.members.externalId,
-    name: extract.members.name,
-    forgeType: extract.members.forgeType,
-  }).from(extract.members)
-  .where(or(
-    eq(extract.members.username, name),
-    eq(extract.members.name, name))
-  ).get()
-}
-
-async function getUserIds(timelineEvents: TimelineEventData[], extractDb: ExtractDatabase, transformDb: TransformDatabase, authorExternalId: number) {
-  const extractReviewers: number[] = [];
-  const extractApprovers: number[] = [];
-  const extractCommitters: number[] = [];
+function getUserData(timelineEvents: TimelineEventData[], authorExternalId: number) {
+  const reviewers = new Set<number>();
+  const approvers = new Set<number>();
+  const committers = new Set<string>();
   let mergedBy: number | undefined;
-  let extractUser;
-  let author: number | undefined = authorExternalId;
-  const usersArray: number[] = [];
-  usersArray.push(author);
-  const transformReviewers: number[] = [];
-  const transformApprovers: number[] = [];
-  const transformCommitters: number[] = [];
+  const author: number = authorExternalId;
 
   for (const timelineEvent of timelineEvents) {
     switch (timelineEvent.type) {
@@ -343,63 +309,82 @@ async function getUserIds(timelineEvents: TimelineEventData[], extractDb: Extrac
         if (!timelineEvent.actorId) {
           break;
         }
-        addUnique(timelineEvent.actorId, extractReviewers);
-        addUnique(timelineEvent.actorId, usersArray);
+        reviewers.add(timelineEvent.actorId);
         if (timelineEvent.data && ((timelineEvent.data as extract.ReviewedEvent).state === 'approved')) {
-          addUnique(timelineEvent.actorId, extractApprovers);
+          approvers.add(timelineEvent.actorId);
         }
         break;
       case 'committed':
-        const data = timelineEvent.data as extract.CommittedEvent;
-        extractUser = await getExtractUserByName(extractDb, data.committerName) as ExtractUserArgs;
-        if (!extractUser) {
-          break;
-        }
-        addUnique(extractUser.externalId, extractCommitters);
-        addUnique(extractUser.externalId, usersArray);
+        committers.add((timelineEvent.data as extract.CommittedEvent).committerName);
         break;
       case 'merged':        
         if (!timelineEvent.actorId) {
           break;
         }
         mergedBy = timelineEvent.actorId;
-        addUnique(timelineEvent.actorId, usersArray);
         break;
       default:
         break;
     }
   }
-
-  const extractUsers = await getExtractUsers(extractDb, usersArray) as ExtractUserArgs[];
-  extractUsers.forEach((extractUser) => {
-    if (extractUser.name === null) {
-      extractUser.name = extractUser.userName;
-    }
-  });
-  const transformUsers: transform.ForgeUser[] = [];
-  for (const extractUser of extractUsers) {
-    transformUsers.push(await upsertForgeUser(transformDb, extractUser as TransformUserArgs).returning().get());
-  }
-  
-  author = transformUsers.find(({ externalId }) => externalId === author)?.id;
-  mergedBy = transformUsers.find(({ externalId }) => externalId === mergedBy)?.id;
-  extractApprovers.forEach((approver) => {
-    transformApprovers.push(transformUsers.find(({ externalId }) => externalId === approver)?.id as number);
-  });
-  extractReviewers.forEach((reviewer) => {
-    transformReviewers.push(transformUsers.find(({ externalId }) => externalId === reviewer)?.id as number);
-  });
-  extractCommitters.forEach((committer) => {
-    transformCommitters.push(transformUsers.find(({ externalId }) => externalId === committer)?.id as number);
-  });
   
   return {
     author,
-    mergedBy,
-    approvers: transformApprovers,
-    committers: transformCommitters,
-    reviewers: transformReviewers,
+    mergedBy: mergedBy ? mergedBy : null,
+    approvers: [...approvers.keys()],
+    committers: [...committers.keys()],
+    reviewers: [...reviewers.keys()],
   };
+}
+
+async function getTransformUserData( extractDb: ExtractDatabase, transformDb: TransformDatabase, users: MappedUsersTypesArgs) {
+  const { author, mergedBy, approvers, committers, reviewers } = users;
+  const allUsers = new Set<number>();
+  const transformUsers: transform.ForgeUser[] = [];
+  allUsers.add(author);
+  if (mergedBy) {
+    allUsers.add(mergedBy);
+  }
+  approvers.forEach((approver) => {{allUsers.add(approver);}});
+  reviewers.forEach((reverse) => {{allUsers.add(reverse);}});
+
+  
+  const response = await extractDb
+  .select({
+    externalId: extract.members.externalId,
+    name: extract.members.name,
+    forgeType: extract.members.forgeType,
+    userName: extract.members.username,
+  })
+  .from(extract.members)
+  .where(
+    or(
+      allUsers.size > 0 ? inArray(extract.members.externalId, [...allUsers.keys()]) : undefined,
+      committers.length > 0 ? inArray(extract.members.name, committers) : undefined,
+      committers.length > 0 ? inArray(extract.members.username, committers) : undefined,
+    ),
+  );
+
+  for (const res of response) {
+    if (res.name === null) {
+      res.name = res.userName;
+    }
+    transformUsers.push(await upsertForgeUser(transformDb, res as TransformUserArgs).returning().get());
+  }
+
+  const transformAuthor = transformUsers.find(({ externalId }) => externalId === author)?.id;
+  const transformMergedBy = transformUsers.find(({ externalId }) => externalId === mergedBy)?.id;
+  const transformApprovers = approvers.map((approver) => transformUsers.find(({ externalId }) => externalId === approver)?.id as number);
+  const transformCommitters = committers.map((committer) => transformUsers.find(({ name }) => name === committer)?.id as number);
+  const transformReviewers = reviewers.map((reviewer) => transformUsers.find(({ externalId }) => externalId === reviewer)?.id as number);
+
+  return {
+    author: transformAuthor ? transformAuthor : null,
+    mergedBy: transformMergedBy ? transformMergedBy : null,
+    approvers: transformApprovers ? transformApprovers : [],
+    committers: transformCommitters ? transformCommitters : [],
+    reviewers: transformReviewers ? transformReviewers : [],
+  }
 }
 
 function mapUsersToJunk({ author, mergedBy, approvers, committers, reviewers }: MapUsersToJunksArgs, nullForgeUserId: number) {
@@ -782,7 +767,9 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
 
   const timeline = runTimeline(extractData.mergeRequest, extractData.timelineEvents, extractData.notes);
 
-  const users = await getUserIds(extractData.timelineEvents, ctx.extractDatabase, ctx.transformDatabase, extractData.mergeRequest.authorExternalId as number);
+  const timelineUsers = getUserData(extractData.timelineEvents, extractData.mergeRequest.authorExternalId as number);
+
+  const transformUsersIds = await getTransformUserData(ctx.extractDatabase, ctx.transformDatabase, timelineUsers);
 
   const {
     dateId: nullDateId,
@@ -809,11 +796,11 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
   const reviewDuration = calculateDuration(timeline.startedReviewAt, extractData.mergeRequest.closedAt);
 
   const usersJunk = mapUsersToJunk({
-    author: users.author,
-    mergedBy: users.mergedBy,
-    approvers: users.approvers,
-    committers: users.committers,
-    reviewers: users.reviewers,
+    author: transformUsersIds.author,
+    mergedBy: transformUsersIds.mergedBy,
+    approvers: transformUsersIds.approvers,
+    committers: transformUsersIds.committers,
+    reviewers: transformUsersIds.reviewers,
   }, nullUserId);
 
   const { id: transformRepositoryId } = await upsertRepository(ctx.transformDatabase, extractData.repository).get();
