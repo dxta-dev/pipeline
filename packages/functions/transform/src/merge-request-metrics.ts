@@ -363,7 +363,8 @@ async function getTransformUserData( extractDb: ExtractDatabase, transformDb: Tr
       committers.length > 0 ? inArray(extract.members.name, committers) : undefined,
       committers.length > 0 ? inArray(extract.members.username, committers) : undefined,
     ),
-  );
+  )
+  .all();
 
   for (const res of response) {
     if (res.name === null) {
