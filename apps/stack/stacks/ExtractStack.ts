@@ -3,6 +3,7 @@ import {
   Config,
   EventBus,
   Queue,
+  Cron,
   type StackContext,
 } from "sst/constructs";
 import { z } from "zod";
@@ -17,6 +18,7 @@ export function ExtractStack({ stack }: StackContext) {
   const REDIS_TOKEN = new Config.Secret(stack, "REDIS_TOKEN");
   const REDIS_USER_TOKEN_TTL = new Config.Parameter(stack, "REDIS_USER_TOKEN_TTL", { value: (20 * 60).toString() });
   const PER_PAGE = new Config.Parameter(stack, "PER_PAGE", { value: (30).toString() });
+  const SYSTEM_GITHUB_TOKEN = new Config.Secret(stack, "SYSTEM_GITHUB_TOKEN"); // set to "__disabled" if you want to disable periodic extraction
 
   const bus = new EventBus(stack, "ExtractBus", {
     rules: {
@@ -193,6 +195,27 @@ export function ExtractStack({ stack }: StackContext) {
     routes: {
       "POST /start": "src/extract/extract-repository.handler",
     },
+  });
+
+  const _cronExtractPeriodic = new Cron(stack, "CronExtractPeriodic", {
+    schedule: "cron(0 10 * * ? *)",
+    job: {
+      function: {
+        handler: "src/extract/extract-periodic-public-repos.handler",
+        bind: [
+          bus, 
+          EXTRACT_DATABASE_URL, 
+          EXTRACT_DATABASE_AUTH_TOKEN, 
+          CRAWL_DATABASE_URL, 
+          CRAWL_DATABASE_AUTH_TOKEN, 
+          CLERK_SECRET_KEY, 
+          REDIS_URL, 
+          REDIS_TOKEN, 
+          REDIS_USER_TOKEN_TTL,
+          SYSTEM_GITHUB_TOKEN
+        ]
+      }
+    }
   });
 
   stack.addOutputs({
