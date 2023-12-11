@@ -24,7 +24,7 @@
     "@acme/source-control": "*",
     "@acme/transform-functions": "*",
     "@acme/transform-schema": "*",
-    "@aws-sdk/client-sqs": "^3.395.0",
+    "@aws-sdk/client-sqs": "^3.470.0",
     "@clerk/clerk-sdk-node": "^4.12.5",
     "@tsconfig/node16": "^16.1.1",
     "@upstash/redis": "^1.22.0",
@@ -35,7 +35,7 @@
     "sst": "2.20.1"
   },
   "devDependencies": {
-    "@types/aws-lambda": "^8.10.126",
+    "@types/aws-lambda": "^8.10.130",
     "dotenv-cli": "^7.3.0"
   }
 }
