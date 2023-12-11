@@ -14,8 +14,8 @@
   },
   "dependencies": {
     "@acme/eslint-config": "*",
-    "@acme/tailwind-config": "*",
     "@acme/public-repos": "*",
+    "@acme/tailwind-config": "*",
     "@clerk/nextjs": "^4.23.2",
     "@radix-ui/react-avatar": "^1.0.3",
     "@radix-ui/react-dropdown-menu": "^2.0.5",
