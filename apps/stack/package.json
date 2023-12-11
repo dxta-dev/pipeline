@@ -35,7 +35,7 @@
     "sst": "2.20.1"
   },
   "devDependencies": {
-    "@types/aws-lambda": "^8.10.126",
+    "@types/aws-lambda": "^8.10.130",
     "dotenv-cli": "^7.3.0"
   }
 }
