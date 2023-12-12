@@ -22,6 +22,7 @@ const filteredGitIdentitiesGitHub = [
   { name: 'dejan-crocoder', email: '139872861+dejan-crocoder@users.noreply.github.com' },
   { name: 'Dejan Tot', email: '139872861+dejan-crocoder@users.noreply.github.com' },
   { name: 'Ante-Koceic', email: '97022082+Ante-Koceic@users.noreply.github.com' },
+  { name: 'GitHub', email: 'noreply@github.com' },
 ];
 
 const gitIdentitiesGitlab = [
@@ -68,21 +69,21 @@ const filteredMembersGitlab = [
 describe('filter-bots:', () => {
   describe('gitIdentities', ()=> {
     test('should filter out bot accounts from an array of GitHub identities', ()=> {
-      const result = gitIdentitiesGitHub.filter(identity => isGitIdentityKnownBot('github', identity));
+      const result = gitIdentitiesGitHub.filter(identity => !isGitIdentityKnownBot('github', identity));
       expect(result).toEqual(filteredGitIdentitiesGitHub);
     });
     test('should filter out bot accounts from an array of Gitlab identities', ()=> {
-      const result = gitIdentitiesGitlab.filter(identity => isGitIdentityKnownBot('github', identity));
+      const result = gitIdentitiesGitlab.filter(identity => !isGitIdentityKnownBot('gitlab', identity));
       expect(result).toEqual(filteredGitIdentitiesGitlab);
     });
   });
   describe('members', ()=> {
     test('should filter out bot accounts from an array of GitHub members', ()=> {
-      const result = membersGitHub.filter(member => isMemberKnownBot('github', member));
+      const result = membersGitHub.filter(member => !isMemberKnownBot('github', member));
       expect(result).toEqual(filteredMembersGitHub);
     });
     test('should filter out bot accounts from an array of Gitlab members', ()=> {
-      const result = membersGitlab.filter(member => isMemberKnownBot('gitlab', member));
+      const result = membersGitlab.filter(member => !isMemberKnownBot('gitlab', member));
       expect(result).toEqual(filteredMembersGitlab);
     });
   });
