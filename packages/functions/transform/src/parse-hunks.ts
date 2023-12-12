@@ -135,7 +135,8 @@ export function parseHunks(stringifiedHunks: string): Hunk[] {
           changeNewLine++;
           break;
         case '\\':
-          console.log('I am not sure about this one', lines);
+          // TODO: what to do about this one ?
+          // console.log('I am not sure about this one', lines);
         default:
           change = {
             content: line.slice(1),
