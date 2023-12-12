@@ -10,11 +10,11 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en" suppressHydrationWarning>
-          <body>
-        <ThemeProvider attribute="class" defaultTheme="light">
+        <body>
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             {children}
-        </ThemeProvider>
-          </body>
+          </ThemeProvider>
+        </body>
       </html>
     </ClerkProvider>
   );
