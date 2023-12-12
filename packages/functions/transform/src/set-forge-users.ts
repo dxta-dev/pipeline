@@ -2,6 +2,7 @@ import { inArray } from "drizzle-orm";
 import type { ExtractEntities, TransformEntities, TransformFunction } from "./config";
 import type { NewForgeUser } from "@acme/transform-schema";
 import { sql } from "drizzle-orm";
+import { isMemberKnownBot } from "./known-bots";
 
 export type SetForgeUsersInput = {
   extractMemberIds?: number[];
@@ -29,6 +30,7 @@ export const setForgeUsers: SetForgeUsersFunction = async (
     .all()).map(user => ({
       ...user,
       name: user.name || user.username,
+      bot: isMemberKnownBot(user.forgeType, user),
     })) satisfies NewForgeUser[];
 
   if (extractForgeUsers.length === 0) {
