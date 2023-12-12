@@ -25,11 +25,6 @@ const fetchClerkUserToken = async (userId: string, provider: SupportedClerkOAuth
   return userOauthAccessTokenPayload.token;
 };
 
-export const overrideClerkUserToken = async (userId: string, provider:SupportedClerkOAuthProviders, userToken: string) => {
-  const userTokenCacheKey = `${userId}_${provider}`;
-  await redisClient.set<string>(userTokenCacheKey, encodeUserTokenCacheValue(userToken), { ex: Number(Config.REDIS_USER_TOKEN_TTL) });
-}
-
 export const getClerkUserToken = async (userId: string, provider: SupportedClerkOAuthProviders) => {
   const userTokenCacheKey = `${userId}_${provider}`;
   let encodedUserTokenCacheValue: string | null;
