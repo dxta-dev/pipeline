@@ -2,7 +2,7 @@
 /*
 Renovate bot
 name: renovate[bot]
-email: ^[0-9]{1,}\+renovate\[bot]@users\.noreply\.github\.com$
+email: ^29139614+renovate\[bot]@users\.noreply\.github\.com$
 GitHub bot
 name: GitHub
 email: noreply@github.com
@@ -10,60 +10,51 @@ GitLab bot
 name: can_be_anything
 email: [project|group]\_[0-9]{1,}\_bot\_[a-zA-Z0-9]{1,}@noreply.gitlab.com
 */
+type GitIdentity = { name: string; email: string; };
 
-type BotInfo = {
-  type: 'string-regex',
-  name: string,
-  email: RegExp,
-} | {
-  type: 'string-string',
-  name: string,
-  email: string,
-} | {
-  type: 'regex',
-  email: RegExp,
-}
-
-const listOfKnownBots: BotInfo[] = [
+const listOfKnownBotGitIdentitiesGitHub = [
   {
-    type: 'string-regex',
-    name: 'renovate[bot]',
-    email: new RegExp(/^[0-9]{1,}\+renovate\[bot\]@users\.noreply\.github\.com$/),
+    name: "renovate[bot]",
+    email: "29139614+renovate[bot]@users.noreply.github.com",
   },
   {
-    type: 'string-string',
-    name: 'GitHub',
-    email: 'noreply@github.com',
-  },
-  {
-    type: 'regex',
-    email: new RegExp(/^(project|group)\_[0-9]{1,}\_bot\_[a-zA-Z0-9]{1,}@noreply.gitlab.com$/),
-  },
-  {
-    type: 'string-string',
-    name: 'CroCoder Bot',
-    email: 'crocoder.dev@gmail.com',
+    name: "CroCoder Bot",
+    email: "crocoder.dev@gmail.com",
   }
-];
+] satisfies GitIdentity[];
 
-const checkForBotKeywords = (name: string, email: string) => {
-  return listOfKnownBots.some((knownBot) => {
-    switch (knownBot.type) {
-      case 'string-regex':
-        return name === knownBot.name && knownBot.email.test(email);
-      case 'string-string':
-        return name === knownBot.name && email === knownBot.email;
-      case 'regex':
-        return knownBot.email.test(email);
-      default:
-        const _: never = knownBot;
-    }
-  });
+const listOfKnownBotGitIdentitiesGitlab = [] satisfies GitIdentity[];
+
+const isGitIdentityGitlabServiceAccount = ({ email }: GitIdentity) => /^(project|group)\_[0-9]{1,}\_bot\_[a-zA-Z0-9]{1,}@noreply\.gitlab\.com$/.test(email);
+
+export function isGitIdentityKnownBot(forgeType: 'github' | 'gitlab', gitIdentity: { name: string, email: string }) {
+  const listOfKnownBotGitIdentities = forgeType === 'github' ? listOfKnownBotGitIdentitiesGitHub : listOfKnownBotGitIdentitiesGitlab;
+  if (listOfKnownBotGitIdentities.find(bot => bot.email === gitIdentity.email)) return true;
+
+  if (forgeType === 'gitlab' && isGitIdentityGitlabServiceAccount(gitIdentity)) return true;
+
+  return false;
 }
+type Member = { externalId: number, username: string };
+const listOfKnownBotMembersGitHub = [
+  {
+    externalId: 29139614,
+    username: "renovate[bot]",
+  },
+  {
+    externalId: 71839055,
+    username: "crocoder-bot",
+  }
+] satisfies Member[];
+const listOfKnownBotMembersGitlab = [] satisfies Member[];
 
-export function filterKnownBots(gitIdentities: { name: string, email: string, id: number }[]) {
-  const gitIdentitiesWithoutBots = gitIdentities.filter(
-    (identity) => !checkForBotKeywords(identity.name, identity.email)
-  );
-  return gitIdentitiesWithoutBots;
+const isMemberGitlabServiceAccount = ({ username }: Member) => /^(project|group)\_[0-9]{1,}\_bot\_[a-zA-Z0-9]{1,}$/.test(username);
+
+export function isMemberKnownBot(forgeType: 'github' | 'gitlab', member: Member) {
+  const listOfKnownBotMembers = forgeType === 'github' ? listOfKnownBotMembersGitHub : listOfKnownBotMembersGitlab;
+  if (listOfKnownBotMembers.find(bot => bot.externalId === member.externalId)) return true;
+
+  if (forgeType === 'gitlab' && isMemberGitlabServiceAccount(member)) return true;
+
+  return false;
 }
