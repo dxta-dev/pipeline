@@ -3,9 +3,6 @@
 Renovate bot
 name: renovate[bot]
 email: ^29139614+renovate\[bot]@users\.noreply\.github\.com$
-GitHub bot
-name: GitHub
-email: noreply@github.com
 GitLab bot
 name: can_be_anything
 email: [project|group]\_[0-9]{1,}\_bot\_[a-zA-Z0-9]{1,}@noreply.gitlab.com
