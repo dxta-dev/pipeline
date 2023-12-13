@@ -37,6 +37,50 @@ const context: Context<GetRepositorySourceControl, GetRepositoryEntities> = {
   db,
 };
 
+const inputSchema = z.object({
+  repositoryId: z.number(),
+  repositoryName: z.string(),
+  namespaceName: z.string(),
+  sourceControl: z.literal("gitlab").or(z.literal("github")),
+  from: z.coerce.date(),
+  to: z.coerce.date()
+});
+
+type Input = z.infer<typeof inputSchema>;
+const extractRepository = async (input: Input, userId: string) => {
+  const { repositoryId, repositoryName, namespaceName, sourceControl, from, to } = input;
+
+  const sourceControlAccessToken = await getClerkUserToken(userId, `oauth_${sourceControl}`);
+
+  if (sourceControl === "gitlab") {
+    context.integrations.sourceControl = new GitlabSourceControl(sourceControlAccessToken);
+  } else if (sourceControl === "github") {
+    context.integrations.sourceControl = new GitHubSourceControl(sourceControlAccessToken);
+  }
+
+  const { repository, namespace } = await getRepository({ externalRepositoryId: repositoryId, repositoryName, namespaceName }, context);
+
+  const { instanceId } = await setInstance({ repositoryId: repository.id, userId }, { db: crawlDb, entities: { instances } });
+
+  await extractRepositoryEvent.publish(
+    {
+      repositoryId: repository.id,
+      namespaceId: namespace.id
+    },
+    {
+      crawlId: instanceId,
+      caller: 'extract-repository',
+      timestamp: new Date().getTime(),
+      version: 1,
+      sourceControl,
+      userId,
+      from,
+      to,
+    }
+  );
+
+}
+
 const contextSchema = z.object({
   authorizer: z.object({
     jwt: z.object({
@@ -48,17 +92,6 @@ const contextSchema = z.object({
 });
 
 type CTX = z.infer<typeof contextSchema>;
-
-const inputSchema = z.object({
-  repositoryId: z.number(),
-  repositoryName: z.string(),
-  namespaceName: z.string(),
-  sourceControl: z.literal("gitlab").or(z.literal("github")),
-  from: z.coerce.date(),
-  to: z.coerce.date()
-});
-
-type Input = z.infer<typeof inputSchema>;
 
 export const handler = ApiHandler(async (ev) => {
 
@@ -76,7 +109,6 @@ export const handler = ApiHandler(async (ev) => {
   }
 
   let input: Input;
-  let sourceControlAccessToken: string;
 
   try {
     input = inputSchema.parse(body);
@@ -90,48 +122,49 @@ export const handler = ApiHandler(async (ev) => {
 
   const { sub } = lambdaContext.authorizer.jwt.claims;
 
-
-  const { repositoryId, repositoryName, namespaceName, sourceControl, from, to } = input;
-
-  try {
-    sourceControlAccessToken = await getClerkUserToken(sub, `oauth_${sourceControl}`);
-  } catch (error) {
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: (error as Error).message }),
-    }
+try {
+  await extractRepository(input, sub);
+} catch (error) {
+  return {
+    statusCode: 500,
+    body: JSON.stringify({ error: (error as Error).toString() })
   }
-
-  if (sourceControl === "gitlab") {
-    context.integrations.sourceControl = new GitlabSourceControl(sourceControlAccessToken);
-  } else if (sourceControl === "github") {
-    context.integrations.sourceControl = new GitHubSourceControl(sourceControlAccessToken);
-  }
-
-  const { repository, namespace } = await getRepository({ externalRepositoryId: repositoryId, repositoryName, namespaceName }, context);
-
-  const { instanceId } = await setInstance({ repositoryId: repository.id, userId: sub }, { db: crawlDb, entities: { instances } });
-
-  await extractRepositoryEvent.publish(
-    {
-      repositoryId: repository.id,
-      namespaceId: namespace.id
-    },
-    {
-      crawlId: instanceId,
-      caller: 'extract-repository',
-      timestamp: new Date().getTime(),
-      version: 1,
-      sourceControl,
-      userId: sub,
-      from,
-      to,
-    }
-  );
-
+}
 
   return {
     statusCode: 200,
     body: JSON.stringify({})
   };
 });
+
+const CRON_ENV = z.object({
+  CRON_USER_ID: z.string(),
+  PUBLIC_REPO_NAME: z.string(),
+  PUBLIC_REPO_OWNER: z.string(),
+})
+export const cronHandler = async ()=> {
+
+    const validEnv = CRON_ENV.safeParse(process.env);
+
+    if (!validEnv.success) {
+      console.error("Invalid environment in lambda 'extract-repository.cronHandler':", ...validEnv.error.issues);
+      throw new Error("Invalid environment");
+    }
+
+    const { CRON_USER_ID, PUBLIC_REPO_NAME, PUBLIC_REPO_OWNER } = validEnv.data;
+
+    const utcTodayAt10AM = new Date();
+    utcTodayAt10AM.setUTCHours(10, 0, 0, 0);
+    const utcYesterdayAt10AM = new Date(utcTodayAt10AM);
+    utcYesterdayAt10AM.setHours(utcTodayAt10AM.getUTCHours() - 24);
+
+    await extractRepository({
+      namespaceName: PUBLIC_REPO_OWNER,
+      repositoryId: 0,
+      repositoryName: PUBLIC_REPO_NAME,
+      sourceControl: 'github',
+      from: utcYesterdayAt10AM,
+      to: utcTodayAt10AM,
+    }, CRON_USER_ID);
+  
+}
