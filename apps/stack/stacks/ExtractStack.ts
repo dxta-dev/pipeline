@@ -3,6 +3,7 @@ import {
   Config,
   EventBus,
   Queue,
+  Cron,
   type StackContext,
 } from "sst/constructs";
 import { z } from "zod";
@@ -158,9 +159,18 @@ export function ExtractStack({ stack }: StackContext) {
   const ENVSchema = z.object({
     CLERK_JWT_ISSUER: z.string(),
     CLERK_JWT_AUDIENCE: z.string(),
+    PUBLIC_REPOS: z.string(),
+    CRON_USER_ID: z.string(),
   });
+  const publicReposSchema = z.array(
+    z.object({
+      owner: z.string(),
+      name: z.string(),
+    })
+  );
 
   const ENV = ENVSchema.parse(process.env);
+  const PUBLIC_REPOS = publicReposSchema.parse(JSON.parse(ENV.PUBLIC_REPOS));
 
   const api = new Api(stack, "ExtractApi", {
     defaults: {
@@ -193,6 +203,34 @@ export function ExtractStack({ stack }: StackContext) {
     routes: {
       "POST /start": "src/extract/extract-repository.handler",
     },
+  });
+
+  PUBLIC_REPOS.forEach(publicRepo => {
+    new Cron(stack, `${publicRepo.name}_ExtractCron`, {
+      schedule: "cron(00 10 * * ? *)",
+      job: {
+        function: {
+          handler: "src/extract/extract-repository.cronHandler",
+          environment: {
+            CRON_USER_ID: ENV.CRON_USER_ID,
+            PUBLIC_REPO_OWNER: publicRepo.owner,
+            PUBLIC_REPO_NAME: publicRepo.name,
+          },
+          bind: [
+            bus, 
+            EXTRACT_DATABASE_URL, 
+            EXTRACT_DATABASE_AUTH_TOKEN, 
+            CRAWL_DATABASE_URL, 
+            CRAWL_DATABASE_AUTH_TOKEN, 
+            CLERK_SECRET_KEY, 
+            REDIS_URL, 
+            REDIS_TOKEN, 
+            REDIS_USER_TOKEN_TTL
+          ],
+          runtime: "nodejs18.x",  
+        }
+      }
+    })
   });
 
   stack.addOutputs({
