@@ -14,6 +14,7 @@ const nullForgeUser = {
   externalId: Number.MAX_SAFE_INTEGER,
   forgeType: 'unknown',
   name: '',
+  bot: false,
 } satisfies NewForgeUser;
 
 const nullDate = {

@@ -6,6 +6,7 @@ import { isCodeGen } from './is-codegen';
 import { parseHunks } from './parse-hunks';
 import { type SQLiteTransaction } from 'drizzle-orm/sqlite-core';
 import { type ResultSet } from '@libsql/client/.';
+import { isMemberKnownBot } from './known-bots';
 
 type BrandedDatabase<T> = LibSQLDatabase<Record<string, unknown>> & { __brand: T }
 
@@ -294,6 +295,7 @@ type TransformUserArgs = {
   externalId: transform.ForgeUser['externalId'];
   name: transform.ForgeUser['name'];
   forgeType: transform.ForgeUser['forgeType'];
+  bot: transform.ForgeUser['bot'];
 }
 
 function getUserData(timelineEvents: TimelineEventData[], authorExternalId: number) {
@@ -354,7 +356,7 @@ async function getTransformUserData( extractDb: ExtractDatabase, transformDb: Tr
     externalId: extract.members.externalId,
     name: extract.members.name,
     forgeType: extract.members.forgeType,
-    userName: extract.members.username,
+    username: extract.members.username,
   })
   .from(extract.members)
   .where(
@@ -367,10 +369,12 @@ async function getTransformUserData( extractDb: ExtractDatabase, transformDb: Tr
   .all();
 
   for (const res of response) {
-    if (res.name === null) {
-      res.name = res.userName;
-    }
-    transformUsers.push(await upsertForgeUser(transformDb, res as TransformUserArgs).returning().get());
+    transformUsers.push(await upsertForgeUser(transformDb, {
+      externalId: res.externalId,
+      forgeType: res.forgeType,
+      name: res.name || res.username,
+      bot: isMemberKnownBot(res.forgeType, res),
+    } satisfies TransformUserArgs).returning().get());
   }
 
   const transformAuthor = transformUsers.find(({ externalId }) => externalId === author)?.id;

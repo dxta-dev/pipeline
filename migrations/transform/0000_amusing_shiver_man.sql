@@ -13,6 +13,7 @@ CREATE TABLE `forge_users` (
 	`external_id` integer NOT NULL,
 	`forge_type` integer NOT NULL,
 	`name` text NOT NULL,
+	`bot` integer NOT NULL,
 	`__created_at` integer DEFAULT (strftime('%s', 'now')),
 	`__updated_at` integer DEFAULT (strftime('%s', 'now'))
 );
@@ -137,6 +138,16 @@ CREATE TABLE `merge_requests` (
 	`forge_type` integer NOT NULL,
 	`title` text NOT NULL,
 	`web_url` text NOT NULL,
+	`__created_at` integer DEFAULT (strftime('%s', 'now')),
+	`__updated_at` integer DEFAULT (strftime('%s', 'now'))
+);
+--> statement-breakpoint
+CREATE TABLE `null_rows` (
+	`id` integer PRIMARY KEY NOT NULL,
+	`dates_id` integer NOT NULL,
+	`users_id` integer NOT NULL,
+	`merge_requests_id` integer NOT NULL,
+	`repository_id` integer NOT NULL,
 	`__created_at` integer DEFAULT (strftime('%s', 'now')),
 	`__updated_at` integer DEFAULT (strftime('%s', 'now'))
 );
