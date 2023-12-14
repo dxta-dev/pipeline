@@ -9,6 +9,7 @@ import { run } from "@acme/transform-functions";
 import { Config } from "sst/node/config";
 import { createMessage } from "@stack/config/create-message";
 import type { SQSEvent } from "aws-lambda";
+import { and, gt, lt } from "drizzle-orm";
 
 const apiContextSchema = z.object({
   authorizer: z.object({
@@ -35,13 +36,13 @@ const context = {
   }
 } satisfies Context<Partial<ExtractEntities>, Partial<TransformEntities>>;
 
-const timelineMessageSchema = z.object({ 
+const timelineMessageSchema = z.object({
   content: z.object({
     mergeRequestId: z.number(),
   }),
   metadata: z.object({}),
   kind: z.string()
- });
+});
 const timelineMessage = createMessage({
   kind: 'transform-timeline',
   contentShape: timelineMessageSchema.shape.content.shape,
@@ -49,12 +50,22 @@ const timelineMessage = createMessage({
   queueId: 'TransformTestQueue',
 });
 
-const transformTimeline = async () => {
+type transformTimelineArgs = {
+  from: Date;
+  to: Date;
+}
+const transformTimeline = async ({ from, to }: transformTimelineArgs) => {
   const allMergeRequests = await context.extract.db.select({
     mergeRequestId: context.extract.entities.mergeRequests.id
   })
     .from(context.extract.entities.mergeRequests)
+    .where(and(
+      gt(context.extract.entities.mergeRequests.updatedAt, from),
+      lt(context.extract.entities.mergeRequests.updatedAt, to)
+    ))
     .all();
+
+  console.log("Trnafsorming",allMergeRequests.length, "merge requests");
 
   if (allMergeRequests.length === 0) {
     console.log("Warning: nothing to transform");
@@ -65,7 +76,7 @@ const transformTimeline = async () => {
 
 }
 
-export const queueHandler = async (event:SQSEvent) => {
+export const queueHandler = async (event: SQSEvent) => {
   if (event.Records.length > 1) console.warn('WARNING: QueueHandler should process 1 message but got', event.Records.length);
   for (const record of event.Records) {
     const messageValidationResult = timelineMessageSchema.safeParse(JSON.parse(record.body));
@@ -92,7 +103,10 @@ export const apiHandler = ApiHandler(async (ev) => {
   }
 
   try {
-    await transformTimeline();
+    await transformTimeline({
+      from: new Date(0),
+      to: new Date()
+    });
   } catch (error) {
     return {
       statusCode: 500,
@@ -107,5 +121,13 @@ export const apiHandler = ApiHandler(async (ev) => {
 });
 
 export const cronHandler = async () => {
-  await transformTimeline();
+  const utcTodayAt10AM = new Date();
+  utcTodayAt10AM.setUTCHours(10, 0, 0, 0);
+  const utcYesterdayAt10AM = new Date(utcTodayAt10AM);
+  utcYesterdayAt10AM.setHours(utcTodayAt10AM.getUTCHours() - 24);
+
+  await transformTimeline({
+    from: utcTodayAt10AM,
+    to: utcTodayAt10AM,
+  });
 }
