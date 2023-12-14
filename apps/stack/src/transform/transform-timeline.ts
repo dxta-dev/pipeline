@@ -49,32 +49,21 @@ const timelineMessage = createMessage({
   queueId: 'TransformTestQueue',
 });
 
-export const apiHandler = ApiHandler(async (ev) => {
-
-  const lambdaContextValidation = apiContextSchema.safeParse(ev.requestContext);
-  if (!lambdaContextValidation.success) return {
-    statusCode: 401,
-    body: JSON.stringify(lambdaContextValidation.error),
-  }
-
+const transformTimeline = async () => {
   const allMergeRequests = await context.extract.db.select({
     mergeRequestId: context.extract.entities.mergeRequests.id
   })
     .from(context.extract.entities.mergeRequests)
     .all();
 
-  if (allMergeRequests.length === 0) return {
-    statusCode: 412,
-    body: JSON.stringify({ error: new Error("No extracted merge request found").toString() }),
+  if (allMergeRequests.length === 0) {
+    console.log("Warning: nothing to transform");
+    return;
   }
 
   await timelineMessage.sendAll(allMergeRequests, {});
 
-  return {
-    statusCode: 200,
-    body: JSON.stringify({ message: 'started transform' })
-  };
-});
+}
 
 export const queueHandler = async (event:SQSEvent) => {
   if (event.Records.length > 1) console.warn('WARNING: QueueHandler should process 1 message but got', event.Records.length);
@@ -89,4 +78,34 @@ export const queueHandler = async (event:SQSEvent) => {
       transformDatabase: context.transform.db as TransformDatabase,
     });
   }
+}
+
+export const apiHandler = ApiHandler(async (ev) => {
+
+  const lambdaContextValidation = apiContextSchema.safeParse(ev.requestContext);
+  if (!lambdaContextValidation.success) {
+    console.log("Error: Authorization failed - ", lambdaContextValidation.error.issues); // TODO: compliance check, might be insufficient_scope or something
+    return {
+      statusCode: 401,
+      body: JSON.stringify({ message: "Unauthorized" }),
+    }
+  }
+
+  try {
+    await transformTimeline();
+  } catch (error) {
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: (error as Error).toString() }),
+    }
+  }
+
+  return {
+    statusCode: 200,
+    body: JSON.stringify({ message: 'started transform' })
+  };
+});
+
+export const cronHandler = async () => {
+  await transformTimeline();
 }

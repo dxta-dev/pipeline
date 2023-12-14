@@ -91,45 +91,41 @@ const contextSchema = z.object({
   }),
 });
 
-type CTX = z.infer<typeof contextSchema>;
-
 export const handler = ApiHandler(async (ev) => {
 
   const body = useJsonBody() as unknown;
 
-  let lambdaContext: CTX;
+  const lambdaContextValidation = contextSchema.safeParse(ev.requestContext);
 
-  try {
-    lambdaContext = contextSchema.parse(ev.requestContext);
-  } catch (error) {
+  if (!lambdaContextValidation.success) {
+    console.log("Error: Authorization failed - ", lambdaContextValidation.error.issues); // TODO: compliance check, might be insufficient_scope or something
     return {
       statusCode: 401,
-      body: JSON.stringify({ error: (error as Error).message }),
-    };
+      body: JSON.stringify({ message: "Unauthorized" }),
+    }
   }
 
-  let input: Input;
+  const inputValidation = inputSchema.safeParse(body);
 
-  try {
-    input = inputSchema.parse(body);
-
-  } catch (error) {
+  if (!inputValidation.success) {
+    console.log("Error: Input validation failed - ", inputValidation.error.issues);
     return {
       statusCode: 400,
-      body: JSON.stringify({ error: (error as Error).message }),
-    };
+      body: JSON.stringify({ error: inputValidation.error.toString() }),
+    }
   }
 
-  const { sub } = lambdaContext.authorizer.jwt.claims;
+  const input = inputValidation.data;
+  const { sub } = lambdaContextValidation.data.authorizer.jwt.claims;
 
-try {
-  await extractRepository(input, sub);
-} catch (error) {
-  return {
-    statusCode: 500,
-    body: JSON.stringify({ error: (error as Error).toString() })
+  try {
+    await extractRepository(input, sub);
+  } catch (error) {
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: (error as Error).toString() })
+    }
   }
-}
 
   return {
     statusCode: 200,
