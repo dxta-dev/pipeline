@@ -4,7 +4,6 @@
   "main": "src/index.ts",
   "type": "module",
   "scripts": {
-    "db:generate": "drizzle-kit generate:sqlite",
     "type-check": "tsc --noEmit && echo \"✔ No TypeScript warnings or errors\"",
     "test": "echo \"Warning: no test specified\"",
     "lint": "eslint . && echo \"✔ No ESLint warnings or errors\"",

@@ -1,10 +1,11 @@
 import type { InferSelectModel, InferInsertModel } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
-import { sqliteTable, integer, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
+import { integer, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import { z } from 'zod';
 import { Enum } from './enum-column';
 import { namespaces } from './namespaces';
+import { sqliteTable } from './extract-table';
 
 export const repositories = sqliteTable('repositories', {
   id: integer('id').primaryKey(),

@@ -1,9 +1,10 @@
 import { sql } from 'drizzle-orm';
-import { sqliteTable, integer, text } from 'drizzle-orm/sqlite-core';
+import { integer, text } from 'drizzle-orm/sqlite-core';
 import { Enum } from './enum-column';
 import { z } from 'zod';
 import { instances } from './instances';
 import type { InferSelectModel, InferInsertModel } from 'drizzle-orm';
+import { sqliteTable } from './crawl-table';
 
 
 const eventDetails = [

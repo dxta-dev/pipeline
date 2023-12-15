@@ -1,10 +1,11 @@
 import type { InferSelectModel, InferInsertModel } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
-import { sqliteTable, integer } from 'drizzle-orm/sqlite-core';
+import { integer } from 'drizzle-orm/sqlite-core';
 import { repositories } from './repositories';
 import { mergeRequests } from './merge-requests';
 import { mergeRequestUsersJunk } from './merge-request-users-junk';
 import { mergeRequestDatesJunk } from './merge-request-dates-junk';
+import { sqliteTable } from './transform-table';
 
 export const mergeRequestMetrics = sqliteTable('merge_request_metrics', {
   id: integer('id').primaryKey(),
