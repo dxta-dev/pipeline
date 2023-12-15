@@ -7,6 +7,7 @@ export { members as extractMembers } from '@acme/extract-schema';
 export { repositoriesToMembers as extractRepositoriesToMembers } from '@acme/extract-schema';
 export { mergeRequestNotes as extractMergeRequestNotes} from '@acme/extract-schema';
 export { gitIdentities as extractGitIdentities } from '@acme/extract-schema';
+export { timelineEvents as extractTimelineEvents } from '@acme/extract-schema';
 
 export { forgeUsers as transformForgeUsers } from '@acme/transform-schema';
 export { mergeRequests as transformMergeRequests } from '@acme/transform-schema';

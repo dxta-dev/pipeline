@@ -142,6 +142,21 @@ CREATE TABLE `extract_repositories_to_members` (
 	FOREIGN KEY (`member_id`) REFERENCES `extract_members`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
+CREATE TABLE `extract_timeline_events` (
+	`id` integer PRIMARY KEY NOT NULL,
+	`external_id` integer NOT NULL,
+	`type` integer NOT NULL,
+	`merge_request_id` integer NOT NULL,
+	`timestamp` integer NOT NULL,
+	`actor_name` text NOT NULL,
+	`actor_id` integer,
+	`actor_email` text,
+	`data` text,
+	`__created_at` integer DEFAULT (strftime('%s', 'now')),
+	`__updated_at` integer DEFAULT (strftime('%s', 'now')),
+	FOREIGN KEY (`merge_request_id`) REFERENCES `extract_merge_requests`(`id`) ON UPDATE no action ON DELETE no action
+);
+--> statement-breakpoint
 CREATE TABLE `transform_dates` (
 	`id` integer PRIMARY KEY NOT NULL,
 	`day` integer NOT NULL,
@@ -313,6 +328,7 @@ CREATE UNIQUE INDEX `merge_request_notes_external_id_idx` ON `extract_merge_requ
 CREATE UNIQUE INDEX `merge_requests_external_id_idx` ON `extract_merge_requests` (`external_id`,`repository_id`);--> statement-breakpoint
 CREATE UNIQUE INDEX `namespaces_external_id_idx` ON `extract_namespaces` (`external_id`,`forge_type`);--> statement-breakpoint
 CREATE UNIQUE INDEX `repositories_external_id_idx` ON `extract_repositories` (`external_id`,`forge_type`);--> statement-breakpoint
+CREATE UNIQUE INDEX `timeline_events_external_id_merge_request_id_type_idx` ON `extract_timeline_events` (`external_id`,`merge_request_id`,`type`);--> statement-breakpoint
 CREATE UNIQUE INDEX `dates_day_week_month_year_idx` ON `transform_dates` (`day`,`week`,`month`,`year`);--> statement-breakpoint
 CREATE UNIQUE INDEX `forge_users_external_id_forge_type_idx` ON `transform_forge_users` (`external_id`,`forge_type`);--> statement-breakpoint
 CREATE UNIQUE INDEX `merge_requests_external_id_forge_type_idx` ON `transform_merge_requests` (`external_id`,`forge_type`);--> statement-breakpoint
