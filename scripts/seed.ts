@@ -4,12 +4,12 @@ import { createClient } from "@libsql/client";
 import { seed } from "../packages/schemas/transform/src/seed/dimensions";
 
 if (!process.env.TENANT_DATABASE_URL) {
-  console.log("TRANSFORM_DATABASE_URL environment variable is required");
+  console.log("TENANT_DATABASE_URL environment variable is required");
   process.exit(1);
 }
 
 if (!process.env.TENANT_DATABASE_AUTH_TOKEN) {
-  console.log("TRANSFORM_DATABASE_AUTH_TOKEN environment variable is required");
+  console.log("TENANT_DATABASE_AUTH_TOKEN environment variable is required");
   process.exit(1);
 }
 

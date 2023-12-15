@@ -8,7 +8,9 @@
     "db:generate": "drizzle-kit generate:sqlite",
     "type-check": "tsc --noEmit && echo \"✔ No TypeScript warnings or errors\"",
     "test": "echo \"Warning: no test specified\"",
-    "lint": "eslint . && echo \"✔ No ESLint warnings or errors\""
+    "lint": "eslint . && echo \"✔ No ESLint warnings or errors\"",
+    "studio:turso": "npm run with-env drizzle-kit studio -- --config turso.config.ts",
+    "with-env": "dotenv -e ../../../.env --"
   },
   "dependencies": {
     "@acme/extract-schema": "*",
