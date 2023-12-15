@@ -13,9 +13,9 @@
     "with-env": "dotenv -e ../../../.env --"
   },
   "dependencies": {
+    "@acme/crawl-schema": "*",
     "@acme/extract-schema": "*",
-    "@acme/transform-schema": "*",
-    "@acme/crawl-schema": "*"
+    "@acme/transform-schema": "*"
   },
   "devDependencies": {
     "dotenv-cli": "^7.3.0",
