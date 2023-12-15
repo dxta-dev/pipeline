@@ -12,19 +12,9 @@ import { ApiHandler, useJsonBody } from 'sst/node/api';
 import { getClerkUserToken } from "./get-clerk-user-token";
 import { setInstance } from "@acme/crawl-functions";
 
-const client = createClient({
-  url: Config.EXTRACT_DATABASE_URL,
-  authToken: Config.EXTRACT_DATABASE_AUTH_TOKEN
-});
-
-const crawlClient = createClient({
-  url: Config.CRAWL_DATABASE_URL,
-  authToken: Config.CRAWL_DATABASE_AUTH_TOKEN
-});
+const client = createClient({ url: Config.TENANT_DATABASE_URL, authToken: Config.TENANT_DATABASE_AUTH_TOKEN });
 
 const db = drizzle(client);
-
-const crawlDb = drizzle(crawlClient);
 
 const context: Context<GetRepositorySourceControl, GetRepositoryEntities> = {
   entities: {
@@ -60,7 +50,7 @@ const extractRepository = async (input: Input, userId: string) => {
 
   const { repository, namespace } = await getRepository({ externalRepositoryId: repositoryId, repositoryName, namespaceName }, context);
 
-  const { instanceId } = await setInstance({ repositoryId: repository.id, userId }, { db: crawlDb, entities: { instances } });
+  const { instanceId } = await setInstance({ repositoryId: repository.id, userId }, { db, entities: { instances } });
 
   await extractRepositoryEvent.publish(
     {

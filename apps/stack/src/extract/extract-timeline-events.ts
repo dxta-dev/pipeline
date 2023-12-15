@@ -43,10 +43,7 @@ export const timelineEventsSenderHandler = createMessageHandler({
 
 const { sender } = timelineEventsSenderHandler;
 
-const client = createClient({
-  url: Config.EXTRACT_DATABASE_URL,
-  authToken: Config.EXTRACT_DATABASE_AUTH_TOKEN,
-});
+const client = createClient({ url: Config.TENANT_DATABASE_URL, authToken: Config.TENANT_DATABASE_AUTH_TOKEN });
 const db = drizzle(client);
 
 const context: Context<

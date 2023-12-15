@@ -87,17 +87,7 @@ export const mergeRequestSenderHandler = createMessageHandler({
 
 const { sender } = mergeRequestSenderHandler;
 
-const client = createClient({
-  url: Config.EXTRACT_DATABASE_URL,
-  authToken: Config.EXTRACT_DATABASE_AUTH_TOKEN,
-});
-
-const crawlClient = createClient({
-  url: Config.CRAWL_DATABASE_URL,
-  authToken: Config.CRAWL_DATABASE_AUTH_TOKEN,
-});
-
-const crawlDb = drizzle(crawlClient);
+const client = createClient({ url: Config.TENANT_DATABASE_URL, authToken: Config.TENANT_DATABASE_AUTH_TOKEN });
 
 const db = drizzle(client);
 
@@ -177,7 +167,7 @@ export const eventHandler = EventHandler(
           calls: paginationInfo.totalPages,
         },
       },
-      { db: crawlDb, entities: { events } },
+      { db, entities: { events } },
     );
 
     await extractMergeRequestsEvent.publish(

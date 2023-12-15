@@ -9,10 +9,8 @@ import {
 import { z } from "zod";
 
 export function ExtractStack({ stack }: StackContext) {
-  const EXTRACT_DATABASE_URL = new Config.Secret(stack, "EXTRACT_DATABASE_URL");
-  const EXTRACT_DATABASE_AUTH_TOKEN = new Config.Secret(stack, "EXTRACT_DATABASE_AUTH_TOKEN");
-  const CRAWL_DATABASE_URL = new Config.Secret(stack, "CRAWL_DATABASE_URL");
-  const CRAWL_DATABASE_AUTH_TOKEN = new Config.Secret(stack, "CRAWL_DATABASE_AUTH_TOKEN");
+  const TENANT_DATABASE_URL = new Config.Secret(stack, "TENANT_DATABASE_URL");
+  const TENANT_DATABASE_AUTH_TOKEN = new Config.Secret(stack, "TENANT_DATABASE_AUTH_TOKEN");
   const CLERK_SECRET_KEY = new Config.Secret(stack, "CLERK_SECRET_KEY");
   const REDIS_URL = new Config.Secret(stack, "REDIS_URL");
   const REDIS_TOKEN = new Config.Secret(stack, "REDIS_TOKEN");
@@ -55,11 +53,9 @@ export function ExtractStack({ stack }: StackContext) {
       retries: 10,
       function: {
         bind: [
-          EXTRACT_DATABASE_URL,
+          TENANT_DATABASE_URL,
+          TENANT_DATABASE_AUTH_TOKEN,
           CLERK_SECRET_KEY,
-          EXTRACT_DATABASE_AUTH_TOKEN,
-          CRAWL_DATABASE_URL,
-          CRAWL_DATABASE_AUTH_TOKEN,
           REDIS_URL,
           REDIS_TOKEN,
           REDIS_USER_TOKEN_TTL,
@@ -82,11 +78,9 @@ export function ExtractStack({ stack }: StackContext) {
       bind: [
         bus,
         extractQueue,
-        EXTRACT_DATABASE_URL,
+        TENANT_DATABASE_URL,
+        TENANT_DATABASE_AUTH_TOKEN,
         CLERK_SECRET_KEY,
-        EXTRACT_DATABASE_AUTH_TOKEN,
-        CRAWL_DATABASE_URL,
-        CRAWL_DATABASE_AUTH_TOKEN,
         REDIS_URL,
         REDIS_TOKEN,
         REDIS_USER_TOKEN_TTL,
@@ -178,11 +172,9 @@ export function ExtractStack({ stack }: StackContext) {
       function: {
         bind: [
           bus, 
-          EXTRACT_DATABASE_URL, 
-          EXTRACT_DATABASE_AUTH_TOKEN, 
-          CRAWL_DATABASE_URL, 
-          CRAWL_DATABASE_AUTH_TOKEN, 
-          CLERK_SECRET_KEY, 
+          TENANT_DATABASE_URL,
+          TENANT_DATABASE_AUTH_TOKEN,
+            CLERK_SECRET_KEY, 
           REDIS_URL, 
           REDIS_TOKEN, 
           REDIS_USER_TOKEN_TTL
@@ -218,10 +210,8 @@ export function ExtractStack({ stack }: StackContext) {
           },
           bind: [
             bus, 
-            EXTRACT_DATABASE_URL, 
-            EXTRACT_DATABASE_AUTH_TOKEN, 
-            CRAWL_DATABASE_URL, 
-            CRAWL_DATABASE_AUTH_TOKEN, 
+            TENANT_DATABASE_URL,
+            TENANT_DATABASE_AUTH_TOKEN,
             CLERK_SECRET_KEY, 
             REDIS_URL, 
             REDIS_TOKEN, 
@@ -239,9 +229,7 @@ export function ExtractStack({ stack }: StackContext) {
 
   return {
     ExtractBus: bus,
-    EXTRACT_DATABASE_URL,
-    EXTRACT_DATABASE_AUTH_TOKEN,
-    CRAWL_DATABASE_URL,
-    CRAWL_DATABASE_AUTH_TOKEN,
-  };
+    TENANT_DATABASE_URL,
+    TENANT_DATABASE_AUTH_TOKEN,
+};
 }

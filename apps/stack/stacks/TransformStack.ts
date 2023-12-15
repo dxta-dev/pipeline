@@ -1,7 +1,6 @@
 import {
   type StackContext,
   use,
-  Config,
   Api,
   Queue,
   Cron,
@@ -12,14 +11,9 @@ import { z } from "zod";
 export function TransformStack({ stack }: StackContext) {
 
   const {
-    EXTRACT_DATABASE_AUTH_TOKEN,
-    EXTRACT_DATABASE_URL,
-    CRAWL_DATABASE_URL,
-    CRAWL_DATABASE_AUTH_TOKEN,
-  } = use(ExtractStack);
-  const TRANSFORM_DATABASE_URL = new Config.Secret(stack, "TRANSFORM_DATABASE_URL");
-  const TRANSFORM_DATABASE_AUTH_TOKEN = new Config.Secret(stack, "TRANSFORM_DATABASE_AUTH_TOKEN");
-
+    TENANT_DATABASE_URL,
+    TENANT_DATABASE_AUTH_TOKEN,
+} = use(ExtractStack);
   const transformTestingQueue = new Queue(stack, "TransformTestQueue");
   transformTestingQueue.addConsumer(stack, {
     cdk: {
@@ -30,12 +24,8 @@ export function TransformStack({ stack }: StackContext) {
     },
     function: {
       bind: [
-        TRANSFORM_DATABASE_URL,
-        TRANSFORM_DATABASE_AUTH_TOKEN,  
-        EXTRACT_DATABASE_URL,
-        EXTRACT_DATABASE_AUTH_TOKEN,
-        CRAWL_DATABASE_AUTH_TOKEN,
-        CRAWL_DATABASE_URL,
+        TENANT_DATABASE_URL,
+        TENANT_DATABASE_AUTH_TOKEN,
     ],
       handler: "src/transform/transform-timeline.queueHandler",
     },
@@ -63,12 +53,8 @@ export function TransformStack({ stack }: StackContext) {
       function: {
         bind: [
           transformTestingQueue,
-          TRANSFORM_DATABASE_URL,
-          TRANSFORM_DATABASE_AUTH_TOKEN,  
-          EXTRACT_DATABASE_URL,
-          EXTRACT_DATABASE_AUTH_TOKEN,
-          CRAWL_DATABASE_AUTH_TOKEN,
-          CRAWL_DATABASE_URL,
+          TENANT_DATABASE_URL,
+          TENANT_DATABASE_AUTH_TOKEN,
           // bus, 
           // CLERK_SECRET_KEY, 
           // REDIS_URL, 
@@ -101,11 +87,9 @@ export function TransformStack({ stack }: StackContext) {
           handler: "src/extract/transform-timeline.cronHandler",
           bind: [
             transformTestingQueue,
-            EXTRACT_DATABASE_URL,
-            EXTRACT_DATABASE_AUTH_TOKEN,
-            CRAWL_DATABASE_URL,
-            CRAWL_DATABASE_AUTH_TOKEN,
-          ],
+            TENANT_DATABASE_URL,
+            TENANT_DATABASE_AUTH_TOKEN,
+            ],
           runtime: "nodejs18.x",
         }
       }
