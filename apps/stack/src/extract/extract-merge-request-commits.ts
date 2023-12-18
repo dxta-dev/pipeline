@@ -42,17 +42,8 @@ export const mrcsh = createMessageHandler({
 
 const { sender } = mrcsh;
 
-  const client = createClient({
-    url: Config.EXTRACT_DATABASE_URL,
-    authToken: Config.EXTRACT_DATABASE_AUTH_TOKEN,
-  });
+  const client = createClient({ url: Config.TENANT_DATABASE_URL, authToken: Config.TENANT_DATABASE_AUTH_TOKEN });
 
-  const crawlClient = createClient({
-    url: Config.CRAWL_DATABASE_URL,
-    authToken: Config.CRAWL_DATABASE_AUTH_TOKEN
-  });
-  
-  const crawlDb = drizzle(crawlClient);
   const db = drizzle(client);
 
   const context: Context<
@@ -94,7 +85,7 @@ export const eventHandler = EventHandler(extractMergeRequestsEvent, async (evt) 
     })
   }
 
-  await insertEvent({ crawlId: evt.metadata.crawlId, eventNamespace: 'mergeRequestCommit', eventDetail: 'crawlInfo', data: {calls: mergeRequestIds.length }}, {db: crawlDb, entities: { events }})
+  await insertEvent({ crawlId: evt.metadata.crawlId, eventNamespace: 'mergeRequestCommit', eventDetail: 'crawlInfo', data: {calls: mergeRequestIds.length }}, {db, entities: { events }})
 
   await sender.sendAll(arrayOfExtractMergeRequestData, {
     crawlId: evt.metadata.crawlId,

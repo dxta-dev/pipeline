@@ -25,7 +25,7 @@ beforeAll(async () => {
   });
   db = drizzle(sqlite);
 
-  await migrate(db, { migrationsFolder: "../../../migrations/extract" });
+  await migrate(db, { migrationsFolder: "../../../migrations/tenant-db" });
  
   await db.insert(namespaces).values({
     id: 1,

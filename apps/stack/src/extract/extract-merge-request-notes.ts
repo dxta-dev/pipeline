@@ -14,15 +14,7 @@ import { insertEvent } from "@acme/crawl-functions";
 import { events } from "@acme/crawl-schema";
 
 
-const client = createClient({ url: Config.EXTRACT_DATABASE_URL, authToken: Config.EXTRACT_DATABASE_AUTH_TOKEN });
-
-
-const crawlClient = createClient({
-  url: Config.CRAWL_DATABASE_URL,
-  authToken: Config.CRAWL_DATABASE_AUTH_TOKEN
-});
-
-const crawlDb = drizzle(crawlClient);
+const client = createClient({ url: Config.TENANT_DATABASE_URL, authToken: Config.TENANT_DATABASE_AUTH_TOKEN });
 
 const initSourceControl = async (userId: string, sourceControl: 'github' | 'gitlab') => {
   const accessToken = await getClerkUserToken(userId, `oauth_${sourceControl}`);
@@ -98,7 +90,7 @@ export const eventHandler = EventHandler(extractMergeRequestsEvent, async (ev) =
     })
   }
 
-  await insertEvent({ crawlId: ev.metadata.crawlId, eventNamespace: 'mergeRequestNote', eventDetail: 'crawlInfo', data: {calls: mergeRequestIds.length }}, {db: crawlDb, entities: { events }})
+  await insertEvent({ crawlId: ev.metadata.crawlId, eventNamespace: 'mergeRequestNote', eventDetail: 'crawlInfo', data: {calls: mergeRequestIds.length }}, {db, entities: { events }})
 
   await mergeRequestNoteQueue.sendAll(arrayOfExtractMergeRequestData, {
     crawlId: ev.metadata.crawlId,

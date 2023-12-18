@@ -12,38 +12,29 @@ import type { Context } from "./config";
 import type { SetForgeUsersExtractEntities, SetForgeUsersTransformEntities } from "./set-forge-users";
 import { setForgeUsers } from "./set-forge-users";
 
-let extractSqlite: ReturnType<typeof createClient>;
-let extractDb: ReturnType<typeof drizzle>;
-let transformSqlite: ReturnType<typeof createClient>;
-let transformDb: ReturnType<typeof drizzle>;
+let sqlite: ReturnType<typeof createClient>;
+let db: ReturnType<typeof drizzle>;
 let context: Context<SetForgeUsersExtractEntities, SetForgeUsersTransformEntities>;
 
-const extractDbName = 'extract-set-forge-users';
-const transformDbName = 'transform-set-forge-users';
+const dbName = 'set-forge-users';
 
 beforeAll(async () => {
-  extractSqlite = createClient({
-    url: `file:${extractDbName}`,
+  sqlite = createClient({
+    url: `file:${dbName}`,
   });
-  extractDb = drizzle(extractSqlite);
+  db = drizzle(sqlite);
 
-  transformSqlite = createClient({
-    url: `file:${transformDbName}`,
-  });
-  transformDb = drizzle(transformSqlite);
-
-  await migrate(extractDb, { migrationsFolder: "../../../migrations/extract" });
-  await migrate(transformDb, { migrationsFolder: "../../../migrations/transform" });
+  await migrate(db, { migrationsFolder: "../../../migrations/tenant-db" });
 
   context = {
     extract: {
-      db: extractDb,
+      db,
       entities: {
         members: extract.members,
       }
     },
     transform: {
-      db: transformDb,
+      db,
       entities: {
         forgeUsers: transform.forgeUsers
       }
@@ -52,14 +43,12 @@ beforeAll(async () => {
 });
 
 afterAll(() => {
-  extractSqlite.close();
-  transformSqlite.close();
-  fs.unlinkSync(extractDbName);
-  fs.unlinkSync(transformDbName);
+  sqlite.close();
+  fs.unlinkSync(dbName);
 });
 
 beforeEach(async () => {
-  await extractDb.insert(context.extract.entities.members).values([
+  await db.insert(context.extract.entities.members).values([
     {
       id: 1, username: 'deki', externalId: 1000, forgeType: 'github', name: 'Deki', email: null,
     },
@@ -73,8 +62,8 @@ beforeEach(async () => {
 });
 
 afterEach(async () => {
-  await extractDb.delete(context.extract.entities.members).run();
-  await transformDb.delete(context.transform.entities.forgeUsers).run();
+  await db.delete(context.extract.entities.members).run();
+  await db.delete(context.transform.entities.forgeUsers).run();
 });
 
 describe('set-forge-users', () => {
@@ -83,7 +72,7 @@ describe('set-forge-users', () => {
       const extractMemberIds = [1, 2, 3];
       await setForgeUsers({ extractMemberIds }, context);
 
-      const transformMergeRequestRows = await transformDb
+      const transformMergeRequestRows = await db
         .select({
           externalId: context.transform.entities.forgeUsers.externalId,
           name: context.transform.entities.forgeUsers.name,

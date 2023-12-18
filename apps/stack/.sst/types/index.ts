@@ -7,28 +7,14 @@ declare module "sst/node/config" {
 }import "sst/node/config";
 declare module "sst/node/config" {
   export interface SecretResources {
-    "EXTRACT_DATABASE_URL": {
+    "TENANT_DATABASE_URL": {
       value: string;
     }
   }
 }import "sst/node/config";
 declare module "sst/node/config" {
   export interface SecretResources {
-    "EXTRACT_DATABASE_AUTH_TOKEN": {
-      value: string;
-    }
-  }
-}import "sst/node/config";
-declare module "sst/node/config" {
-  export interface SecretResources {
-    "CRAWL_DATABASE_URL": {
-      value: string;
-    }
-  }
-}import "sst/node/config";
-declare module "sst/node/config" {
-  export interface SecretResources {
-    "CRAWL_DATABASE_AUTH_TOKEN": {
+    "TENANT_DATABASE_AUTH_TOKEN": {
       value: string;
     }
   }
@@ -86,20 +72,6 @@ declare module "sst/node/api" {
   export interface ApiResources {
     "ExtractApi": {
       url: string;
-    }
-  }
-}import "sst/node/config";
-declare module "sst/node/config" {
-  export interface SecretResources {
-    "TRANSFORM_DATABASE_URL": {
-      value: string;
-    }
-  }
-}import "sst/node/config";
-declare module "sst/node/config" {
-  export interface SecretResources {
-    "TRANSFORM_DATABASE_AUTH_TOKEN": {
-      value: string;
     }
   }
 }import "sst/node/queue";

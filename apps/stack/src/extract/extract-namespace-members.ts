@@ -44,15 +44,7 @@ export const namespaceMemberSenderHandler = createMessageHandler({
 const { sender } = namespaceMemberSenderHandler;
 
 const clerkClient = Clerk({ secretKey: Config.CLERK_SECRET_KEY });
-const client = createClient({ url: Config.EXTRACT_DATABASE_URL, authToken: Config.EXTRACT_DATABASE_AUTH_TOKEN });
-
-const crawlClient = createClient({
-  url: Config.CRAWL_DATABASE_URL,
-  authToken: Config.CRAWL_DATABASE_AUTH_TOKEN
-});
-
-const crawlDb = drizzle(crawlClient);
-
+const client = createClient({ url: Config.TENANT_DATABASE_URL, authToken: Config.TENANT_DATABASE_AUTH_TOKEN });
 
 const fetchSourceControlAccessToken = async (userId: string, forgeryIdProvider: 'oauth_github' | 'oauth_gitlab') => {
   const [userOauthAccessTokenPayload, ...rest] = await clerkClient.users.getUserOauthAccessToken(userId, forgeryIdProvider);
@@ -159,7 +151,7 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
   if (arrayOfExtractMemberPageMessageContent.length === 0)
     return;
 
-  await insertEvent({ crawlId: ev.metadata.crawlId, eventNamespace: 'member', eventDetail: 'crawlInfo', data: {calls: pagination.totalPages }}, {db: crawlDb, entities: { events }})
+  await insertEvent({ crawlId: ev.metadata.crawlId, eventNamespace: 'member', eventDetail: 'crawlInfo', data: {calls: pagination.totalPages }}, {db, entities: { events }})
 
   await sender.sendAll(arrayOfExtractMemberPageMessageContent, {
     version: 1,

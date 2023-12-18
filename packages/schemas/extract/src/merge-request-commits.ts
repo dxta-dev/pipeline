@@ -1,9 +1,10 @@
 import type { InferSelectModel, InferInsertModel } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
-import { sqliteTable, text, integer, uniqueIndex } from 'drizzle-orm/sqlite-core';
+import { text, integer, uniqueIndex } from 'drizzle-orm/sqlite-core';
 import { createInsertSchema } from 'drizzle-zod';
 import { z } from 'zod';
 import { mergeRequests } from './merge-requests';
+import { sqliteTable } from './extract-table';
 
 export const mergeRequestCommits = sqliteTable('merge_request_commits', {
   id: integer('id').primaryKey(),

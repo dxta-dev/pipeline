@@ -1,6 +1,7 @@
 import { sql } from 'drizzle-orm';
 import type { InferSelectModel, InferInsertModel } from 'drizzle-orm';
-import { sqliteTable, integer, text } from 'drizzle-orm/sqlite-core';
+import { integer, text } from 'drizzle-orm/sqlite-core';
+import { sqliteTable } from './crawl-table';
 
 export const instances = sqliteTable('instances', {
   id: integer('id').primaryKey(),

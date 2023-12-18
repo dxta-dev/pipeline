@@ -12,44 +12,35 @@ import type { Context } from "./config";
 import type { SetRepositoryExtractEntities, SetRepositoryTransformEntities } from "./set-repository";
 import { setRepository } from "./set-repository";
 
-let extractSqlite: ReturnType<typeof createClient>;
-let extractDb: ReturnType<typeof drizzle>;
-let transformSqlite: ReturnType<typeof createClient>;
-let transformDb: ReturnType<typeof drizzle>;
+let sqlite: ReturnType<typeof createClient>;
+let db: ReturnType<typeof drizzle>;
 let context: Context<SetRepositoryExtractEntities, SetRepositoryTransformEntities>;
 
-const extractDbName = 'extract-set-repository';
-const transformDbName = 'transform-set-repository';
+const dbName = 'set-repository';
 
 const TEST_NAMESPACE_1 = { id: 1, externalId: 2000, name: 'TEST_NAMESPACE_NAME', forgeType: 'github' } satisfies extract.NewNamespace;
 const TEST_REPO_1 = { id: 1, externalId: 1000, name: 'TEST_REPO_NAME', forgeType: 'github', namespaceId: 1 } satisfies extract.NewRepository;
 
 beforeAll(async () => {
-  extractSqlite = createClient({
-    url: `file:${extractDbName}`,
+  sqlite = createClient({
+    url: `file:${dbName}`,
   });
-  extractDb = drizzle(extractSqlite);
+  db = drizzle(sqlite);
 
-  transformSqlite = createClient({
-    url: `file:${transformDbName}`,
-  });
-  transformDb = drizzle(transformSqlite);
+  await migrate(db, { migrationsFolder: "../../../migrations/tenant-db" });
 
-  await migrate(extractDb, { migrationsFolder: "../../../migrations/extract" });
-  await migrate(transformDb, { migrationsFolder: "../../../migrations/transform" });
-
-  await extractDb.insert(extract.namespaces).values(TEST_NAMESPACE_1).run();
-  await extractDb.insert(extract.repositories).values(TEST_REPO_1).run();
+  await db.insert(extract.namespaces).values(TEST_NAMESPACE_1).run();
+  await db.insert(extract.repositories).values(TEST_REPO_1).run();
 
   context = {
     extract: {
-      db: extractDb,
+      db,
       entities: {
         repositories: extract.repositories
       }
     },
     transform: {
-      db: transformDb,
+      db,
       entities: {
         repositories: transform.repositories
       }
@@ -58,10 +49,8 @@ beforeAll(async () => {
 });
 
 afterAll(() => {
-  extractSqlite.close();
-  transformSqlite.close();
-  fs.unlinkSync(extractDbName);
-  fs.unlinkSync(transformDbName);
+  sqlite.close();
+  fs.unlinkSync(dbName);
 });
 
 describe('set-repository', () => {
@@ -71,7 +60,7 @@ describe('set-repository', () => {
         extractRepositoryId: TEST_REPO_1.id
       }, context);
 
-      const transformedRepositoryRow = await transformDb.select().from(transform.repositories)
+      const transformedRepositoryRow = await db.select().from(transform.repositories)
         .where(eq(transform.repositories.externalId, TEST_REPO_1.externalId))
         .get();
 

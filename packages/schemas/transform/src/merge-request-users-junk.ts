@@ -1,7 +1,8 @@
 import type { InferSelectModel, InferInsertModel } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
-import { sqliteTable, integer } from 'drizzle-orm/sqlite-core';
+import { integer } from 'drizzle-orm/sqlite-core';
 import { forgeUsers } from './forge-users';
+import { sqliteTable } from './transform-table';
 
 export const mergeRequestUsersJunk = sqliteTable('merge_request_fact_users_junk', {
   id: integer('id').primaryKey(),

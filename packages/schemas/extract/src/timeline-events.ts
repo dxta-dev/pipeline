@@ -1,8 +1,9 @@
-import { sqliteTable, integer, text,uniqueIndex } from "drizzle-orm/sqlite-core";
+import { integer, text,uniqueIndex } from "drizzle-orm/sqlite-core";
 import { type InferInsertModel, type InferSelectModel, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { Enum } from './enum-column';
 import { mergeRequests } from './merge-requests';
+import { sqliteTable } from "./extract-table";
 
 export const TimelineEventTypes = [
   'assigned',

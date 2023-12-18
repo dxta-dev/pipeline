@@ -1,6 +1,7 @@
 import type { InferSelectModel, InferInsertModel } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
-import { sqliteTable, integer, uniqueIndex } from 'drizzle-orm/sqlite-core';
+import { integer, uniqueIndex } from 'drizzle-orm/sqlite-core';
+import { sqliteTable } from './transform-table';
 
 export const dates = sqliteTable('dates', {
   id: integer('id').primaryKey(),

@@ -8,8 +8,8 @@ import { Config } from "sst/node/config";
 
 const context: Context<InsertEventEntities> = {
   db: drizzle(createClient({
-    url: Config.CRAWL_DATABASE_URL,
-    authToken: Config.CRAWL_DATABASE_AUTH_TOKEN,
+    url: Config.TENANT_DATABASE_URL,
+    authToken: Config.TENANT_DATABASE_AUTH_TOKEN,
   })),
   entities: {
     events

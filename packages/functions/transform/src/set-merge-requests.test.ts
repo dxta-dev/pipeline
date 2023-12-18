@@ -12,39 +12,30 @@ import type { Context } from "./config";
 import type { SetMergeRequestsExtractEntities, SetMergeRequestsTransformEntities } from "./set-merge-requests";
 import { setMergeRequests } from "./set-merge-requests";
 
-let extractSqlite: ReturnType<typeof createClient>;
-let extractDb: ReturnType<typeof drizzle>;
-let transformSqlite: ReturnType<typeof createClient>;
-let transformDb: ReturnType<typeof drizzle>;
+let sqlite: ReturnType<typeof createClient>;
+let db: ReturnType<typeof drizzle>;
 let context: Context<SetMergeRequestsExtractEntities, SetMergeRequestsTransformEntities>;
 
-const extractDbName = 'extract-set-merge-requests';
-const transformDbName = 'transform-set-merge-requests';
+const dbName = 'set-merge-requests';
 
 beforeAll(async () => {
-  extractSqlite = createClient({
-    url: `file:${extractDbName}`,
+  sqlite = createClient({
+    url: `file:${dbName}`,
   });
-  extractDb = drizzle(extractSqlite);
+  db = drizzle(sqlite);
 
-  transformSqlite = createClient({
-    url: `file:${transformDbName}`,
-  });
-  transformDb = drizzle(transformSqlite);
-
-  await migrate(extractDb, { migrationsFolder: "../../../migrations/extract" });
-  await migrate(transformDb, { migrationsFolder: "../../../migrations/transform" });
+  await migrate(db, { migrationsFolder: "../../../migrations/tenant-db" });
 
   context = {
     extract: {
-      db: extractDb,
+      db,
       entities: {
         repositories: extract.repositories,
         mergeRequests: extract.mergeRequests
       }
     },
     transform: {
-      db: transformDb,
+      db,
       entities: {
         mergeRequests: transform.mergeRequests
       }
@@ -53,20 +44,18 @@ beforeAll(async () => {
 });
 
 afterAll(() => {
-  extractSqlite.close();
-  transformSqlite.close();
-  fs.unlinkSync(extractDbName);
-  fs.unlinkSync(transformDbName);
+  sqlite.close();
+  fs.unlinkSync(dbName);
 });
 
 beforeEach(async () => {
-  await extractDb.insert(extract.namespaces).values([
+  await db.insert(extract.namespaces).values([
     { id: 1, externalId: 2000, forgeType: 'github', name: 'crocoder-dev' }
   ]);
-  await extractDb.insert(context.extract.entities.repositories).values([
+  await db.insert(context.extract.entities.repositories).values([
     { id: 1, externalId: 1000, forgeType: 'github', name: 'Repo-repo', namespaceId: 1 }
   ]);
-  await extractDb.insert(context.extract.entities.mergeRequests).values([
+  await db.insert(context.extract.entities.mergeRequests).values([
     { id: 1, canonId: 1, createdAt: new Date(), externalId: 2000, repositoryId: 1, title: "Test", webUrl: "http://localhost/Test" },
     { id: 2, canonId: 2, createdAt: new Date(), externalId: 2001, repositoryId: 1, title: "Test", webUrl: "http://localhost/Test" },
     { id: 3, canonId: 3, createdAt: new Date(), externalId: 2002, repositoryId: 1, title: "Test", webUrl: "http://localhost/Test" },
@@ -74,10 +63,10 @@ beforeEach(async () => {
 });
 
 afterEach(async () => {
-  await extractDb.delete(context.extract.entities.mergeRequests).run();
-  await extractDb.delete(context.extract.entities.repositories).run();
-  await extractDb.delete(extract.namespaces).run();
-  await transformDb.delete(context.transform.entities.mergeRequests).run();
+  await db.delete(context.extract.entities.mergeRequests).run();
+  await db.delete(context.extract.entities.repositories).run();
+  await db.delete(extract.namespaces).run();
+  await db.delete(context.transform.entities.mergeRequests).run();
 });
 
 describe('set-merge-requests', () => {
@@ -86,7 +75,7 @@ describe('set-merge-requests', () => {
       const extractMergeRequestIds = [1, 2, 3];
       await setMergeRequests({ extractMergeRequestIds }, context);
 
-      const transformMergeRequestRows = await transformDb.select({
+      const transformMergeRequestRows = await db.select({
         title: context.transform.entities.mergeRequests.title,
         webUrl: context.transform.entities.mergeRequests.webUrl
       }).from(context.transform.entities.mergeRequests)

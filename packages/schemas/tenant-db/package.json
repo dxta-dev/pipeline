@@ -1,0 +1,27 @@
+{
+  "name": "@acme/tenant-db-schema",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/index.ts",
+  "type": "module",
+  "scripts": {
+    "db:generate": "drizzle-kit generate:sqlite",
+    "type-check": "tsc --noEmit && echo \"✔ No TypeScript warnings or errors\"",
+    "test": "echo \"Warning: no test specified\"",
+    "lint": "eslint . && echo \"✔ No ESLint warnings or errors\"",
+    "studio:turso": "npm run with-env drizzle-kit studio -- --config turso.config.ts",
+    "with-env": "dotenv -e ../../../.env --"
+  },
+  "dependencies": {
+    "@acme/crawl-schema": "*",
+    "@acme/extract-schema": "*",
+    "@acme/transform-schema": "*"
+  },
+  "devDependencies": {
+    "dotenv-cli": "^7.3.0",
+    "drizzle-kit": "^0.20.6"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

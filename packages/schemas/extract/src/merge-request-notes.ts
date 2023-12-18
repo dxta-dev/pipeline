@@ -1,7 +1,8 @@
 import type { InferSelectModel, InferInsertModel } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
-import { sqliteTable, integer, uniqueIndex, text } from 'drizzle-orm/sqlite-core';
+import { integer, uniqueIndex, text } from 'drizzle-orm/sqlite-core';
 import { mergeRequests } from './merge-requests';
+import { sqliteTable } from './extract-table';
 
 export const mergeRequestNotes = sqliteTable('merge_request_notes', {
   id: integer('id').primaryKey(),

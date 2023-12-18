@@ -5,7 +5,7 @@ export default {
   ...baseConfig,
   driver: 'turso',
   dbCredentials: {
-    url: process.env.CRAWL_DATABASE_URL!,
-    authToken: process.env.CRAWL_DATABASE_AUTH_TOKEN,
+    url: process.env.TENANT_DATABASE_URL!,
+    authToken: process.env.TENANT_DATABASE_AUTH_TOKEN,
   }
 } satisfies Config;

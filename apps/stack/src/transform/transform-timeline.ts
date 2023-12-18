@@ -21,15 +21,18 @@ const apiContextSchema = z.object({
   }),
 });
 
+const client = createClient({ url: Config.TENANT_DATABASE_URL, authToken: Config.TENANT_DATABASE_AUTH_TOKEN });
+const db = drizzle<Record<string, unknown>>(client);
+
 const context = {
   extract: {
-    db: drizzle(createClient({ url: Config.EXTRACT_DATABASE_URL, authToken: Config.EXTRACT_DATABASE_AUTH_TOKEN })),
+    db,
     entities: {
       mergeRequests: extract.mergeRequests,
     }
   },
   transform: {
-    db: drizzle(createClient({ url: Config.TRANSFORM_DATABASE_URL, authToken: Config.TRANSFORM_DATABASE_AUTH_TOKEN })),
+    db,
     entities: {
       dates: transform.dates,
     }
