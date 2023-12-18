@@ -14,9 +14,9 @@ import { createMessageHandler } from "@stack/config/create-message";
 import { MessageKind, metadataSchema } from "./messages";
 import { eq } from "drizzle-orm";
 
-type SourceControlOption = 'github' | 'gitlab';
+type SupportedSourceControls = 'github' | 'gitlab';
 
-const extractRepository = async (repositoryInput: GetRepositoryInput, sourceControl: SourceControlOption, from: Date, to: Date, userId: string, tenantId: Tenancy['id']) => {
+const extractRepository = async (repositoryInput: GetRepositoryInput, sourceControl: SupportedSourceControls, from: Date, to: Date, userId: string, tenantId: Tenancy['id']) => {
 
   const { externalRepositoryId, repositoryName, namespaceName } = repositoryInput;
 
@@ -56,9 +56,10 @@ const extractRepository = async (repositoryInput: GetRepositoryInput, sourceCont
 export const repositoriesSenderHandler = createMessageHandler({
   queueId: 'ExtractQueue',
   kind: MessageKind.Repository,
-  metadataShape: metadataSchema.shape,
+  metadataShape: metadataSchema.omit({ sourceControl: true, crawlId: true }).shape, // TODO: is this good enough ?
   contentShape: z.object({
     externalRepositoryId: RepositorySchema.shape.externalId,
+    forgeType: RepositorySchema.shape.forgeType,
     repositoryName: RepositorySchema.shape.name,
     namespaceName: NamespaceSchema.shape.name,
     tenantId: TenantSchema.shape.id, // TODO: move to metadata
@@ -69,7 +70,7 @@ export const repositoriesSenderHandler = createMessageHandler({
       namespaceName: message.content.namespaceName,
       repositoryName: message.content.repositoryName,
     },
-      message.metadata.sourceControl,
+      message.content.forgeType,
       message.metadata.from,
       message.metadata.to,
       message.metadata.userId,
@@ -121,44 +122,25 @@ export const cronHandler = async ()=> {
    .leftJoin(context.entities.namespaces, eq(context.entities.repositories.namespaceId, context.entities.namespaces.id))
    .all();
 
-   const githubRepos = repositories.filter(repo=>repo.forgeType === 'github').map(repo=>({
+   const arrayOfRepositoryMessageContent = repositories.map(repo=>({
     repositoryName: repo.repositoryName,
     externalRepositoryId: repo.externalRepositoryId,
     namespaceName: repo.namespaceName!, // TODO: what if foreign key constraint broken ?
+    forgeType: repo.forgeType,
     tenantId: Number(TENANT_ID),
-   }));
+   }))
 
-   if (githubRepos.length > 0) {
-    await sender.sendAll(githubRepos, {
+
+   if (arrayOfRepositoryMessageContent.length === 0) return;
+
+    await sender.sendAll(arrayOfRepositoryMessageContent, {
       version: 1,
       caller: 'extract-repositories',
-      sourceControl: 'github',
       userId: CRON_USER_ID,
       timestamp: new Date().getTime(),
       from: utcYesterdayAt10AM,
       to: utcTodayAt10AM,
-      crawlId: -1, // TODO: what does this mean ? -> crawl starts at extract-repository, but we still need the queue here ?
-     });
-   }
-
-   const gitlabRepos = repositories.filter(repo=>repo.forgeType === 'gitlab').map(repo=>({
-    repositoryName: repo.repositoryName,
-    externalRepositoryId: repo.externalRepositoryId,
-    namespaceName: repo.namespaceName!,
-    tenantId: Number(TENANT_ID),
-   }));
-
-   if (gitlabRepos.length > 0) {
-    await sender.sendAll(gitlabRepos, {
-      version: 1,
-      caller: 'extract-repositories',
-      sourceControl: 'github',
-      userId: CRON_USER_ID,
-      timestamp: new Date().getTime(),
-      from: utcYesterdayAt10AM,
-      to: utcTodayAt10AM,
-      crawlId: -1,
     });
-   }
+   
 
 }
