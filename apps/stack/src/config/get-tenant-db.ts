@@ -1,8 +1,17 @@
 import { createClient } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
+import { Config } from "sst/node/config";
 import { z } from "zod";
 
 export type OmitDb<T> = Omit<T, 'db'>;
+type TransformContext<TExtract, TTransform> = {
+  extract: TExtract;
+  transform: TTransform;
+}
+export type OmitTransformDb<T extends TransformContext<any, any>> = {
+  extract: OmitDb<T['extract']>;
+  transform: OmitDb<T['transform']>;
+}
 
 const TenancyArraySchema = z.array(z.object({
   id: z.number(),
@@ -40,5 +49,5 @@ export const getTenantDb = (tenantId: Tenancy['id']) => {
   const url = lazyloadTenancyMap().get(tenantId);
   if (!url) { throw new Error(`Couldn't resolve tenant database. Invalid tenantId: ${tenantId}`); }
 
-  return drizzle(createClient({ url, authToken: process.env.TENANT_DATABASE_AUTH_TOKEN }));
+  return drizzle(createClient({ url, authToken: Config.TENANT_DATABASE_AUTH_TOKEN }));
 }
