@@ -148,7 +148,7 @@ export const cronHandler = async ()=> {
       sourceControl: 'github',
       from: utcYesterdayAt10AM,
       to: utcTodayAt10AM,
-      tenantId: 0,
+      tenantId: 0, // cron will be removed
     }, CRON_USER_ID);
   
 }
