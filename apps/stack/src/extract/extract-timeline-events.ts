@@ -1,8 +1,5 @@
-import { createClient } from "@libsql/client";
 import { EventHandler } from "@stack/config/create-event";
 import { createMessageHandler } from "@stack/config/create-message";
-import { drizzle } from "drizzle-orm/libsql";
-import { Config } from "sst/node/config";
 import { z } from "zod";
 
 import { getTimelineEvents, type Context, type GetTimelineEventsEntities, type GetTimelineEventsSourceControl } from "@acme/extract-functions";
@@ -12,6 +9,7 @@ import { GitHubSourceControl, GitlabSourceControl } from "@acme/source-control";
 import { extractMergeRequestsEvent } from "./events";
 import { getClerkUserToken } from "./get-clerk-user-token";
 import { MessageKind, metadataSchema } from "./messages";
+import { getTenantDb, type OmitDb } from "@stack/config/get-tenant-db";
 
 export const timelineEventsSenderHandler = createMessageHandler({
   queueId: 'ExtractQueue',
@@ -36,20 +34,17 @@ export const timelineEventsSenderHandler = createMessageHandler({
         mergeRequestId,
         namespaceId,
         repositoryId,
-      }, context
+      }, { ...context, db: getTenantDb(message.metadata.tenantId) }
     );
   }
 });
 
 const { sender } = timelineEventsSenderHandler;
 
-const client = createClient({ url: Config.TENANT_DATABASE_URL, authToken: Config.TENANT_DATABASE_AUTH_TOKEN });
-const db = drizzle(client);
-
-const context: Context<
+const context: OmitDb<Context<
   GetTimelineEventsSourceControl,
   GetTimelineEventsEntities
-> = {
+>> = {
   entities: {
     namespaces,
     repositories,
@@ -59,7 +54,6 @@ const context: Context<
   integrations: {
     sourceControl: null,
   },
-  db,
 };
 
 const initSourceControl = async (userId: string, sourceControl: "github" | "gitlab") => {
@@ -69,10 +63,10 @@ const initSourceControl = async (userId: string, sourceControl: "github" | "gitl
   return null;
 };
 
-export const eventHandler = EventHandler(extractMergeRequestsEvent, async (evt) => {
-    const { mergeRequestIds, namespaceId, repositoryId } = evt.properties;
+export const eventHandler = EventHandler(extractMergeRequestsEvent, async (ev) => {
+    const { mergeRequestIds, namespaceId, repositoryId } = ev.properties;
 
-    const { sourceControl, userId } = evt.metadata;
+    const { sourceControl, userId } = ev.metadata;
 
     const arrayOfExtractMergeRequestData = [];
     for (let i = 0; i < mergeRequestIds.length; i += 1) {
@@ -84,14 +78,15 @@ export const eventHandler = EventHandler(extractMergeRequestsEvent, async (evt) 
     }
 
     await sender.sendAll(arrayOfExtractMergeRequestData, {
-      crawlId: evt.metadata.crawlId,
+      crawlId: ev.metadata.crawlId,
       version: 1,
       caller: "extract-timeline-events",
       sourceControl,
       userId,
       timestamp: new Date().getTime(),
-      from: evt.metadata.from,
-      to: evt.metadata.to,
+      from: ev.metadata.from,
+      to: ev.metadata.to,
+      tenantId: ev.metadata.tenantId,
     });
   },
 );

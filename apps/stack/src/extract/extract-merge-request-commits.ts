@@ -1,8 +1,5 @@
 import { getMergeRequestCommits, type Context, type GetMergeRequestCommitsEntities, type GetMergeRequestCommitsSourceControl } from "@acme/extract-functions";
 import { GitHubSourceControl, GitlabSourceControl } from "@acme/source-control";
-import { createClient } from "@libsql/client";
-import { drizzle } from "drizzle-orm/libsql";
-import { Config } from "sst/node/config";
 import { mergeRequestCommits, namespaces, repositories, mergeRequests, RepositorySchema, NamespaceSchema, MergeRequestSchema } from "@acme/extract-schema";
 import { EventHandler } from "@stack/config/create-event";
 import { extractMergeRequestsEvent } from "./events";
@@ -12,6 +9,7 @@ import { z } from "zod";
 import { getClerkUserToken } from "./get-clerk-user-token";
 import { insertEvent } from "@acme/crawl-functions";
 import { events } from "@acme/crawl-schema";
+import { getTenantDb, type OmitDb } from "@stack/config/get-tenant-db";
 
 export const mrcsh = createMessageHandler({
   queueId: 'ExtractQueue',
@@ -36,20 +34,16 @@ export const mrcsh = createMessageHandler({
         mergeRequestId,
         namespaceId,
         repositoryId
-      }, context)
+      }, { ...context, db: getTenantDb(message.metadata.tenantId) })
   }
 });
 
 const { sender } = mrcsh;
 
-  const client = createClient({ url: Config.TENANT_DATABASE_URL, authToken: Config.TENANT_DATABASE_AUTH_TOKEN });
-
-  const db = drizzle(client);
-
-  const context: Context<
+  const context: OmitDb<Context<
     GetMergeRequestCommitsSourceControl,
     GetMergeRequestCommitsEntities
-  > = {
+  >> = {
   entities: {
     mergeRequestCommits,
     namespaces,
@@ -59,7 +53,6 @@ const { sender } = mrcsh;
   integrations: {
     sourceControl: null,
   },
-  db,
 };
 
 
@@ -70,10 +63,10 @@ const initSourceControl = async (userId: string, sourceControl: 'github' | 'gitl
   return null;
 }
 
-export const eventHandler = EventHandler(extractMergeRequestsEvent, async (evt) => {
-  const { mergeRequestIds, namespaceId, repositoryId } = evt.properties;
+export const eventHandler = EventHandler(extractMergeRequestsEvent, async (ev) => {
+  const { mergeRequestIds, namespaceId, repositoryId } = ev.properties;
 
-  const { sourceControl, userId } = evt.metadata;
+  const { sourceControl, userId } = ev.metadata;
 
 
   const arrayOfExtractMergeRequestData = [];
@@ -85,17 +78,21 @@ export const eventHandler = EventHandler(extractMergeRequestsEvent, async (evt) 
     })
   }
 
-  await insertEvent({ crawlId: evt.metadata.crawlId, eventNamespace: 'mergeRequestCommit', eventDetail: 'crawlInfo', data: {calls: mergeRequestIds.length }}, {db, entities: { events }})
+  await insertEvent(
+    { crawlId: ev.metadata.crawlId, eventNamespace: 'mergeRequestCommit', eventDetail: 'crawlInfo', data: { calls: mergeRequestIds.length } },
+    { db: getTenantDb(ev.metadata.tenantId), entities: { events } }
+  );
 
   await sender.sendAll(arrayOfExtractMergeRequestData, {
-    crawlId: evt.metadata.crawlId,
+    crawlId: ev.metadata.crawlId,
     version: 1,
     caller: 'extract-merge-request-commits',
     sourceControl,
     userId,
     timestamp: new Date().getTime(),
-    from: evt.metadata.from,
-    to: evt.metadata.to,
+    from: ev.metadata.from,
+    to: ev.metadata.to,
+    tenantId: ev.metadata.tenantId,
   })
 
 });

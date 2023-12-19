@@ -4,19 +4,13 @@ import type { Context, GetRepositorySourceControl, GetRepositoryEntities } from 
 import { GitlabSourceControl, GitHubSourceControl } from "@acme/source-control";
 import { repositories, namespaces } from "@acme/extract-schema";
 import { instances } from "@acme/crawl-schema";
-import { createClient } from '@libsql/client';
-import { drizzle } from 'drizzle-orm/libsql';
 import { z } from "zod";
-import { Config } from "sst/node/config";
 import { ApiHandler, useJsonBody } from 'sst/node/api';
 import { getClerkUserToken } from "./get-clerk-user-token";
 import { setInstance } from "@acme/crawl-functions";
+import { getTenantDb, type OmitDb } from "@stack/config/get-tenant-db";
 
-const client = createClient({ url: Config.TENANT_DATABASE_URL, authToken: Config.TENANT_DATABASE_AUTH_TOKEN });
-
-const db = drizzle(client);
-
-const context: Context<GetRepositorySourceControl, GetRepositoryEntities> = {
+const context: OmitDb<Context<GetRepositorySourceControl, GetRepositoryEntities>> = {
   entities: {
     repositories,
     namespaces,
@@ -24,7 +18,6 @@ const context: Context<GetRepositorySourceControl, GetRepositoryEntities> = {
   integrations: {
     sourceControl: null,
   },
-  db,
 };
 
 const inputSchema = z.object({
@@ -33,12 +26,14 @@ const inputSchema = z.object({
   namespaceName: z.string(),
   sourceControl: z.literal("gitlab").or(z.literal("github")),
   from: z.coerce.date(),
-  to: z.coerce.date()
+  to: z.coerce.date(),
+  tenantId: z.number(),
 });
 
 type Input = z.infer<typeof inputSchema>;
 const extractRepository = async (input: Input, userId: string) => {
-  const { repositoryId, repositoryName, namespaceName, sourceControl, from, to } = input;
+  const { tenantId, repositoryId, repositoryName, namespaceName, sourceControl, from, to } = input;
+  const db = getTenantDb(tenantId);
 
   const sourceControlAccessToken = await getClerkUserToken(userId, `oauth_${sourceControl}`);
 
@@ -48,7 +43,7 @@ const extractRepository = async (input: Input, userId: string) => {
     context.integrations.sourceControl = new GitHubSourceControl(sourceControlAccessToken);
   }
 
-  const { repository, namespace } = await getRepository({ externalRepositoryId: repositoryId, repositoryName, namespaceName }, context);
+  const { repository, namespace } = await getRepository({ externalRepositoryId: repositoryId, repositoryName, namespaceName }, { ...context, db });
 
   const { instanceId } = await setInstance({ repositoryId: repository.id, userId }, { db, entities: { instances } });
 
@@ -66,6 +61,7 @@ const extractRepository = async (input: Input, userId: string) => {
       userId,
       from,
       to,
+      tenantId,
     }
   );
 
@@ -125,6 +121,7 @@ export const handler = ApiHandler(async (ev) => {
 
 const CRON_ENV = z.object({
   CRON_USER_ID: z.string(),
+  TENANT_ID: z.string(),
   PUBLIC_REPO_NAME: z.string(),
   PUBLIC_REPO_OWNER: z.string(),
 })
@@ -151,6 +148,7 @@ export const cronHandler = async ()=> {
       sourceControl: 'github',
       from: utcYesterdayAt10AM,
       to: utcTodayAt10AM,
+      tenantId: 0, // cron will be removed
     }, CRON_USER_ID);
   
 }

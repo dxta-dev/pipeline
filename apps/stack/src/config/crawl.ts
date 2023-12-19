@@ -2,22 +2,16 @@ import { insertEvent } from "@acme/crawl-functions";
 import { events } from "@acme/crawl-schema";
 import type { Context, InsertEventEntities } from "@acme/crawl-functions";
 import type { EventNamespaceType } from "@acme/crawl-schema/src/events";
-import { createClient } from "@libsql/client";
-import { drizzle } from "drizzle-orm/libsql";
-import { Config } from "sst/node/config";
+import { getTenantDb, type OmitDb, type Tenancy } from "./get-tenant-db";
 
-const context: Context<InsertEventEntities> = {
-  db: drizzle(createClient({
-    url: Config.TENANT_DATABASE_URL,
-    authToken: Config.TENANT_DATABASE_AUTH_TOKEN,
-  })),
+const context: OmitDb<Context<InsertEventEntities>> = {
   entities: {
     events
   }
 };
 
-export const crawlFailed = (crawlId: number | undefined, namespace: EventNamespaceType | undefined, error: unknown) => {
-  if(namespace === undefined) {
+export const crawlFailed = (isCrawlMessage: boolean, tenantId: Tenancy['id'], crawlId: number | undefined, namespace: EventNamespaceType | undefined, error: unknown) => {
+  if(namespace === undefined || !isCrawlMessage) {
     return;
   }
 
@@ -33,11 +27,11 @@ export const crawlFailed = (crawlId: number | undefined, namespace: EventNamespa
       message: (error instanceof Error) ? error.toString() : `Error: ${JSON.stringify(error)}`,
     },
     eventNamespace: namespace
-  }, context);
+  }, {...context, db: getTenantDb(tenantId) });
 };
 
-export const crawlComplete = (crawlId: number | undefined, namespace: EventNamespaceType | undefined) => {
-  if(namespace === undefined) {
+export const crawlComplete = (isCrawlMessage: boolean, tenantId: Tenancy['id'], crawlId: number | undefined, namespace: EventNamespaceType | undefined) => {
+  if(namespace === undefined || !isCrawlMessage) {
     return;
   }
 
@@ -51,5 +45,5 @@ export const crawlComplete = (crawlId: number | undefined, namespace: EventNames
     eventDetail: 'crawlComplete',
     data: {},
     eventNamespace: namespace
-  }, context);
+  }, {...context, db: getTenantDb(tenantId) });
 }

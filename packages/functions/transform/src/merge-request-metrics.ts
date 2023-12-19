@@ -8,7 +8,7 @@ import { type SQLiteTransaction } from 'drizzle-orm/sqlite-core';
 import { type ResultSet } from '@libsql/client/.';
 import { isMemberKnownBot } from './known-bots';
 
-type BrandedDatabase<T> = LibSQLDatabase<Record<string, unknown>> & { __brand: T }
+type BrandedDatabase<T> = LibSQLDatabase<Record<string, never>> & { __brand: T }
 
 export type TransformDatabase = BrandedDatabase<'transform'>;
 export type ExtractDatabase = BrandedDatabase<'extract'>;

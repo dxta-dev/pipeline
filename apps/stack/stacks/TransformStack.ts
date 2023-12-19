@@ -9,6 +9,13 @@ import { ExtractStack } from "./ExtractStack";
 import { z } from "zod";
 
 export function TransformStack({ stack }: StackContext) {
+  const ENVSchema = z.object({
+    CLERK_JWT_ISSUER: z.string(),
+    CLERK_JWT_AUDIENCE: z.string(),
+    PUBLIC_REPOS: z.string(),
+    TENANTS: z.string(),
+  });
+  const ENV = ENVSchema.parse(process.env);
 
   const {
     TENANT_DATABASE_URL,
@@ -23,6 +30,9 @@ export function TransformStack({ stack }: StackContext) {
       },
     },
     function: {
+      environment: {
+        TENANTS: ENV.TENANTS,
+      },
       bind: [
         TENANT_DATABASE_URL,
         TENANT_DATABASE_AUTH_TOKEN,
@@ -32,11 +42,6 @@ export function TransformStack({ stack }: StackContext) {
 
   })
 
-  const ENVSchema = z.object({
-    CLERK_JWT_ISSUER: z.string(),
-    CLERK_JWT_AUDIENCE: z.string(),
-    PUBLIC_REPOS: z.string(),
-  });
   const publicReposSchema = z.array(
     z.object({
       owner: z.string(),
@@ -44,13 +49,15 @@ export function TransformStack({ stack }: StackContext) {
     })
   );
 
-  const ENV = ENVSchema.parse(process.env);
   const PUBLIC_REPOS = publicReposSchema.parse(JSON.parse(ENV.PUBLIC_REPOS));
 
   const api = new Api(stack, "TransformApi", {
     defaults: {
       authorizer: "JwtAuthorizer",
       function: {
+        environment: {
+          TENANTS: ENV.TENANTS,
+        },
         bind: [
           transformTestingQueue,
           TENANT_DATABASE_URL,

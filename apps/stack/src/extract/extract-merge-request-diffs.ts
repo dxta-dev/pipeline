@@ -1,5 +1,3 @@
-import { createClient } from "@libsql/client";
-import { drizzle } from "drizzle-orm/libsql";
 import { GitHubSourceControl, GitlabSourceControl } from "@acme/source-control";
 import { Config } from "sst/node/config";
 import type { Context, GetMergeRequestDiffsEntities, GetMergeRequestDiffsSourceControl } from "@acme/extract-functions";
@@ -13,7 +11,7 @@ import { z } from "zod";
 import { getClerkUserToken } from "./get-clerk-user-token";
 import { insertEvent } from "@acme/crawl-functions";
 import { events } from "@acme/crawl-schema";
-
+import { getTenantDb, type OmitDb } from "@stack/config/get-tenant-db";
 
 export const mergeRequestDiffSenderHandler = createMessageHandler({
   queueId: 'ExtractQueue',
@@ -34,14 +32,12 @@ export const mergeRequestDiffSenderHandler = createMessageHandler({
       repositoryId,
       namespaceId,
       perPage: Number(Config.PER_PAGE),
-    }, context);
+    }, { ...context, db: getTenantDb(message.metadata.tenantId) });
   }
 });
 
 const { sender } = mergeRequestDiffSenderHandler;
 
-
-const client = createClient({ url: Config.TENANT_DATABASE_URL, authToken: Config.TENANT_DATABASE_AUTH_TOKEN });
 
 const initSourceControl = async (userId: string, sourceControl: 'github' | 'gitlab') => {
   const accessToken = await getClerkUserToken(userId, `oauth_${sourceControl}`);
@@ -50,10 +46,7 @@ const initSourceControl = async (userId: string, sourceControl: 'github' | 'gitl
   return null;
 }
 
-const db = drizzle(client);
-
-const context: Context<GetMergeRequestDiffsSourceControl, GetMergeRequestDiffsEntities> = {
-  db,
+const context: OmitDb<Context<GetMergeRequestDiffsSourceControl, GetMergeRequestDiffsEntities>> = {
   entities: {
     mergeRequestDiffs,
     mergeRequests,
@@ -78,8 +71,10 @@ export const eventHandler = EventHandler(extractMergeRequestsEvent, async (ev) =
       repositoryId,
     })
   }
-  await insertEvent({ crawlId: ev.metadata.crawlId, eventNamespace: 'mergeRequestDiff', eventDetail: 'crawlInfo', data: {calls: mergeRequestIds.length }}, {db, entities: { events }})
-
+  await insertEvent(
+    { crawlId: ev.metadata.crawlId, eventNamespace: 'mergeRequestDiff', eventDetail: 'crawlInfo', data: { calls: mergeRequestIds.length } },
+    { db: getTenantDb(ev.metadata.tenantId), entities: { events } }
+  );
 
   await sender.sendAll(arrayOfExtractMergeRequestData, {
     version: 1,
@@ -90,6 +85,7 @@ export const eventHandler = EventHandler(extractMergeRequestsEvent, async (ev) =
     timestamp: new Date().getTime(),
     from: ev.metadata.from,
     to: ev.metadata.to,
+    tenantId: ev.metadata.tenantId,
   });
 
 });

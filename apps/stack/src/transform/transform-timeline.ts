@@ -1,15 +1,13 @@
 import { ApiHandler } from "sst/node/api";
 import { z } from "zod";
 import * as extract from "@acme/extract-schema";
-import * as transform from "@acme/transform-schema";
-import { drizzle } from "drizzle-orm/libsql";
-import { createClient } from "@libsql/client";
-import type { Context, ExtractEntities, TransformEntities, TransformDatabase, ExtractDatabase } from "@acme/transform-functions";
+import type { TransformDatabase, ExtractDatabase } from "@acme/transform-functions";
 import { run } from "@acme/transform-functions";
-import { Config } from "sst/node/config";
 import { createMessage } from "@stack/config/create-message";
 import type { SQSEvent } from "aws-lambda";
 import { and, gt, lt } from "drizzle-orm";
+import { getTenantDb } from "@stack/config/get-tenant-db";
+import { useJsonBody } from "sst/node/api";
 
 const apiContextSchema = z.object({
   authorizer: z.object({
@@ -21,29 +19,13 @@ const apiContextSchema = z.object({
   }),
 });
 
-const client = createClient({ url: Config.TENANT_DATABASE_URL, authToken: Config.TENANT_DATABASE_AUTH_TOKEN });
-const db = drizzle<Record<string, unknown>>(client);
-
-const context = {
-  extract: {
-    db,
-    entities: {
-      mergeRequests: extract.mergeRequests,
-    }
-  },
-  transform: {
-    db,
-    entities: {
-      dates: transform.dates,
-    }
-  }
-} satisfies Context<Partial<ExtractEntities>, Partial<TransformEntities>>;
-
 const timelineMessageSchema = z.object({
   content: z.object({
     mergeRequestId: z.number(),
   }),
-  metadata: z.object({}),
+  metadata: z.object({
+    tenantId: z.number(),
+  }),
   kind: z.string()
 });
 const timelineMessage = createMessage({
@@ -56,26 +38,28 @@ const timelineMessage = createMessage({
 type transformTimelineArgs = {
   from: Date;
   to: Date;
+  tenantId: number;
 }
-const transformTimeline = async ({ from, to }: transformTimelineArgs) => {
-  const allMergeRequests = await context.extract.db.select({
-    mergeRequestId: context.extract.entities.mergeRequests.id
+const transformTimeline = async ({ from, to, tenantId }: transformTimelineArgs) => {
+  const db = getTenantDb(tenantId);
+  const allMergeRequests = await db.select({
+    mergeRequestId: extract.mergeRequests.id
   })
-    .from(context.extract.entities.mergeRequests)
+    .from(extract.mergeRequests)
     .where(and(
-      gt(context.extract.entities.mergeRequests.updatedAt, from),
-      lt(context.extract.entities.mergeRequests.updatedAt, to)
+      gt(extract.mergeRequests.updatedAt, from),
+      lt(extract.mergeRequests.updatedAt, to)
     ))
     .all();
 
-  console.log("Trnafsorming",allMergeRequests.length, "merge requests");
+  console.log("Transforming", allMergeRequests.length, "merge requests");
 
   if (allMergeRequests.length === 0) {
     console.log("Warning: nothing to transform");
     return;
   }
 
-  await timelineMessage.sendAll(allMergeRequests, {});
+  await timelineMessage.sendAll(allMergeRequests, { tenantId });
 
 }
 
@@ -84,17 +68,22 @@ export const queueHandler = async (event: SQSEvent) => {
   for (const record of event.Records) {
     const messageValidationResult = timelineMessageSchema.safeParse(JSON.parse(record.body));
     if (!messageValidationResult.success) continue;
+    
+    const { content, metadata } = messageValidationResult.data;
+    const db = getTenantDb(metadata.tenantId)
 
-    const messageContent = messageValidationResult.data.content;
-
-    await run(messageContent.mergeRequestId, {
-      extractDatabase: context.extract.db as ExtractDatabase,
-      transformDatabase: context.transform.db as TransformDatabase,
+    await run(content.mergeRequestId, {
+      extractDatabase: db as ExtractDatabase,
+      transformDatabase: db as TransformDatabase,
     });
   }
 }
 
+const inputSchema = z.object({
+  tenantId: z.number(),
+});
 export const apiHandler = ApiHandler(async (ev) => {
+  const body = useJsonBody() as unknown;
 
   const lambdaContextValidation = apiContextSchema.safeParse(ev.requestContext);
   if (!lambdaContextValidation.success) {
@@ -105,10 +94,23 @@ export const apiHandler = ApiHandler(async (ev) => {
     }
   }
 
+  const inputValidation = inputSchema.safeParse(body);
+
+  if (!inputValidation.success) {
+    console.log("Error: Input validation failed - ", inputValidation.error.issues);
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ error: inputValidation.error.toString() }),
+    }
+  }
+
+  const input = inputValidation.data;
+
   try {
     await transformTimeline({
       from: new Date(0),
-      to: new Date()
+      to: new Date(),
+      tenantId: input.tenantId,
     });
   } catch (error) {
     return {
@@ -123,7 +125,18 @@ export const apiHandler = ApiHandler(async (ev) => {
   };
 });
 
+const CRON_ENV = z.object({
+  TENANT_ID: z.string(),
+});
 export const cronHandler = async () => {
+  const validEnv = CRON_ENV.safeParse(process.env);
+
+  if (!validEnv.success) {
+    console.error("Invalid environment in lambda 'extract-repositories.cronHandler':", ...validEnv.error.issues);
+    throw new Error("Invalid environment");
+  }
+  const { TENANT_ID } = validEnv.data;
+
   const utcTodayAt10AM = new Date();
   utcTodayAt10AM.setUTCHours(10, 0, 0, 0);
   const utcYesterdayAt10AM = new Date(utcTodayAt10AM);
@@ -132,5 +145,6 @@ export const cronHandler = async () => {
   await transformTimeline({
     from: utcTodayAt10AM,
     to: utcTodayAt10AM,
+    tenantId: Number(TENANT_ID),
   });
 }

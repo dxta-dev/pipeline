@@ -1,8 +1,6 @@
 import { EventHandler } from "@stack/config/create-event";
 import { extractMembersEvent, extractRepositoryEvent } from "./events";
 import { Clerk } from "@clerk/clerk-sdk-node";
-import { createClient } from "@libsql/client";
-import { drizzle } from "drizzle-orm/libsql";
 import { getNamespaceMembers } from "@acme/extract-functions";
 import type { Context,  GetNamespaceMembersEntities, GetNamespaceMembersSourceControl } from "@acme/extract-functions";
 import { members, namespaces, repositories, repositoriesToMembers, NamespaceSchema, RepositorySchema } from "@acme/extract-schema";
@@ -17,6 +15,7 @@ import { metadataSchema, paginationSchema, MessageKind } from "./messages";
 import { z } from 'zod';
 import { insertEvent } from "@acme/crawl-functions";
 import { events } from "@acme/crawl-schema";
+import { getTenantDb, type OmitDb } from "@stack/config/get-tenant-db";
 
 export const namespaceMemberSenderHandler = createMessageHandler({
   queueId: 'ExtractQueue',
@@ -37,6 +36,7 @@ export const namespaceMemberSenderHandler = createMessageHandler({
       from: message.metadata.from,
       to: message.metadata.to,
       crawlId: message.metadata.crawlId,
+      tenantId: message.metadata.tenantId,
     });
   }
 });
@@ -44,7 +44,6 @@ export const namespaceMemberSenderHandler = createMessageHandler({
 const { sender } = namespaceMemberSenderHandler;
 
 const clerkClient = Clerk({ secretKey: Config.CLERK_SECRET_KEY });
-const client = createClient({ url: Config.TENANT_DATABASE_URL, authToken: Config.TENANT_DATABASE_AUTH_TOKEN });
 
 const fetchSourceControlAccessToken = async (userId: string, forgeryIdProvider: 'oauth_github' | 'oauth_gitlab') => {
   const [userOauthAccessTokenPayload, ...rest] = await clerkClient.users.getUserOauthAccessToken(userId, forgeryIdProvider);
@@ -61,9 +60,7 @@ const initSourceControl = async (userId: string, sourceControl: 'github' | 'gitl
   return null;
 }
 
-const db = drizzle(client);
-
-const context: Context<GetNamespaceMembersSourceControl, GetNamespaceMembersEntities> = {
+const context: OmitDb<Context<GetNamespaceMembersSourceControl, GetNamespaceMembersEntities>> = {
   entities: {
     members,
     repositoriesToMembers
@@ -71,7 +68,6 @@ const context: Context<GetNamespaceMembersSourceControl, GetNamespaceMembersEnti
   integrations: {
     sourceControl: null,
   },
-  db,
 };
 
 type ExtractNamespaceMembersPageInput = {
@@ -83,9 +79,10 @@ type ExtractNamespaceMembersPageInput = {
   from: Date;
   to: Date;
   crawlId: number;
+  tenantId: number;
 }
 
-const extractNamespaceMembersPage = async ({ namespace, repositoryId, sourceControl, userId, paginationInput, from, to, crawlId }: ExtractNamespaceMembersPageInput) => {
+const extractNamespaceMembersPage = async ({ namespace, repositoryId, sourceControl, userId, paginationInput, from, to, crawlId, tenantId }: ExtractNamespaceMembersPageInput) => {
 
   context.integrations.sourceControl = await initSourceControl(userId, sourceControl);
 
@@ -95,7 +92,7 @@ const extractNamespaceMembersPage = async ({ namespace, repositoryId, sourceCont
     repositoryId,
     perPage: paginationInput.perPage,
     page: paginationInput.page
-  }, context);
+  }, { ...context, db: getTenantDb(tenantId) });
 
   await extractMembersEvent.publish({
     memberIds: members.map(member => member.id)
@@ -107,7 +104,8 @@ const extractNamespaceMembersPage = async ({ namespace, repositoryId, sourceCont
     userId: userId,
     timestamp: new Date().getTime(),
     from,
-    to
+    to,
+    tenantId
   });
 
 
@@ -115,6 +113,7 @@ const extractNamespaceMembersPage = async ({ namespace, repositoryId, sourceCont
 };
 
 export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
+  const db = getTenantDb(ev.metadata.tenantId);
   const repository = await db.select().from(repositories).where(eq(repositories.id, ev.properties.repositoryId)).get();
   const namespace = await db.select().from(namespaces).where(eq(namespaces.id, ev.properties.namespaceId)).get();
 
@@ -133,6 +132,7 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
     from: ev.metadata.from,
     to: ev.metadata.to,
     crawlId: ev.metadata.crawlId,
+    tenantId: ev.metadata.tenantId,
   });
 
   const arrayOfExtractMemberPageMessageContent = []; 
@@ -151,7 +151,10 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
   if (arrayOfExtractMemberPageMessageContent.length === 0)
     return;
 
-  await insertEvent({ crawlId: ev.metadata.crawlId, eventNamespace: 'member', eventDetail: 'crawlInfo', data: {calls: pagination.totalPages }}, {db, entities: { events }})
+  await insertEvent(
+    { crawlId: ev.metadata.crawlId, eventNamespace: 'member', eventDetail: 'crawlInfo', data: { calls: pagination.totalPages } },
+    { db, entities: { events } }
+  );
 
   await sender.sendAll(arrayOfExtractMemberPageMessageContent, {
     version: 1,
@@ -162,6 +165,7 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
     from: ev.metadata.from,
     to: ev.metadata.to,
     crawlId: ev.metadata.crawlId,
+    tenantId: ev.metadata.tenantId,
   });
 
 },   

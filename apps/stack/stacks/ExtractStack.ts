@@ -9,6 +9,15 @@ import {
 import { z } from "zod";
 
 export function ExtractStack({ stack }: StackContext) {
+  const ENVSchema = z.object({
+    CLERK_JWT_ISSUER: z.string(),
+    CLERK_JWT_AUDIENCE: z.string(),
+    PUBLIC_REPOS: z.string(),
+    CRON_USER_ID: z.string(),
+    TENANTS: z.string(),
+  });
+  const ENV = ENVSchema.parse(process.env);
+
   const TENANT_DATABASE_URL = new Config.Secret(stack, "TENANT_DATABASE_URL");
   const TENANT_DATABASE_AUTH_TOKEN = new Config.Secret(stack, "TENANT_DATABASE_AUTH_TOKEN");
   const CLERK_SECRET_KEY = new Config.Secret(stack, "CLERK_SECRET_KEY");
@@ -52,6 +61,9 @@ export function ExtractStack({ stack }: StackContext) {
     defaults: {
       retries: 10,
       function: {
+        environment: {
+          TENANTS: ENV.TENANTS,
+        },
         bind: [
           TENANT_DATABASE_URL,
           TENANT_DATABASE_AUTH_TOKEN,
@@ -75,6 +87,9 @@ export function ExtractStack({ stack }: StackContext) {
       },
     },
     function: {
+      environment: {
+        TENANTS: ENV.TENANTS,
+      },
       bind: [
         bus,
         extractQueue,
@@ -93,6 +108,9 @@ export function ExtractStack({ stack }: StackContext) {
   bus.addTargets(stack, "members", {
     extractUserInfo: {
       function: {
+        environment: {
+          TENANTS: ENV.TENANTS,
+        },
         bind: [bus, extractQueue],
         handler: "src/extract/extract-member-info.eventHandler",
       },
@@ -102,18 +120,27 @@ export function ExtractStack({ stack }: StackContext) {
   bus.addTargets(stack, "repository", {
     extractMember: {
       function: {
+        environment: {
+          TENANTS: ENV.TENANTS,
+        },
         bind: [bus, extractQueue],
         handler: "src/extract/extract-members.eventHandler",
       },
     },
     extractNamespaceMember: {
       function: {
+        environment: {
+          TENANTS: ENV.TENANTS,
+        },
         bind: [bus, extractQueue],
         handler: "src/extract/extract-namespace-members.eventHandler",
       },
     },
     mergeRequests: {
       function: {
+        environment: {
+          TENANTS: ENV.TENANTS,
+        },
         bind: [bus, extractQueue],
         handler: "src/extract/extract-merge-requests.eventHandler",
       },
@@ -123,18 +150,27 @@ export function ExtractStack({ stack }: StackContext) {
   bus.addTargets(stack, "mergeRequests", {
     extractMergeRequestDiffs: {
       function: {
+        environment: {
+          TENANTS: ENV.TENANTS,
+        },
         bind: [bus, extractQueue],
         handler: "src/extract/extract-merge-request-diffs.eventHandler",
       }
     },
     extractMergeRequestCommits: {
       function: {
+        environment: {
+          TENANTS: ENV.TENANTS,
+        },
         bind: [bus, extractQueue],
         handler: "src/extract/extract-merge-request-commits.eventHandler",
       }
     },
     extractMergeRequestNotes: {
       function: {
+        environment: {
+          TENANTS: ENV.TENANTS,
+        },
         bind: [bus, extractQueue],
         handler: "src/extract/extract-merge-request-notes.eventHandler",
       }
@@ -144,18 +180,15 @@ export function ExtractStack({ stack }: StackContext) {
   bus.addTargets(stack, 'githubMergeRequests' , {
     extractTimelineEvents: {
       function: {
+        environment: {
+          TENANTS: ENV.TENANTS,
+        },
         bind: [bus, extractQueue],
         handler: "src/extract/extract-timeline-events.eventHandler",
       }
     }
   });
 
-  const ENVSchema = z.object({
-    CLERK_JWT_ISSUER: z.string(),
-    CLERK_JWT_AUDIENCE: z.string(),
-    PUBLIC_REPOS: z.string(),
-    CRON_USER_ID: z.string(),
-  });
   const publicReposSchema = z.array(
     z.object({
       owner: z.string(),
@@ -163,13 +196,15 @@ export function ExtractStack({ stack }: StackContext) {
     })
   );
 
-  const ENV = ENVSchema.parse(process.env);
   const PUBLIC_REPOS = publicReposSchema.parse(JSON.parse(ENV.PUBLIC_REPOS));
 
   const api = new Api(stack, "ExtractApi", {
     defaults: {
       authorizer: "JwtAuthorizer",
       function: {
+        environment: {
+          TENANTS: ENV.TENANTS,
+        },
         bind: [
           bus, 
           TENANT_DATABASE_URL,
