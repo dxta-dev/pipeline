@@ -18,6 +18,7 @@ export const metadataSchema = z.object({
 });
 
 export enum MessageKind {
+  Repository = 'repository',
   MemberInfo = "member-info",
   NamespaceMember = "namespace-member",
   Member = "member",
