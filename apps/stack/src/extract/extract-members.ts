@@ -15,7 +15,7 @@ import { z } from 'zod';
 import { getClerkUserToken } from "./get-clerk-user-token";
 import { insertEvent } from "@acme/crawl-functions";
 import { events } from "@acme/crawl-schema";
-import type { OmitDb } from "@stack/config/get-tenant-db";
+import { getTenantDb, type OmitDb } from "@stack/config/get-tenant-db";
 
 export const memberSenderHandler = createMessageHandler({
   queueId: 'ExtractQueue',
@@ -83,7 +83,7 @@ const extractMembersPage = async ({ namespace, repository, sourceControl, userId
     repositoryName: repository.name,
     perPage: paginationInput.perPage, // provjeriti ovo,da li je ovo nesto sto moze API da mijenja (procitati docs)
     page: paginationInput.page
-  }, context);
+  }, { ...context, db: getTenantDb(tenantId) });
 
   await extractMembersEvent.publish({
     memberIds: members.map(member => member.id)
@@ -104,6 +104,7 @@ const extractMembersPage = async ({ namespace, repository, sourceControl, userId
 };
 
 export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
+  const db = getTenantDb(ev.metadata.tenantId);
   const repository = await db.select().from(repositories).where(eq(repositories.id, ev.properties.repositoryId)).get();
   const namespace = await db.select().from(namespaces).where(eq(namespaces.id, ev.properties.namespaceId)).get();
 
@@ -140,7 +141,10 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
 
   if (arrayOfExtractMemberPageMessageContent.length === 0) return;
 
-    await insertEvent({ crawlId: ev.metadata.crawlId, eventNamespace: 'member', eventDetail: 'crawlInfo', data: {calls: pagination.totalPages }}, {db, entities: { events }})
+  await insertEvent(
+    { crawlId: ev.metadata.crawlId, eventNamespace: 'member', eventDetail: 'crawlInfo', data: { calls: pagination.totalPages } },
+    { db, entities: { events } }
+  );
 
   await sender.sendAll(arrayOfExtractMemberPageMessageContent, {
     version: 1,

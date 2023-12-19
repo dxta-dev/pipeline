@@ -24,7 +24,7 @@ import { GitHubSourceControl, GitlabSourceControl } from "@acme/source-control";
 import { extractMergeRequestsEvent, extractRepositoryEvent } from "./events";
 import { getClerkUserToken } from "./get-clerk-user-token";
 import { MessageKind, metadataSchema, paginationSchema } from "./messages";
-import type { OmitDb } from "@stack/config/get-tenant-db";
+import { getTenantDb, type OmitDb } from "@stack/config/get-tenant-db";
 
 export const mergeRequestSenderHandler = createMessageHandler({
   queueId: 'ExtractQueue',
@@ -61,7 +61,7 @@ export const mergeRequestSenderHandler = createMessageHandler({
         timePeriod: { from: message.metadata.from, to: message.metadata.to },
         totalPages: pagination.totalPages,
       },
-      context,
+      { ...context, db: getTenantDb(message.metadata.tenantId) },
     );
 
     await extractMergeRequestsEvent.publish(
@@ -112,6 +112,7 @@ const initSourceControl = async (
 export const eventHandler = EventHandler(
   extractRepositoryEvent,
   async (ev) => {
+    const db = getTenantDb(ev.metadata.tenantId);
     const repository = await db
       .select()
       .from(repositories)
@@ -150,7 +151,7 @@ export const eventHandler = EventHandler(
         perPage: Number(Config.PER_PAGE),
         timePeriod,
       },
-      context,
+      { ...context, db },
     );
 
     await insertEvent(

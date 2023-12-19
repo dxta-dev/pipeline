@@ -9,7 +9,7 @@ import { z } from "zod";
 import { getClerkUserToken } from "./get-clerk-user-token";
 import { insertEvent } from "@acme/crawl-functions";
 import { events } from "@acme/crawl-schema";
-import type { OmitDb } from "@stack/config/get-tenant-db";
+import { getTenantDb, type OmitDb } from "@stack/config/get-tenant-db";
 
 export const mrcsh = createMessageHandler({
   queueId: 'ExtractQueue',
@@ -34,7 +34,7 @@ export const mrcsh = createMessageHandler({
         mergeRequestId,
         namespaceId,
         repositoryId
-      }, context)
+      }, { ...context, db: getTenantDb(message.metadata.tenantId) })
   }
 });
 
@@ -78,7 +78,10 @@ export const eventHandler = EventHandler(extractMergeRequestsEvent, async (ev) =
     })
   }
 
-  await insertEvent({ crawlId: ev.metadata.crawlId, eventNamespace: 'mergeRequestCommit', eventDetail: 'crawlInfo', data: {calls: mergeRequestIds.length }}, {db, entities: { events }})
+  await insertEvent(
+    { crawlId: ev.metadata.crawlId, eventNamespace: 'mergeRequestCommit', eventDetail: 'crawlInfo', data: { calls: mergeRequestIds.length } },
+    { db: getTenantDb(ev.metadata.tenantId), entities: { events } }
+  );
 
   await sender.sendAll(arrayOfExtractMergeRequestData, {
     crawlId: ev.metadata.crawlId,

@@ -9,7 +9,7 @@ import { extractMembersEvent, extractMergeRequestsEvent } from "./events";
 import { getClerkUserToken } from "./get-clerk-user-token";
 import { insertEvent } from "@acme/crawl-functions";
 import { events } from "@acme/crawl-schema";
-import type { OmitDb } from "@stack/config/get-tenant-db";
+import { getTenantDb, type OmitDb } from "@stack/config/get-tenant-db";
 
 const initSourceControl = async (userId: string, sourceControl: 'github' | 'gitlab') => {
   const accessToken = await getClerkUserToken(userId, `oauth_${sourceControl}`);
@@ -51,7 +51,7 @@ export const mergeRequestNoteSenderHandler = createMessageHandler({
       mergeRequestId,
       repositoryId,
       namespaceId,
-    }, context);
+    }, { ...context, db: getTenantDb(message.metadata.tenantId) });
 
     await extractMembersEvent.publish({ memberIds: members.map(member => member.id) }, {
       crawlId: message.metadata.crawlId,
@@ -83,7 +83,10 @@ export const eventHandler = EventHandler(extractMergeRequestsEvent, async (ev) =
     })
   }
 
-  await insertEvent({ crawlId: ev.metadata.crawlId, eventNamespace: 'mergeRequestNote', eventDetail: 'crawlInfo', data: {calls: mergeRequestIds.length }}, {db, entities: { events }})
+  await insertEvent(
+    { crawlId: ev.metadata.crawlId, eventNamespace: 'mergeRequestNote', eventDetail: 'crawlInfo', data: {calls: mergeRequestIds.length }},
+    { db: getTenantDb(ev.metadata.tenantId), entities: { events } }
+  );
 
   await mergeRequestNoteQueue.sendAll(arrayOfExtractMergeRequestData, {
     crawlId: ev.metadata.crawlId,

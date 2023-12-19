@@ -10,7 +10,7 @@ import { getMemberInfo } from "@acme/extract-functions";
 import { getClerkUserToken } from "./get-clerk-user-token";
 import { insertEvent } from "@acme/crawl-functions";
 import { events } from "@acme/crawl-schema";
-import type { OmitDb } from "@stack/config/get-tenant-db";
+import { getTenantDb, type OmitDb } from "@stack/config/get-tenant-db";
 
 export const memberInfoSenderHandler = createMessageHandler({
   queueId: 'ExtractQueue',
@@ -23,7 +23,7 @@ export const memberInfoSenderHandler = createMessageHandler({
     const { sourceControl, userId } = message.metadata;
     const { memberId } = message.content;
     context.integrations.sourceControl = await initSourceControl(userId, sourceControl);
-    await getMemberInfo({ memberId }, context);
+    await getMemberInfo({ memberId }, { ...context, db: getTenantDb(message.metadata.tenantId) });
     await extractMemberInfoEvent.publish({ memberId }, { ...message.metadata, timestamp: new Date().getTime(), version: 1, caller: "extract-member-info" });
   }
 });
@@ -62,6 +62,9 @@ export const eventHandler = EventHandler(extractMembersEvent, async (ev) => {
     to: ev.metadata.to,
   });
 
-  await insertEvent({ crawlId: ev.metadata.crawlId, eventNamespace: 'memberInfo', eventDetail: 'crawlInfo', data: {calls: memberIds.length }}, {db, entities: { events }})
+  await insertEvent(
+    { crawlId: ev.metadata.crawlId, eventNamespace: 'memberInfo', eventDetail: 'crawlInfo', data: { calls: memberIds.length } },
+    { db: getTenantDb(ev.metadata.tenantId), entities: { events } }
+  );
 
 });

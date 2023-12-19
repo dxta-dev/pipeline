@@ -9,7 +9,7 @@ import { GitHubSourceControl, GitlabSourceControl } from "@acme/source-control";
 import { extractMergeRequestsEvent } from "./events";
 import { getClerkUserToken } from "./get-clerk-user-token";
 import { MessageKind, metadataSchema } from "./messages";
-import type { OmitDb } from "@stack/config/get-tenant-db";
+import { getTenantDb, type OmitDb } from "@stack/config/get-tenant-db";
 
 export const timelineEventsSenderHandler = createMessageHandler({
   queueId: 'ExtractQueue',
@@ -34,7 +34,7 @@ export const timelineEventsSenderHandler = createMessageHandler({
         mergeRequestId,
         namespaceId,
         repositoryId,
-      }, context
+      }, { ...context, db: getTenantDb(message.metadata.tenantId) }
     );
   }
 });
