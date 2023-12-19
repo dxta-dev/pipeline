@@ -1,5 +1,5 @@
 import { createClient } from "@libsql/client";
-import { drizzle, type LibSQLDatabase } from "drizzle-orm/libsql";
+import { drizzle } from "drizzle-orm/libsql";
 import { z } from "zod";
 
 export type OmitDb<T> = Omit<T, 'db'>;
@@ -36,15 +36,9 @@ const lazyloadTenancyMap = () => {
   return TENANCY_MAP;
 }
 
-const tenantDbMap = new Map<Tenancy['id'], LibSQLDatabase<Record<string,never>>>();
-export const resolveTenantDb = (tenantId: Tenancy['id']) => {
-  const resolvedDb = tenantDbMap.get(tenantId);
-  if (resolvedDb) return resolvedDb;
-
+export const getTenantDb = (tenantId: Tenancy['id']) => {
   const url = lazyloadTenancyMap().get(tenantId);
   if (!url) { throw new Error(`Couldn't resolve tenant database. Invalid tenantId: ${tenantId}`); }
 
-  const tenantDb = drizzle(createClient({ url, authToken: process.env.TENANT_DATABASE_AUTH_TOKEN }));
-  tenantDbMap.set(tenantId, tenantDb);
-  return tenantDb;
+  return drizzle(createClient({ url, authToken: process.env.TENANT_DATABASE_AUTH_TOKEN }));
 }

@@ -1,7 +1,7 @@
 import { getRepository, type Context, type GetRepositoryEntities, type GetRepositoryInput, type GetRepositorySourceControl } from "@acme/extract-functions";
 import { NamespaceSchema, RepositorySchema, namespaces, repositories } from "@acme/extract-schema";
 import { createClient } from "@libsql/client";
-import { resolveTenantDb, type OmitDb, type Tenancy, TenantSchema } from "@stack/config/tenant-db";
+import { getTenantDb, type OmitDb, type Tenancy, TenantSchema } from "@stack/config/get-tenant-db";
 import { drizzle } from "drizzle-orm/libsql";
 import { Config } from "sst/node/config";
 import { z } from "zod";
@@ -28,7 +28,7 @@ const extractRepository = async (repositoryInput: GetRepositoryInput, sourceCont
     context.integrations.sourceControl = new GitHubSourceControl(sourceControlAccessToken);
   }
 
-  const db = resolveTenantDb(tenantId);
+  const db = getTenantDb(tenantId);
   const { repository, namespace } = await getRepository({ externalRepositoryId, repositoryName, namespaceName }, { ...context, db });
 
   const { instanceId } = await setInstance({ repositoryId: repository.id, userId }, { db, entities: { instances } });
@@ -119,17 +119,16 @@ export const cronHandler = async ()=> {
     forgeType: context.entities.repositories.forgeType,
    })
    .from(context.entities.repositories)
-   .leftJoin(context.entities.namespaces, eq(context.entities.repositories.namespaceId, context.entities.namespaces.id))
+   .innerJoin(context.entities.namespaces, eq(context.entities.repositories.namespaceId, context.entities.namespaces.id))
    .all();
 
-   const arrayOfRepositoryMessageContent = repositories.map(repo=>({
+  const arrayOfRepositoryMessageContent = repositories.map(repo => ({
     repositoryName: repo.repositoryName,
     externalRepositoryId: repo.externalRepositoryId,
-    namespaceName: repo.namespaceName!, // TODO: what if foreign key constraint broken ?
+    namespaceName: repo.namespaceName,
     forgeType: repo.forgeType,
     tenantId: Number(TENANT_ID),
-   }))
-
+  }))
 
    if (arrayOfRepositoryMessageContent.length === 0) return;
 
@@ -142,5 +141,4 @@ export const cronHandler = async ()=> {
       to: utcTodayAt10AM,
     });
    
-
 }
