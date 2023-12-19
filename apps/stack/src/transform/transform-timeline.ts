@@ -2,14 +2,12 @@ import { ApiHandler } from "sst/node/api";
 import { z } from "zod";
 import * as extract from "@acme/extract-schema";
 import * as transform from "@acme/transform-schema";
-import { drizzle } from "drizzle-orm/libsql";
-import { createClient } from "@libsql/client";
 import type { Context, ExtractEntities, TransformEntities, TransformDatabase, ExtractDatabase } from "@acme/transform-functions";
 import { run } from "@acme/transform-functions";
-import { Config } from "sst/node/config";
 import { createMessage } from "@stack/config/create-message";
 import type { SQSEvent } from "aws-lambda";
 import { and, gt, lt } from "drizzle-orm";
+import type { OmitDb } from "@stack/config/get-tenant-db";
 
 const apiContextSchema = z.object({
   authorizer: z.object({
@@ -21,23 +19,18 @@ const apiContextSchema = z.object({
   }),
 });
 
-const client = createClient({ url: Config.TENANT_DATABASE_URL, authToken: Config.TENANT_DATABASE_AUTH_TOKEN });
-const db = drizzle<Record<string, unknown>>(client);
-
 const context = {
   extract: {
-    db,
     entities: {
       mergeRequests: extract.mergeRequests,
     }
   },
   transform: {
-    db,
     entities: {
       dates: transform.dates,
     }
   }
-} satisfies Context<Partial<ExtractEntities>, Partial<TransformEntities>>;
+} satisfies OmitDb<Context<Partial<ExtractEntities>, Partial<TransformEntities>>>;
 
 const timelineMessageSchema = z.object({
   content: z.object({

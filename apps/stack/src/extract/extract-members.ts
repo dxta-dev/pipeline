@@ -1,7 +1,5 @@
 import { EventHandler } from "@stack/config/create-event";
 import { extractMembersEvent, extractRepositoryEvent } from "./events";
-import { createClient } from "@libsql/client";
-import { drizzle } from "drizzle-orm/libsql";
 import { getMembers } from "@acme/extract-functions";
 import type { Context, GetMembersEntities, GetMembersSourceControl } from "@acme/extract-functions";
 import { members, namespaces, repositories, repositoriesToMembers, NamespaceSchema, RepositorySchema } from "@acme/extract-schema";
@@ -17,6 +15,7 @@ import { z } from 'zod';
 import { getClerkUserToken } from "./get-clerk-user-token";
 import { insertEvent } from "@acme/crawl-functions";
 import { events } from "@acme/crawl-schema";
+import type { OmitDb } from "@stack/config/get-tenant-db";
 
 export const memberSenderHandler = createMessageHandler({
   queueId: 'ExtractQueue',
@@ -44,8 +43,6 @@ export const memberSenderHandler = createMessageHandler({
 
 const { sender } = memberSenderHandler;
 
-const client = createClient({ url: Config.TENANT_DATABASE_URL, authToken: Config.TENANT_DATABASE_AUTH_TOKEN });
-
 const initSourceControl = async (userId: string, sourceControl: 'github' | 'gitlab') => {
   const accessToken = await getClerkUserToken(userId, `oauth_${sourceControl}`);
   if (sourceControl === 'github') return new GitHubSourceControl(accessToken);
@@ -53,9 +50,7 @@ const initSourceControl = async (userId: string, sourceControl: 'github' | 'gitl
   return null;
 }
 
-const db = drizzle(client);
-
-const context: Context<GetMembersSourceControl, GetMembersEntities> = {
+const context: OmitDb<Context<GetMembersSourceControl, GetMembersEntities>> = {
   entities: {
     members,
     repositoriesToMembers
@@ -63,7 +58,6 @@ const context: Context<GetMembersSourceControl, GetMembersEntities> = {
   integrations: {
     sourceControl: null,
   },
-  db,
 };
 
 type ExtractMembersPageInput = {

@@ -2,19 +2,14 @@ import { mergeRequestNotes, mergeRequests, repositories, namespaces, MergeReques
 import { createMessageHandler } from "@stack/config/create-message";
 import { MessageKind, metadataSchema } from "./messages";
 import { z } from "zod";
-import { Config } from "sst/node/config";
-import { createClient } from "@libsql/client";
 import { GitHubSourceControl, GitlabSourceControl } from "@acme/source-control";
-import { drizzle } from "drizzle-orm/libsql";
 import { getMergeRequestNotes, type Context, type GetMergeRequestNotesEntities, type GetMergeRequestNotesSourceControl } from "@acme/extract-functions";
 import { EventHandler } from "@stack/config/create-event";
 import { extractMembersEvent, extractMergeRequestsEvent } from "./events";
 import { getClerkUserToken } from "./get-clerk-user-token";
 import { insertEvent } from "@acme/crawl-functions";
 import { events } from "@acme/crawl-schema";
-
-
-const client = createClient({ url: Config.TENANT_DATABASE_URL, authToken: Config.TENANT_DATABASE_AUTH_TOKEN });
+import type { OmitDb } from "@stack/config/get-tenant-db";
 
 const initSourceControl = async (userId: string, sourceControl: 'github' | 'gitlab') => {
   const accessToken = await getClerkUserToken(userId, `oauth_${sourceControl}`);
@@ -23,10 +18,7 @@ const initSourceControl = async (userId: string, sourceControl: 'github' | 'gitl
   return null;
 }
 
-const db = drizzle(client);
-
-const context: Context<GetMergeRequestNotesSourceControl, GetMergeRequestNotesEntities> = {
-  db,
+const context: OmitDb<Context<GetMergeRequestNotesSourceControl, GetMergeRequestNotesEntities>> = {
   entities: {
     members,
     mergeRequestNotes,

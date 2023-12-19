@@ -1,8 +1,6 @@
 import { EventHandler } from "@stack/config/create-event";
 import { extractMembersEvent, extractRepositoryEvent } from "./events";
 import { Clerk } from "@clerk/clerk-sdk-node";
-import { createClient } from "@libsql/client";
-import { drizzle } from "drizzle-orm/libsql";
 import { getNamespaceMembers } from "@acme/extract-functions";
 import type { Context,  GetNamespaceMembersEntities, GetNamespaceMembersSourceControl } from "@acme/extract-functions";
 import { members, namespaces, repositories, repositoriesToMembers, NamespaceSchema, RepositorySchema } from "@acme/extract-schema";
@@ -17,6 +15,7 @@ import { metadataSchema, paginationSchema, MessageKind } from "./messages";
 import { z } from 'zod';
 import { insertEvent } from "@acme/crawl-functions";
 import { events } from "@acme/crawl-schema";
+import type { OmitDb } from "@stack/config/get-tenant-db";
 
 export const namespaceMemberSenderHandler = createMessageHandler({
   queueId: 'ExtractQueue',
@@ -45,7 +44,6 @@ export const namespaceMemberSenderHandler = createMessageHandler({
 const { sender } = namespaceMemberSenderHandler;
 
 const clerkClient = Clerk({ secretKey: Config.CLERK_SECRET_KEY });
-const client = createClient({ url: Config.TENANT_DATABASE_URL, authToken: Config.TENANT_DATABASE_AUTH_TOKEN });
 
 const fetchSourceControlAccessToken = async (userId: string, forgeryIdProvider: 'oauth_github' | 'oauth_gitlab') => {
   const [userOauthAccessTokenPayload, ...rest] = await clerkClient.users.getUserOauthAccessToken(userId, forgeryIdProvider);
@@ -62,9 +60,7 @@ const initSourceControl = async (userId: string, sourceControl: 'github' | 'gitl
   return null;
 }
 
-const db = drizzle(client);
-
-const context: Context<GetNamespaceMembersSourceControl, GetNamespaceMembersEntities> = {
+const context: OmitDb<Context<GetNamespaceMembersSourceControl, GetNamespaceMembersEntities>> = {
   entities: {
     members,
     repositoriesToMembers
@@ -72,7 +68,6 @@ const context: Context<GetNamespaceMembersSourceControl, GetNamespaceMembersEnti
   integrations: {
     sourceControl: null,
   },
-  db,
 };
 
 type ExtractNamespaceMembersPageInput = {

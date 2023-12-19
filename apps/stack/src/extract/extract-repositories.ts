@@ -1,9 +1,6 @@
 import { getRepository, type Context, type GetRepositoryEntities, type GetRepositoryInput, type GetRepositorySourceControl } from "@acme/extract-functions";
 import { NamespaceSchema, RepositorySchema, namespaces, repositories } from "@acme/extract-schema";
-import { createClient } from "@libsql/client";
 import { getTenantDb, type OmitDb, type Tenancy } from "@stack/config/get-tenant-db";
-import { drizzle } from "drizzle-orm/libsql";
-import { Config } from "sst/node/config";
 import { z } from "zod";
 import { getClerkUserToken } from "./get-clerk-user-token";
 import { GitHubSourceControl, GitlabSourceControl } from "@acme/source-control";
@@ -79,10 +76,6 @@ export const repositoriesSenderHandler = createMessageHandler({
 });
 const {sender} = repositoriesSenderHandler;
 
-const client = createClient({ url: Config.TENANT_DATABASE_URL, authToken: Config.TENANT_DATABASE_AUTH_TOKEN });
-
-const db = drizzle(client);
-
 const context: OmitDb<Context<GetRepositorySourceControl, GetRepositoryEntities>> = {
   entities: {
     repositories,
@@ -110,6 +103,8 @@ export const cronHandler = async ()=> {
   utcTodayAt10AM.setUTCHours(10, 0, 0, 0);
   const utcYesterdayAt10AM = new Date(utcTodayAt10AM);
   utcYesterdayAt10AM.setHours(utcTodayAt10AM.getUTCHours() - 24);
+
+  const db = getTenantDb(Number(TENANT_ID));
 
   const repositories = await db.select({ 
     repositoryName: context.entities.repositories.name,

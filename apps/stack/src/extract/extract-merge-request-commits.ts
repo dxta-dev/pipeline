@@ -1,8 +1,5 @@
 import { getMergeRequestCommits, type Context, type GetMergeRequestCommitsEntities, type GetMergeRequestCommitsSourceControl } from "@acme/extract-functions";
 import { GitHubSourceControl, GitlabSourceControl } from "@acme/source-control";
-import { createClient } from "@libsql/client";
-import { drizzle } from "drizzle-orm/libsql";
-import { Config } from "sst/node/config";
 import { mergeRequestCommits, namespaces, repositories, mergeRequests, RepositorySchema, NamespaceSchema, MergeRequestSchema } from "@acme/extract-schema";
 import { EventHandler } from "@stack/config/create-event";
 import { extractMergeRequestsEvent } from "./events";
@@ -12,6 +9,7 @@ import { z } from "zod";
 import { getClerkUserToken } from "./get-clerk-user-token";
 import { insertEvent } from "@acme/crawl-functions";
 import { events } from "@acme/crawl-schema";
+import type { OmitDb } from "@stack/config/get-tenant-db";
 
 export const mrcsh = createMessageHandler({
   queueId: 'ExtractQueue',
@@ -42,14 +40,10 @@ export const mrcsh = createMessageHandler({
 
 const { sender } = mrcsh;
 
-  const client = createClient({ url: Config.TENANT_DATABASE_URL, authToken: Config.TENANT_DATABASE_AUTH_TOKEN });
-
-  const db = drizzle(client);
-
-  const context: Context<
+  const context: OmitDb<Context<
     GetMergeRequestCommitsSourceControl,
     GetMergeRequestCommitsEntities
-  > = {
+  >> = {
   entities: {
     mergeRequestCommits,
     namespaces,
@@ -59,7 +53,6 @@ const { sender } = mrcsh;
   integrations: {
     sourceControl: null,
   },
-  db,
 };
 
 

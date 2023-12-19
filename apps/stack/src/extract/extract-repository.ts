@@ -4,19 +4,13 @@ import type { Context, GetRepositorySourceControl, GetRepositoryEntities } from 
 import { GitlabSourceControl, GitHubSourceControl } from "@acme/source-control";
 import { repositories, namespaces } from "@acme/extract-schema";
 import { instances } from "@acme/crawl-schema";
-import { createClient } from '@libsql/client';
-import { drizzle } from 'drizzle-orm/libsql';
 import { z } from "zod";
-import { Config } from "sst/node/config";
 import { ApiHandler, useJsonBody } from 'sst/node/api';
 import { getClerkUserToken } from "./get-clerk-user-token";
 import { setInstance } from "@acme/crawl-functions";
+import type { OmitDb } from "@stack/config/get-tenant-db";
 
-const client = createClient({ url: Config.TENANT_DATABASE_URL, authToken: Config.TENANT_DATABASE_AUTH_TOKEN });
-
-const db = drizzle(client);
-
-const context: Context<GetRepositorySourceControl, GetRepositoryEntities> = {
+const context: OmitDb<Context<GetRepositorySourceControl, GetRepositoryEntities>> = {
   entities: {
     repositories,
     namespaces,
@@ -24,7 +18,6 @@ const context: Context<GetRepositorySourceControl, GetRepositoryEntities> = {
   integrations: {
     sourceControl: null,
   },
-  db,
 };
 
 const inputSchema = z.object({

@@ -1,8 +1,6 @@
-import { createClient } from "@libsql/client";
 import { EventHandler } from "@stack/config/create-event";
 import { createMessageHandler } from "@stack/config/create-message";
 import { eq } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/libsql";
 import { Config } from "sst/node/config";
 import { z } from "zod";
 
@@ -26,6 +24,7 @@ import { GitHubSourceControl, GitlabSourceControl } from "@acme/source-control";
 import { extractMergeRequestsEvent, extractRepositoryEvent } from "./events";
 import { getClerkUserToken } from "./get-clerk-user-token";
 import { MessageKind, metadataSchema, paginationSchema } from "./messages";
+import type { OmitDb } from "@stack/config/get-tenant-db";
 
 export const mergeRequestSenderHandler = createMessageHandler({
   queueId: 'ExtractQueue',
@@ -88,21 +87,16 @@ export const mergeRequestSenderHandler = createMessageHandler({
 
 const { sender } = mergeRequestSenderHandler;
 
-const client = createClient({ url: Config.TENANT_DATABASE_URL, authToken: Config.TENANT_DATABASE_AUTH_TOKEN });
-
-const db = drizzle(client);
-
-const context: Context<
+const context: OmitDb<Context<
   GetMergeRequestsSourceControl,
   GetMergeRequestsEntities
-> = {
+>> = {
   entities: {
     mergeRequests,
   },
   integrations: {
     sourceControl: null,
   },
-  db,
 };
 
 const initSourceControl = async (
