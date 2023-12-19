@@ -1,7 +1,7 @@
 import { getRepository, type Context, type GetRepositoryEntities, type GetRepositoryInput, type GetRepositorySourceControl } from "@acme/extract-functions";
 import { NamespaceSchema, RepositorySchema, namespaces, repositories } from "@acme/extract-schema";
 import { createClient } from "@libsql/client";
-import { getTenantDb, type OmitDb, type Tenancy, TenantSchema } from "@stack/config/get-tenant-db";
+import { getTenantDb, type OmitDb, type Tenancy } from "@stack/config/get-tenant-db";
 import { drizzle } from "drizzle-orm/libsql";
 import { Config } from "sst/node/config";
 import { z } from "zod";
@@ -40,12 +40,12 @@ const extractRepository = async (repositoryInput: GetRepositoryInput, sourceCont
     },
     {
       crawlId: instanceId,
-      caller: 'extract-repository',
+      caller: 'extract-repositories',
       timestamp: new Date().getTime(),
       version: 1,
       sourceControl,
       userId,
-      // tenantId,
+      tenantId,
       from,
       to,
     }
@@ -56,13 +56,12 @@ const extractRepository = async (repositoryInput: GetRepositoryInput, sourceCont
 export const repositoriesSenderHandler = createMessageHandler({
   queueId: 'ExtractQueue',
   kind: MessageKind.Repository,
-  metadataShape: metadataSchema.omit({ sourceControl: true, crawlId: true }).shape, // TODO: is this good enough ?
+  metadataShape: metadataSchema.omit({ sourceControl: true, crawlId: true }).shape,
   contentShape: z.object({
     externalRepositoryId: RepositorySchema.shape.externalId,
     forgeType: RepositorySchema.shape.forgeType,
     repositoryName: RepositorySchema.shape.name,
     namespaceName: NamespaceSchema.shape.name,
-    tenantId: TenantSchema.shape.id, // TODO: move to metadata
   }).shape,
   handler: async (message) => {
     await extractRepository({
@@ -74,7 +73,7 @@ export const repositoriesSenderHandler = createMessageHandler({
       message.metadata.from,
       message.metadata.to,
       message.metadata.userId,
-      message.content.tenantId
+      message.metadata.tenantId,
     );
   }
 });
@@ -127,7 +126,6 @@ export const cronHandler = async ()=> {
     externalRepositoryId: repo.externalRepositoryId,
     namespaceName: repo.namespaceName,
     forgeType: repo.forgeType,
-    tenantId: Number(TENANT_ID),
   }))
 
    if (arrayOfRepositoryMessageContent.length === 0) return;
@@ -135,6 +133,7 @@ export const cronHandler = async ()=> {
     await sender.sendAll(arrayOfRepositoryMessageContent, {
       version: 1,
       caller: 'extract-repositories',
+      tenantId: Number(TENANT_ID),
       userId: CRON_USER_ID,
       timestamp: new Date().getTime(),
       from: utcYesterdayAt10AM,
