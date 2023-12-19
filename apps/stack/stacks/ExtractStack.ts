@@ -12,9 +12,9 @@ export function ExtractStack({ stack }: StackContext) {
   const ENVSchema = z.object({
     CLERK_JWT_ISSUER: z.string(),
     CLERK_JWT_AUDIENCE: z.string(),
-    PUBLIC_REPOS: z.string(),
     CRON_USER_ID: z.string(),
     TENANTS: z.string(),
+    CRON_DISABLED: z.literal('true').optional(),
   });
   const ENV = ENVSchema.parse(process.env);
 
@@ -189,15 +189,6 @@ export function ExtractStack({ stack }: StackContext) {
     }
   });
 
-  const publicReposSchema = z.array(
-    z.object({
-      owner: z.string(),
-      name: z.string(),
-    })
-  );
-
-  const PUBLIC_REPOS = publicReposSchema.parse(JSON.parse(ENV.PUBLIC_REPOS));
-
   const api = new Api(stack, "ExtractApi", {
     defaults: {
       authorizer: "JwtAuthorizer",
@@ -232,31 +223,42 @@ export function ExtractStack({ stack }: StackContext) {
     },
   });
 
-  PUBLIC_REPOS.forEach(publicRepo => {
-    new Cron(stack, `${publicRepo.name}_ExtractCron`, {
-      schedule: "cron(00 10 * * ? *)",
-      job: {
-        function: {
-          handler: "src/extract/extract-repository.cronHandler",
-          environment: {
-            CRON_USER_ID: ENV.CRON_USER_ID,
-            PUBLIC_REPO_OWNER: publicRepo.owner,
-            PUBLIC_REPO_NAME: publicRepo.name,
-          },
-          bind: [
-            bus, 
-            TENANT_DATABASE_URL,
-            TENANT_DATABASE_AUTH_TOKEN,
-            CLERK_SECRET_KEY, 
-            REDIS_URL, 
-            REDIS_TOKEN, 
-            REDIS_USER_TOKEN_TTL
-          ],
-          runtime: "nodejs18.x",  
-        }
-      }
+  const tenantsSchema = z.array(
+    z.object({
+      id: z.number(),
+      tenant: z.string(),
+      dbUrl: z.string(),
     })
-  });
+  );
+  const tenants = tenantsSchema.parse(JSON.parse(ENV.TENANTS));
+
+  if (ENV.CRON_DISABLED !== 'true') {
+    tenants.forEach(tenant => {
+      new Cron(stack, `${tenant.tenant}_ExtractCron`, {
+        schedule: "cron(00 10 * * ? *)",
+        job: {
+          function: {
+            handler: "src/extract/extract-repositories.cronHandler",
+            environment: {
+              CRON_USER_ID: ENV.CRON_USER_ID,
+              TENANTS: ENV.TENANTS,
+              TENANT_ID: tenant.id.toString(),
+            },
+            bind: [
+              bus, 
+              TENANT_DATABASE_URL,
+              TENANT_DATABASE_AUTH_TOKEN,
+              CLERK_SECRET_KEY, 
+              REDIS_URL, 
+              REDIS_TOKEN, 
+              REDIS_USER_TOKEN_TTL
+            ],
+            runtime: "nodejs18.x",  
+          }
+        }
+      })
+    });  
+  }
 
   stack.addOutputs({
     ApiEndpoint: api.url,
