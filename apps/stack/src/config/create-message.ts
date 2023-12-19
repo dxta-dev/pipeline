@@ -7,6 +7,7 @@ import type { SQSEvent } from "aws-lambda";
 import { Queue } from 'sst/node/queue'
 import type { EventNamespaceType } from "@acme/crawl-schema";
 import { crawlComplete, crawlFailed } from "./crawl";
+import type { Tenancy } from "./get-tenant-db";
 
 const sqs = new SQSClient();
 
@@ -113,6 +114,12 @@ export function QueueHandler(map: Map<string, unknown>, logMap: Map<string, stri
     if (event.Records.length > 1) console.warn('WARNING: QueueHandler should process 1 message but got', event.Records.length);
     for (const record of event.Records) {
       const parsedEvent = JSON.parse(record.body) as unknown as MessagePayload<ZodRawShape, ZodRawShape>;
+      
+      const tenantId = parsedEvent.metadata?.tenantId as unknown as (Tenancy['id'] | undefined);
+      if (!tenantId) {
+        console.error(`No tenantId for message kind ${parsedEvent.kind}`);
+        break;
+      }
 
       const { sender, handler } = (map as MessageKindMap).get(parsedEvent.kind) ?? { sender: null, handler: null };
 
@@ -131,6 +138,7 @@ export function QueueHandler(map: Map<string, unknown>, logMap: Map<string, stri
         metadata: z.object(sender.shapes.metadataShape),
         kind: z.string(),
       });
+      const isCrawlMessage = schema.shape.metadata.shape.crawlId !== undefined; // required for extract-repositories
 
       const validatedMessage = schema.safeParse(parsedEvent);
 
@@ -138,9 +146,7 @@ export function QueueHandler(map: Map<string, unknown>, logMap: Map<string, stri
         console.error(
           `ERROR: Failed to parse message '${parsedEvent.kind}'. Reason: ${validatedMessage.error}`,
         );
-  
-        await crawlFailed(crawlId, crawlEventNamespace, `Error: Failed to parse message ${parsedEvent.kind} for crawl id: ${crawlId} - ${crawlEventNamespace}`);
-  
+        await crawlFailed(isCrawlMessage, tenantId, crawlId, crawlEventNamespace, `Error: Failed to parse message ${parsedEvent.kind} for crawl id: ${crawlId} - ${crawlEventNamespace}`);  
         return;        
       }
 
@@ -155,7 +161,7 @@ export function QueueHandler(map: Map<string, unknown>, logMap: Map<string, stri
       if (!handlerError) {
         console.log('Handled message', createLog(validatedMessage.data, parsedEvent.kind, propertiesToLog))
         try {
-          await crawlComplete(crawlId, crawlEventNamespace);
+          await crawlComplete(isCrawlMessage, tenantId, crawlId, crawlEventNamespace);
         } catch (e) {
           console.error(`Failed to insert crawl complete event for id: ${crawlId} - ${crawlEventNamespace}`, e);
         } 
@@ -164,7 +170,7 @@ export function QueueHandler(map: Map<string, unknown>, logMap: Map<string, stri
 
       try {
         console.error('Failed to handle message', createLog(validatedMessage.data, parsedEvent.kind, propertiesToLog));
-        await crawlFailed(crawlId, crawlEventNamespace, handlerError);
+        await crawlFailed(isCrawlMessage, tenantId, crawlId, crawlEventNamespace, handlerError);
       } catch (e) {
         console.error(`Failed to insert crawl failed event for id: ${crawlId} - ${crawlEventNamespace}`, e);
       }
