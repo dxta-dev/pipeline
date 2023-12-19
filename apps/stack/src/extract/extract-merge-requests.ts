@@ -80,6 +80,7 @@ export const mergeRequestSenderHandler = createMessageHandler({
         timestamp: new Date().getTime(),
         from: message.metadata.from,
         to: message.metadata.to,
+        tenantId: message.metadata.tenantId,
       },
     );
   },
@@ -116,30 +117,30 @@ const initSourceControl = async (
 
 export const eventHandler = EventHandler(
   extractRepositoryEvent,
-  async (evt) => {
+  async (ev) => {
     const repository = await db
       .select()
       .from(repositories)
-      .where(eq(repositories.id, evt.properties.repositoryId))
+      .where(eq(repositories.id, ev.properties.repositoryId))
       .get();
     const namespace = await db
       .select()
       .from(namespaces)
-      .where(eq(namespaces.id, evt.properties.namespaceId))
+      .where(eq(namespaces.id, ev.properties.namespaceId))
       .get();
 
     if (!repository) throw new Error("invalid repo id");
     if (!namespace) throw new Error("Invalid namespace id");
 
-    const sourceControl = evt.metadata.sourceControl;
+    const sourceControl = ev.metadata.sourceControl;
 
     context.integrations.sourceControl = await initSourceControl(
-      evt.metadata.userId,
+      ev.metadata.userId,
       sourceControl,
     );
 
-    const startDate = evt.metadata.from;
-    const endDate = evt.metadata.to;
+    const startDate = ev.metadata.from;
+    const endDate = ev.metadata.to;
 
     const timePeriod = {
       from: startDate,
@@ -160,7 +161,7 @@ export const eventHandler = EventHandler(
 
     await insertEvent(
       {
-        crawlId: evt.metadata.crawlId,
+        crawlId: ev.metadata.crawlId,
         eventNamespace: "mergeRequest",
         eventDetail: "crawlInfo",
         data: {
@@ -177,14 +178,15 @@ export const eventHandler = EventHandler(
         repositoryId: repository.id,
       },
       {
-        crawlId: evt.metadata.crawlId,
+        crawlId: ev.metadata.crawlId,
         version: 1,
         caller: "extract-merge-requests",
         sourceControl,
-        userId: evt.metadata.userId,
+        userId: ev.metadata.userId,
         timestamp: new Date().getTime(),
-        from: evt.metadata.from,
-        to: evt.metadata.to,
+        from: ev.metadata.from,
+        to: ev.metadata.to,
+        tenantId: ev.metadata.tenantId,
       },
     );
 
@@ -204,14 +206,15 @@ export const eventHandler = EventHandler(
     if (arrayOfExtractMergeRequests.length === 0) return;
 
     await sender.sendAll(arrayOfExtractMergeRequests, {
-      crawlId: evt.metadata.crawlId,
+      crawlId: ev.metadata.crawlId,
       version: 1,
       caller: "extract-merge-requests",
       sourceControl,
-      userId: evt.metadata.userId,
+      userId: ev.metadata.userId,
       timestamp: new Date().getTime(),
-      from: evt.metadata.from,
-      to: evt.metadata.to,
+      from: ev.metadata.from,
+      to: ev.metadata.to,
+      tenantId: ev.metadata.tenantId,
     });
   }, 
   {

@@ -59,6 +59,7 @@ export const eventHandler = EventHandler(extractMembersEvent, async (ev) => {
   const { sourceControl, userId } = ev.metadata;
   const { memberIds } = ev.properties;
   await sender.sendAll(memberIds.map(memberId => ({ memberId })), {
+    tenantId: ev.metadata.tenantId,
     crawlId: ev.metadata.crawlId,
     version: 1,
     caller: 'extract-member-info',

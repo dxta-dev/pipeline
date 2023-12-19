@@ -70,6 +70,7 @@ export const mergeRequestNoteSenderHandler = createMessageHandler({
       timestamp: new Date().getTime(),
       from: message.metadata.from,
       to: message.metadata.to,
+      tenantId: message.metadata.tenantId,
     });
   }
 });
@@ -101,5 +102,6 @@ export const eventHandler = EventHandler(extractMergeRequestsEvent, async (ev) =
     timestamp: new Date().getTime(),
     from: ev.metadata.from,
     to: ev.metadata.to,
+    tenantId: ev.metadata.tenantId,
   });
 });

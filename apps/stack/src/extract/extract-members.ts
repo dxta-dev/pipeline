@@ -36,7 +36,8 @@ export const memberSenderHandler = createMessageHandler({
       sourceControl: message.metadata.sourceControl,
       userId: message.metadata.userId,
       from: message.metadata.from,
-      to: message.metadata.to
+      to: message.metadata.to,
+      tenantId: message.metadata.tenantId,
     });
   }
 });
@@ -74,9 +75,10 @@ type ExtractMembersPageInput = {
   from: Date;
   to: Date;
   crawlId: number;
+  tenantId: number;
 }
 
-const extractMembersPage = async ({ namespace, repository, sourceControl, userId, paginationInput, from, to, crawlId }: ExtractMembersPageInput) => {
+const extractMembersPage = async ({ namespace, repository, sourceControl, userId, paginationInput, from, to, crawlId, tenantId }: ExtractMembersPageInput) => {
 
   context.integrations.sourceControl = await initSourceControl(userId, sourceControl);
 
@@ -92,6 +94,7 @@ const extractMembersPage = async ({ namespace, repository, sourceControl, userId
   await extractMembersEvent.publish({
     memberIds: members.map(member => member.id)
   }, {
+    tenantId,
     crawlId,
     version: 1,
     caller: 'extract-member',
@@ -125,6 +128,7 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
     from: ev.metadata.from,
     to: ev.metadata.to,
     crawlId: ev.metadata.crawlId,
+    tenantId: ev.metadata.tenantId,
   });
 
   const arrayOfExtractMemberPageMessageContent: { repository: Repository, namespace: Namespace, pagination: Pagination }[] = [];
@@ -153,6 +157,7 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
     from: ev.metadata.from,
     to: ev.metadata.to,
     crawlId: ev.metadata.crawlId,
+    tenantId: ev.metadata.tenantId,
   });
 
 },

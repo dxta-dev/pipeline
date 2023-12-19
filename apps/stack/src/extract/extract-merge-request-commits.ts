@@ -70,10 +70,10 @@ const initSourceControl = async (userId: string, sourceControl: 'github' | 'gitl
   return null;
 }
 
-export const eventHandler = EventHandler(extractMergeRequestsEvent, async (evt) => {
-  const { mergeRequestIds, namespaceId, repositoryId } = evt.properties;
+export const eventHandler = EventHandler(extractMergeRequestsEvent, async (ev) => {
+  const { mergeRequestIds, namespaceId, repositoryId } = ev.properties;
 
-  const { sourceControl, userId } = evt.metadata;
+  const { sourceControl, userId } = ev.metadata;
 
 
   const arrayOfExtractMergeRequestData = [];
@@ -85,17 +85,18 @@ export const eventHandler = EventHandler(extractMergeRequestsEvent, async (evt) 
     })
   }
 
-  await insertEvent({ crawlId: evt.metadata.crawlId, eventNamespace: 'mergeRequestCommit', eventDetail: 'crawlInfo', data: {calls: mergeRequestIds.length }}, {db, entities: { events }})
+  await insertEvent({ crawlId: ev.metadata.crawlId, eventNamespace: 'mergeRequestCommit', eventDetail: 'crawlInfo', data: {calls: mergeRequestIds.length }}, {db, entities: { events }})
 
   await sender.sendAll(arrayOfExtractMergeRequestData, {
-    crawlId: evt.metadata.crawlId,
+    crawlId: ev.metadata.crawlId,
     version: 1,
     caller: 'extract-merge-request-commits',
     sourceControl,
     userId,
     timestamp: new Date().getTime(),
-    from: evt.metadata.from,
-    to: evt.metadata.to,
+    from: ev.metadata.from,
+    to: ev.metadata.to,
+    tenantId: ev.metadata.tenantId,
   })
 
 });

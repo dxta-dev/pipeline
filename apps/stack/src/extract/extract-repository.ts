@@ -66,6 +66,7 @@ const extractRepository = async (input: Input, userId: string) => {
       userId,
       from,
       to,
+      tenantId: -1,
     }
   );
 

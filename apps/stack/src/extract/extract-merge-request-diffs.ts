@@ -90,6 +90,7 @@ export const eventHandler = EventHandler(extractMergeRequestsEvent, async (ev) =
     timestamp: new Date().getTime(),
     from: ev.metadata.from,
     to: ev.metadata.to,
+    tenantId: ev.metadata.tenantId,
   });
 
 });
