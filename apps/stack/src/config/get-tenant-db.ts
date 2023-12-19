@@ -4,35 +4,27 @@ import { Config } from "sst/node/config";
 import { z } from "zod";
 
 export type OmitDb<T> = Omit<T, 'db'>;
-type TransformContext<TExtract, TTransform> = {
-  extract: TExtract;
-  transform: TTransform;
-}
-export type OmitTransformDb<T extends TransformContext<any, any>> = {
-  extract: OmitDb<T['extract']>;
-  transform: OmitDb<T['transform']>;
-}
 
-const TenancyArraySchema = z.array(z.object({
+const TenantSchema = z.object({
   id: z.number(),
   tenant: z.string(),
   dbUrl: z.string(),
-}));
-export const TenantSchema = TenancyArraySchema.element;
-export type Tenancy = z.infer<typeof TenancyArraySchema.element>
+});
+
+const TenancyArraySchema = z.array(TenantSchema);
+
+export type Tenancy = z.infer<typeof TenantSchema>;
+
 const ENVSchema = z.object({
   TENANTS: z.string()
 })
 
-let TENANCY_MAP: Map<Tenancy['id'], Tenancy['dbUrl']> | undefined;
-const lazyloadTenancyMap = () => {
-  if (TENANCY_MAP) return TENANCY_MAP;
-  
-  const validEnv = ENVSchema.safeParse(process.env);
+const validEnv = ENVSchema.safeParse(process.env);
+
+export const getTenants = () => {
   if (!validEnv.success) {
-    const error = new Error("Missing required environment variable 'TENANTS'")
-    console.error(error.toString());
-    throw error;
+    console.log("Invalid environment variable 'TENANTS' value:", ...validEnv.error.issues);
+    throw new Error("Invalid environment variable 'TENANTS' value");
   }
 
   const validTenants = TenancyArraySchema.safeParse(JSON.parse(validEnv.data.TENANTS));
@@ -41,13 +33,17 @@ const lazyloadTenancyMap = () => {
     throw new Error("Invalid environment variable 'TENANTS' value");
   }
 
-  TENANCY_MAP = new Map(validTenants.data.map(tenant => [tenant.id, tenant.dbUrl]));
-  return TENANCY_MAP;
+  return validTenants.data;
 }
 
 export const getTenantDb = (tenantId: Tenancy['id']) => {
-  const url = lazyloadTenancyMap().get(tenantId);
-  if (!url) { throw new Error(`Couldn't resolve tenant database. Invalid tenantId: ${tenantId}`); }
+
+  const validTenants = getTenants();
+
+  const url = validTenants.find(t => t.id === tenantId)?.dbUrl;
+  if (!url) { 
+    throw new Error(`Couldn't resolve tenant database. Invalid tenantId: ${tenantId}`); 
+  }
 
   return drizzle(createClient({ url, authToken: Config.TENANT_DATABASE_AUTH_TOKEN }));
 }
