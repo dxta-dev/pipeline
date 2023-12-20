@@ -3,28 +3,32 @@ import { z } from "zod";
 const ENVSchema = z.object({
   TENANTS: z.string(),
 })
-const TenancyArraySchema = z.array(z.object({
+const TenantSchema = z.object({
   id: z.number(),
   tenant: z.string(),
   dbUrl: z.string(),
-}));
+});
+const TenantArraySchema = z.array(TenantSchema);
 
-
-const loadTenants = ()=> {
+const processEnv = () => {
   const validEnv = ENVSchema.safeParse(process.env);
   if (!validEnv.success) {
     console.error(`Missing required environment variable 'TENANT'`);
     return undefined;
   }
 
-  const validTenants = TenancyArraySchema.safeParse(JSON.parse(validEnv.data.TENANTS));
-  if (!validTenants.success) {
-    console.error("Invalid environment variable 'TENANTS' value:", ...validTenants.error.issues);
+  const validTenantArray = TenantArraySchema.safeParse(JSON.parse(validEnv.data.TENANTS));
+  if (!validTenantArray.success) {
+    console.error("Invalid environment variable 'TENANTS' value:", ...validTenantArray.error.issues);
     return undefined;
   }
 
-  return validTenants.data;  
+  return validTenantArray.data;  
 }
 
-export type Tenant = z.infer<typeof TenancyArraySchema.element>;
-export const TENANTS = loadTenants();
+const TENANTS = processEnv();
+
+
+export const getEnvTenants = () => TENANTS;
+
+export type Tenant = z.infer<typeof TenantSchema>;
