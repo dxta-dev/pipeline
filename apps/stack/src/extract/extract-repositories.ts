@@ -97,7 +97,7 @@ export const cronHandler = async ()=> {
     console.error("Invalid environment in lambda 'extract-repositories.cronHandler':", ...validEnv.error.issues);
     throw new Error("Invalid environment");
   }
-  const { CRON_USER_ID, TENANT_ID} = validEnv.data;
+  const { CRON_USER_ID, TENANT_ID } = validEnv.data;
 
   const utcTodayAt10AM = new Date();
   utcTodayAt10AM.setUTCHours(10, 0, 0, 0);

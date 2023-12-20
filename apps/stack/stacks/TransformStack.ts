@@ -12,8 +12,8 @@ export function TransformStack({ stack }: StackContext) {
   const ENVSchema = z.object({
     CLERK_JWT_ISSUER: z.string(),
     CLERK_JWT_AUDIENCE: z.string(),
-    PUBLIC_REPOS: z.string(),
     TENANTS: z.string(),
+    CRON_DISABLED: z.literal('true').optional(),
   });
   const ENV = ENVSchema.parse(process.env);
 
@@ -41,15 +41,6 @@ export function TransformStack({ stack }: StackContext) {
     },
 
   })
-
-  const publicReposSchema = z.array(
-    z.object({
-      owner: z.string(),
-      name: z.string(),
-    })
-  );
-
-  const PUBLIC_REPOS = publicReposSchema.parse(JSON.parse(ENV.PUBLIC_REPOS));
 
   const api = new Api(stack, "TransformApi", {
     defaults: {
@@ -86,21 +77,35 @@ export function TransformStack({ stack }: StackContext) {
     },
   });
 
-  if (PUBLIC_REPOS.length !== 0) {
-    new Cron(stack, `TransformCron`, {
-      schedule: "cron(00 13 * * ? *)",
-      job: {
-        function: {
-          handler: "src/extract/transform-timeline.cronHandler",
-          bind: [
-            transformTestingQueue,
-            TENANT_DATABASE_URL,
-            TENANT_DATABASE_AUTH_TOKEN,
-            ],
-          runtime: "nodejs18.x",
+  const tenantsSchema = z.array(
+    z.object({
+      id: z.number(),
+      tenant: z.string(),
+      dbUrl: z.string(),
+    })
+  );
+  const tenants = tenantsSchema.parse(JSON.parse(ENV.TENANTS));
+  if (ENV.CRON_DISABLED !== 'true') {
+    tenants.forEach(tenant=>{
+      new Cron(stack, `${tenant.tenant}_TransformCron`, {
+        schedule: "cron(00 13 * * ? *)",
+        job: {
+          function: {
+            handler: "src/extract/transform-timeline.cronHandler",
+            environment: {
+              TENANTS: ENV.TENANTS,
+              TENANT_ID: tenant.id.toString(),
+            },
+            bind: [
+              transformTestingQueue,
+              TENANT_DATABASE_URL,
+              TENANT_DATABASE_AUTH_TOKEN,
+              ],
+            runtime: "nodejs18.x",
+          }
         }
-      }
-    });
+      });  
+    })
   }
 
   stack.addOutputs({

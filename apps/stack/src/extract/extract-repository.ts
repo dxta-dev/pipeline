@@ -118,37 +118,3 @@ export const handler = ApiHandler(async (ev) => {
     body: JSON.stringify({})
   };
 });
-
-const CRON_ENV = z.object({
-  CRON_USER_ID: z.string(),
-  TENANT_ID: z.string(),
-  PUBLIC_REPO_NAME: z.string(),
-  PUBLIC_REPO_OWNER: z.string(),
-})
-export const cronHandler = async ()=> {
-
-    const validEnv = CRON_ENV.safeParse(process.env);
-
-    if (!validEnv.success) {
-      console.error("Invalid environment in lambda 'extract-repository.cronHandler':", ...validEnv.error.issues);
-      throw new Error("Invalid environment");
-    }
-
-    const { CRON_USER_ID, PUBLIC_REPO_NAME, PUBLIC_REPO_OWNER } = validEnv.data;
-
-    const utcTodayAt10AM = new Date();
-    utcTodayAt10AM.setUTCHours(10, 0, 0, 0);
-    const utcYesterdayAt10AM = new Date(utcTodayAt10AM);
-    utcYesterdayAt10AM.setHours(utcTodayAt10AM.getUTCHours() - 24);
-
-    await extractRepository({
-      namespaceName: PUBLIC_REPO_OWNER,
-      repositoryId: 0,
-      repositoryName: PUBLIC_REPO_NAME,
-      sourceControl: 'github',
-      from: utcYesterdayAt10AM,
-      to: utcTodayAt10AM,
-      tenantId: 0, // cron will be removed
-    }, CRON_USER_ID);
-  
-}

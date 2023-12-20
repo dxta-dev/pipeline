@@ -1,5 +1,6 @@
 import { QueueHandler } from "@stack/config/create-message";
 import { MessageKind } from "./messages";
+import { repositoriesSenderHandler } from "./extract-repositories";
 import { mergeRequestSenderHandler } from "./extract-merge-requests";
 import { mergeRequestDiffSenderHandler } from "./extract-merge-request-diffs";
 import { mrcsh } from "./extract-merge-request-commits";
@@ -11,6 +12,8 @@ import { timelineEventsSenderHandler } from "./extract-timeline-events";
 import type { EventNamespaceType } from "@acme/crawl-schema";
 
 const messageHandlers = new Map<string, unknown>();
+
+messageHandlers.set(MessageKind.Repository, repositoriesSenderHandler);
 
 messageHandlers.set(MessageKind.MergeRequest, mergeRequestSenderHandler);
 
@@ -29,6 +32,8 @@ messageHandlers.set(MessageKind.MemberInfo, memberInfoSenderHandler);
 messageHandlers.set(MessageKind.TimelineEvent, timelineEventsSenderHandler);
 
 const logMap = new Map<string, string[]>();
+
+logMap.set(MessageKind.Repository, ['content.forgeType', 'content.externalRepositoryId', 'content.repositoryName']);
 
 logMap.set(MessageKind.MergeRequest, ['content.repository.id', 'content.namespace.id', 'content.pagination', 'content.timePeriod']);
 
