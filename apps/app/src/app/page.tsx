@@ -3,6 +3,7 @@ import { MainNav } from "~/components/ui/main-nav";
 import { GenerateToken } from "~/components/generate-token";
 import { ExtractStartForm } from "~/components/extract-start-form";
 import { TransformStartForm } from "~/components/transform-start-form";
+import { TENANTS } from "~/components/tenant.env";
 
 export default function Page() {
   return (
@@ -19,8 +20,8 @@ export default function Page() {
         </div>
       </div>
       <GenerateToken />
-      <ExtractStartForm/>
-      <TransformStartForm/>
+      <ExtractStartForm TENANTS={TENANTS}/>
+      <TransformStartForm TENANTS={TENANTS}/>
     </>
   );
 }
