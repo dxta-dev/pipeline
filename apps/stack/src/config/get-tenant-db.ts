@@ -13,7 +13,7 @@ const TenantSchema = z.object({
 
 const TenancyArraySchema = z.array(TenantSchema);
 
-export type Tenancy = z.infer<typeof TenantSchema>;
+export type Tenant = z.infer<typeof TenantSchema>;
 
 const ENVSchema = z.object({
   TENANTS: z.string()
@@ -36,7 +36,7 @@ export const getTenants = () => {
   return validTenants.data;
 }
 
-export const getTenantDb = (tenantId: Tenancy['id']) => {
+export const getTenantDb = (tenantId: Tenant['id']) => {
 
   const validTenants = getTenants();
 

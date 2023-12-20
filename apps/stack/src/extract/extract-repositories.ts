@@ -1,6 +1,6 @@
 import { getRepository, type Context, type GetRepositoryEntities, type GetRepositoryInput, type GetRepositorySourceControl } from "@acme/extract-functions";
 import { NamespaceSchema, RepositorySchema, namespaces, repositories } from "@acme/extract-schema";
-import { getTenantDb, type OmitDb, type Tenancy } from "@stack/config/get-tenant-db";
+import { getTenantDb, type OmitDb, type Tenant } from "@stack/config/get-tenant-db";
 import { z } from "zod";
 import { getClerkUserToken } from "./get-clerk-user-token";
 import { GitHubSourceControl, GitlabSourceControl } from "@acme/source-control";
@@ -13,7 +13,7 @@ import { eq } from "drizzle-orm";
 
 type SupportedSourceControls = 'github' | 'gitlab';
 
-const extractRepository = async (repositoryInput: GetRepositoryInput, sourceControl: SupportedSourceControls, from: Date, to: Date, userId: string, tenantId: Tenancy['id']) => {
+const extractRepository = async (repositoryInput: GetRepositoryInput, sourceControl: SupportedSourceControls, from: Date, to: Date, userId: string, tenantId: Tenant['id']) => {
 
   const { externalRepositoryId, repositoryName, namespaceName } = repositoryInput;
 
