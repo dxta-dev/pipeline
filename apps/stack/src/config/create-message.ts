@@ -7,7 +7,7 @@ import type { SQSEvent } from "aws-lambda";
 import { Queue } from 'sst/node/queue'
 import type { EventNamespaceType } from "@acme/crawl-schema";
 import { crawlComplete, crawlFailed } from "./crawl";
-import type { Tenancy } from "./get-tenant-db";
+import type { Tenant } from "./get-tenant-db";
 
 const sqs = new SQSClient();
 
@@ -115,7 +115,7 @@ export function QueueHandler(map: Map<string, unknown>, logMap: Map<string, stri
     for (const record of event.Records) {
       const parsedEvent = JSON.parse(record.body) as unknown as MessagePayload<ZodRawShape, ZodRawShape>;
       
-      const tenantId = parsedEvent.metadata?.tenantId as unknown as (Tenancy['id'] | undefined);
+      const tenantId = parsedEvent.metadata?.tenantId as unknown as (Tenant['id'] | undefined);
       if (!tenantId) {
         console.error(`No tenantId for message kind ${parsedEvent.kind}`);
         break;

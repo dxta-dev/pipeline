@@ -2,7 +2,7 @@ import { insertEvent } from "@acme/crawl-functions";
 import { events } from "@acme/crawl-schema";
 import type { Context, InsertEventEntities } from "@acme/crawl-functions";
 import type { EventNamespaceType } from "@acme/crawl-schema/src/events";
-import { getTenantDb, type OmitDb, type Tenancy } from "./get-tenant-db";
+import { getTenantDb, type OmitDb, type Tenant } from "./get-tenant-db";
 
 const context: OmitDb<Context<InsertEventEntities>> = {
   entities: {
@@ -10,7 +10,7 @@ const context: OmitDb<Context<InsertEventEntities>> = {
   }
 };
 
-export const crawlFailed = (isCrawlMessage: boolean, tenantId: Tenancy['id'], crawlId: number | undefined, namespace: EventNamespaceType | undefined, error: unknown) => {
+export const crawlFailed = (isCrawlMessage: boolean, tenantId: Tenant['id'], crawlId: number | undefined, namespace: EventNamespaceType | undefined, error: unknown) => {
   if(namespace === undefined || !isCrawlMessage) {
     return;
   }
@@ -30,7 +30,7 @@ export const crawlFailed = (isCrawlMessage: boolean, tenantId: Tenancy['id'], cr
   }, {...context, db: getTenantDb(tenantId) });
 };
 
-export const crawlComplete = (isCrawlMessage: boolean, tenantId: Tenancy['id'], crawlId: number | undefined, namespace: EventNamespaceType | undefined) => {
+export const crawlComplete = (isCrawlMessage: boolean, tenantId: Tenant['id'], crawlId: number | undefined, namespace: EventNamespaceType | undefined) => {
   if(namespace === undefined || !isCrawlMessage) {
     return;
   }

@@ -7,7 +7,7 @@ import { EventBus } from "sst/node/event-bus";
 import { z } from "zod";
 import { crawlComplete, crawlFailed } from "./crawl";
 import type { EventNamespaceType } from "@acme/crawl-schema";
-import type { Tenancy } from "./get-tenant-db";
+import type { Tenant } from "./get-tenant-db";
 
 const client = new EventBridgeClient({});
 type InferShapeOutput<Shape extends z.ZodRawShape> = z.infer<
@@ -150,7 +150,7 @@ export const EventHandler = <
     const propertiesToLog = logConfig?.propertiesToLog ?? undefined;
     const crawlEventNamespace = logConfig?.crawlEventNamespace ?? undefined;
 
-    const tenantId = (event.detail as EventPayload<PropertiesShape, MetadataShape>).metadata?.tenantId as unknown as (Tenancy['id'] | undefined);
+    const tenantId = (event.detail as EventPayload<PropertiesShape, MetadataShape>).metadata?.tenantId as unknown as (Tenant['id'] | undefined);
     if (!tenantId) {
       console.error(`No tenantId for event ${targetSource}.${targetDetailType}`);
       return;
