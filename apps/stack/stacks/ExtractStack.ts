@@ -234,7 +234,11 @@ export function ExtractStack({ stack }: StackContext) {
             TENANTS: ENV.TENANTS,
           },
           bind: [
-            extractQueue
+            extractQueue,
+            CLERK_SECRET_KEY,
+            REDIS_URL,
+            REDIS_TOKEN,
+            REDIS_USER_TOKEN_TTL,  
           ],
           runtime: "nodejs18.x",  
         }
