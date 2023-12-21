@@ -7,7 +7,7 @@ import type { SQSEvent } from "aws-lambda";
 import { Queue } from 'sst/node/queue'
 import type { EventNamespaceType } from "@acme/crawl-schema";
 import { crawlComplete, crawlFailed } from "./crawl";
-import type { Tenant } from "./get-tenant-db";
+import type { Tenant } from "./tenants";
 
 const sqs = new SQSClient();
 
