@@ -10,7 +10,7 @@ import { repositorySenderHandler } from "./extract-repository";
 export const tenantSenderHandler = createMessageHandler({
   queueId: 'ExtractQueue',
   kind: MessageKind.Tenant,
-  metadataShape: metadataSchema.omit({ sourceControl: true, crawlId: true, tenantId: true }).shape,
+  metadataShape: metadataSchema.omit({ sourceControl: true, crawlId: true }).shape,
   contentShape: z.object({
     tenantId: z.number(),
   }).shape,
@@ -26,6 +26,11 @@ export const tenantSenderHandler = createMessageHandler({
     .from(repositories)
     .innerJoin(namespaces, eq(repositories.namespaceId, namespaces.id))
     .all();
+
+    if (repos.length === 0) {
+      console.log(`Warn: no repositories to extract for tenant: ${message.content.tenantId}`);
+      return;
+    }
  
     await repositorySenderHandler.sender.sendAll(repos, {
       version: 1,
@@ -68,6 +73,7 @@ export const cronHandler = async ()=> {
     userId: CRON_USER_ID,
     from: utcYesterdayAt10AM,
     to: utcTodayAt10AM,
+    tenantId: -1, // -1 means no db access ?
   });
    
 };
