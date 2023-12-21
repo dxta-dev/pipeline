@@ -2,13 +2,15 @@ import { extractRepositoryEvent } from "./events";
 import { getRepository } from "@acme/extract-functions";
 import type { Context, GetRepositorySourceControl, GetRepositoryEntities } from "@acme/extract-functions";
 import { GitlabSourceControl, GitHubSourceControl } from "@acme/source-control";
-import { repositories, namespaces } from "@acme/extract-schema";
+import { repositories, namespaces, RepositorySchema, NamespaceSchema } from "@acme/extract-schema";
 import { instances } from "@acme/crawl-schema";
 import { z } from "zod";
 import { ApiHandler, useJsonBody } from 'sst/node/api';
 import { getClerkUserToken } from "./get-clerk-user-token";
 import { setInstance } from "@acme/crawl-functions";
 import { getTenantDb, type OmitDb } from "@stack/config/get-tenant-db";
+import { MessageKind, metadataSchema } from "./messages";
+import { createMessageHandler } from "@stack/config/create-message";
 
 const context: OmitDb<Context<GetRepositorySourceControl, GetRepositoryEntities>> = {
   entities: {
@@ -117,4 +119,27 @@ export const handler = ApiHandler(async (ev) => {
     statusCode: 200,
     body: JSON.stringify({})
   };
+});
+
+export const repositorySenderHandler = createMessageHandler({
+  queueId: 'ExtractQueue',
+  kind: MessageKind.Repository,
+  metadataShape: metadataSchema.omit({ sourceControl: true, crawlId: true }).shape,
+  contentShape: z.object({
+    externalRepositoryId: RepositorySchema.shape.externalId,
+    forgeType: RepositorySchema.shape.forgeType,
+    repositoryName: RepositorySchema.shape.name,
+    namespaceName: NamespaceSchema.shape.name,
+  }).shape,
+  handler: async (message) => {
+    await extractRepository({
+      repositoryId: message.content.externalRepositoryId,
+      namespaceName: message.content.namespaceName,
+      repositoryName: message.content.repositoryName,
+      from:message.metadata.from,
+      to:message.metadata.to,
+      sourceControl: message.content.forgeType,
+      tenantId: message.metadata.tenantId,
+    }, message.metadata.userId);
+  }
 });
