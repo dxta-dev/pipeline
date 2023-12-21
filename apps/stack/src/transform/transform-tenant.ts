@@ -1,4 +1,4 @@
-import { getTenants } from "@stack/config/get-tenant-db";
+import { getTenants } from "@stack/config/tenants";
 import { transformTenantEvent } from "./events";
 import { z } from "zod";
 import { ApiHandler, useJsonBody } from "sst/node/api";

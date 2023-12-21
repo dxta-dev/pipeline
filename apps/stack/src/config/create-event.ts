@@ -7,7 +7,7 @@ import { EventBus } from "sst/node/event-bus";
 import { z } from "zod";
 import { crawlComplete, crawlFailed } from "./crawl";
 import type { EventNamespaceType } from "@acme/crawl-schema";
-import type { Tenant } from "./get-tenant-db";
+import type { Tenant } from "./tenants";
 
 const client = new EventBridgeClient({});
 type InferShapeOutput<Shape extends z.ZodRawShape> = z.infer<

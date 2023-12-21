@@ -1,40 +1,10 @@
 import { createClient } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
 import { Config } from "sst/node/config";
-import { z } from "zod";
+import { getTenants } from "./tenants";
+import type { Tenant } from "./tenants";
 
 export type OmitDb<T> = Omit<T, 'db'>;
-
-const TenantSchema = z.object({
-  id: z.number(),
-  tenant: z.string(),
-  dbUrl: z.string(),
-});
-
-const TenancyArraySchema = z.array(TenantSchema);
-
-export type Tenant = z.infer<typeof TenantSchema>;
-
-const ENVSchema = z.object({
-  TENANTS: z.string()
-})
-
-const validEnv = ENVSchema.safeParse(process.env);
-
-export const getTenants = () => {
-  if (!validEnv.success) {
-    console.log("Invalid environment variable 'TENANTS' value:", ...validEnv.error.issues);
-    throw new Error("Invalid environment variable 'TENANTS' value");
-  }
-
-  const validTenants = TenancyArraySchema.safeParse(JSON.parse(validEnv.data.TENANTS));
-  if (!validTenants.success) {
-    console.log("Invalid environment variable 'TENANTS' value:", ...validTenants.error.issues);
-    throw new Error("Invalid environment variable 'TENANTS' value");
-  }
-
-  return validTenants.data;
-}
 
 export const getTenantDb = (tenantId: Tenant['id']) => {
 

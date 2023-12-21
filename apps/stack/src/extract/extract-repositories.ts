@@ -1,6 +1,7 @@
 import { getRepository, type Context, type GetRepositoryEntities, type GetRepositoryInput, type GetRepositorySourceControl } from "@acme/extract-functions";
 import { NamespaceSchema, RepositorySchema, namespaces, repositories } from "@acme/extract-schema";
-import { getTenantDb, type OmitDb, type Tenant } from "@stack/config/get-tenant-db";
+import { getTenantDb, type OmitDb } from "@stack/config/get-tenant-db";
+import type { Tenant } from "@stack/config/tenants";
 import { z } from "zod";
 import { getClerkUserToken } from "./get-clerk-user-token";
 import { GitHubSourceControl, GitlabSourceControl } from "@acme/source-control";
