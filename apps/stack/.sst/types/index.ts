@@ -88,4 +88,11 @@ declare module "sst/node/api" {
       url: string;
     }
   }
+}import "sst/node/api";
+declare module "sst/node/api" {
+  export interface ApiResources {
+    "InfoApi": {
+      url: string;
+    }
+  }
 }
