@@ -176,8 +176,8 @@ export function ExtractStack({ stack }: StackContext) {
       }
     },
   });
-  
-  bus.addTargets(stack, 'githubMergeRequests' , {
+
+  bus.addTargets(stack, 'githubMergeRequests', {
     extractTimelineEvents: {
       function: {
         environment: {
@@ -197,12 +197,12 @@ export function ExtractStack({ stack }: StackContext) {
           TENANTS: ENV.TENANTS,
         },
         bind: [
-          bus, 
+          bus,
           TENANT_DATABASE_URL,
           TENANT_DATABASE_AUTH_TOKEN,
-            CLERK_SECRET_KEY, 
-          REDIS_URL, 
-          REDIS_TOKEN, 
+          CLERK_SECRET_KEY,
+          REDIS_URL,
+          REDIS_TOKEN,
           REDIS_USER_TOKEN_TTL
         ],
         runtime: "nodejs18.x",
@@ -230,6 +230,7 @@ export function ExtractStack({ stack }: StackContext) {
       dbUrl: z.string(),
     })
   );
+
   const tenants = tenantsSchema.parse(JSON.parse(ENV.TENANTS));
 
   if (ENV.CRON_DISABLED !== 'true') {
@@ -268,5 +269,5 @@ export function ExtractStack({ stack }: StackContext) {
     ExtractBus: bus,
     TENANT_DATABASE_URL,
     TENANT_DATABASE_AUTH_TOKEN,
-};
+  };
 }
