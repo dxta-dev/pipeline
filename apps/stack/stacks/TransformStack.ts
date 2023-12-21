@@ -4,6 +4,7 @@ import {
   Api,
   Queue,
   Cron,
+  EventBus,
 } from "sst/constructs";
 import { ExtractStack } from "./ExtractStack";
 import { z } from "zod";
@@ -20,9 +21,33 @@ export function TransformStack({ stack }: StackContext) {
   const {
     TENANT_DATABASE_URL,
     TENANT_DATABASE_AUTH_TOKEN,
-} = use(ExtractStack);
-  const transformTestingQueue = new Queue(stack, "TransformTestQueue");
-  transformTestingQueue.addConsumer(stack, {
+  } = use(ExtractStack);
+
+  const transformBus = new EventBus(stack, "TransformBus", {
+    rules: {
+      tenant: {
+        pattern:{
+          source: ["transform"],
+          detailType: ["tenant"],
+        }
+      }
+    },
+    defaults: {
+      retries: 10,
+      function: {
+        environment: {
+          TENANTS: ENV.TENANTS,
+        },
+        bind: [
+          TENANT_DATABASE_AUTH_TOKEN,
+        ],
+        runtime: "nodejs18.x"
+      }
+    }
+  });
+
+  const transformQueue = new Queue(stack, "TransformQueue");
+  transformQueue.addConsumer(stack, {
     cdk: {
       eventSource: {
         batchSize: 1,
@@ -36,11 +61,20 @@ export function TransformStack({ stack }: StackContext) {
       bind: [
         TENANT_DATABASE_URL,
         TENANT_DATABASE_AUTH_TOKEN,
-    ],
-      handler: "src/transform/transform-timeline.queueHandler",
+      ],
+      handler: "src/transform/queue.handler",
     },
 
-  })
+  });
+
+  transformBus.addTargets(stack, 'tenant', {
+    transformTimeline: {
+      function: {
+        bind: [transformQueue],
+        handler: "src/transform/transform-timeline.eventHandler",
+      }
+    }
+  });
 
   const api = new Api(stack, "TransformApi", {
     defaults: {
@@ -50,14 +84,7 @@ export function TransformStack({ stack }: StackContext) {
           TENANTS: ENV.TENANTS,
         },
         bind: [
-          transformTestingQueue,
-          TENANT_DATABASE_URL,
-          TENANT_DATABASE_AUTH_TOKEN,
-          // bus, 
-          // CLERK_SECRET_KEY, 
-          // REDIS_URL, 
-          // REDIS_TOKEN, 
-          // REDIS_USER_TOKEN_TTL
+          transformBus,
         ],
         runtime: "nodejs18.x",
       },
@@ -73,39 +100,26 @@ export function TransformStack({ stack }: StackContext) {
       },
     },
     routes: {
-      "POST /start": "src/transform/transform-timeline.apiHandler",
+      "POST /start": "src/transform/transform-tenant.apiHandler",
     },
   });
 
-  const tenantsSchema = z.array(
-    z.object({
-      id: z.number(),
-      tenant: z.string(),
-      dbUrl: z.string(),
-    })
-  );
-  const tenants = tenantsSchema.parse(JSON.parse(ENV.TENANTS));
   if (ENV.CRON_DISABLED !== 'true') {
-    tenants.forEach(tenant=>{
-      new Cron(stack, `${tenant.tenant}_TransformCron`, {
-        schedule: "cron(00 13 * * ? *)",
-        job: {
-          function: {
-            handler: "src/extract/transform-timeline.cronHandler",
-            environment: {
-              TENANTS: ENV.TENANTS,
-              TENANT_ID: tenant.id.toString(),
-            },
-            bind: [
-              transformTestingQueue,
-              TENANT_DATABASE_URL,
-              TENANT_DATABASE_AUTH_TOKEN,
-              ],
-            runtime: "nodejs18.x",
-          }
+    new Cron(stack, "TransformCron", {
+      schedule: "cron(00 13 * * ? *)",
+      job: {
+        function: {
+          handler: "src/transform/transform-tenant.cronHandler",
+          environment: {
+            TENANTS: ENV.TENANTS,
+          },
+          bind: [
+            transformBus,
+          ],
+          runtime: "nodejs18.x",
         }
-      });  
-    })
+      }
+    });
   }
 
   stack.addOutputs({
