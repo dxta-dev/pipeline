@@ -92,7 +92,5 @@ export const cronHandler = async () => {
     failed++;
   });
 
-  // TODO: do we throw ?
   if (failed !== 0) throw new Error(`Cron failed to publish events. ${failed}/${tenants.length} events failed`);
-  console.log(`Cron finished publishing transform-tenant events for tenants: ${tenants.map(t=>t.tenant).join(", ")}`);
 }
