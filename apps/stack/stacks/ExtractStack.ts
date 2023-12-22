@@ -1,6 +1,7 @@
 import {
   Api,
   Config,
+  Cron,
   EventBus,
   Queue,
   type StackContext,
@@ -222,33 +223,28 @@ export function ExtractStack({ stack }: StackContext) {
     },
   });
   
-  // if (ENV.CRON_DISABLED !== 'true') {
-  //   tenants.forEach(tenant => {
-  //     new Cron(stack, `${tenant.tenant}_ExtractCron`, {
-  //       schedule: "cron(00 10 * * ? *)",
-  //       job: {
-  //         function: {
-  //           handler: "src/extract/extract-repositories.cronHandler",
-  //           environment: {
-  //             CRON_USER_ID: ENV.CRON_USER_ID,
-  //             TENANTS: ENV.TENANTS,
-  //             TENANT_ID: tenant.id.toString(),
-  //           },
-  //           bind: [
-  //             bus, 
-  //             TENANT_DATABASE_URL,
-  //             TENANT_DATABASE_AUTH_TOKEN,
-  //             CLERK_SECRET_KEY, 
-  //             REDIS_URL, 
-  //             REDIS_TOKEN, 
-  //             REDIS_USER_TOKEN_TTL
-  //           ],
-  //           runtime: "nodejs18.x",  
-  //         }
-  //       }
-  //     })
-  //   });  
-  // }
+  if (ENV.CRON_DISABLED !== 'true') {
+    new Cron(stack, "ExtractCron", { 
+      schedule: "cron(00 10 * * ? *)",
+      job: {
+        function: {
+          handler: "src/extract/extract-tenants.cronHandler",
+          environment: {
+            CRON_USER_ID: ENV.CRON_USER_ID,
+            TENANTS: ENV.TENANTS,
+          },
+          bind: [
+            extractQueue,
+            CLERK_SECRET_KEY,
+            REDIS_URL,
+            REDIS_TOKEN,
+            REDIS_USER_TOKEN_TTL,  
+          ],
+          runtime: "nodejs18.x",  
+        }
+      }
+    })
+  }
 
   stack.addOutputs({
     ApiEndpoint: api.url,

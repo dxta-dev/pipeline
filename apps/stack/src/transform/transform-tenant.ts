@@ -71,13 +71,12 @@ export const cronHandler = async () => {
   const utcYesterdayAt10AM = new Date(utcTodayAt10AM);
   utcYesterdayAt10AM.setHours(utcTodayAt10AM.getUTCHours() - 24);
 
-  console.log('publishing events: ',tenants.map(t=>t.tenant).join(", "));
   const publishingEvents = tenants.map(tenant=>transformTenantEvent.publish({},{
     version: 1,
     caller: 'transform-tenants:cron',
     sourceControl: 'github',
     timestamp: Date.now(),
-    from: utcTodayAt10AM,
+    from: utcYesterdayAt10AM,
     to: utcTodayAt10AM,
     tenantId: tenant.id,
   }))
