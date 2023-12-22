@@ -13,13 +13,12 @@ export function TransformStack({ stack }: StackContext) {
   const ENVSchema = z.object({
     CLERK_JWT_ISSUER: z.string(),
     CLERK_JWT_AUDIENCE: z.string(),
-    TENANTS: z.string(),
     CRON_DISABLED: z.literal('true').optional(),
   });
   const ENV = ENVSchema.parse(process.env);
 
   const {
-    TENANT_DATABASE_URL,
+    TENANTS,
     TENANT_DATABASE_AUTH_TOKEN,
   } = use(ExtractStack);
 
@@ -35,10 +34,8 @@ export function TransformStack({ stack }: StackContext) {
     defaults: {
       retries: 10,
       function: {
-        environment: {
-          TENANTS: ENV.TENANTS,
-        },
         bind: [
+          TENANTS,
           TENANT_DATABASE_AUTH_TOKEN,
         ],
         runtime: "nodejs18.x"
@@ -55,11 +52,8 @@ export function TransformStack({ stack }: StackContext) {
       },
     },
     function: {
-      environment: {
-        TENANTS: ENV.TENANTS,
-      },
       bind: [
-        TENANT_DATABASE_URL,
+        TENANTS,
         TENANT_DATABASE_AUTH_TOKEN,
       ],
       handler: "src/transform/queue.handler",
@@ -80,11 +74,9 @@ export function TransformStack({ stack }: StackContext) {
     defaults: {
       authorizer: "JwtAuthorizer",
       function: {
-        environment: {
-          TENANTS: ENV.TENANTS,
-        },
         bind: [
           transformBus,
+          TENANTS
         ],
         runtime: "nodejs18.x",
       },
@@ -110,11 +102,9 @@ export function TransformStack({ stack }: StackContext) {
       job: {
         function: {
           handler: "src/transform/transform-tenant.cronHandler",
-          environment: {
-            TENANTS: ENV.TENANTS,
-          },
           bind: [
             transformBus,
+            TENANTS
           ],
           runtime: "nodejs18.x",
         }
