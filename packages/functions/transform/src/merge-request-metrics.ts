@@ -431,7 +431,7 @@ function mapUsersToJunk({ author, mergedBy, approvers, committers, reviewers }: 
 
 function calculateMrSize(mergeRequestId: number, diffs: { stringifiedHunks: string, newPath: string }[]): number | null {
   if (diffs.length === 0) {
-    console.error(new Error(`No extracted merge request diffs found for ids: ${mergeRequestId}`));
+    console.log("Warn: 0 Diffs found for merge request with id: ", mergeRequestId);
     return null;
   }
 
@@ -443,7 +443,7 @@ function calculateMrSize(mergeRequestId: number, diffs: { stringifiedHunks: stri
     const codeGenResult = isCodeGen(diff.newPath);
 
     if (codeGenResult === true) {
-      console.error(new Error(`This file is part of codeGen: ${diff.newPath} on merge request with id: ${mergeRequestId}`));
+      // console.error(new Error(`This file is part of codeGen: ${diff.newPath} on merge request with id: ${mergeRequestId}`));
       continue;
     }
 
