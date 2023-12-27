@@ -4,7 +4,6 @@ import {
   Api,
   Queue,
   Cron,
-  EventBus,
 } from "sst/constructs";
 import { ExtractStack } from "./ExtractStack";
 import { z } from "zod";
@@ -21,27 +20,6 @@ export function TransformStack({ stack }: StackContext) {
     TENANTS,
     TENANT_DATABASE_AUTH_TOKEN,
   } = use(ExtractStack);
-
-  const transformBus = new EventBus(stack, "TransformBus", {
-    rules: {
-      tenant: {
-        pattern:{
-          source: ["transform"],
-          detailType: ["tenant"],
-        }
-      }
-    },
-    defaults: {
-      retries: 10,
-      function: {
-        bind: [
-          TENANTS,
-          TENANT_DATABASE_AUTH_TOKEN,
-        ],
-        runtime: "nodejs18.x"
-      }
-    }
-  });
 
   const transformQueue = new Queue(stack, "TransformQueue");
   transformQueue.addConsumer(stack, {
@@ -61,21 +39,12 @@ export function TransformStack({ stack }: StackContext) {
 
   });
 
-  transformBus.addTargets(stack, 'tenant', {
-    transformTimeline: {
-      function: {
-        bind: [transformQueue],
-        handler: "src/transform/transform-timeline.eventHandler",
-      }
-    }
-  });
-
   const api = new Api(stack, "TransformApi", {
     defaults: {
       authorizer: "JwtAuthorizer",
       function: {
         bind: [
-          transformBus,
+          transformQueue,
           TENANTS
         ],
         runtime: "nodejs18.x",
@@ -103,7 +72,7 @@ export function TransformStack({ stack }: StackContext) {
         function: {
           handler: "src/transform/transform-tenant.cronHandler",
           bind: [
-            transformBus,
+            transformQueue,
             TENANTS
           ],
           runtime: "nodejs18.x",
