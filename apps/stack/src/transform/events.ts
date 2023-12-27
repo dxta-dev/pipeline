@@ -1,4 +1,3 @@
-import { createEvent } from "@stack/config/create-event";
 import { z } from "zod";
 
 export const metadataSchema = z.object({
@@ -9,14 +8,4 @@ export const metadataSchema = z.object({
   from: z.coerce.date(),
   to: z.coerce.date(),
   tenantId: z.number(),
-});
-
-export const transformTenantEventSchema = z.object({});
-
-export const transformTenantEvent = createEvent({
-  source: "transform",
-  type: "tenant",
-  propertiesShape: transformTenantEventSchema.shape,
-  bus: 'TransformBus',
-  metadataShape: metadataSchema.shape,
 });
