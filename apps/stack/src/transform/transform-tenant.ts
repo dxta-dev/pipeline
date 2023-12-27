@@ -11,11 +11,11 @@ import { timelineSenderHandler } from "./transform-timeline";
 export const tenantSenderHandler = createMessageHandler({
   queueId: 'TransformQueue',
   kind: MessageKind.Tenant,
-  metadataShape: metadataSchema.omit({ tenantId: true, sourceControl: true }).shape,
+  metadataShape: metadataSchema.omit({ sourceControl: true }).shape,
   contentShape: z.object({
     tenantId: z.number(),
   }).shape,
-  handler: async (message)=> {
+  handler: async (message) => {
 
     const { from, to } = message.metadata;
     const { tenantId } = message.content;
@@ -32,15 +32,15 @@ export const tenantSenderHandler = createMessageHandler({
         lt(extract.mergeRequests.updatedAt, to)
       ))
       .all();
-      
-      if (allMergeRequests.length === 0) {
-        console.log("Warning: nothing to transform");
-        return;
-      }    
-      
+
+    if (allMergeRequests.length === 0) {
+      console.log("Warning: nothing to transform");
+      return;
+    }
+
     console.log("Transforming", allMergeRequests.length, "merge requests");
 
-    await timelineSenderHandler.sender.sendAll(allMergeRequests,{
+    await timelineSenderHandler.sender.sendAll(allMergeRequests, {
       version: 1,
       caller: 'transform-tenant:queueHandler',
       sourceControl: 'github',
@@ -69,6 +69,7 @@ export const cronHandler = async () => {
     timestamp: Date.now(),
     from: utcYesterdayAt10AM,
     to: utcTodayAt10AM,
+    tenantId: -1,
   });
 }
 
@@ -119,6 +120,7 @@ export const apiHandler = ApiHandler(async (ev) => {
       timestamp: Date.now(),
       from: new Date(0),
       to: new Date(),
+      tenantId: -1,
     });
   } catch (error) {
     return {

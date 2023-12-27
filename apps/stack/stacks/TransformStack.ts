@@ -31,6 +31,7 @@ export function TransformStack({ stack }: StackContext) {
     },
     function: {
       bind: [
+        transformQueue,
         TENANTS,
         TENANT_DATABASE_AUTH_TOKEN,
       ],
