@@ -1,7 +1,77 @@
-import { getTenants } from "@stack/config/tenants";
-import { transformTenantEvent } from "./events";
 import { z } from "zod";
+import * as extract from "@acme/extract-schema";
+import { getTenants } from "@stack/config/tenants";
 import { ApiHandler, useJsonBody } from "sst/node/api";
+import { MessageKind, metadataSchema } from "./messages";
+import { createMessageHandler } from "@stack/config/create-message";
+import { getTenantDb } from "@stack/config/get-tenant-db";
+import { and, eq, gt, lt } from "drizzle-orm";
+import { timelineSenderHandler } from "./transform-timeline";
+
+export const tenantSenderHandler = createMessageHandler({
+  queueId: 'TransformQueue',
+  kind: MessageKind.Tenant,
+  metadataShape: metadataSchema.omit({ tenantId: true, sourceControl: true }).shape,
+  contentShape: z.object({
+    tenantId: z.number(),
+  }).shape,
+  handler: async (message)=> {
+
+    const { from, to } = message.metadata;
+    const { tenantId } = message.content;
+
+    const db = getTenantDb(tenantId);
+    const allMergeRequests = await db.select({
+      mergeRequestId: extract.mergeRequests.id
+    })
+      .from(extract.mergeRequests)
+      .leftJoin(extract.repositories, eq(extract.mergeRequests.repositoryId, extract.repositories.id))
+      .where(and(
+        eq(extract.repositories.forgeType, 'github'), // TODO: implement gitlab; Add forgeType to MRs ?
+        gt(extract.mergeRequests.updatedAt, from),
+        lt(extract.mergeRequests.updatedAt, to)
+      ))
+      .all();
+      
+      if (allMergeRequests.length === 0) {
+        console.log("Warning: nothing to transform");
+        return;
+      }    
+      
+    console.log("Transforming", allMergeRequests.length, "merge requests");
+
+    await timelineSenderHandler.sender.sendAll(allMergeRequests,{
+      version: 1,
+      caller: 'transform-tenant:queueHandler',
+      sourceControl: 'github',
+      timestamp: Date.now(),
+      from,
+      to,
+      tenantId,
+    });
+
+  }
+});
+
+const { sender } = tenantSenderHandler;
+
+export const cronHandler = async () => {
+  const tenants = getTenants().map(tenant => ({ tenantId: tenant.id }));
+
+  const utcTodayAt10AM = new Date();
+  utcTodayAt10AM.setUTCHours(10, 0, 0, 0);
+  const utcYesterdayAt10AM = new Date(utcTodayAt10AM);
+  utcYesterdayAt10AM.setHours(utcTodayAt10AM.getUTCHours() - 24);
+
+  await sender.sendAll(tenants, {
+    version: 1,
+    caller: 'transform-tenants:cronHandler',
+    timestamp: Date.now(),
+    from: utcYesterdayAt10AM,
+    to: utcTodayAt10AM,
+  });
+}
+
 
 const apiContextSchema = z.object({
   authorizer: z.object({
@@ -41,14 +111,14 @@ export const apiHandler = ApiHandler(async (ev) => {
   const { tenantId } = inputValidation.data;
 
   try {
-    await transformTenantEvent.publish({}, {
+    await sender.send({
+      tenantId
+    }, {
       version: 1,
-      caller: 'transform-tenants:api',
-      sourceControl: 'github',
+      caller: 'transform-tenants:apiHandler',
       timestamp: Date.now(),
       from: new Date(0),
       to: new Date(),
-      tenantId,
     });
   } catch (error) {
     return {
@@ -62,34 +132,3 @@ export const apiHandler = ApiHandler(async (ev) => {
     body: JSON.stringify({ message: 'started transform' })
   };
 });
-
-export const cronHandler = async () => {
-  const tenants = getTenants();
-
-  const utcTodayAt10AM = new Date();
-  utcTodayAt10AM.setUTCHours(10, 0, 0, 0);
-  const utcYesterdayAt10AM = new Date(utcTodayAt10AM);
-  utcYesterdayAt10AM.setHours(utcTodayAt10AM.getUTCHours() - 24);
-
-  const publishingEvents = tenants.map(tenant=>transformTenantEvent.publish({},{
-    version: 1,
-    caller: 'transform-tenants:cron',
-    sourceControl: 'github',
-    timestamp: Date.now(),
-    from: utcYesterdayAt10AM,
-    to: utcTodayAt10AM,
-    tenantId: tenant.id,
-  }))
-
-  let failed = 0;
-
-  const publishingEventsSettled = await Promise.allSettled(publishingEvents);
-  publishingEventsSettled.forEach((result,idx)=> {
-    if (result.status === 'fulfilled') return;
-    console.error(`Failed to publish event for tenant ${tenants[idx]?.id}:${tenants[idx]?.tenant}`);
-    console.error(result.reason);
-    failed++;
-  });
-
-  if (failed !== 0) throw new Error(`Cron failed to publish events. ${failed}/${tenants.length} events failed`);
-}
