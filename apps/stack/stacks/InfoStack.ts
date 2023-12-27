@@ -1,21 +1,21 @@
 import {
   type StackContext,
-  Api
+  Api,
+  use
 } from "sst/constructs";
-import { z } from "zod";
+import { ExtractStack } from "./ExtractStack";
 
 export function InfoStack({ stack }: StackContext) {
-  const ENVSchema = z.object({
-    TENANTS: z.string(),
-  });
-  const ENV = ENVSchema.parse(process.env);
+
+  const {
+    TENANTS,
+  } = use(ExtractStack);
+
 
   const api = new Api(stack, "InfoApi", {
     defaults: {
       function: {
-        environment: {
-          TENANTS: ENV.TENANTS,
-        }
+        bind: [TENANTS]
       }
     },
     routes: {

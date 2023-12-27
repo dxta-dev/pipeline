@@ -13,18 +13,17 @@ export function ExtractStack({ stack }: StackContext) {
     CLERK_JWT_ISSUER: z.string(),
     CLERK_JWT_AUDIENCE: z.string(),
     CRON_USER_ID: z.string(),
-    TENANTS: z.string(),
     CRON_DISABLED: z.literal('true').optional(),
   });
   const ENV = ENVSchema.parse(process.env);
 
-  const TENANT_DATABASE_URL = new Config.Secret(stack, "TENANT_DATABASE_URL");
   const TENANT_DATABASE_AUTH_TOKEN = new Config.Secret(stack, "TENANT_DATABASE_AUTH_TOKEN");
   const CLERK_SECRET_KEY = new Config.Secret(stack, "CLERK_SECRET_KEY");
   const REDIS_URL = new Config.Secret(stack, "REDIS_URL");
   const REDIS_TOKEN = new Config.Secret(stack, "REDIS_TOKEN");
   const REDIS_USER_TOKEN_TTL = new Config.Parameter(stack, "REDIS_USER_TOKEN_TTL", { value: (20 * 60).toString() });
   const PER_PAGE = new Config.Parameter(stack, "PER_PAGE", { value: (30).toString() });
+  const TENANTS = new Config.Secret(stack, "TENANTS");
 
   const bus = new EventBus(stack, "ExtractBus", {
     rules: {
@@ -61,11 +60,8 @@ export function ExtractStack({ stack }: StackContext) {
     defaults: {
       retries: 10,
       function: {
-        environment: {
-          TENANTS: ENV.TENANTS,
-        },
         bind: [
-          TENANT_DATABASE_URL,
+          TENANTS,
           TENANT_DATABASE_AUTH_TOKEN,
           CLERK_SECRET_KEY,
           REDIS_URL,
@@ -87,13 +83,10 @@ export function ExtractStack({ stack }: StackContext) {
       },
     },
     function: {
-      environment: {
-        TENANTS: ENV.TENANTS,
-      },
       bind: [
         bus,
         extractQueue,
-        TENANT_DATABASE_URL,
+        TENANTS,
         TENANT_DATABASE_AUTH_TOKEN,
         CLERK_SECRET_KEY,
         REDIS_URL,
@@ -108,9 +101,6 @@ export function ExtractStack({ stack }: StackContext) {
   bus.addTargets(stack, "members", {
     extractUserInfo: {
       function: {
-        environment: {
-          TENANTS: ENV.TENANTS,
-        },
         bind: [bus, extractQueue],
         handler: "src/extract/extract-member-info.eventHandler",
       },
@@ -120,27 +110,18 @@ export function ExtractStack({ stack }: StackContext) {
   bus.addTargets(stack, "repository", {
     extractMember: {
       function: {
-        environment: {
-          TENANTS: ENV.TENANTS,
-        },
         bind: [bus, extractQueue],
         handler: "src/extract/extract-members.eventHandler",
       },
     },
     extractNamespaceMember: {
       function: {
-        environment: {
-          TENANTS: ENV.TENANTS,
-        },
         bind: [bus, extractQueue],
         handler: "src/extract/extract-namespace-members.eventHandler",
       },
     },
     mergeRequests: {
       function: {
-        environment: {
-          TENANTS: ENV.TENANTS,
-        },
         bind: [bus, extractQueue],
         handler: "src/extract/extract-merge-requests.eventHandler",
       },
@@ -150,27 +131,18 @@ export function ExtractStack({ stack }: StackContext) {
   bus.addTargets(stack, "mergeRequests", {
     extractMergeRequestDiffs: {
       function: {
-        environment: {
-          TENANTS: ENV.TENANTS,
-        },
         bind: [bus, extractQueue],
         handler: "src/extract/extract-merge-request-diffs.eventHandler",
       }
     },
     extractMergeRequestCommits: {
       function: {
-        environment: {
-          TENANTS: ENV.TENANTS,
-        },
         bind: [bus, extractQueue],
         handler: "src/extract/extract-merge-request-commits.eventHandler",
       }
     },
     extractMergeRequestNotes: {
       function: {
-        environment: {
-          TENANTS: ENV.TENANTS,
-        },
         bind: [bus, extractQueue],
         handler: "src/extract/extract-merge-request-notes.eventHandler",
       }
@@ -180,9 +152,6 @@ export function ExtractStack({ stack }: StackContext) {
   bus.addTargets(stack, 'githubMergeRequests', {
     extractTimelineEvents: {
       function: {
-        environment: {
-          TENANTS: ENV.TENANTS,
-        },
         bind: [bus, extractQueue],
         handler: "src/extract/extract-timeline-events.eventHandler",
       }
@@ -193,12 +162,9 @@ export function ExtractStack({ stack }: StackContext) {
     defaults: {
       authorizer: "JwtAuthorizer",
       function: {
-        environment: {
-          TENANTS: ENV.TENANTS,
-        },
         bind: [
           bus,
-          TENANT_DATABASE_URL,
+          TENANTS,
           TENANT_DATABASE_AUTH_TOKEN,
           CLERK_SECRET_KEY,
           REDIS_URL,
@@ -231,10 +197,10 @@ export function ExtractStack({ stack }: StackContext) {
           handler: "src/extract/extract-tenants.cronHandler",
           environment: {
             CRON_USER_ID: ENV.CRON_USER_ID,
-            TENANTS: ENV.TENANTS,
           },
           bind: [
             extractQueue,
+            TENANTS,
             CLERK_SECRET_KEY,
             REDIS_URL,
             REDIS_TOKEN,
@@ -252,7 +218,7 @@ export function ExtractStack({ stack }: StackContext) {
 
   return {
     ExtractBus: bus,
-    TENANT_DATABASE_URL,
+    TENANTS,
     TENANT_DATABASE_AUTH_TOKEN,
   };
 }
