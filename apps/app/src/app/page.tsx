@@ -3,8 +3,10 @@ import { MainNav } from "~/components/ui/main-nav";
 import { GenerateToken } from "~/components/generate-token";
 import { ExtractStartForm } from "~/components/extract-start-form";
 import { TransformStartForm } from "~/components/transform-start-form";
+import { getEnvTenants } from "~/components/tenant.env";
 
 export default function Page() {
+  const tenants = getEnvTenants(); // getServerSideProps is deprecated. createServerContext documentation lackluster
   return (
     <>
       <div className="flex-col">
@@ -19,8 +21,8 @@ export default function Page() {
         </div>
       </div>
       <GenerateToken />
-      <ExtractStartForm/>
-      <TransformStartForm/>
+      <ExtractStartForm TENANTS={tenants}/>
+      <TransformStartForm TENANTS={tenants}/>
     </>
   );
 }

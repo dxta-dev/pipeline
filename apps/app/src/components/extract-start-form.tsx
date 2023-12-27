@@ -3,9 +3,13 @@ import { useAuth } from '@clerk/nextjs';
 import { useState } from 'react';
 import type { ChangeEvent, Dispatch, SetStateAction } from 'react';
 import { Input } from './ui/input';
+import { TenantPicker } from './tenant-picker';
+import type { Tenant } from './tenant.env';
 
-
-export function ExtractStartForm() {
+type ExtractStartFormProps = {
+  TENANTS: Tenant[] | undefined
+}
+export function ExtractStartForm({ TENANTS }: ExtractStartFormProps) {
   const { getToken } = useAuth();
   const currentDate = new Date();
   currentDate.setMonth(currentDate.getMonth() - 6);
@@ -18,6 +22,7 @@ export function ExtractStartForm() {
   const [to, setTo] = useState(new Date().toISOString().slice(0, 10));
   const [status, setStatus] = useState('---');
   const [body, setBody] = useState('');
+  const [tenantId, setTenantId] = useState((TENANTS || [])[0]?.id || -1);
 
   const handleInputChange = (stateSetter: Dispatch<SetStateAction<any>>) => (ev: ChangeEvent<HTMLInputElement>) => stateSetter(ev.target.value);
 
@@ -25,13 +30,14 @@ export function ExtractStartForm() {
 
   const handleSubmit = async () => {
     if (!process.env.NEXT_PUBLIC_EXTRACT_API_URL) return console.error('Missing ENV variable: NEXT_PUBLIC_EXTRACT_API_URL');
+    if (tenantId === -1) return console.error(`Invalid ENV variable: TENANTS`);
     setStatus('...');
     setBody('');
   
     const token = await getToken({ template: 'dashboard' });
     if (!token) return;
   
-    const requestBody = JSON.stringify({ repositoryId, repositoryName, namespaceName, sourceControl, from: new Date(from), to: new Date(to) });
+    const requestBody = JSON.stringify({ repositoryId, repositoryName, namespaceName, sourceControl, from: new Date(from), to: new Date(to), tenantId });
   
     const res = await fetch(process.env.NEXT_PUBLIC_EXTRACT_API_URL, {
       method: 'post',
@@ -80,6 +86,12 @@ export function ExtractStartForm() {
             <tr>
               <td><input type='date' value={from} onChange={handleInputChange(setFrom)} className='flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50' /></td>
               <td><input type='date' value={to} onChange={handleInputChange(setTo)} className='flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50' /></td>
+            </tr>
+            <tr>
+              <td>tenant:</td>
+              <td>
+                <TenantPicker tenants={TENANTS} setTenantId={setTenantId} />
+              </td>
             </tr>
           </tbody>
         </table>
