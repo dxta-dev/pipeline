@@ -797,19 +797,14 @@ async function upsertMergeRequestEvents(
   nullDateId: number,
   nullUserId: number
 ) {
-
-
   const transformDates = await selectEventDates(
     db,
     timelineEvents.map(t => ({
-      key: {  type: t.type, timestamp: t.timestamp },
+      key: { type: t.type, timestamp: t.timestamp },
       dmy: getDMY(t.timestamp)
     })),
     nullDateId
   );
-
-
-
 
   const events = timelineEvents.map(timelineEvent => {
     const td = transformDates.find(td => td.key.type === timelineEvent.type && td.key.timestamp.getTime() === timelineEvent.timestamp.getTime());
@@ -834,8 +829,8 @@ async function upsertMergeRequestEvents(
         type = 'unknown';
         break;
     }
-      
-    
+
+
 
 
     return {
@@ -848,7 +843,7 @@ async function upsertMergeRequestEvents(
       repository: repositoryId,
       reviewState: 'unknown',
     } satisfies transform.NewMergeRequestEvent;
-  }) 
+  })
 
 
   await deleteMergeRequestEvents(tx, mergeRequestId);
@@ -863,7 +858,6 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
     console.error(`No extract data found for merge request with id ${extractMergeRequestId}`);
     return null;
   }
-
 
   if (extractData.mergeRequest === null) {
     throw new Error(`No merge request found for id ${extractMergeRequestId}`);
@@ -960,10 +954,18 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
           repository: transformRepositoryId,
           mergeRequest: transformMergeRequestId,
         }).run();
+
+        await upsertMergeRequestEvents(
+          tx,
+          ctx.transformDatabase,
+          transformRepositoryId,
+          transformMergeRequestId,
+          extractData.timelineEvents,
+          nullDateId,
+          nullUserId
+        );
       }
     )
-
-
   } else {
     await ctx.transformDatabase.transaction(
       async (tx) => {
@@ -986,6 +988,16 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
           repository: transformRepositoryId,
           mergeRequest: transformMergeRequestId,
         }).run()
+
+        await upsertMergeRequestEvents(
+          tx,
+          ctx.transformDatabase,
+          transformRepositoryId,
+          transformMergeRequestId,
+          extractData.timelineEvents,
+          nullDateId,
+          nullUserId
+        );
       }
     )
   }

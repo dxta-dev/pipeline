@@ -15,6 +15,6 @@ export type { TransformDate, NewTransformDate } from './dates';
 export type { MergeRequestMetric, NewMergeRequestMetric } from './merge-request-metrics';
 export type { MergeRequestUsersJunk, NewMergeRequestUsersJunk } from './merge-request-users-junk';
 export type { MergeRequestDatesJunk, NewMergeRequestDatesJunk } from './merge-request-dates-junk';
-  export type { MergeRequestEvent, NewMergeRequestEvent, MergeRequestEventType, ReviewStateType } from './merge-request-events';
+export type { MergeRequestEvent, NewMergeRequestEvent, MergeRequestEventType, ReviewStateType } from './merge-request-events';
 
 export type { NullRows, NewNullRows } from './null-rows';

@@ -18,6 +18,7 @@ export const MergeRequestEventTypes = [
   'started_pickup',
   'started_review',
   'noted',
+
   'assigned',
   'closed',
   'commented',
@@ -39,7 +40,7 @@ export const ReviewStates = [
 ] as const;
 
 
-export const mergeRequestEvents = sqliteTable('timeline_events', {
+export const mergeRequestEvents = sqliteTable('merge_request_events', {
   id: integer('id').primaryKey(),
 
   actorId: integer('actor').notNull().references(() => forgeUsers.id),
