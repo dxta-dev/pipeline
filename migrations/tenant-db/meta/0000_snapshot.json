@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "916d7ba4-3a3c-4145-9eb9-317cb5d956cc",
+  "id": "5aea1665-0130-4769-b328-0cf598573a17",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "crawl_events": {
@@ -1488,15 +1488,15 @@
           "notNull": true,
           "autoincrement": false
         },
-        "timestamp": {
-          "name": "timestamp",
+        "occured_on": {
+          "name": "occured_on",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "commitedAt": {
-          "name": "commitedAt",
+        "commited_at": {
+          "name": "commited_at",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
@@ -1511,6 +1511,13 @@
         },
         "merge_request": {
           "name": "merge_request",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "timestamp": {
+          "name": "timestamp",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
@@ -1575,12 +1582,12 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "transform_merge_request_events_timestamp_transform_dates_id_fk": {
-          "name": "transform_merge_request_events_timestamp_transform_dates_id_fk",
+        "transform_merge_request_events_occured_on_transform_dates_id_fk": {
+          "name": "transform_merge_request_events_occured_on_transform_dates_id_fk",
           "tableFrom": "transform_merge_request_events",
           "tableTo": "transform_dates",
           "columnsFrom": [
-            "timestamp"
+            "occured_on"
           ],
           "columnsTo": [
             "id"
@@ -1588,12 +1595,12 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "transform_merge_request_events_commitedAt_transform_dates_id_fk": {
-          "name": "transform_merge_request_events_commitedAt_transform_dates_id_fk",
+        "transform_merge_request_events_commited_at_transform_dates_id_fk": {
+          "name": "transform_merge_request_events_commited_at_transform_dates_id_fk",
           "tableFrom": "transform_merge_request_events",
           "tableTo": "transform_dates",
           "columnsFrom": [
-            "commitedAt"
+            "commited_at"
           ],
           "columnsTo": [
             "id"
