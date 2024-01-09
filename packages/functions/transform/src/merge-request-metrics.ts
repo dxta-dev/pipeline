@@ -836,10 +836,11 @@ async function upsertMergeRequestEvents(
     return {
       mergeRequest: mergeRequestId,
       mergeRequestEventType: type,
-      timestamp: td?.dateId.id ? td.dateId.id : nullDateId,
+      timestamp: timelineEvent.timestamp,
+      occuredOn: td?.dateId.id ? td.dateId.id : nullDateId,
       commitedAt: nullDateId,
-      actorId: nullUserId,
-      subjectId: nullUserId,
+      actor: nullUserId,
+      subject: nullUserId,
       repository: repositoryId,
       reviewState: 'unknown',
     } satisfies transform.NewMergeRequestEvent;
@@ -847,7 +848,10 @@ async function upsertMergeRequestEvents(
 
 
   await deleteMergeRequestEvents(tx, mergeRequestId);
-  await insertMergeRequestEvents(tx, events).run();
+  console.log(events.length);
+  if (events.length > 0) {
+    await insertMergeRequestEvents(tx, events).run();
+  }
 }
 
 

@@ -18,7 +18,6 @@ export const MergeRequestEventTypes = [
   'started_pickup',
   'started_review',
   'noted',
-
   'assigned',
   'closed',
   'commented',
@@ -39,20 +38,17 @@ export const ReviewStates = [
   'commmented',
 ] as const;
 
-
 export const mergeRequestEvents = sqliteTable('merge_request_events', {
   id: integer('id').primaryKey(),
 
-  actorId: integer('actor').notNull().references(() => forgeUsers.id),
-  subjectId: integer('subject').notNull().references(() => forgeUsers.id),
-
-  timestamp: integer('timestamp').notNull().references(() => dates.id),
-  commitedAt: integer('commitedAt').notNull().references(() => dates.id),
-  
+  actor: integer('actor').notNull().references(() => forgeUsers.id),
+  subject: integer('subject').notNull().references(() => forgeUsers.id),
+  occuredOn: integer('occured_on').notNull().references(() => dates.id),
+  commitedAt: integer('commited_at').notNull().references(() => dates.id),
   repository: integer('repository').notNull().references(() => repositories.id),
-
   mergeRequest: integer('merge_request').notNull().references(() => mergeRequests.id),
 
+  timestamp: integer('timestamp', { mode: 'timestamp_ms' }).notNull(),
   reviewState: Enum('review_state_type', { enum: ReviewStates }).notNull(),
   mergeRequestEventType: Enum('merge_request_event_type', { enum: MergeRequestEventTypes }).notNull(),
 
