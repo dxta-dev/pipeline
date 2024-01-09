@@ -34,6 +34,18 @@ function insertMergeMetrics(tx: SQLiteTransaction<"async", ResultSet, Record<str
     .values(mergeMetrics);
 }
 
+function insertMergeRequestEvents(tx: SQLiteTransaction<"async", ResultSet, Record<string, unknown>, ExtractTablesWithRelations<Record<string, unknown>>>, mergeRequestEvents: transform.NewMergeRequestEvent[]) {
+  return tx.insert(transform.mergeRequestEvents)
+    .values(mergeRequestEvents);
+}
+
+function deleteMergeRequestEvents(tx: SQLiteTransaction<"async", ResultSet, Record<string, unknown>, ExtractTablesWithRelations<Record<string, unknown>>>, mergeRequestId: transform.MergeRequest["id"]) {
+  return tx.delete(transform.mergeRequestEvents)
+    .where(
+      eq(transform.mergeRequestEvents.mergeRequest, mergeRequestId)
+    );
+}
+
 function updateMergeMetrics(tx: SQLiteTransaction<"async", ResultSet, Record<string, unknown>, ExtractTablesWithRelations<Record<string, unknown>>>, mergeMetrics: Omit<transform.MergeRequestMetric, keyof TableMeta>) {
   return tx.update(transform.mergeRequestMetrics)
     .set({
@@ -142,8 +154,6 @@ async function selectNullRows(db: TransformDatabase) {
 
 }
 
-
-
 type mapDatesToTransformedDatesArgs = {
   openedAt: Date,
   mergedAt: Date | null,
@@ -176,19 +186,19 @@ function getWeek(date: Date): number {
   return Math.ceil(((+date - +new Date(date.getUTCFullYear(), 0, 1)) / (24 * 60 * 60 * 1000)) / 7);
 }
 
-async function mapDatesToTransformedDates(db: TransformDatabase, dates: mapDatesToTransformedDatesArgs, nullDateId: number) {
-
-  function getDMY(date: Date | null) {
-    if (date === null) {
-      return null;
-    }
-    return {
-      year: date.getUTCFullYear(),
-      month: date.getUTCMonth() + 1,
-      day: date.getUTCDate(),
-      week: getWeek(date),
-    };
+function getDMY(date: Date | null) {
+  if (date === null) {
+    return null;
   }
+  return {
+    year: date.getUTCFullYear(),
+    month: date.getUTCMonth() + 1,
+    day: date.getUTCDate(),
+    week: getWeek(date),
+  };
+}
+
+async function mapDatesToTransformedDates(db: TransformDatabase, dates: mapDatesToTransformedDatesArgs, nullDateId: number) {
 
   const transformDates = await selectDates(db, {
     openedAt: getDMY(dates.openedAt),
@@ -203,23 +213,50 @@ async function mapDatesToTransformedDates(db: TransformDatabase, dates: mapDates
   return transformDates;
 }
 
+function getDMYQuery(dmy: DMY | null) {
+  if (dmy === null) {
+    return undefined;
+  }
+
+  return and(
+    eq(transform.dates.year, dmy.year),
+    eq(transform.dates.month, dmy.month),
+    eq(transform.dates.day, dmy.day),
+    eq(transform.dates.week, dmy.week),
+  );
+}
+
+function getDateIdOrNullDateId(dmy: DMY | null, datesData: {
+  id: number;
+  year: number;
+  month: number;
+  day: number;
+  week: number;
+}[], nullDateId: number) {
+  if (dmy === null) {
+    return {
+      id: nullDateId,
+    };
+  }
+  const date = datesData.find(({ year, month, day, week }) => year === dmy.year && month === dmy.month && day === dmy.day && week === dmy.week);
+  if (!date) {
+    console.error(`No date found for ${JSON.stringify(dmy)}`);
+    return {
+      id: nullDateId,
+    };
+  }
+  return {
+    id: date.id,
+    day: date.day,
+    month: date.month,
+    year: date.year,
+    week: date.week,
+  };
+}
 
 async function selectDates(db: TransformDatabase, dates: selectDatesArgs, nullDateId: number) {
 
   const { dates: transformDates } = transform;
-
-
-  function getDMYQuery(dmy: DMY | null) {
-    if (dmy === null) {
-      return undefined;
-    }
-    return and(
-      eq(transformDates.year, dmy.year),
-      eq(transformDates.month, dmy.month),
-      eq(transformDates.day, dmy.day),
-      eq(transformDates.week, dmy.week),
-    );
-  }
 
   const datesData = await db.select({
     id: transformDates.id,
@@ -241,37 +278,14 @@ async function selectDates(db: TransformDatabase, dates: selectDatesArgs, nullDa
     )
     .all();
 
-  function getDateIdOrNullDateId(dmy: DMY | null) {
-    if (dmy === null) {
-      return {
-        id: nullDateId,
-      };
-    }
-    const date = datesData.find(({ year, month, day, week }) => year === dmy.year && month === dmy.month && day === dmy.day && week === dmy.week);
-    if (!date) {
-      console.error(`No date found for ${JSON.stringify(dmy)}`);
-      return {
-        id: nullDateId,
-      };
-    }
-    return {
-      id: date.id,
-      day: date.day,
-      month: date.month,
-      year: date.year,
-      week: date.week,
-    };
-  }
-
-
   return {
-    openedAt: getDateIdOrNullDateId(dates.openedAt),
-    mergedAt: getDateIdOrNullDateId(dates.mergedAt),
-    closedAt: getDateIdOrNullDateId(dates.closedAt),
-    startedCodingAt: getDateIdOrNullDateId(dates.startedCodingAt),
-    startedPickupAt: getDateIdOrNullDateId(dates.startedPickupAt),
-    startedReviewAt: getDateIdOrNullDateId(dates.startedReviewAt),
-    lastUpdatedAt: getDateIdOrNullDateId(dates.lastUpdatedAt),
+    openedAt: getDateIdOrNullDateId(dates.openedAt, datesData, nullDateId),
+    mergedAt: getDateIdOrNullDateId(dates.mergedAt, datesData, nullDateId),
+    closedAt: getDateIdOrNullDateId(dates.closedAt, datesData, nullDateId),
+    startedCodingAt: getDateIdOrNullDateId(dates.startedCodingAt, datesData, nullDateId),
+    startedPickupAt: getDateIdOrNullDateId(dates.startedPickupAt, datesData, nullDateId),
+    startedReviewAt: getDateIdOrNullDateId(dates.startedReviewAt, datesData, nullDateId),
+    lastUpdatedAt: getDateIdOrNullDateId(dates.lastUpdatedAt, datesData, nullDateId),
   };
 }
 
@@ -319,7 +333,7 @@ function getUserData(timelineEvents: TimelineEventData[], authorExternalId: numb
       case 'committed':
         committers.add((timelineEvent.data as extract.CommittedEvent).committerName);
         break;
-      case 'merged':        
+      case 'merged':
         if (!timelineEvent.actorId) {
           break;
         }
@@ -329,7 +343,7 @@ function getUserData(timelineEvents: TimelineEventData[], authorExternalId: numb
         break;
     }
   }
-  
+
   return {
     author,
     mergedBy: mergedBy ? mergedBy : null,
@@ -339,7 +353,7 @@ function getUserData(timelineEvents: TimelineEventData[], authorExternalId: numb
   };
 }
 
-async function getTransformUserData( extractDb: ExtractDatabase, transformDb: TransformDatabase, users: MappedUsersTypesArgs) {
+async function getTransformUserData(extractDb: ExtractDatabase, transformDb: TransformDatabase, users: MappedUsersTypesArgs) {
   const { author, mergedBy, approvers, committers, reviewers } = users;
   const allUsers = new Set<number>();
   const transformUsers: transform.ForgeUser[] = [];
@@ -347,26 +361,26 @@ async function getTransformUserData( extractDb: ExtractDatabase, transformDb: Tr
   if (mergedBy) {
     allUsers.add(mergedBy);
   }
-  approvers.forEach((approver) => {{allUsers.add(approver);}});
-  reviewers.forEach((reverse) => {{allUsers.add(reverse);}});
+  approvers.forEach((approver) => { { allUsers.add(approver); } });
+  reviewers.forEach((reverse) => { { allUsers.add(reverse); } });
 
-  
+
   const response = await extractDb
-  .select({
-    externalId: extract.members.externalId,
-    name: extract.members.name,
-    forgeType: extract.members.forgeType,
-    username: extract.members.username,
-  })
-  .from(extract.members)
-  .where(
-    or(
-      allUsers.size > 0 ? inArray(extract.members.externalId, [...allUsers.keys()]) : undefined,
-      committers.length > 0 ? inArray(extract.members.name, committers) : undefined,
-      committers.length > 0 ? inArray(extract.members.username, committers) : undefined,
-    ),
-  )
-  .all();
+    .select({
+      externalId: extract.members.externalId,
+      name: extract.members.name,
+      forgeType: extract.members.forgeType,
+      username: extract.members.username,
+    })
+    .from(extract.members)
+    .where(
+      or(
+        allUsers.size > 0 ? inArray(extract.members.externalId, [...allUsers.keys()]) : undefined,
+        committers.length > 0 ? inArray(extract.members.name, committers) : undefined,
+        committers.length > 0 ? inArray(extract.members.username, committers) : undefined,
+      ),
+    )
+    .all();
 
   for (const res of response) {
     transformUsers.push(await upsertForgeUser(transformDb, {
@@ -612,7 +626,7 @@ export function calculateTimeline(timelineMapKeys: TimelineMapKey[], timelineMap
 
   const sortedTimelineMapKeys = [...timelineMapKeys]
   sortedTimelineMapKeys.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
-  
+
   const committedEvents = sortedTimelineMapKeys.filter(key => key.type === 'committed');
   const lastCommitEvent = committedEvents[committedEvents.length - 1] || null;
 
@@ -724,8 +738,6 @@ export function calculateTimeline(timelineMapKeys: TimelineMapKey[], timelineMap
   };
 }
 
-
-
 function runTimeline(mergeRequestData: MergeRequestData, timelineEvents: TimelineEventData[], notes: MergeRequestNoteData[]) {
   const timelineMap = setupTimeline(timelineEvents, notes);
   const timelineMapKeys = [...timelineMap.keys()];
@@ -751,6 +763,97 @@ function runTimeline(mergeRequestData: MergeRequestData, timelineEvents: Timelin
   }
 }
 
+
+async function selectEventDates<K>(db: TransformDatabase, dates: { key: K, dmy: DMY | null }[], nullDateId: number) {
+
+  const { dates: transformDates } = transform;
+
+  const dmyQuery = dates.map(d => getDMYQuery(d.dmy));
+
+  const datesData = await db.select({
+    id: transformDates.id,
+    year: transformDates.year,
+    month: transformDates.month,
+    day: transformDates.day,
+    week: transformDates.week,
+  }).from(transformDates)
+    .where(
+      or(
+        ...dmyQuery
+      )
+    )
+    .all();
+
+
+  return dates.map(d => ({ key: d.key, dateId: getDateIdOrNullDateId(d.dmy, datesData, nullDateId) }));
+}
+
+async function upsertMergeRequestEvents(
+  tx: SQLiteTransaction<"async", ResultSet, Record<string, unknown>, ExtractTablesWithRelations<Record<string, unknown>>>,
+  db: TransformDatabase,
+  repositoryId: transform.Repository['id'],
+  mergeRequestId: transform.MergeRequest['id'],
+  timelineEvents: TimelineEventData[],
+  nullDateId: number,
+  nullUserId: number
+) {
+
+
+  const transformDates = await selectEventDates(
+    db,
+    timelineEvents.map(t => ({
+      key: {  type: t.type, timestamp: t.timestamp },
+      dmy: getDMY(t.timestamp)
+    })),
+    nullDateId
+  );
+
+
+
+
+  const events = timelineEvents.map(timelineEvent => {
+    const td = transformDates.find(td => td.key.type === timelineEvent.type && td.key.timestamp.getTime() === timelineEvent.timestamp.getTime());
+
+    let type: transform.MergeRequestEventType;
+
+    switch (timelineEvent.type) {
+      case 'assigned':
+      case 'unassigned':
+      case 'review_request_removed':
+      case 'review_requested':
+      case 'closed':
+      case 'convert_to_draft':
+      case 'commented':
+      case 'merged':
+      case 'ready_for_review':
+      case 'reviewed':
+      case 'committed':
+        type = timelineEvent.type;
+        break;
+      default:
+        type = 'unknown';
+        break;
+    }
+      
+    
+
+
+    return {
+      mergeRequest: mergeRequestId,
+      mergeRequestEventType: type,
+      timestamp: td?.dateId.id ? td.dateId.id : nullDateId,
+      commitedAt: nullDateId,
+      actorId: nullUserId,
+      subjectId: nullUserId,
+      repository: repositoryId,
+      reviewState: 'unknown',
+    } satisfies transform.NewMergeRequestEvent;
+  }) 
+
+
+  await deleteMergeRequestEvents(tx, mergeRequestId);
+  await insertMergeRequestEvents(tx, events).run();
+}
 
 
 export async function run(extractMergeRequestId: number, ctx: RunContext) {
