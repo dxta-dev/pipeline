@@ -99,6 +99,7 @@ function getDateInfo(date: Date): {day: number, week: number, month: number, yea
   const week = Math.ceil(((date.getTime() - firstDay.getTime()) / (24 * 60 * 60 * 1000) + 1) / 7);
   const { newWeek, newYear } = checkWeek(week, date.getUTCFullYear());
   console.log(week, newWeek, newYear, date);
+  // ToDo check if ISO Year colum is needed
   return {
     day: date.getUTCDate(),
     week: newWeek,
@@ -109,7 +110,7 @@ function getDateInfo(date: Date): {day: number, week: number, month: number, yea
 
 function generateDates(startDate: Date, endDate: Date) {
   const dates = [];
-  const currentDate = new Date(startDate);
+  const currentDate = new Date(Date.UTC(startDate.getUTCFullYear(), startDate.getUTCMonth(), startDate.getDate()));
 
   while (currentDate <= endDate) {
 
