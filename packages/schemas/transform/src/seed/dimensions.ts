@@ -61,17 +61,59 @@ export async function seed(db: LibSQLDatabase, startDate: Date, endDate: Date): 
 
 }
 
+function getFirstDay(year: number): Date {
+  let firstDayOfYear = new Date(Date.UTC(year, 0, 1));
+  if (firstDayOfYear.getUTCDay() !== 1) {
+    for (let i = 1; i < 4; i++) {
+      const p = new Date(firstDayOfYear);
+      const n = new Date(firstDayOfYear);
+      p.setUTCDate(p.getUTCDate() - i);
+      n.setUTCDate(n.getUTCDate() + i);
+      if (p.getUTCDay() === 1) {
+        firstDayOfYear = p;
+        break;
+      } else if (n.getUTCDay() === 1) {
+        firstDayOfYear = n;
+        break;
+      }
+    }
+  }
+  return firstDayOfYear;
+}
+
+function checkWeek(week: number, year: number): {newWeek: number, newYear: number} {
+  let testWeek = week;
+  let testYear = year;
+  if (week < 1) {
+    const lastDayOfPrev = new Date(Date.UTC(year - 1, 11, 31));
+    const firstDayOfPrev = getFirstDay(year - 1);
+    testWeek = Math.ceil(((lastDayOfPrev.getTime() - firstDayOfPrev.getTime()) / (24 * 60 * 60 * 1000) + 1) / 7)
+    testYear = testYear - 1
+  }
+  return { newWeek: testWeek, newYear: testYear};
+}
+
+function getDateInfo(date: Date): {day: number, week: number, month: number, year: number} {
+ 
+  const firstDay = getFirstDay(date.getUTCFullYear());
+  const week = Math.ceil(((date.getTime() - firstDay.getTime()) / (24 * 60 * 60 * 1000) + 1) / 7);
+  const { newWeek, newYear } = checkWeek(week, date.getUTCFullYear());
+  console.log(week, newWeek, newYear, date);
+  return {
+    day: date.getUTCDate(),
+    week: newWeek,
+    month: date.getUTCMonth() + 1, // Months are zero-based, so we add 1.
+    year: newYear,
+ }
+}
+
 function generateDates(startDate: Date, endDate: Date) {
   const dates = [];
   const currentDate = new Date(startDate);
 
   while (currentDate <= endDate) {
-    const customDate = {
-      day: currentDate.getUTCDate(),
-      week: Math.ceil(((+currentDate - +new Date(currentDate.getUTCFullYear(), 0, 1)) / (24 * 60 * 60 * 1000)) / 7),
-      month: currentDate.getUTCMonth() + 1, // Months are zero-based, so we add 1.
-      year: currentDate.getUTCFullYear(),
-    };
+
+    const customDate = getDateInfo(currentDate);
 
     dates.push(customDate);
     currentDate.setUTCDate(currentDate.getUTCDate() + 1);
