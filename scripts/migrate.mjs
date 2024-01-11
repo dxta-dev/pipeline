@@ -99,6 +99,7 @@ const tryMigrateDatabase = async (databaseId, dbUrl, dbToken) => {
   console.log('DONE');
 }
 await tryMigrateDatabase('tenant-db', process.env.TENANT_DATABASE_URL, process.env.TENANT_DATABASE_AUTH_TOKEN);
+await tryMigrateDatabase('meta', process.env.META_DATABASE_URL, process.env.META_DATABASE_AUTH_TOKEN);
 // await tryMigrateDatabase('extract', process.env.EXTRACT_DATABASE_URL, process.env.EXTRACT_DATABASE_AUTH_TOKEN);
 // await tryMigrateDatabase('transform', process.env.TRANSFORM_DATABASE_URL, process.env.TRANSFORM_DATABASE_AUTH_TOKEN);
 // await tryMigrateDatabase('crawl', process.env.CRAWL_DATABASE_URL, process.env.CRAWL_DATABASE_AUTH_TOKEN);
