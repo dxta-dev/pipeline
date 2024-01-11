@@ -8,14 +8,18 @@ import { ExtractStack } from "./ExtractStack";
 export function InfoStack({ stack }: StackContext) {
 
   const {
-    TENANTS,
+    META_DATABASE_AUTH_TOKEN,
+    META_DATABASE_URL,
   } = use(ExtractStack);
 
 
   const api = new Api(stack, "InfoApi", {
     defaults: {
       function: {
-        bind: [TENANTS]
+        bind: [
+          META_DATABASE_AUTH_TOKEN,
+          META_DATABASE_URL,
+        ]
       }
     },
     routes: {

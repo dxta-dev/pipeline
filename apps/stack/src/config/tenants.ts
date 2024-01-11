@@ -1,22 +1,10 @@
+import { createClient } from "@libsql/client";
+import { drizzle } from "drizzle-orm/libsql";
 import { Config } from "sst/node/config";
-import { z } from "zod";
+import { getTenants as getTenantsFromDb } from "@acme/meta-schema";
 
-const TenantSchema = z.object({
-  id: z.number(),
-  tenant: z.string(),
-  dbUrl: z.string(),
-});
+const metaDb = drizzle(createClient({ url: Config.META_DATABASE_URL, authToken: Config.META_DATABASE_AUTH_TOKEN }))
 
-const TenantArraySchema = z.array(TenantSchema);
+const TENANTS = await getTenantsFromDb(metaDb);
 
-export type Tenant = z.infer<typeof TenantSchema>;
-
-export const getTenants = () => {
-  const validTenants = TenantArraySchema.safeParse(JSON.parse(Config.TENANTS));
-  if (!validTenants.success) {
-    console.error("Invalid Config 'TENANTS' value:", ...validTenants.error.issues);
-    throw new Error("Invalid Config 'TENANTS' value");
-  }
-
-  return validTenants.data;
-}
+export const getTenants = () => TENANTS;
