@@ -20,7 +20,7 @@ const nullForgeUser = {
 const nullDate = {
   id: 1,
   day: Number.MAX_SAFE_INTEGER,
-  week: Number.MAX_SAFE_INTEGER,
+  week: '',
   month: Number.MAX_SAFE_INTEGER,
   year: Number.MAX_SAFE_INTEGER,
 } satisfies NewTransformDate;
@@ -81,30 +81,28 @@ function getFirstDay(year: number): Date {
   return firstDayOfYear;
 }
 
-function checkWeek(week: number, year: number): {newWeek: number, newYear: number} {
-  let testWeek = week;
-  let testYear = year;
+function checkWeek(week: number, year: number): { newWeek: string } {
+  let isoWeek = week;
+  let isoYear = year;
   if (week < 1) {
     const lastDayOfPrev = new Date(Date.UTC(year - 1, 11, 31));
     const firstDayOfPrev = getFirstDay(year - 1);
-    testWeek = Math.ceil(((lastDayOfPrev.getTime() - firstDayOfPrev.getTime()) / (24 * 60 * 60 * 1000) + 1) / 7)
-    testYear = testYear - 1
+    isoWeek = Math.ceil(((lastDayOfPrev.getTime() - firstDayOfPrev.getTime()) / (24 * 60 * 60 * 1000) + 1) / 7)
+    isoYear = isoYear - 1
   }
-  return { newWeek: testWeek, newYear: testYear};
+  return { newWeek: `${isoYear}-W${isoWeek}` };
 }
 
-function getDateInfo(date: Date): {day: number, week: number, month: number, year: number} {
+function getDateInfo(date: Date): {day: number, week: string, month: number, year: number} {
  
   const firstDay = getFirstDay(date.getUTCFullYear());
   const week = Math.ceil(((date.getTime() - firstDay.getTime()) / (24 * 60 * 60 * 1000) + 1) / 7);
-  const { newWeek, newYear } = checkWeek(week, date.getUTCFullYear());
-  console.log(week, newWeek, newYear, date);
-  // ToDo check if ISO Year colum is needed
+  const { newWeek } = checkWeek(week, date.getUTCFullYear());
   return {
     day: date.getUTCDate(),
     week: newWeek,
     month: date.getUTCMonth() + 1, // Months are zero-based, so we add 1.
-    year: newYear,
+    year: date.getUTCFullYear(),
  }
 }
 

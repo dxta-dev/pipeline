@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "abdaafdf-335e-4d25-ac74-9bb1c24336d7",
+  "id": "48466569-c3a4-4453-b158-ea70393d23ad",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "crawl_events": {
@@ -1034,8 +1034,7 @@
           "columns": [
             "member_id",
             "repository_id"
-          ],
-          "name": "extract_repositories_to_members_repository_id_member_id_pk"
+          ]
         }
       },
       "uniqueConstraints": {}
@@ -1171,7 +1170,7 @@
         },
         "week": {
           "name": "week",
-          "type": "integer",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false

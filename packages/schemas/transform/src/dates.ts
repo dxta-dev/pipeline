@@ -1,12 +1,12 @@
 import type { InferSelectModel, InferInsertModel } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
-import { integer, uniqueIndex } from 'drizzle-orm/sqlite-core';
+import { text, integer, uniqueIndex } from 'drizzle-orm/sqlite-core';
 import { sqliteTable } from './transform-table';
 
 export const dates = sqliteTable('dates', {
   id: integer('id').primaryKey(),
   day: integer('day').notNull(),
-  week: integer('week').notNull(),
+  week: text('week').notNull(),
   month: integer('month').notNull(),
   year: integer('year').notNull(),
 
