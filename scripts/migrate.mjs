@@ -67,11 +67,14 @@ const maybeOutDirAlreadyExistsMaybeNot = () => fs.existsSync('scripts/out') || f
 
 /**
  * @param {string} databaseId 
- * @param {string} [dbUrl] 
- * @param {string} [dbToken] 
+ * @param {string} dbUrlEnvKey
+ * @param {string} dbTokenEnvKey
  */
-const tryMigrateDatabase = async (databaseId, dbUrl, dbToken) => {
+const tryMigrateDatabase = async (databaseId, dbUrlEnvKey, dbTokenEnvKey) => {
   console.log(`Migrating db '${databaseId}' ...`);
+
+  const dbUrl = /**@type {string | undefined}*/(process.env[dbUrlEnvKey]);
+  const dbToken = /**@type {string | undefined}*/(process.env[dbTokenEnvKey]);
 
   const localMigrationFiles = fs.readdirSync(`migrations/${databaseId}`).filter(file => file !== 'meta').sort();
   if (localMigrationFiles.length === 0) return console.warn(`Skipping migration for db '${databaseId}'. Reason: No migration files found :o`);
@@ -79,8 +82,8 @@ const tryMigrateDatabase = async (databaseId, dbUrl, dbToken) => {
   const upstreamMigrations = readUpstreamMigrationState(databaseId);
   if (!upstreamMigrations && noMigrationMode) return console.error(`Migration upstream state not found, need to specify migration mode.\n\nUsage: ./scripts/migrate.ts <fingers-crossed|yolo>.\n  fingers-crossed  will try to run the migration without syncing with upstream.\n  yolo             will try to delete all tables in database before migrating.`);
   if (upstreamMigrations && isMigrationStateEqual(upstreamMigrations, localMigrationFiles)) return console.warn(`Skipping migration for db '${databaseId}'. Reason: Upstream migrations are in sync.`);
-  if (!dbUrl) return console.warn(`Skipping migration for db '${databaseId}'. Reason: Environment variable ${databaseId.toUpperCase()}_DB_URL is not defined :(`);
-  if (!dbToken) return console.warn(`Skipping migration for db '${databaseId}'. Reason: Environment variable ${databaseId.toUpperCase()}_DB_TOKEN is not defined :(`);
+  if (!dbUrl) return console.warn(`Skipping migration for db '${databaseId}'. Reason: Environment variable ${dbUrlEnvKey} is not defined :(`);
+  if (!dbToken) return console.warn(`Skipping migration for db '${databaseId}'. Reason: Environment variable ${dbTokenEnvKey} is not defined :(`);
 
   const client = createClient({ url: dbUrl, authToken: dbToken });
   const db = drizzle(client);
@@ -98,8 +101,8 @@ const tryMigrateDatabase = async (databaseId, dbUrl, dbToken) => {
 
   console.log('DONE');
 }
-await tryMigrateDatabase('tenant-db', process.env.TENANT_DATABASE_URL, process.env.TENANT_DATABASE_AUTH_TOKEN);
-await tryMigrateDatabase('meta', process.env.META_DATABASE_URL, process.env.META_DATABASE_AUTH_TOKEN);
+await tryMigrateDatabase('tenant-db', 'TENANT_DATABASE_URL', 'TENANT_DATABASE_AUTH_TOKEN');
+await tryMigrateDatabase('super', 'SUPER_DATABASE_URL', 'SUPER_DATABASE_AUTH_TOKEN');
 // await tryMigrateDatabase('extract', process.env.EXTRACT_DATABASE_URL, process.env.EXTRACT_DATABASE_AUTH_TOKEN);
 // await tryMigrateDatabase('transform', process.env.TRANSFORM_DATABASE_URL, process.env.TRANSFORM_DATABASE_AUTH_TOKEN);
 // await tryMigrateDatabase('crawl', process.env.CRAWL_DATABASE_URL, process.env.CRAWL_DATABASE_AUTH_TOKEN);

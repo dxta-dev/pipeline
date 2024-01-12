@@ -3,7 +3,7 @@ import { events } from "@acme/crawl-schema";
 import type { Context, InsertEventEntities } from "@acme/crawl-functions";
 import type { EventNamespaceType } from "@acme/crawl-schema/src/events";
 import { getTenantDb, type OmitDb } from "./get-tenant-db";
-import type { Tenant } from "@acme/meta-schema";
+import type { Tenant } from "@acme/super-schema";
 
 const context: OmitDb<Context<InsertEventEntities>> = {
   entities: {

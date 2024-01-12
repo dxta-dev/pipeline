@@ -1,5 +1,5 @@
 {
-  "name": "@acme/meta-schema",
+  "name": "@acme/super-schema",
   "version": "1.0.0",
   "main": "src/index.ts",
   "type": "module",

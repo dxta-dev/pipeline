@@ -8,8 +8,8 @@ import { ExtractStack } from "./ExtractStack";
 export function InfoStack({ stack }: StackContext) {
 
   const {
-    META_DATABASE_AUTH_TOKEN,
-    META_DATABASE_URL,
+    SUPER_DATABASE_AUTH_TOKEN,
+    SUPER_DATABASE_URL,
   } = use(ExtractStack);
 
 
@@ -17,8 +17,8 @@ export function InfoStack({ stack }: StackContext) {
     defaults: {
       function: {
         bind: [
-          META_DATABASE_AUTH_TOKEN,
-          META_DATABASE_URL,
+          SUPER_DATABASE_AUTH_TOKEN,
+          SUPER_DATABASE_URL,
         ]
       }
     },

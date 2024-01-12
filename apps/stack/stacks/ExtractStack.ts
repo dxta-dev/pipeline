@@ -18,8 +18,8 @@ export function ExtractStack({ stack }: StackContext) {
   const ENV = ENVSchema.parse(process.env);
 
   const TENANT_DATABASE_AUTH_TOKEN = new Config.Secret(stack, "TENANT_DATABASE_AUTH_TOKEN");
-  const META_DATABASE_URL = new Config.Secret(stack, "META_DATABASE_URL");
-  const META_DATABASE_AUTH_TOKEN = new Config.Secret(stack, "META_DATABASE_AUTH_TOKEN");
+  const SUPER_DATABASE_URL = new Config.Secret(stack, "SUPER_DATABASE_URL");
+  const SUPER_DATABASE_AUTH_TOKEN = new Config.Secret(stack, "SUPER_DATABASE_AUTH_TOKEN");
   const CLERK_SECRET_KEY = new Config.Secret(stack, "CLERK_SECRET_KEY");
   const REDIS_URL = new Config.Secret(stack, "REDIS_URL");
   const REDIS_TOKEN = new Config.Secret(stack, "REDIS_TOKEN");
@@ -63,8 +63,8 @@ export function ExtractStack({ stack }: StackContext) {
       function: {
         bind: [
           TENANT_DATABASE_AUTH_TOKEN,
-          META_DATABASE_AUTH_TOKEN,
-          META_DATABASE_URL,      
+          SUPER_DATABASE_AUTH_TOKEN,
+          SUPER_DATABASE_URL,      
           CLERK_SECRET_KEY,
           REDIS_URL,
           REDIS_TOKEN,
@@ -89,8 +89,8 @@ export function ExtractStack({ stack }: StackContext) {
         bus,
         extractQueue,
         TENANT_DATABASE_AUTH_TOKEN,
-        META_DATABASE_AUTH_TOKEN,
-        META_DATABASE_URL,    
+        SUPER_DATABASE_AUTH_TOKEN,
+        SUPER_DATABASE_URL,    
         CLERK_SECRET_KEY,
         REDIS_URL,
         REDIS_TOKEN,
@@ -168,8 +168,8 @@ export function ExtractStack({ stack }: StackContext) {
         bind: [
           bus,
           TENANT_DATABASE_AUTH_TOKEN,
-          META_DATABASE_AUTH_TOKEN,
-          META_DATABASE_URL,      
+          SUPER_DATABASE_AUTH_TOKEN,
+          SUPER_DATABASE_URL,      
           CLERK_SECRET_KEY,
           REDIS_URL,
           REDIS_TOKEN,
@@ -204,8 +204,8 @@ export function ExtractStack({ stack }: StackContext) {
           },
           bind: [
             extractQueue,
-            META_DATABASE_AUTH_TOKEN,
-            META_DATABASE_URL,
+            SUPER_DATABASE_AUTH_TOKEN,
+            SUPER_DATABASE_URL,
             CLERK_SECRET_KEY,
             REDIS_URL,
             REDIS_TOKEN,
@@ -224,7 +224,7 @@ export function ExtractStack({ stack }: StackContext) {
   return {
     ExtractBus: bus,
     TENANT_DATABASE_AUTH_TOKEN,
-    META_DATABASE_AUTH_TOKEN,
-    META_DATABASE_URL
+    SUPER_DATABASE_AUTH_TOKEN,
+    SUPER_DATABASE_URL,
   };
 }

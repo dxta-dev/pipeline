@@ -17,8 +17,8 @@ export function TransformStack({ stack }: StackContext) {
   const ENV = ENVSchema.parse(process.env);
 
   const {
-    META_DATABASE_AUTH_TOKEN,
-    META_DATABASE_URL,
+    SUPER_DATABASE_AUTH_TOKEN,
+    SUPER_DATABASE_URL,
     TENANT_DATABASE_AUTH_TOKEN,
   } = use(ExtractStack);
 
@@ -33,8 +33,8 @@ export function TransformStack({ stack }: StackContext) {
     function: {
       bind: [
         transformQueue,
-        META_DATABASE_AUTH_TOKEN,
-        META_DATABASE_URL,
+        SUPER_DATABASE_AUTH_TOKEN,
+        SUPER_DATABASE_URL,
         TENANT_DATABASE_AUTH_TOKEN,
       ],
       handler: "src/transform/queue.handler",
@@ -48,8 +48,8 @@ export function TransformStack({ stack }: StackContext) {
       function: {
         bind: [
           transformQueue,
-          META_DATABASE_AUTH_TOKEN,
-          META_DATABASE_URL,
+          SUPER_DATABASE_AUTH_TOKEN,
+          SUPER_DATABASE_URL,
         ],
         runtime: "nodejs18.x",
       },
@@ -77,8 +77,8 @@ export function TransformStack({ stack }: StackContext) {
           handler: "src/transform/transform-tenant.cronHandler",
           bind: [
             transformQueue,
-            META_DATABASE_AUTH_TOKEN,
-            META_DATABASE_URL,
+            SUPER_DATABASE_AUTH_TOKEN,
+            SUPER_DATABASE_URL,
           ],
           runtime: "nodejs18.x",
         }
