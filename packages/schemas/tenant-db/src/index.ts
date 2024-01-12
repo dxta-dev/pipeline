@@ -17,8 +17,7 @@ export { mergeRequestMetrics as transformMergeRequestMetrics } from '@acme/trans
 export { mergeRequestUsersJunk as transformMergeRequestUsersJunk } from '@acme/transform-schema';
 export { mergeRequestDatesJunk as transformMergeRequestDatesJunk } from '@acme/transform-schema';
 export { nullRows as transformNullRows } from '@acme/transform-schema';
+export { mergeRequestEvents as transformMergeRequestEvents } from '@acme/transform-schema';
 
 export { instances as crawlInstances } from '@acme/crawl-schema';
 export { events as crawlEvents } from '@acme/crawl-schema';
-
-

@@ -101,6 +101,7 @@ const tryMigrateDatabase = async (databaseId, dbUrlEnvKey, dbTokenEnvKey) => {
 
   console.log('DONE');
 }
+
 await tryMigrateDatabase('tenant-db', 'TENANT_DATABASE_URL', 'TENANT_DATABASE_AUTH_TOKEN');
 await tryMigrateDatabase('super', 'SUPER_DATABASE_URL', 'SUPER_DATABASE_AUTH_TOKEN');
 // await tryMigrateDatabase('extract', process.env.EXTRACT_DATABASE_URL, process.env.EXTRACT_DATABASE_AUTH_TOKEN);

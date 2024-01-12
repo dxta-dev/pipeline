@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "abdaafdf-335e-4d25-ac74-9bb1c24336d7",
+  "id": "5aea1665-0130-4769-b328-0cf598573a17",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "crawl_events": {
@@ -1034,8 +1034,7 @@
           "columns": [
             "member_id",
             "repository_id"
-          ],
-          "name": "extract_repositories_to_members_repository_id_member_id_pk"
+          ]
         }
       },
       "uniqueConstraints": {}
@@ -1454,6 +1453,180 @@
           "tableTo": "transform_dates",
           "columnsFrom": [
             "started_review_at"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "transform_merge_request_events": {
+      "name": "transform_merge_request_events",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "actor": {
+          "name": "actor",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "subject": {
+          "name": "subject",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "occured_on": {
+          "name": "occured_on",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "commited_at": {
+          "name": "commited_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "repository": {
+          "name": "repository",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "merge_request": {
+          "name": "merge_request",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "timestamp": {
+          "name": "timestamp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "review_state_type": {
+          "name": "review_state_type",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "merge_request_event_type": {
+          "name": "merge_request_event_type",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "__created_at": {
+          "name": "__created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        },
+        "__updated_at": {
+          "name": "__updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "transform_merge_request_events_actor_transform_forge_users_id_fk": {
+          "name": "transform_merge_request_events_actor_transform_forge_users_id_fk",
+          "tableFrom": "transform_merge_request_events",
+          "tableTo": "transform_forge_users",
+          "columnsFrom": [
+            "actor"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "transform_merge_request_events_subject_transform_forge_users_id_fk": {
+          "name": "transform_merge_request_events_subject_transform_forge_users_id_fk",
+          "tableFrom": "transform_merge_request_events",
+          "tableTo": "transform_forge_users",
+          "columnsFrom": [
+            "subject"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "transform_merge_request_events_occured_on_transform_dates_id_fk": {
+          "name": "transform_merge_request_events_occured_on_transform_dates_id_fk",
+          "tableFrom": "transform_merge_request_events",
+          "tableTo": "transform_dates",
+          "columnsFrom": [
+            "occured_on"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "transform_merge_request_events_commited_at_transform_dates_id_fk": {
+          "name": "transform_merge_request_events_commited_at_transform_dates_id_fk",
+          "tableFrom": "transform_merge_request_events",
+          "tableTo": "transform_dates",
+          "columnsFrom": [
+            "commited_at"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "transform_merge_request_events_repository_transform_repositories_id_fk": {
+          "name": "transform_merge_request_events_repository_transform_repositories_id_fk",
+          "tableFrom": "transform_merge_request_events",
+          "tableTo": "transform_repositories",
+          "columnsFrom": [
+            "repository"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "transform_merge_request_events_merge_request_transform_merge_requests_id_fk": {
+          "name": "transform_merge_request_events_merge_request_transform_merge_requests_id_fk",
+          "tableFrom": "transform_merge_request_events",
+          "tableTo": "transform_merge_requests",
+          "columnsFrom": [
+            "merge_request"
           ],
           "columnsTo": [
             "id"
