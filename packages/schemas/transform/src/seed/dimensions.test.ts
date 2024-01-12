@@ -4,7 +4,7 @@ import { createClient } from "@libsql/client";
 import { drizzle, type LibSQLDatabase } from "drizzle-orm/libsql";
 import { migrate } from "drizzle-orm/libsql/migrator";
 
-import { checkWeek, getDateInfo, seed } from "./dimensions";
+import { getDateInfo, seed } from "./dimensions";
 import { forgeUsers } from "../forge-users";
 import { dates } from "../dates";
 import { mergeRequests } from "../merge-requests";
