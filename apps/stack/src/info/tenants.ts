@@ -6,7 +6,7 @@ export const handler = ApiHandler(async (_evt) => {
   return {
     statusCode: 200,
     body: JSON.stringify({
-      tenants: getTenants().map(({tenant}) => tenant),
+      tenants: getTenants().map(({name}) => ({tenant:name})),
     }),
   };
 });

@@ -22,6 +22,7 @@
     "@acme/extract-functions": "*",
     "@acme/extract-schema": "*",
     "@acme/source-control": "*",
+    "@acme/super-schema": "*",
     "@acme/transform-functions": "*",
     "@acme/transform-schema": "*",
     "@aws-sdk/client-sqs": "^3.470.0",
