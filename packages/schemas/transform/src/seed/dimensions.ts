@@ -61,7 +61,7 @@ export async function seed(db: LibSQLDatabase, startDate: Date, endDate: Date): 
 
 }
 
-function getFirstDay(year: number): Date {
+export function getFirstDay(year: number): Date {
   let firstDayOfYear = new Date(Date.UTC(year, 0, 1));
   if (firstDayOfYear.getUTCDay() !== 1) {
     for (let i = 1; i < 4; i++) {
@@ -81,7 +81,7 @@ function getFirstDay(year: number): Date {
   return firstDayOfYear;
 }
 
-function checkWeek(week: number, year: number): { newWeek: string } {
+export function checkWeek(week: number, year: number): { newWeek: string } {
   let isoWeek = week;
   let isoYear = year;
   if (week < 1) {
