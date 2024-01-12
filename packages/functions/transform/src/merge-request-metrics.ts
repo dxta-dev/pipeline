@@ -178,7 +178,7 @@ async function mapDatesToTransformedDates(db: TransformDatabase, dates: mapDates
     if (date === null) {
       return null;
     }
-   return getDateInfo(date)
+    return getDateInfo(new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())))
   }
 
   const transformDates = await selectDates(db, {
@@ -239,7 +239,7 @@ async function selectDates(db: TransformDatabase, dates: selectDatesArgs, nullDa
     }
     const date = datesData.find(({ year, month, day, week }) => year === dmy.year && month === dmy.month && day === dmy.day && week === dmy.week);
     if (!date) {
-      console.error(`No date found for ${JSON.stringify(dmy)}`);
+       console.error(`No date found for ${JSON.stringify(dmy)}`);
       return {
         id: nullDateId,
       };
