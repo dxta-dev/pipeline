@@ -93,7 +93,7 @@ function checkWeek(week: number, year: number): { newWeek: string } {
   return { newWeek: `${isoYear}-W${isoWeek}` };
 }
 
-function getDateInfo(date: Date): {day: number, week: string, month: number, year: number} {
+export function getDateInfo(date: Date): {day: number, week: string, month: number, year: number} {
  
   const firstDay = getFirstDay(date.getUTCFullYear());
   const week = Math.ceil(((date.getTime() - firstDay.getTime()) / (24 * 60 * 60 * 1000) + 1) / 7);

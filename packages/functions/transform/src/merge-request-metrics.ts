@@ -7,6 +7,7 @@ import { parseHunks } from './parse-hunks';
 import { type SQLiteTransaction } from 'drizzle-orm/sqlite-core';
 import { type ResultSet } from '@libsql/client/.';
 import { isMemberKnownBot } from './known-bots';
+import { getDateInfo } from '../../../schemas/transform/src/seed/dimensions';
 
 type BrandedDatabase<T> = LibSQLDatabase<Record<string, never>> & { __brand: T }
 
@@ -158,7 +159,7 @@ type DMY = {
   year: number,
   month: number,
   day: number,
-  week: number,
+  week: string,
 };
 
 type selectDatesArgs = {
@@ -171,23 +172,13 @@ type selectDatesArgs = {
   lastUpdatedAt: DMY | null,
 };
 
-function getWeek(date: Date): number {
-  // Logic copied from dimensions.ts
-  return Math.ceil(((+date - +new Date(date.getUTCFullYear(), 0, 1)) / (24 * 60 * 60 * 1000)) / 7);
-}
-
 async function mapDatesToTransformedDates(db: TransformDatabase, dates: mapDatesToTransformedDatesArgs, nullDateId: number) {
 
   function getDMY(date: Date | null) {
     if (date === null) {
       return null;
     }
-    return {
-      year: date.getUTCFullYear(),
-      month: date.getUTCMonth() + 1,
-      day: date.getUTCDate(),
-      week: getWeek(date),
-    };
+   return getDateInfo(date)
   }
 
   const transformDates = await selectDates(db, {
@@ -202,7 +193,6 @@ async function mapDatesToTransformedDates(db: TransformDatabase, dates: mapDates
 
   return transformDates;
 }
-
 
 async function selectDates(db: TransformDatabase, dates: selectDatesArgs, nullDateId: number) {
 
