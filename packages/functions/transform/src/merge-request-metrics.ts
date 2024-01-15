@@ -182,15 +182,15 @@ type selectDatesArgs = {
   lastUpdatedAt: DMY | null,
 };
 
+function getDMY(date: Date | null) {
+  if (date === null) {
+    return null;
+  }
+  return getDateInfo(new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())))
+}
+
 async function mapDatesToTransformedDates(db: TransformDatabase, dates: mapDatesToTransformedDatesArgs, nullDateId: number) {
 
-  function getDMY(date: Date | null) {
-    if (date === null) {
-      return null;
-    }
-    return getDateInfo(new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())))
-  }
-  
   const transformDates = await selectDates(db, {
     openedAt: getDMY(dates.openedAt),
     mergedAt: getDMY(dates.mergedAt),
@@ -204,11 +204,7 @@ async function mapDatesToTransformedDates(db: TransformDatabase, dates: mapDates
   return transformDates;
 }
 
-async function selectDates(db: TransformDatabase, dates: selectDatesArgs, nullDateId: number) {
-
-  const { dates: transformDates } = transform;
-  
-  function getDMYQuery(dmy: DMY | null) {
+function getDMYQuery(dmy: DMY | null) {
   if (dmy === null) {
     return undefined;
   }
@@ -218,6 +214,39 @@ async function selectDates(db: TransformDatabase, dates: selectDatesArgs, nullDa
     eq(transform.dates.day, dmy.day),
     eq(transform.dates.week, dmy.week),
   );
+}
+
+function getDateIdOrNullDateId(dmy: DMY | null, datesData: {
+  id: number;
+  year: number;
+  month: number;
+  day: number;
+  week: string;
+}[], nullDateId: number) {
+  if (dmy === null) {
+    return {
+      id: nullDateId,
+    };
+  }
+  const date = datesData.find(({ year, month, day, week }) => year === dmy.year && month === dmy.month && day === dmy.day && week === dmy.week);
+  if (!date) {
+    console.error(`No date found for ${JSON.stringify(dmy)}`);
+    return {
+      id: nullDateId,
+    };
+  }
+  return {
+    id: date.id,
+    day: date.day,
+    month: date.month,
+    year: date.year,
+    week: date.week,
+  };
+}
+
+async function selectDates(db: TransformDatabase, dates: selectDatesArgs, nullDateId: number) {
+
+  const { dates: transformDates } = transform;
 
   const datesData = await db.select({
     id: transformDates.id,
@@ -238,28 +267,6 @@ async function selectDates(db: TransformDatabase, dates: selectDatesArgs, nullDa
       )
     )
     .all();
-
-  function getDateIdOrNullDateId(dmy: DMY | null) {
-    if (dmy === null) {
-      return {
-        id: nullDateId,
-      };
-    }
-    const date = datesData.find(({ year, month, day, week }) => year === dmy.year && month === dmy.month && day === dmy.day && week === dmy.week);
-    if (!date) {
-       console.error(`No date found for ${JSON.stringify(dmy)}`);
-      return {
-        id: nullDateId,
-      };
-    }
-    return {
-      id: date.id,
-      day: date.day,
-      month: date.month,
-      year: date.year,
-      week: date.week,
-    };
-  }
 
   return {
     openedAt: getDateIdOrNullDateId(dates.openedAt, datesData, nullDateId),
