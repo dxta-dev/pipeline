@@ -160,7 +160,7 @@ CREATE TABLE `extract_timeline_events` (
 CREATE TABLE `transform_dates` (
 	`id` integer PRIMARY KEY NOT NULL,
 	`day` integer NOT NULL,
-	`week` integer NOT NULL,
+	`week` text NOT NULL,
 	`month` integer NOT NULL,
 	`year` integer NOT NULL,
 	`__created_at` integer DEFAULT (strftime('%s', 'now')),

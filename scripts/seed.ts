@@ -19,6 +19,6 @@ seed(
   drizzle(
     createClient({ url: process.env.TENANT_DATABASE_URL, authToken: process.env.TENANT_DATABASE_AUTH_TOKEN })
   ),
-  new Date(now.getTime() - 6 * MONTH),
-  new Date(now.getTime() + 6 * MONTH)
+  new Date(now.getTime() - 18 * MONTH),
+  new Date(now.getTime() + 2 * MONTH)
 ).catch(console.error);
