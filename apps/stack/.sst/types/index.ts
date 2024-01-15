@@ -14,6 +14,20 @@ declare module "sst/node/config" {
 }import "sst/node/config";
 declare module "sst/node/config" {
   export interface SecretResources {
+    "SUPER_DATABASE_URL": {
+      value: string;
+    }
+  }
+}import "sst/node/config";
+declare module "sst/node/config" {
+  export interface SecretResources {
+    "SUPER_DATABASE_AUTH_TOKEN": {
+      value: string;
+    }
+  }
+}import "sst/node/config";
+declare module "sst/node/config" {
+  export interface SecretResources {
     "CLERK_SECRET_KEY": {
       value: string;
     }
@@ -43,13 +57,6 @@ declare module "sst/node/config" {
 declare module "sst/node/config" {
   export interface ParameterResources {
     "PER_PAGE": {
-      value: string;
-    }
-  }
-}import "sst/node/config";
-declare module "sst/node/config" {
-  export interface SecretResources {
-    "TENANTS": {
       value: string;
     }
   }
