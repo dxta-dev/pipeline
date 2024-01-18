@@ -244,6 +244,35 @@ function getDateIdOrNullDateId(dmy: DMY | null, datesData: {
   };
 }
 
+function getUserIdOrNullUserId(userIdentifier: string | number | null, forgeUsersData: {
+  id: number;
+  name: string;
+  externalId: number;
+}[], nullUserId: number) {
+  if (userIdentifier === null) {
+    return {
+      id: nullUserId,
+    }
+  }
+  let user;
+  if (typeof userIdentifier === 'number') {
+    user = forgeUsersData.find(({ externalId }) => externalId === userIdentifier);
+  } else {
+    user = forgeUsersData.find(({ name }) => name === userIdentifier);
+  }
+  if (!user) {
+    return {
+      id: nullUserId,
+    };
+  }
+
+  return {
+    id: user.id,
+    name: user.name,
+    externalId: user.externalId,
+  };
+}
+
 async function selectDates(db: TransformDatabase, dates: selectDatesArgs, nullDateId: number) {
 
   const { dates: transformDates } = transform;
@@ -778,6 +807,96 @@ async function selectEventDates<K>(db: TransformDatabase, dates: { key: K, dmy: 
   return dates.map(d => ({ key: d.key, dateId: getDateIdOrNullDateId(d.dmy, datesData, nullDateId) }));
 }
 
+async function selectActorForgeUsers<K>(db: TransformDatabase, users: { key: K, userId: number | null, type: string, data: unknown }[], nullUserId: number) {
+  const { forgeUsers: transformForgeUsers } = transform;
+
+  const userQuery = users.map(u => {
+    if (u.type === 'committed') {
+      return eq(transformForgeUsers.name, (u.data as extract.CommittedEvent).committerName);
+    }
+    if (u.userId === null) {
+      return undefined;
+    }
+    return eq(transformForgeUsers.externalId, u.userId)
+  });
+
+  const forgeUsersData = await db.select({
+    id: transformForgeUsers.id,
+    externalId: transformForgeUsers.externalId,
+    name: transformForgeUsers.name,
+  }).from(transformForgeUsers)
+    .where(
+      or(
+        ...userQuery
+      )
+    )
+    .all();
+  
+  return users.map(u => {
+    const userIdentifier = u.type === 'committed' ? (u.data as extract.CommittedEvent).committerName : u.userId
+    return {
+      key: u.key,
+      userId: getUserIdOrNullUserId(userIdentifier, forgeUsersData, nullUserId)
+
+    }
+  });
+}
+
+async function selectSubjectForgeUsers<K>(db: TransformDatabase, users: { key: K, type: string, data: unknown }[], nullUserId: number) {
+  const { forgeUsers: transformForgeUsers } = transform;
+  const userQuery = users.map(u => {
+    switch (u.type) {
+      case 'assigned':
+        return eq(transformForgeUsers.externalId, (u.data as extract.AssignedEvent).assigneeId);
+      case 'unassigned':
+        return eq(transformForgeUsers.externalId, (u.data as extract.UnassignedEvent).assigneeId);
+      case 'review_requested':
+        return eq(transformForgeUsers.externalId, (u.data as extract.ReviewRequestedEvent).requestedReviewerId);
+      case 'review_request_removed':
+        return eq(transformForgeUsers.externalId, (u.data as extract.ReviewRequestRemovedEvent).requestedReviewerId);
+      default:
+        return undefined;
+    }
+  });
+
+  const forgeUsersData = await db.select({
+    id: transformForgeUsers.id,
+    externalId: transformForgeUsers.externalId,
+    name: transformForgeUsers.name,
+  }).from(transformForgeUsers)
+    .where(
+      or(
+        ...userQuery
+      )
+    )
+    .all();
+  
+  return users.map(u => {
+    let userIdentifier;
+    switch (u.type) {
+      case 'assigned':
+        userIdentifier = (u.data as extract.AssignedEvent).assigneeId;
+        break;
+      case 'unassigned':
+        userIdentifier = (u.data as extract.UnassignedEvent).assigneeId;
+        break;
+      case 'review_requested':
+        userIdentifier = (u.data as extract.ReviewRequestedEvent).requestedReviewerId;
+        break;
+      case 'review_request_removed':
+        userIdentifier = (u.data as extract.ReviewRequestRemovedEvent).requestedReviewerId;
+        break;
+      default:
+        userIdentifier = null;
+        break;
+    }
+    return {
+      key: u.key,
+      userId: getUserIdOrNullUserId(userIdentifier, forgeUsersData, nullUserId)
+    }
+  });
+}
+
 async function upsertMergeRequestEvents(
   tx: SQLiteTransaction<"async", ResultSet, Record<string, unknown>, ExtractTablesWithRelations<Record<string, unknown>>>,
   db: TransformDatabase,
@@ -796,8 +915,31 @@ async function upsertMergeRequestEvents(
     nullDateId
   );
 
+  const transformForgeUserActors = await selectActorForgeUsers(
+    db,
+    timelineEvents.map(t => ({
+      key: { type: t.type, timestamp: t.timestamp },
+      userId: t.actorId,
+      type: t.type,
+      data: t.data
+    })),
+    nullUserId
+  );
+
+  const transformForgeUserSubjects = await selectSubjectForgeUsers(
+    db,
+    timelineEvents.map(t => ({
+      key: { type: t.type, timestamp: t.timestamp },
+      type: t.type,
+      data: t.data
+    })),
+    nullUserId
+  );
+
   const events = timelineEvents.map(timelineEvent => {
     const td = transformDates.find(td => td.key.type === timelineEvent.type && td.key.timestamp.getTime() === timelineEvent.timestamp.getTime());
+    const tfua = transformForgeUserActors.find(tfu => tfu.key.type === timelineEvent.type && tfu.key.timestamp.getTime() === timelineEvent.timestamp.getTime());
+    const tfus = transformForgeUserSubjects.find(tfu => tfu.key.type === timelineEvent.type && tfu.key.timestamp.getTime() === timelineEvent.timestamp.getTime());
 
     let type: transform.MergeRequestEventType;
 
@@ -819,18 +961,14 @@ async function upsertMergeRequestEvents(
         type = 'unknown';
         break;
     }
-
-
-
-
     return {
       mergeRequest: mergeRequestId,
       mergeRequestEventType: type,
       timestamp: timelineEvent.timestamp,
       occuredOn: td?.dateId.id ? td.dateId.id : nullDateId,
       commitedAt: nullDateId,
-      actor: nullUserId,
-      subject: nullUserId,
+      actor: tfua?.userId.id ? tfua.userId.id : nullUserId,
+      subject: tfus?.userId.id ? tfus.userId.id : nullUserId,
       repository: repositoryId,
       reviewState: 'unknown',
     } satisfies transform.NewMergeRequestEvent;
