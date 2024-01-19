@@ -807,7 +807,7 @@ async function selectEventDates<K>(db: TransformDatabase, dates: { key: K, dmy: 
   return dates.map(d => ({ key: d.key, dateId: getDateIdOrNullDateId(d.dmy, datesData, nullDateId) }));
 }
 
-async function selectActorForgeUsers<K>(db: TransformDatabase, users: { key: K, userId: number | null, type: string, data: unknown }[], nullUserId: number, isActor: boolean) {
+async function selectForgeUsers<K>(db: TransformDatabase, users: { key: K, userId: number | null, type: string, data: unknown }[], nullUserId: number, isActor: boolean) {
   const { forgeUsers: transformForgeUsers } = transform;
   let userQuery;
 
@@ -838,7 +838,7 @@ async function selectActorForgeUsers<K>(db: TransformDatabase, users: { key: K, 
       }
     });
   }
-  
+
   const forgeUsersData = await db.select({
     id: transformForgeUsers.id,
     externalId: transformForgeUsers.externalId,
@@ -903,7 +903,7 @@ async function upsertMergeRequestEvents(
     nullDateId
   );
 
-  const transformForgeUserActors = await selectActorForgeUsers(
+  const transformForgeUserActors = await selectForgeUsers(
     db,
     timelineEvents.map(t => ({
       key: { type: t.type, timestamp: t.timestamp },
@@ -915,7 +915,7 @@ async function upsertMergeRequestEvents(
     true
   );
 
-  const transformForgeUserSubjects = await selectActorForgeUsers(
+  const transformForgeUserSubjects = await selectForgeUsers(
     db,
     timelineEvents.map(t => ({
       key: { type: t.type, timestamp: t.timestamp },
