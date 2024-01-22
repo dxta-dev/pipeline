@@ -1,6 +1,6 @@
 import * as extract from '@acme/extract-schema';
 import * as transform from '@acme/transform-schema';
-import { sql, eq, or, and, type ExtractTablesWithRelations, inArray } from "drizzle-orm";
+import { sql, eq, or, and, type ExtractTablesWithRelations, inArray, type SQL } from "drizzle-orm";
 import type { LibSQLDatabase } from 'drizzle-orm/libsql';
 import { isCodeGen } from './is-codegen';
 import { parseHunks } from './parse-hunks';
@@ -809,32 +809,57 @@ async function selectEventDates<K>(db: TransformDatabase, dates: { key: K, dmy: 
 
 async function selectForgeUsers<K>(db: TransformDatabase, users: { key: K, userId: number | null, type: string, data: unknown }[], nullUserId: number, isActor: boolean) {
   const { forgeUsers: transformForgeUsers } = transform;
-  let userQuery;
+  const userQuery: (SQL<unknown> | undefined)[] = [];
+  const uniqueUserQuery = new Map();
 
   if (isActor) {
-    userQuery = users.map(u => {
+    users.forEach(u => {
       if (u.type === 'committed') {
-        return eq(transformForgeUsers.name, (u.data as extract.CommittedEvent).committerName);
+        const committerName = (u.data as extract.CommittedEvent).committerName;
+        if (!uniqueUserQuery.has(committerName)) {
+          uniqueUserQuery.set(committerName, committerName);
+          userQuery.push(eq(transformForgeUsers.name, committerName));
+        }
+      } else if (u.userId !== null) {
+        if (!uniqueUserQuery.has(u.userId)) {
+          uniqueUserQuery.set(u.userId, u.userId);
+          userQuery.push(eq(transformForgeUsers.externalId, u.userId))
+        }
       }
-      if (u.userId === null) {
-        return undefined;
-      }
-      return eq(transformForgeUsers.externalId, u.userId)
-    });
-  
+    })
   } else {
-    userQuery = users.map(u => {
+    users.forEach(u => {
       switch (u.type) {
         case 'assigned':
-          return eq(transformForgeUsers.externalId, (u.data as extract.AssignedEvent).assigneeId);
+          const assigneeId = (u.data as extract.AssignedEvent).assigneeId;
+          if (!uniqueUserQuery.has(assigneeId)) {
+            uniqueUserQuery.set(assigneeId, assigneeId);
+            userQuery.push(eq(transformForgeUsers.externalId, assigneeId));
+          }
+          break;
         case 'unassigned':
-          return eq(transformForgeUsers.externalId, (u.data as extract.UnassignedEvent).assigneeId);
+          const unassigneeId = (u.data as extract.AssignedEvent).assigneeId;
+          if (!uniqueUserQuery.has(unassigneeId)) {
+            uniqueUserQuery.set(unassigneeId, unassigneeId);
+            userQuery.push(eq(transformForgeUsers.externalId, unassigneeId));
+          }
+          break;
         case 'review_requested':
-          return eq(transformForgeUsers.externalId, (u.data as extract.ReviewRequestedEvent).requestedReviewerId);
+          const requestedReviewerId = (u.data as extract.ReviewRequestedEvent).requestedReviewerId;
+          if (!uniqueUserQuery.has(requestedReviewerId)) {
+            uniqueUserQuery.set(requestedReviewerId, requestedReviewerId);
+            userQuery.push(eq(transformForgeUsers.externalId, requestedReviewerId));
+          }
+          break;
         case 'review_request_removed':
-          return eq(transformForgeUsers.externalId, (u.data as extract.ReviewRequestRemovedEvent).requestedReviewerId);
+          const requestedReviewerRemovedId = (u.data as extract.ReviewRequestedEvent).requestedReviewerId;
+          if (!uniqueUserQuery.has(requestedReviewerRemovedId)) {
+            uniqueUserQuery.set(requestedReviewerRemovedId, requestedReviewerRemovedId);
+            userQuery.push(eq(transformForgeUsers.externalId, requestedReviewerRemovedId));
+          }
+          break;
         default:
-          return undefined;
+          break;
       }
     });
   }
@@ -850,7 +875,7 @@ async function selectForgeUsers<K>(db: TransformDatabase, users: { key: K, userI
       )
     )
     .all();
-  
+    
     return users.map(u => {
     let userIdentifier;
     if (isActor) {
