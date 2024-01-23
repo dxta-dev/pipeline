@@ -807,15 +807,18 @@ async function selectEventDates<K>(db: TransformDatabase, dates: { key: K, dmy: 
   return dates.map(d => ({ key: d.key, dateId: getDateIdOrNullDateId(d.dmy, datesData, nullDateId) }));
 }
 
-async function selectForgeUsers<K>(db: TransformDatabase, users: { key: K, userId: number | null, type: string, data: unknown }[], nullUserId: number, isActor: boolean) {
-  const { forgeUsers: transformForgeUsers } = transform;
+async function selectForgeUsers<K>(db: TransformDatabase, users: { key: K, userId: number | null, type: string, data: unknown }[], nullUserId: number, nullDateId: number, isActor: boolean) {
+  const { forgeUsers: transformForgeUsers, dates: transformDates } = transform;
   const userQuery: (SQL<unknown> | undefined)[] = [];
+  const committedDates: DMY[] = [];
   const uniqueUserQuery = new Map();
 
   if (isActor) {
     users.forEach(u => {
       if (u.type === 'committed') {
         const committerName = (u.data as extract.CommittedEvent).committerName;
+        const committedDate = new Date((u.data as extract.CommittedEvent).committedDate);
+        committedDates.push(getDMY(committedDate) as DMY);
         if (!uniqueUserQuery.has(committerName)) {
           uniqueUserQuery.set(committerName, committerName);
           userQuery.push(eq(transformForgeUsers.name, committerName));
@@ -864,6 +867,22 @@ async function selectForgeUsers<K>(db: TransformDatabase, users: { key: K, userI
     });
   }
 
+  const dmyQuery = committedDates.map(d => getDMYQuery(d));
+
+  const datesData = await db.select({
+    id: transformDates.id,
+    year: transformDates.year,
+    month: transformDates.month,
+    day: transformDates.day,
+    week: transformDates.week,
+  }).from(transformDates)
+    .where(
+      or(
+        ...dmyQuery
+      )
+    )
+    .all();
+
   const forgeUsersData = await db.select({
     id: transformForgeUsers.id,
     externalId: transformForgeUsers.externalId,
@@ -876,11 +895,13 @@ async function selectForgeUsers<K>(db: TransformDatabase, users: { key: K, userI
     )
     .all();
     
-    return users.map(u => {
+  return users.map(u => {
     let userIdentifier;
+    let committedDate: Date | null = null;
     if (isActor) {
       if (u.type === 'committed') {
         userIdentifier = (u.data as extract.CommittedEvent).committerName;
+        committedDate = new Date((u.data as extract.CommittedEvent).committedDate);
       } else {
         userIdentifier = u.userId;
       }
@@ -905,7 +926,8 @@ async function selectForgeUsers<K>(db: TransformDatabase, users: { key: K, userI
     }
     return {
       key: u.key,
-      userId: getUserIdOrNullUserId(userIdentifier, forgeUsersData, nullUserId)
+      userId: getUserIdOrNullUserId(userIdentifier, forgeUsersData, nullUserId),
+      committedDateId: getDateIdOrNullDateId(getDMY(committedDate), datesData, nullDateId)
     }
   });
 }
@@ -937,6 +959,7 @@ async function upsertMergeRequestEvents(
       data: t.data
     })),
     nullUserId,
+    nullDateId,
     true
   );
 
@@ -949,6 +972,7 @@ async function upsertMergeRequestEvents(
       userId: null
     })),
     nullUserId,
+    nullDateId,
     false
   );
 
@@ -956,6 +980,7 @@ async function upsertMergeRequestEvents(
     const td = transformDates.find(td => td.key.type === timelineEvent.type && td.key.timestamp.getTime() === timelineEvent.timestamp.getTime());
     const tfua = transformForgeUserActors.find(tfu => tfu.key.type === timelineEvent.type && tfu.key.timestamp.getTime() === timelineEvent.timestamp.getTime());
     const tfus = transformForgeUserSubjects.find(tfu => tfu.key.type === timelineEvent.type && tfu.key.timestamp.getTime() === timelineEvent.timestamp.getTime());
+    const tcd = transformForgeUserActors.find(tfu => tfu.key.type === timelineEvent.type && tfu.key.timestamp.getTime() === timelineEvent.timestamp.getTime());
 
     let type: transform.MergeRequestEventType;
 
@@ -982,7 +1007,7 @@ async function upsertMergeRequestEvents(
       mergeRequestEventType: type,
       timestamp: timelineEvent.timestamp,
       occuredOn: td?.dateId.id ? td.dateId.id : nullDateId,
-      commitedAt: nullDateId,
+      commitedAt: tcd?.committedDateId.id ? tcd.committedDateId.id : nullDateId,
       actor: tfua?.userId.id ? tfua.userId.id : nullUserId,
       subject: tfus?.userId.id ? tfus.userId.id : nullUserId,
       repository: repositoryId,
