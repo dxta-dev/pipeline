@@ -71,7 +71,6 @@ export function ExtractStack({ stack }: StackContext) {
           REDIS_USER_TOKEN_TTL,
           PER_PAGE
         ],
-        runtime: "nodejs18.x",
       },
     },
   });
@@ -175,7 +174,6 @@ export function ExtractStack({ stack }: StackContext) {
           REDIS_TOKEN,
           REDIS_USER_TOKEN_TTL
         ],
-        runtime: "nodejs18.x",
       },
     },
     authorizers: {
@@ -211,7 +209,6 @@ export function ExtractStack({ stack }: StackContext) {
             REDIS_TOKEN,
             REDIS_USER_TOKEN_TTL,  
           ],
-          runtime: "nodejs18.x",  
         }
       }
     })

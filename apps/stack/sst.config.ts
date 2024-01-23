@@ -11,6 +11,14 @@ export default {
     };
   },
   stacks(app) {
+    app.setDefaultFunctionProps({
+      runtime: 'nodejs18.x',
+      nodejs: {
+        install: [
+          '@libsql/client'
+        ]
+      }
+    });
     app.stack(ExtractStack);
     app.stack(TransformStack);
     app.stack(InfoStack);
