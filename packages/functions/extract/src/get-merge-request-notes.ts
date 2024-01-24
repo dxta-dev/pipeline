@@ -63,6 +63,7 @@ export const getMergeRequestNotes: GetMergeRequestNotesFunction = async (
         .get()
     ));
   });
+  // TODO: we could also filter out insertedMembers here, we could also reduce the repositoriesToMembers insertion count
 
   if (insertedMembers.length > 0) {
     await db.insert(entities.repositoriesToMembers)

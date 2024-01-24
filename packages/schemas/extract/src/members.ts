@@ -16,6 +16,7 @@ export const members = sqliteTable('members', {
   extractedSource: Enum('extracted_source', { enum: ['repository', 'namespace', 'notes'] }),
   _createdAt: integer('__created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
   _updatedAt: integer('__updated_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
+  _extractedAt: integer('__extracted_at', { mode: 'timestamp' }),
 }, (members) => ({
   uniqueExternalId: uniqueIndex('members_external_id_idx').on(members.externalId, members.forgeType),
 }));
