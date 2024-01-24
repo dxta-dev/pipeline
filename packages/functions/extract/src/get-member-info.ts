@@ -38,15 +38,13 @@ export const getMemberInfo: GetMemberInfoFunction = async (
   const memberInfoAge = now.getTime() - (member._extractedAt?.getTime() || 0)
 
   if (memberInfoAge < TWELVE_HOURS) {
-    console.log("Member info is up to date");
+    // console.log("Member info is up to date");
     return {
       member,
     };
   }
 
-  console.time("getMemberInfo:fetch");
   const { member: fetchedMember } = await integrations.sourceControl.fetchUserInfo(member.externalId, member.username);
-  console.timeEnd("getMemberInfo:fetch");
 
   const insertedMember = await db.update(entities.members)
     .set({
