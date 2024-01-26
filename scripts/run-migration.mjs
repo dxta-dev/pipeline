@@ -6,11 +6,8 @@ import { migrate } from "drizzle-orm/libsql/migrator";
 import { readMigrationFiles } from "drizzle-orm/migrator";
 import { text, integer, sqliteTable } from "drizzle-orm/sqlite-core";
 
-const [COMMAND_STRING] = process.argv.slice(2);
-
-const YOLO_MODE = COMMAND_STRING === "yolo";
-
-const MigrationStates = /**@type {const}*/({
+export const MigrationStates = /**@type {const}*/({
+  None: 'NONE',
   OutOfSync: 'OUT_OF_SYNC',
   UpToDate: 'UP_TO_DATE',
   OutOfDate: 'OUT_OF_DATE',
@@ -39,20 +36,39 @@ const getLocalMigrations = (/**@type {string}*/migrationsFolder) => {
 
 const getMigrationState = async (/**@type {LibSQLDatabase}*/db, /**@type {string[]}*/remoteTables, /**@type {string}*/migrationsFolder) => {
   const localMigrations = getLocalMigrations(migrationsFolder);
-  const remoteMigrations = remoteTables.includes("__drizzle_migrations") ? await getRemoteMigrations(db) : [];
 
-  if (localMigrations.length < remoteMigrations.length) return MigrationStates.OutOfSync;
+  if (!remoteTables.includes("__drizzle_migrations")) return {
+    sync: MigrationStates.None,
+    local: localMigrations,
+    remote: []
+  }
+
+  const remoteMigrations = await getRemoteMigrations(db);
+
+  if (localMigrations.length < remoteMigrations.length) return {
+    sync: MigrationStates.OutOfSync,
+    local: localMigrations,
+    remote: remoteMigrations
+  }
 
   const happyPath = localMigrations.length === remoteMigrations.length ? MigrationStates.UpToDate : MigrationStates.OutOfDate;
 
   for (let i = 0; i < remoteMigrations.length; i++) {
     const local = localMigrations[i];
     const remote = remoteMigrations[i];
-    // Unintended side-effect: if hash stays the it will not de-sync, if the order is kept.
-    if (local?.hash !== remote?.hash && local?.createdAt !== remote?.createdAt) return MigrationStates.OutOfSync;
+
+    if (local?.hash !== remote?.hash || local?.createdAt !== remote?.createdAt) return {
+      sync: MigrationStates.OutOfSync,
+      local: localMigrations,
+      remote: remoteMigrations,
+    }
   }
 
-  return happyPath;
+  return {
+    sync: happyPath,
+    local: localMigrations,
+    remote: remoteMigrations,
+  };
 }
 
 const getRemoteTables = async (/**@type {LibSQLDatabase}*/db) => {
@@ -71,7 +87,7 @@ const getRemoteTables = async (/**@type {LibSQLDatabase}*/db) => {
   return allTableNames.filter(name => !shouldIgnoreTable(name));
 }
 
-const dropRemoteTables = async (/**@type {import("./migrate.mjs").LibSQLClient} */client, /**@type {string[]}*/remoteTables) => {
+const dropRemoteTables = async (/**@type {import("@libsql/client").Client}*/client, /**@type {string[]}*/remoteTables) => {
   if (remoteTables.length === 0) return console.log("\x1b[33mDropping... Nothing?!??!\x1b[0m"); // I don't think this is a legal path anyways, just pushing my contribution lines c:
   console.log("Dropping tables...");
   for (const table of remoteTables) {
@@ -95,8 +111,14 @@ const pingRemote = async (/**@type {LibSQLDatabase}*/db, /**@type {string}*/url)
   }
 }
 
-export const runMigration = async (/**@type {string}*/migrationsFolder,/**@type {string=} */url,/**@type {string=} */authToken) => {
-  if (!url) return console.error("DB URL IS NOT SET");
+export const runMigration = async (/**@type {string}*/migrationsFolder,/**@type {string=} */url,/**@type {string=} */authToken, /**@type {boolean}*/yoloMode) => {
+  if (!url) {
+    console.error("DB URL IS NOT SET");
+    return {
+      db: null,
+      migrationState: null
+    };
+  }
 
   console.log(`Migrating \x1b[92m${url}\x1b[0m:`);
 
@@ -110,16 +132,31 @@ export const runMigration = async (/**@type {string}*/migrationsFolder,/**@type 
     await pingRemote(db, url);
   } catch (error) {
     console.error(error);
-    return;
+    return {
+      db: null,
+      migrationState: null
+    };
   }
 
   const remoteTables = await getRemoteTables(db);
   const migrationState = await getMigrationState(db, remoteTables, migrationsFolder);
 
-  if (migrationState === MigrationStates.UpToDate) return console.log('\x1b[30mDatabase is up to date\x1b[0m');
-  if (!YOLO_MODE && migrationState === MigrationStates.OutOfSync) return console.log('\x1b[31mDatabase is out of sync.\x1b[30m Run \'migrate.mjs yolo\' to drop existing tables.\x1b[0m'); // TODO: throw ?
+  if (migrationState.sync === MigrationStates.UpToDate) {
+    console.log('\x1b[30mDatabase is up to date\x1b[0m');
+    return {
+      db,
+      migrationState
+    }
+  }
+  if (!yoloMode && migrationState.sync === MigrationStates.OutOfSync) {
+    console.log('\x1b[31mDatabase is out of sync.\x1b[30m Run \'migrate.mjs yolo\' to drop existing tables.\x1b[0m'); // TODO: throw ?
+    return {
+      db,
+      migrationState
+    }
+  }
 
-  if (YOLO_MODE && migrationState === MigrationStates.OutOfSync) {
+  if (yoloMode && migrationState.sync === MigrationStates.OutOfSync) {
     console.log("\x1b[31m~YOLO MODE~\x1b[0m");
     await dropRemoteTables(rawLibsqlClient, remoteTables);
   }
@@ -131,4 +168,9 @@ export const runMigration = async (/**@type {string}*/migrationsFolder,/**@type 
   });
 
   console.log("Done.");
+
+  return {
+    db,
+    migrationState
+  }
 }
