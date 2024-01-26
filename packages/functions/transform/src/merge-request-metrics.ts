@@ -912,7 +912,7 @@ async function selectForgeUsers<K>(db: TransformDatabase, users: { key: K, userI
 
 async function selectCommittedDates(db: TransformDatabase, users: { key: { type: string, timestamp: Date }, type: string, data: unknown }[], nullDateId: number) {
   const { dates: transformDates } = transform;
-  const userQuery: (SQL<unknown> | undefined)[] = [];
+  const dateQuery: (SQL<unknown> | undefined)[] = [];
   const committedDates: DMY[] = [];
   const uniqueDateQuery = new Map();
 
@@ -923,7 +923,7 @@ async function selectCommittedDates(db: TransformDatabase, users: { key: { type:
       committedDates.push(committedDateDMY as DMY);
       if (!uniqueDateQuery.has(committedDate)) {
         uniqueDateQuery.set(committedDate, committedDate);
-        userQuery.push(getDMYQuery(committedDateDMY));
+        dateQuery.push(getDMYQuery(committedDateDMY));
       }
     }
   })
