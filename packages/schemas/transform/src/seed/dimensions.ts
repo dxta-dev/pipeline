@@ -40,7 +40,7 @@ const nullRepository = {
   name: '',
 } satisfies NewRepository;
 
-export async function seed(db: LibSQLDatabase, startDate: Date, endDate: Date): Promise<undefined> {
+export async function seed(db: LibSQLDatabase, startDate: Date, endDate: Date) {
   const insertedNullForgeUser = await db.insert(forgeUsers).values(nullForgeUser).onConflictDoNothing().returning().get();
   const insertedNullDate = await db.insert(dates).values(nullDate).onConflictDoNothing().returning().get();
   const insertedNullMergeRequest = await db.insert(mergeRequests).values(nullMergeRequest).onConflictDoNothing().returning().get();
@@ -50,15 +50,14 @@ export async function seed(db: LibSQLDatabase, startDate: Date, endDate: Date): 
   // TODO: ???
   if (!insertedNullForgeUser || !insertedNullDate || !insertedNullMergeRequest || !insertedNullRepo) return undefined;
 
-  console.log('nullRows', insertedNullForgeUser.id, insertedNullDate.id, insertedNullMergeRequest.id, insertedNullRepo.id);
-  await db.insert(nullRows).values({
+  const insertedNullRows = await db.insert(nullRows).values({
     userId: insertedNullForgeUser.id,
     dateId: insertedNullDate.id,
     mergeRequestId: insertedNullMergeRequest.id,
     repositoryId: insertedNullRepo.id,
-  }).onConflictDoNothing().run();
-  return undefined;
+  }).onConflictDoNothing().returning().get();
 
+  return insertedNullRows;
 }
 
 export function getFirstDay(year: number): Date {

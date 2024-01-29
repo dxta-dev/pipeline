@@ -21,4 +21,4 @@ seed(
   ),
   new Date(now.getTime() - 18 * MONTH),
   new Date(now.getTime() + 2 * MONTH)
-).catch(console.error);
+).then(nullRows => console.log("nullRows", nullRows)).catch(console.error);
