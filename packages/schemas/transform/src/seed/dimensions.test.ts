@@ -87,7 +87,7 @@ describe("dimensions", () => {
       const date4 = getDateInfo(new Date(Date.UTC(2023, 0, 3)));
       expect(date1).toEqual({
         day: 4,
-        week: "2021-W1",
+        week: "2021-W01",
         month: 1,
         year: 2021,
       });
@@ -99,13 +99,13 @@ describe("dimensions", () => {
       });
       expect(date3).toEqual({
         day: 4,
-        week: "2023-W1",
+        week: "2023-W01",
         month: 1,
         year: 2023,
       });
       expect(date4).toEqual({
         day: 3,
-        week: "2023-W1",
+        week: "2023-W01",
         month: 1,
         year: 2023,
       });
