@@ -89,7 +89,7 @@ export function checkWeek(week: number, year: number): { newWeek: string } {
     isoWeek = Math.ceil(((lastDayOfPrev.getTime() - firstDayOfPrev.getTime()) / (24 * 60 * 60 * 1000) + 1) / 7)
     isoYear = isoYear - 1
   }
-  return { newWeek: `${isoYear}-W${isoWeek}` };
+  return { newWeek: `${isoYear}-W${isoWeek.toString().padStart(2, '0')}` };
 }
 
 export function getDateInfo(date: Date): {day: number, week: string, month: number, year: number} {
