@@ -16,6 +16,7 @@ import { z } from 'zod';
 import { insertEvent } from "@acme/crawl-functions";
 import { events } from "@acme/crawl-schema";
 import { getTenantDb, type OmitDb } from "@stack/config/get-tenant-db";
+import { filterNewExtractMembers } from "./filter-extract-members";
 
 export const namespaceMemberSenderHandler = createMessageHandler({
   queueId: 'ExtractQueue',
@@ -94,20 +95,23 @@ const extractNamespaceMembersPage = async ({ namespace, repositoryId, sourceCont
     page: paginationInput.page
   }, { ...context, db: getTenantDb(tenantId) });
 
-  await extractMembersEvent.publish({
-    memberIds: members.map(member => member.id)
-  }, {
-    crawlId,
-    version: 1,
-    caller: 'extract-namespace-member',
-    sourceControl: sourceControl,
-    userId: userId,
-    timestamp: new Date().getTime(),
-    from,
-    to,
-    tenantId
-  });
-
+  const memberIds = filterNewExtractMembers(members).map(member => member.id);
+  
+  if (memberIds.length !== 0) {
+    await extractMembersEvent.publish({
+      memberIds
+    }, {
+      crawlId,
+      version: 1,
+      caller: 'extract-namespace-member',
+      sourceControl: sourceControl,
+      userId: userId,
+      timestamp: new Date().getTime(),
+      from,
+      to,
+      tenantId
+    });  
+  }
 
   return { members, pagination: paginationInfo };
 };

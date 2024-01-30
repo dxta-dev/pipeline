@@ -16,6 +16,7 @@ import { getClerkUserToken } from "./get-clerk-user-token";
 import { insertEvent } from "@acme/crawl-functions";
 import { events } from "@acme/crawl-schema";
 import { getTenantDb, type OmitDb } from "@stack/config/get-tenant-db";
+import { filterNewExtractMembers } from "./filter-extract-members";
 
 export const memberSenderHandler = createMessageHandler({
   queueId: 'ExtractQueue',
@@ -85,20 +86,23 @@ const extractMembersPage = async ({ namespace, repository, sourceControl, userId
     page: paginationInput.page
   }, { ...context, db: getTenantDb(tenantId) });
 
-  await extractMembersEvent.publish({
-    memberIds: members.map(member => member.id)
-  }, {
-    tenantId,
-    crawlId,
-    version: 1,
-    caller: 'extract-member',
-    sourceControl: sourceControl,
-    userId: userId,
-    timestamp: new Date().getTime(),
-    from,
-    to,
-  });
-
+  const memberIds = filterNewExtractMembers(members).map(member => member.id);
+  
+  if (memberIds.length !== 0) {
+    await extractMembersEvent.publish({
+      memberIds
+    }, {
+      tenantId,
+      crawlId,
+      version: 1,
+      caller: 'extract-member',
+      sourceControl: sourceControl,
+      userId: userId,
+      timestamp: new Date().getTime(),
+      from,
+      to,
+    });
+  }
 
   return { members, pagination: paginationInfo };
 };
