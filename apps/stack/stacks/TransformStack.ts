@@ -51,7 +51,6 @@ export function TransformStack({ stack }: StackContext) {
           SUPER_DATABASE_AUTH_TOKEN,
           SUPER_DATABASE_URL,
         ],
-        runtime: "nodejs18.x",
       },
     },
     authorizers: {
@@ -80,7 +79,6 @@ export function TransformStack({ stack }: StackContext) {
             SUPER_DATABASE_AUTH_TOKEN,
             SUPER_DATABASE_URL,
           ],
-          runtime: "nodejs18.x",
         }
       }
     });
