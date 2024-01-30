@@ -10,6 +10,7 @@ import { getClerkUserToken } from "./get-clerk-user-token";
 import { insertEvent } from "@acme/crawl-functions";
 import { events } from "@acme/crawl-schema";
 import { getTenantDb, type OmitDb } from "@stack/config/get-tenant-db";
+import { filterNewExtractMembers } from "./filter-extract-members";
 
 const initSourceControl = async (userId: string, sourceControl: 'github' | 'gitlab') => {
   const accessToken = await getClerkUserToken(userId, `oauth_${sourceControl}`);
@@ -32,7 +33,6 @@ const context: OmitDb<Context<GetMergeRequestNotesSourceControl, GetMergeRequest
   }
 };
 
-
 export const mergeRequestNoteSenderHandler = createMessageHandler({
   queueId: 'ExtractQueue',
   kind: MessageKind.MergeRequestNote,
@@ -53,7 +53,10 @@ export const mergeRequestNoteSenderHandler = createMessageHandler({
       namespaceId,
     }, { ...context, db: getTenantDb(message.metadata.tenantId) });
 
-    await extractMembersEvent.publish({ memberIds: members.map(member => member.id) }, {
+    const memberIds = filterNewExtractMembers(members).map(member => member.id);
+    if (memberIds.length === 0) return;
+
+    await extractMembersEvent.publish({ memberIds }, {
       crawlId: message.metadata.crawlId,
       version: 1,
       caller: 'extract-merge-request-notes',
