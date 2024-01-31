@@ -846,14 +846,14 @@ async function selectForgeUsers<K>(db: TransformDatabase, users: { key: K, userI
           break;
         case 'review_requested':
           const requestedReviewerId = (u.data as extract.ReviewRequestedEvent).requestedReviewerId;
-          if (!uniqueUserQuery.has(requestedReviewerId)) {
+          if (requestedReviewerId !== undefined && !uniqueUserQuery.has(requestedReviewerId)) {
             uniqueUserQuery.set(requestedReviewerId, requestedReviewerId);
             userQuery.push(eq(transformForgeUsers.externalId, requestedReviewerId));
           }
           break;
         case 'review_request_removed':
-          const requestedReviewerRemovedId = (u.data as extract.ReviewRequestedEvent).requestedReviewerId;
-          if (!uniqueUserQuery.has(requestedReviewerRemovedId)) {
+          const requestedReviewerRemovedId = (u.data as extract.ReviewRequestRemovedEvent).requestedReviewerId;
+          if (requestedReviewerRemovedId !== undefined && !uniqueUserQuery.has(requestedReviewerRemovedId)) {
             uniqueUserQuery.set(requestedReviewerRemovedId, requestedReviewerRemovedId);
             userQuery.push(eq(transformForgeUsers.externalId, requestedReviewerRemovedId));
           }
@@ -893,10 +893,12 @@ async function selectForgeUsers<K>(db: TransformDatabase, users: { key: K, userI
           userIdentifier = (u.data as extract.UnassignedEvent).assigneeId;
           break;
         case 'review_requested':
-          userIdentifier = (u.data as extract.ReviewRequestedEvent).requestedReviewerId;
+          const requestedReviewerId = (u.data as extract.ReviewRequestedEvent).requestedReviewerId;
+          userIdentifier = requestedReviewerId === undefined ? null : requestedReviewerId;
           break;
         case 'review_request_removed':
-          userIdentifier = (u.data as extract.ReviewRequestRemovedEvent).requestedReviewerId;
+          const unrequestedReviewerId = (u.data as extract.ReviewRequestRemovedEvent).requestedReviewerId
+          userIdentifier = unrequestedReviewerId === undefined ? null : unrequestedReviewerId;
           break;
         default:
           userIdentifier = null;
