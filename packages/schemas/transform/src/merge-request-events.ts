@@ -1,6 +1,6 @@
 import type { InferSelectModel, InferInsertModel } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
-import { integer } from 'drizzle-orm/sqlite-core';
+import { integer, index } from 'drizzle-orm/sqlite-core';
 import { repositories } from './repositories';
 import { mergeRequests } from './merge-requests';
 import { forgeUsers } from './forge-users';
@@ -54,7 +54,9 @@ export const mergeRequestEvents = sqliteTable('merge_request_events', {
 
   _createdAt: integer('__created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
   _updatedAt: integer('__updated_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
-});
+}, (events) => ({
+  eventsOccuredOnIndex: index('merge_request_events_occured_on_idx').on(events.occuredOn),
+}));
 
 export type MergeRequestEvent = InferSelectModel<typeof mergeRequestEvents>;
 export type NewMergeRequestEvent = InferInsertModel<typeof mergeRequestEvents>;
