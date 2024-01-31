@@ -65,13 +65,13 @@ export const CommittedEventSchema = z.object({
 
 
 export const ReviewRequestRemovedEventSchema = z.object({
-  requestedReviewerId: z.number(),
-  requestedReviewerName: z.string(),
+  requestedReviewerId: z.number().optional(),
+  requestedReviewerName: z.string().optional(),
 });
 
 export const ReviewRequestedEventSchema = z.object({
-  requestedReviewerId: z.number(),
-  requestedReviewerName: z.string(),
+  requestedReviewerId: z.number().optional(),
+  requestedReviewerName: z.string().optional(),
 });
 
 export const ReviewedEventSchema = z.object({
