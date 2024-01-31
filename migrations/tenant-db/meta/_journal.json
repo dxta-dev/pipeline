@@ -15,6 +15,13 @@
       "when": 1706116494470,
       "tag": "0001_supreme_lockjaw",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1706701861357,
+      "tag": "0002_wise_swarm",
+      "breakpoints": true
     }
   ]
 }

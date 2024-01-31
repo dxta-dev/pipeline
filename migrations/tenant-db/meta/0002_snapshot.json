@@ -1,0 +1,2718 @@
+{
+  "version": "5",
+  "dialect": "sqlite",
+  "id": "93a80fd0-4c49-4e15-8a9a-ffeac362831a",
+  "prevId": "3094e89f-c2f3-4874-80e7-ac846a8bdbf3",
+  "tables": {
+    "crawl_events": {
+      "name": "crawl_events",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "instance_id": {
+          "name": "instance_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "namespace": {
+          "name": "namespace",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "detail": {
+          "name": "detail",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "timestamp": {
+          "name": "timestamp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        },
+        "data": {
+          "name": "data",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "__created_at": {
+          "name": "__created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        },
+        "__updated_at": {
+          "name": "__updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "crawl_events_instance_id_crawl_instances_id_fk": {
+          "name": "crawl_events_instance_id_crawl_instances_id_fk",
+          "tableFrom": "crawl_events",
+          "tableTo": "crawl_instances",
+          "columnsFrom": [
+            "instance_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "crawl_instances": {
+      "name": "crawl_instances",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "started_at": {
+          "name": "started_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "repository_id": {
+          "name": "repository_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "__created_at": {
+          "name": "__created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        },
+        "__updated_at": {
+          "name": "__updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "extract_git_identities": {
+      "name": "extract_git_identities",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "repository_id": {
+          "name": "repository_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "__created_at": {
+          "name": "__created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        },
+        "__updated_at": {
+          "name": "__updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        }
+      },
+      "indexes": {
+        "repository_id_email_name_idx": {
+          "name": "repository_id_email_name_idx",
+          "columns": [
+            "repository_id",
+            "email",
+            "name"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "extract_git_identities_repository_id_extract_repositories_id_fk": {
+          "name": "extract_git_identities_repository_id_extract_repositories_id_fk",
+          "tableFrom": "extract_git_identities",
+          "tableTo": "extract_repositories",
+          "columnsFrom": [
+            "repository_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "extract_members": {
+      "name": "extract_members",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "external_id": {
+          "name": "external_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "forge_type": {
+          "name": "forge_type",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "username": {
+          "name": "username",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "extracted_source": {
+          "name": "extracted_source",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "__created_at": {
+          "name": "__created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        },
+        "__updated_at": {
+          "name": "__updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        },
+        "__extracted_at": {
+          "name": "__extracted_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "members_external_id_idx": {
+          "name": "members_external_id_idx",
+          "columns": [
+            "external_id",
+            "forge_type"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "extract_merge_request_commits": {
+      "name": "extract_merge_request_commits",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "merge_request_id": {
+          "name": "merge_request_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "external_id": {
+          "name": "external_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "authored_date": {
+          "name": "authored_date",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "committed_date": {
+          "name": "committed_date",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "message": {
+          "name": "message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "author_name": {
+          "name": "author_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "author_email": {
+          "name": "author_email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "committer_name": {
+          "name": "committer_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "committer_email": {
+          "name": "committer_email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "__created_at": {
+          "name": "__created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        },
+        "__updated_at": {
+          "name": "__updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        }
+      },
+      "indexes": {
+        "merge_request_commits_external_id_idx": {
+          "name": "merge_request_commits_external_id_idx",
+          "columns": [
+            "merge_request_id",
+            "external_id"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "extract_merge_request_commits_merge_request_id_extract_merge_requests_id_fk": {
+          "name": "extract_merge_request_commits_merge_request_id_extract_merge_requests_id_fk",
+          "tableFrom": "extract_merge_request_commits",
+          "tableTo": "extract_merge_requests",
+          "columnsFrom": [
+            "merge_request_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "extract_merge_request_diffs": {
+      "name": "extract_merge_request_diffs",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "merge_request_id": {
+          "name": "merge_request_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "new_path": {
+          "name": "new_path",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "old_path": {
+          "name": "old_path",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "a_mode": {
+          "name": "a_mode",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "b_mode": {
+          "name": "b_mode",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "new_file": {
+          "name": "new_file",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "renamed_file": {
+          "name": "renamed_file",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "deleted_file": {
+          "name": "deleted_file",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "diff": {
+          "name": "diff",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "__created_at": {
+          "name": "__created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        },
+        "__updated_at": {
+          "name": "__updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        }
+      },
+      "indexes": {
+        "diffs_merge_request_id_newPath_idx": {
+          "name": "diffs_merge_request_id_newPath_idx",
+          "columns": [
+            "merge_request_id",
+            "new_path"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "extract_merge_request_diffs_merge_request_id_extract_merge_requests_id_fk": {
+          "name": "extract_merge_request_diffs_merge_request_id_extract_merge_requests_id_fk",
+          "tableFrom": "extract_merge_request_diffs",
+          "tableTo": "extract_merge_requests",
+          "columnsFrom": [
+            "merge_request_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "extract_merge_request_notes": {
+      "name": "extract_merge_request_notes",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "external_id": {
+          "name": "external_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "merge_request_id": {
+          "name": "merge_request_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "author_username": {
+          "name": "author_username",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "author_external_id": {
+          "name": "author_external_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "body": {
+          "name": "body",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "system": {
+          "name": "system",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "__created_at": {
+          "name": "__created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        },
+        "__updated_at": {
+          "name": "__updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        }
+      },
+      "indexes": {
+        "merge_request_notes_external_id_idx": {
+          "name": "merge_request_notes_external_id_idx",
+          "columns": [
+            "merge_request_id",
+            "external_id"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "extract_merge_request_notes_merge_request_id_extract_merge_requests_id_fk": {
+          "name": "extract_merge_request_notes_merge_request_id_extract_merge_requests_id_fk",
+          "tableFrom": "extract_merge_request_notes",
+          "tableTo": "extract_merge_requests",
+          "columnsFrom": [
+            "merge_request_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "extract_merge_requests": {
+      "name": "extract_merge_requests",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "external_id": {
+          "name": "external_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "canon_id": {
+          "name": "canon_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "repository_id": {
+          "name": "repository_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "web_url": {
+          "name": "web_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "merged_at": {
+          "name": "merged_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "merger_external_id": {
+          "name": "merger_external_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "closed_at": {
+          "name": "closed_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "closer_external_id": {
+          "name": "closer_external_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "author_external_id": {
+          "name": "author_external_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "state": {
+          "name": "state",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "target_branch": {
+          "name": "target_branch",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "source_branch": {
+          "name": "source_branch",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "__created_at": {
+          "name": "__created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        },
+        "__updated_at": {
+          "name": "__updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        }
+      },
+      "indexes": {
+        "merge_requests_external_id_idx": {
+          "name": "merge_requests_external_id_idx",
+          "columns": [
+            "external_id",
+            "repository_id"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "extract_merge_requests_repository_id_extract_repositories_id_fk": {
+          "name": "extract_merge_requests_repository_id_extract_repositories_id_fk",
+          "tableFrom": "extract_merge_requests",
+          "tableTo": "extract_repositories",
+          "columnsFrom": [
+            "repository_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "extract_namespaces": {
+      "name": "extract_namespaces",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "external_id": {
+          "name": "external_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "forge_type": {
+          "name": "forge_type",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "__created_at": {
+          "name": "__created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        },
+        "__updated_at": {
+          "name": "__updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        }
+      },
+      "indexes": {
+        "namespaces_external_id_idx": {
+          "name": "namespaces_external_id_idx",
+          "columns": [
+            "external_id",
+            "forge_type"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "extract_repositories": {
+      "name": "extract_repositories",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "external_id": {
+          "name": "external_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "namespace_id": {
+          "name": "namespace_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "forge_type": {
+          "name": "forge_type",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "__created_at": {
+          "name": "__created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        },
+        "__updated_at": {
+          "name": "__updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        }
+      },
+      "indexes": {
+        "repositories_external_id_idx": {
+          "name": "repositories_external_id_idx",
+          "columns": [
+            "external_id",
+            "forge_type"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "extract_repositories_namespace_id_extract_namespaces_id_fk": {
+          "name": "extract_repositories_namespace_id_extract_namespaces_id_fk",
+          "tableFrom": "extract_repositories",
+          "tableTo": "extract_namespaces",
+          "columnsFrom": [
+            "namespace_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "extract_repositories_to_members": {
+      "name": "extract_repositories_to_members",
+      "columns": {
+        "repository_id": {
+          "name": "repository_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "member_id": {
+          "name": "member_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "__created_at": {
+          "name": "__created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        },
+        "__updated_at": {
+          "name": "__updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "extract_repositories_to_members_repository_id_extract_repositories_id_fk": {
+          "name": "extract_repositories_to_members_repository_id_extract_repositories_id_fk",
+          "tableFrom": "extract_repositories_to_members",
+          "tableTo": "extract_repositories",
+          "columnsFrom": [
+            "repository_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "extract_repositories_to_members_member_id_extract_members_id_fk": {
+          "name": "extract_repositories_to_members_member_id_extract_members_id_fk",
+          "tableFrom": "extract_repositories_to_members",
+          "tableTo": "extract_members",
+          "columnsFrom": [
+            "member_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "extract_repositories_to_members_repository_id_member_id_pk": {
+          "columns": [
+            "member_id",
+            "repository_id"
+          ],
+          "name": "extract_repositories_to_members_repository_id_member_id_pk"
+        }
+      },
+      "uniqueConstraints": {}
+    },
+    "extract_timeline_events": {
+      "name": "extract_timeline_events",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "external_id": {
+          "name": "external_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "type": {
+          "name": "type",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "merge_request_id": {
+          "name": "merge_request_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "timestamp": {
+          "name": "timestamp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "actor_name": {
+          "name": "actor_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "actor_id": {
+          "name": "actor_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "actor_email": {
+          "name": "actor_email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "data": {
+          "name": "data",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "__created_at": {
+          "name": "__created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        },
+        "__updated_at": {
+          "name": "__updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        }
+      },
+      "indexes": {
+        "timeline_events_external_id_merge_request_id_type_idx": {
+          "name": "timeline_events_external_id_merge_request_id_type_idx",
+          "columns": [
+            "external_id",
+            "merge_request_id",
+            "type"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "extract_timeline_events_merge_request_id_extract_merge_requests_id_fk": {
+          "name": "extract_timeline_events_merge_request_id_extract_merge_requests_id_fk",
+          "tableFrom": "extract_timeline_events",
+          "tableTo": "extract_merge_requests",
+          "columnsFrom": [
+            "merge_request_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "transform_dates": {
+      "name": "transform_dates",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "day": {
+          "name": "day",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "week": {
+          "name": "week",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "month": {
+          "name": "month",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "year": {
+          "name": "year",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "__created_at": {
+          "name": "__created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        },
+        "__updated_at": {
+          "name": "__updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        }
+      },
+      "indexes": {
+        "dates_day_week_month_year_idx": {
+          "name": "dates_day_week_month_year_idx",
+          "columns": [
+            "day",
+            "week",
+            "month",
+            "year"
+          ],
+          "isUnique": true
+        },
+        "dates_week_idx": {
+          "name": "dates_week_idx",
+          "columns": [
+            "week"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "transform_forge_users": {
+      "name": "transform_forge_users",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "external_id": {
+          "name": "external_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "forge_type": {
+          "name": "forge_type",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "bot": {
+          "name": "bot",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "__created_at": {
+          "name": "__created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        },
+        "__updated_at": {
+          "name": "__updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        }
+      },
+      "indexes": {
+        "forge_users_external_id_forge_type_idx": {
+          "name": "forge_users_external_id_forge_type_idx",
+          "columns": [
+            "external_id",
+            "forge_type"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "transform_merge_request_fact_dates_junk": {
+      "name": "transform_merge_request_fact_dates_junk",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "merged_at": {
+          "name": "merged_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "opened_at": {
+          "name": "opened_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "closed_at": {
+          "name": "closed_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "last_updated_at": {
+          "name": "last_updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "started_coding_at": {
+          "name": "started_coding_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "started_pickup_at": {
+          "name": "started_pickup_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "started_review_at": {
+          "name": "started_review_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "__created_at": {
+          "name": "__created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        },
+        "__updated_at": {
+          "name": "__updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "transform_merge_request_fact_dates_junk_merged_at_transform_dates_id_fk": {
+          "name": "transform_merge_request_fact_dates_junk_merged_at_transform_dates_id_fk",
+          "tableFrom": "transform_merge_request_fact_dates_junk",
+          "tableTo": "transform_dates",
+          "columnsFrom": [
+            "merged_at"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "transform_merge_request_fact_dates_junk_opened_at_transform_dates_id_fk": {
+          "name": "transform_merge_request_fact_dates_junk_opened_at_transform_dates_id_fk",
+          "tableFrom": "transform_merge_request_fact_dates_junk",
+          "tableTo": "transform_dates",
+          "columnsFrom": [
+            "opened_at"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "transform_merge_request_fact_dates_junk_closed_at_transform_dates_id_fk": {
+          "name": "transform_merge_request_fact_dates_junk_closed_at_transform_dates_id_fk",
+          "tableFrom": "transform_merge_request_fact_dates_junk",
+          "tableTo": "transform_dates",
+          "columnsFrom": [
+            "closed_at"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "transform_merge_request_fact_dates_junk_last_updated_at_transform_dates_id_fk": {
+          "name": "transform_merge_request_fact_dates_junk_last_updated_at_transform_dates_id_fk",
+          "tableFrom": "transform_merge_request_fact_dates_junk",
+          "tableTo": "transform_dates",
+          "columnsFrom": [
+            "last_updated_at"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "transform_merge_request_fact_dates_junk_started_coding_at_transform_dates_id_fk": {
+          "name": "transform_merge_request_fact_dates_junk_started_coding_at_transform_dates_id_fk",
+          "tableFrom": "transform_merge_request_fact_dates_junk",
+          "tableTo": "transform_dates",
+          "columnsFrom": [
+            "started_coding_at"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "transform_merge_request_fact_dates_junk_started_pickup_at_transform_dates_id_fk": {
+          "name": "transform_merge_request_fact_dates_junk_started_pickup_at_transform_dates_id_fk",
+          "tableFrom": "transform_merge_request_fact_dates_junk",
+          "tableTo": "transform_dates",
+          "columnsFrom": [
+            "started_pickup_at"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "transform_merge_request_fact_dates_junk_started_review_at_transform_dates_id_fk": {
+          "name": "transform_merge_request_fact_dates_junk_started_review_at_transform_dates_id_fk",
+          "tableFrom": "transform_merge_request_fact_dates_junk",
+          "tableTo": "transform_dates",
+          "columnsFrom": [
+            "started_review_at"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "transform_merge_request_events": {
+      "name": "transform_merge_request_events",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "actor": {
+          "name": "actor",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "subject": {
+          "name": "subject",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "occured_on": {
+          "name": "occured_on",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "commited_at": {
+          "name": "commited_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "repository": {
+          "name": "repository",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "merge_request": {
+          "name": "merge_request",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "timestamp": {
+          "name": "timestamp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "review_state_type": {
+          "name": "review_state_type",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "merge_request_event_type": {
+          "name": "merge_request_event_type",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "__created_at": {
+          "name": "__created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        },
+        "__updated_at": {
+          "name": "__updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        }
+      },
+      "indexes": {
+        "merge_request_events_occured_on_idx": {
+          "name": "merge_request_events_occured_on_idx",
+          "columns": [
+            "occured_on"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "transform_merge_request_events_actor_transform_forge_users_id_fk": {
+          "name": "transform_merge_request_events_actor_transform_forge_users_id_fk",
+          "tableFrom": "transform_merge_request_events",
+          "tableTo": "transform_forge_users",
+          "columnsFrom": [
+            "actor"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "transform_merge_request_events_subject_transform_forge_users_id_fk": {
+          "name": "transform_merge_request_events_subject_transform_forge_users_id_fk",
+          "tableFrom": "transform_merge_request_events",
+          "tableTo": "transform_forge_users",
+          "columnsFrom": [
+            "subject"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "transform_merge_request_events_occured_on_transform_dates_id_fk": {
+          "name": "transform_merge_request_events_occured_on_transform_dates_id_fk",
+          "tableFrom": "transform_merge_request_events",
+          "tableTo": "transform_dates",
+          "columnsFrom": [
+            "occured_on"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "transform_merge_request_events_commited_at_transform_dates_id_fk": {
+          "name": "transform_merge_request_events_commited_at_transform_dates_id_fk",
+          "tableFrom": "transform_merge_request_events",
+          "tableTo": "transform_dates",
+          "columnsFrom": [
+            "commited_at"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "transform_merge_request_events_repository_transform_repositories_id_fk": {
+          "name": "transform_merge_request_events_repository_transform_repositories_id_fk",
+          "tableFrom": "transform_merge_request_events",
+          "tableTo": "transform_repositories",
+          "columnsFrom": [
+            "repository"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "transform_merge_request_events_merge_request_transform_merge_requests_id_fk": {
+          "name": "transform_merge_request_events_merge_request_transform_merge_requests_id_fk",
+          "tableFrom": "transform_merge_request_events",
+          "tableTo": "transform_merge_requests",
+          "columnsFrom": [
+            "merge_request"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "transform_merge_request_metrics": {
+      "name": "transform_merge_request_metrics",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "users_junk": {
+          "name": "users_junk",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "repository": {
+          "name": "repository",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "merge_request": {
+          "name": "merge_request",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "dates_junk": {
+          "name": "dates_junk",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "mr_size": {
+          "name": "mr_size",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "coding_duration": {
+          "name": "coding_duration",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "review_start_delay": {
+          "name": "review_start_delay",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "review_duration": {
+          "name": "review_duration",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "handover": {
+          "name": "handover",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "review_depth": {
+          "name": "review_depth",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "merged": {
+          "name": "merged",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "closed": {
+          "name": "closed",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "approved": {
+          "name": "approved",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "reviewed": {
+          "name": "reviewed",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "__created_at": {
+          "name": "__created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        },
+        "__updated_at": {
+          "name": "__updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "transform_merge_request_metrics_users_junk_transform_merge_request_fact_users_junk_id_fk": {
+          "name": "transform_merge_request_metrics_users_junk_transform_merge_request_fact_users_junk_id_fk",
+          "tableFrom": "transform_merge_request_metrics",
+          "tableTo": "transform_merge_request_fact_users_junk",
+          "columnsFrom": [
+            "users_junk"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "transform_merge_request_metrics_repository_transform_repositories_id_fk": {
+          "name": "transform_merge_request_metrics_repository_transform_repositories_id_fk",
+          "tableFrom": "transform_merge_request_metrics",
+          "tableTo": "transform_repositories",
+          "columnsFrom": [
+            "repository"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "transform_merge_request_metrics_merge_request_transform_merge_requests_id_fk": {
+          "name": "transform_merge_request_metrics_merge_request_transform_merge_requests_id_fk",
+          "tableFrom": "transform_merge_request_metrics",
+          "tableTo": "transform_merge_requests",
+          "columnsFrom": [
+            "merge_request"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "transform_merge_request_metrics_dates_junk_transform_merge_request_fact_dates_junk_id_fk": {
+          "name": "transform_merge_request_metrics_dates_junk_transform_merge_request_fact_dates_junk_id_fk",
+          "tableFrom": "transform_merge_request_metrics",
+          "tableTo": "transform_merge_request_fact_dates_junk",
+          "columnsFrom": [
+            "dates_junk"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "transform_merge_request_fact_users_junk": {
+      "name": "transform_merge_request_fact_users_junk",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "author": {
+          "name": "author",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "merged_by": {
+          "name": "merged_by",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "approver1": {
+          "name": "approver1",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "approver2": {
+          "name": "approver2",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "approver3": {
+          "name": "approver3",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "approver4": {
+          "name": "approver4",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "approver5": {
+          "name": "approver5",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "approver6": {
+          "name": "approver6",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "approver7": {
+          "name": "approver7",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "approver8": {
+          "name": "approver8",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "approver9": {
+          "name": "approver9",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "approver10": {
+          "name": "approver10",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "committer1": {
+          "name": "committer1",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "committer2": {
+          "name": "committer2",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "committer3": {
+          "name": "committer3",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "committer4": {
+          "name": "committer4",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "committer5": {
+          "name": "committer5",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "committer6": {
+          "name": "committer6",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "committer7": {
+          "name": "committer7",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "committer8": {
+          "name": "committer8",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "committer9": {
+          "name": "committer9",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "committer10": {
+          "name": "committer10",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "reviewer1": {
+          "name": "reviewer1",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "reviewer2": {
+          "name": "reviewer2",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "reviewer3": {
+          "name": "reviewer3",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "reviewer4": {
+          "name": "reviewer4",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "reviewer5": {
+          "name": "reviewer5",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "reviewer6": {
+          "name": "reviewer6",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "reviewer7": {
+          "name": "reviewer7",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "reviewer8": {
+          "name": "reviewer8",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "reviewer9": {
+          "name": "reviewer9",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "reviewer10": {
+          "name": "reviewer10",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "__created_at": {
+          "name": "__created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        },
+        "__updated_at": {
+          "name": "__updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "transform_merge_request_fact_users_junk_author_transform_forge_users_id_fk": {
+          "name": "transform_merge_request_fact_users_junk_author_transform_forge_users_id_fk",
+          "tableFrom": "transform_merge_request_fact_users_junk",
+          "tableTo": "transform_forge_users",
+          "columnsFrom": [
+            "author"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "transform_merge_request_fact_users_junk_merged_by_transform_forge_users_id_fk": {
+          "name": "transform_merge_request_fact_users_junk_merged_by_transform_forge_users_id_fk",
+          "tableFrom": "transform_merge_request_fact_users_junk",
+          "tableTo": "transform_forge_users",
+          "columnsFrom": [
+            "merged_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "transform_merge_request_fact_users_junk_approver1_transform_forge_users_id_fk": {
+          "name": "transform_merge_request_fact_users_junk_approver1_transform_forge_users_id_fk",
+          "tableFrom": "transform_merge_request_fact_users_junk",
+          "tableTo": "transform_forge_users",
+          "columnsFrom": [
+            "approver1"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "transform_merge_request_fact_users_junk_approver2_transform_forge_users_id_fk": {
+          "name": "transform_merge_request_fact_users_junk_approver2_transform_forge_users_id_fk",
+          "tableFrom": "transform_merge_request_fact_users_junk",
+          "tableTo": "transform_forge_users",
+          "columnsFrom": [
+            "approver2"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "transform_merge_request_fact_users_junk_approver3_transform_forge_users_id_fk": {
+          "name": "transform_merge_request_fact_users_junk_approver3_transform_forge_users_id_fk",
+          "tableFrom": "transform_merge_request_fact_users_junk",
+          "tableTo": "transform_forge_users",
+          "columnsFrom": [
+            "approver3"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "transform_merge_request_fact_users_junk_approver4_transform_forge_users_id_fk": {
+          "name": "transform_merge_request_fact_users_junk_approver4_transform_forge_users_id_fk",
+          "tableFrom": "transform_merge_request_fact_users_junk",
+          "tableTo": "transform_forge_users",
+          "columnsFrom": [
+            "approver4"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "transform_merge_request_fact_users_junk_approver5_transform_forge_users_id_fk": {
+          "name": "transform_merge_request_fact_users_junk_approver5_transform_forge_users_id_fk",
+          "tableFrom": "transform_merge_request_fact_users_junk",
+          "tableTo": "transform_forge_users",
+          "columnsFrom": [
+            "approver5"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "transform_merge_request_fact_users_junk_approver6_transform_forge_users_id_fk": {
+          "name": "transform_merge_request_fact_users_junk_approver6_transform_forge_users_id_fk",
+          "tableFrom": "transform_merge_request_fact_users_junk",
+          "tableTo": "transform_forge_users",
+          "columnsFrom": [
+            "approver6"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "transform_merge_request_fact_users_junk_approver7_transform_forge_users_id_fk": {
+          "name": "transform_merge_request_fact_users_junk_approver7_transform_forge_users_id_fk",
+          "tableFrom": "transform_merge_request_fact_users_junk",
+          "tableTo": "transform_forge_users",
+          "columnsFrom": [
+            "approver7"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "transform_merge_request_fact_users_junk_approver8_transform_forge_users_id_fk": {
+          "name": "transform_merge_request_fact_users_junk_approver8_transform_forge_users_id_fk",
+          "tableFrom": "transform_merge_request_fact_users_junk",
+          "tableTo": "transform_forge_users",
+          "columnsFrom": [
+            "approver8"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "transform_merge_request_fact_users_junk_approver9_transform_forge_users_id_fk": {
+          "name": "transform_merge_request_fact_users_junk_approver9_transform_forge_users_id_fk",
+          "tableFrom": "transform_merge_request_fact_users_junk",
+          "tableTo": "transform_forge_users",
+          "columnsFrom": [
+            "approver9"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "transform_merge_request_fact_users_junk_approver10_transform_forge_users_id_fk": {
+          "name": "transform_merge_request_fact_users_junk_approver10_transform_forge_users_id_fk",
+          "tableFrom": "transform_merge_request_fact_users_junk",
+          "tableTo": "transform_forge_users",
+          "columnsFrom": [
+            "approver10"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "transform_merge_request_fact_users_junk_committer1_transform_forge_users_id_fk": {
+          "name": "transform_merge_request_fact_users_junk_committer1_transform_forge_users_id_fk",
+          "tableFrom": "transform_merge_request_fact_users_junk",
+          "tableTo": "transform_forge_users",
+          "columnsFrom": [
+            "committer1"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "transform_merge_request_fact_users_junk_committer2_transform_forge_users_id_fk": {
+          "name": "transform_merge_request_fact_users_junk_committer2_transform_forge_users_id_fk",
+          "tableFrom": "transform_merge_request_fact_users_junk",
+          "tableTo": "transform_forge_users",
+          "columnsFrom": [
+            "committer2"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "transform_merge_request_fact_users_junk_committer3_transform_forge_users_id_fk": {
+          "name": "transform_merge_request_fact_users_junk_committer3_transform_forge_users_id_fk",
+          "tableFrom": "transform_merge_request_fact_users_junk",
+          "tableTo": "transform_forge_users",
+          "columnsFrom": [
+            "committer3"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "transform_merge_request_fact_users_junk_committer4_transform_forge_users_id_fk": {
+          "name": "transform_merge_request_fact_users_junk_committer4_transform_forge_users_id_fk",
+          "tableFrom": "transform_merge_request_fact_users_junk",
+          "tableTo": "transform_forge_users",
+          "columnsFrom": [
+            "committer4"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "transform_merge_request_fact_users_junk_committer5_transform_forge_users_id_fk": {
+          "name": "transform_merge_request_fact_users_junk_committer5_transform_forge_users_id_fk",
+          "tableFrom": "transform_merge_request_fact_users_junk",
+          "tableTo": "transform_forge_users",
+          "columnsFrom": [
+            "committer5"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "transform_merge_request_fact_users_junk_committer6_transform_forge_users_id_fk": {
+          "name": "transform_merge_request_fact_users_junk_committer6_transform_forge_users_id_fk",
+          "tableFrom": "transform_merge_request_fact_users_junk",
+          "tableTo": "transform_forge_users",
+          "columnsFrom": [
+            "committer6"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "transform_merge_request_fact_users_junk_committer7_transform_forge_users_id_fk": {
+          "name": "transform_merge_request_fact_users_junk_committer7_transform_forge_users_id_fk",
+          "tableFrom": "transform_merge_request_fact_users_junk",
+          "tableTo": "transform_forge_users",
+          "columnsFrom": [
+            "committer7"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "transform_merge_request_fact_users_junk_committer8_transform_forge_users_id_fk": {
+          "name": "transform_merge_request_fact_users_junk_committer8_transform_forge_users_id_fk",
+          "tableFrom": "transform_merge_request_fact_users_junk",
+          "tableTo": "transform_forge_users",
+          "columnsFrom": [
+            "committer8"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "transform_merge_request_fact_users_junk_committer9_transform_forge_users_id_fk": {
+          "name": "transform_merge_request_fact_users_junk_committer9_transform_forge_users_id_fk",
+          "tableFrom": "transform_merge_request_fact_users_junk",
+          "tableTo": "transform_forge_users",
+          "columnsFrom": [
+            "committer9"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "transform_merge_request_fact_users_junk_committer10_transform_forge_users_id_fk": {
+          "name": "transform_merge_request_fact_users_junk_committer10_transform_forge_users_id_fk",
+          "tableFrom": "transform_merge_request_fact_users_junk",
+          "tableTo": "transform_forge_users",
+          "columnsFrom": [
+            "committer10"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "transform_merge_request_fact_users_junk_reviewer1_transform_forge_users_id_fk": {
+          "name": "transform_merge_request_fact_users_junk_reviewer1_transform_forge_users_id_fk",
+          "tableFrom": "transform_merge_request_fact_users_junk",
+          "tableTo": "transform_forge_users",
+          "columnsFrom": [
+            "reviewer1"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "transform_merge_request_fact_users_junk_reviewer2_transform_forge_users_id_fk": {
+          "name": "transform_merge_request_fact_users_junk_reviewer2_transform_forge_users_id_fk",
+          "tableFrom": "transform_merge_request_fact_users_junk",
+          "tableTo": "transform_forge_users",
+          "columnsFrom": [
+            "reviewer2"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "transform_merge_request_fact_users_junk_reviewer3_transform_forge_users_id_fk": {
+          "name": "transform_merge_request_fact_users_junk_reviewer3_transform_forge_users_id_fk",
+          "tableFrom": "transform_merge_request_fact_users_junk",
+          "tableTo": "transform_forge_users",
+          "columnsFrom": [
+            "reviewer3"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "transform_merge_request_fact_users_junk_reviewer4_transform_forge_users_id_fk": {
+          "name": "transform_merge_request_fact_users_junk_reviewer4_transform_forge_users_id_fk",
+          "tableFrom": "transform_merge_request_fact_users_junk",
+          "tableTo": "transform_forge_users",
+          "columnsFrom": [
+            "reviewer4"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "transform_merge_request_fact_users_junk_reviewer5_transform_forge_users_id_fk": {
+          "name": "transform_merge_request_fact_users_junk_reviewer5_transform_forge_users_id_fk",
+          "tableFrom": "transform_merge_request_fact_users_junk",
+          "tableTo": "transform_forge_users",
+          "columnsFrom": [
+            "reviewer5"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "transform_merge_request_fact_users_junk_reviewer6_transform_forge_users_id_fk": {
+          "name": "transform_merge_request_fact_users_junk_reviewer6_transform_forge_users_id_fk",
+          "tableFrom": "transform_merge_request_fact_users_junk",
+          "tableTo": "transform_forge_users",
+          "columnsFrom": [
+            "reviewer6"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "transform_merge_request_fact_users_junk_reviewer7_transform_forge_users_id_fk": {
+          "name": "transform_merge_request_fact_users_junk_reviewer7_transform_forge_users_id_fk",
+          "tableFrom": "transform_merge_request_fact_users_junk",
+          "tableTo": "transform_forge_users",
+          "columnsFrom": [
+            "reviewer7"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "transform_merge_request_fact_users_junk_reviewer8_transform_forge_users_id_fk": {
+          "name": "transform_merge_request_fact_users_junk_reviewer8_transform_forge_users_id_fk",
+          "tableFrom": "transform_merge_request_fact_users_junk",
+          "tableTo": "transform_forge_users",
+          "columnsFrom": [
+            "reviewer8"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "transform_merge_request_fact_users_junk_reviewer9_transform_forge_users_id_fk": {
+          "name": "transform_merge_request_fact_users_junk_reviewer9_transform_forge_users_id_fk",
+          "tableFrom": "transform_merge_request_fact_users_junk",
+          "tableTo": "transform_forge_users",
+          "columnsFrom": [
+            "reviewer9"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "transform_merge_request_fact_users_junk_reviewer10_transform_forge_users_id_fk": {
+          "name": "transform_merge_request_fact_users_junk_reviewer10_transform_forge_users_id_fk",
+          "tableFrom": "transform_merge_request_fact_users_junk",
+          "tableTo": "transform_forge_users",
+          "columnsFrom": [
+            "reviewer10"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "transform_merge_requests": {
+      "name": "transform_merge_requests",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "external_id": {
+          "name": "external_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "forge_type": {
+          "name": "forge_type",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "web_url": {
+          "name": "web_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "__created_at": {
+          "name": "__created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        },
+        "__updated_at": {
+          "name": "__updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        }
+      },
+      "indexes": {
+        "merge_requests_external_id_forge_type_idx": {
+          "name": "merge_requests_external_id_forge_type_idx",
+          "columns": [
+            "external_id",
+            "forge_type"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "transform_null_rows": {
+      "name": "transform_null_rows",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "dates_id": {
+          "name": "dates_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "users_id": {
+          "name": "users_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "merge_requests_id": {
+          "name": "merge_requests_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "repository_id": {
+          "name": "repository_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "__created_at": {
+          "name": "__created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        },
+        "__updated_at": {
+          "name": "__updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "transform_repositories": {
+      "name": "transform_repositories",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "external_id": {
+          "name": "external_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "forge_type": {
+          "name": "forge_type",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "__created_at": {
+          "name": "__created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        },
+        "__updated_at": {
+          "name": "__updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        }
+      },
+      "indexes": {
+        "repositories_external_id_forge_type_idx": {
+          "name": "repositories_external_id_forge_type_idx",
+          "columns": [
+            "external_id",
+            "forge_type"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    }
+  },
+  "enums": {},
+  "_meta": {
+    "schemas": {},
+    "tables": {},
+    "columns": {}
+  }
+}
