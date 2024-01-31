@@ -1,17 +1,18 @@
 import type { InferSelectModel, InferInsertModel } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
 import { text, integer, sqliteTable } from 'drizzle-orm/sqlite-core';
-import type { LibSQLDatabase } from 'drizzle-orm/libsql';
+import { tenants } from './tenants';
 
-export const tenants = sqliteTable('tenants', {
+export const companyInfo = sqliteTable('company_info', {
   id: integer('id').primaryKey(),
   name: text('name').notNull(),
-  dbUrl: text('db_url').notNull(),
+  logoUrl: text('logo_url').notNull(),
+  screenshotUrl: text('screenshot_url').notNull(),
+  description: text('description').notNull(),
+  tenantId: integer('tenant_id').notNull().references(() => tenants.id),
   _createdAt: integer('__created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
   _updatedAt: integer('__updated_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
 });
 
-export type Tenant = InferSelectModel<typeof tenants>;
-export type NewTenant = InferInsertModel<typeof tenants>;
-
-export const getTenants = async (db: LibSQLDatabase) => db.select().from(tenants).all();
+export type CompanyInfo = InferSelectModel<typeof companyInfo>;
+export type NewCompanyInfo = InferInsertModel<typeof companyInfo>;
