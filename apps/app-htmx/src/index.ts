@@ -34,5 +34,7 @@ fastify.post('/repository/extract', ExtractRepository);
 fastify.post('/repository/register', RegisterRepository);
 fastify.post('/transform', StartTransform);
 
-await fastify.listen({ port: 3001, host: "127.0.0.1" })
-console.log("Server started on http://127.0.0.1:3001/");
+const PORT = AppConfig.port || 3001;
+
+await fastify.listen({ port: PORT, host: "127.0.0.1" })
+console.log(`Server started on http://127.0.0.1:${PORT}/`);

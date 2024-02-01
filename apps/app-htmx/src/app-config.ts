@@ -12,12 +12,14 @@ const ENVSchema = z.object({
   CLERK_PUBLISHABLE_KEY: z.string(),
   CLERK_SECRET_KEY: z.string(),
   CLERK_DOMAIN: z.string(),
+  APP_HTMX_PORT: z.coerce.number().optional(),
 });
 
 const parsedEnv = ENVSchema.safeParse(process.env);
 if (!parsedEnv.success) throw new Error(`Invalid environment: ${parsedEnv.error}`);
 
 export const AppConfig = {
+  port: parsedEnv.data.APP_HTMX_PORT,
   superDatabase: {
     url: parsedEnv.data.SUPER_DATABASE_URL,
     authToken: parsedEnv.data.SUPER_DATABASE_AUTH_TOKEN,
