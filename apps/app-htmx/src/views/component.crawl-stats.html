@@ -1,0 +1,22 @@
+<div style="display: inline-block; padding: 1em; margin: 0.5em; box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;">
+  <table>
+    <thead>
+      <tr>
+        <th>When</th>
+        <th>Id</th>
+        <th>Event Count</th>
+        <th>Duration</th>
+      </tr>
+    </thead>
+    <tbody>      
+      {% for stat in tenantCrawlStats %}
+        <tr>
+          <td>{{stat.startedAt}} ago</td>
+          <td>{{stat.instanceId}}</td>
+          <td>{{stat.eventCount}}</td>
+          <td>{{stat.duration}}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>

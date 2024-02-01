@@ -1,0 +1,24 @@
+{% extends "root.html" %}
+
+{% block body %}
+<div id="sign-in"></div>
+<script>
+  const frontendApi = '{{AppConfig.clerk.domain}}.accounts.dev';
+  const version = '@latest'; // Set to appropriate version
+
+  // Creates asynchronous script
+  const script = document.createElement('script');
+  script.setAttribute('data-clerk-publishable-key', "{{AppConfig.clerk.publishableKey}}")
+  script.async = true;
+  script.src = `https://${frontendApi}/npm/@clerk/clerk-js${version}/dist/clerk.browser.js`;
+
+  script.addEventListener('load', async function () {
+    await window.Clerk.load();
+
+    const signInComponent = document.querySelector('#sign-in');
+
+    window.Clerk.openSignIn(signInComponent);
+  });
+  document.body.appendChild(script);
+</script>
+{% endblock %}

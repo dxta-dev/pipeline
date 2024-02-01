@@ -1,0 +1,37 @@
+{% extends "layout.app.html" %}
+
+{% block content %}
+<h2>{{targetTenant.name}}</h2>
+<h3>Register Repository</h3>
+<form>
+  <select name="forge">
+    <option value="github">GitHub</option>
+    <option value="gitlab">Gitlab</option>
+  </select>
+  <input type="hidden" name="target_tenant_id" value="{{targetTenantId}}" />
+  <span for="github"><input type="text" name="owner" placeholder="OWNER" />/<input type="text" name="repo"
+      placeholder="REPO" /></span>
+  <span for="gitlab"><input type="text" name="project_id" placeholder="PROJECT ID" /></span>
+  <button hx-post="/repository/register" hx-target="#repos" hx-swap="beforeend">Submit</button>
+</form>
+<h3>Repositories</h3>
+<div id="repos">
+  {% for repo in repos %}
+  {% include "component.repository.html" %}
+  {% endfor %}
+</div>
+<div style="display: inline-block; padding: 1em; margin: 0.5em; box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;">
+  <form>
+    <input type="hidden" name="target_tenant_id" value="{{targetTenantId}}" />
+    <button hx-post="/transform" hx-swap="none">Start Transform</button>
+  </form>
+</div>
+<h3>Logs</h3>
+<div id="logs" style="background: whitesmoke; padding: 1em">
+</div>
+<h3>Crawl Stats</h3>
+<div>
+  {% include "component.crawl-stats.html" %}
+</div>
+
+{% endblock %}
