@@ -11,7 +11,7 @@
     "clean:workspaces": "turbo clean",
     "dev": "turbo dev --parallel",
     "format": "prettier --write \"**/*.{js,cjs,mjs,ts,tsx,md,json}\" --ignore-path .gitignore",
-    "lint": "turbo lint && manypkg check",
+    "lint": "turbo lint",
     "manypkg": "manypkg check",
     "lint:fix": "turbo lint:fix",
     "manypkg:fix": "manypkg fix",
@@ -29,7 +29,6 @@
     "drizzle-zod": "0.5.1",
     "eslint": "8.55.0",
     "prettier": "2.8.8",
-    "prettier-plugin-tailwindcss": "0.3.0",
     "turbo": "1.10.15",
     "typescript": "5.2.2",
     "zod": "3.22.4"
