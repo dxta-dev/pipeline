@@ -1,0 +1,5 @@
+{% if log %}
+<div hx-swap-oob="afterbegin:#logs"><pre style="color: black;" >{{log}}</pre></div>
+{% elseif error %}
+<div hx-swap-oob="afterbegin:#logs"><pre style="color: red;" >{{error}}</pre></div>
+{% endif %}

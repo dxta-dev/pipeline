@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://unpkg.com/htmx.org@latest/dist/htmx.min.js"></script>
+  <title>{{ page.title }}</title>
+  <style>
+    :root,
+    input,
+    select,
+    button {
+      font-family: 'Courier New', Courier, monospace;
+    }
+    
+    input, select, button {
+      font-size: 1em;
+      border: none;
+      background-color: white;
+    }
+    input, select {
+      border-bottom: solid 2px black;
+    }
+    button {
+      cursor: pointer;
+    }
+    :focus{
+      outline: none;
+      border-bottom: solid 2px royalblue;
+      transition: all 0.1s ease-out;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+
+    th, td {
+      text-align: end;
+      padding: 8px;
+    }
+
+    th:not(:first-child), td:not(:first-child) {
+      border-left: 1px solid #dddddd;
+    }
+
+    th {
+      border-bottom: 1px solid #dddddd;
+    }
+  </style>
+</head>
+<body>
+  {% block body %}
+  {% endblock %}  
+</body>
+</html>

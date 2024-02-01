@@ -117,7 +117,7 @@ export const handler = ApiHandler(async (ev) => {
 
   return {
     statusCode: 200,
-    body: JSON.stringify({})
+    body: JSON.stringify({ from: inputValidation.data.from, to: inputValidation.data.to })
   };
 });
 
