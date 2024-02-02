@@ -9,11 +9,11 @@ export { mergeRequestNotes} from './merge-request-notes';
 export { gitIdentities } from './git-identities';
 export {
   timelineEvents,
-  AssignedEventSchema,
-  CommittedEventSchema, ReviewRequestRemovedEventSchema,
-  ReviewRequestedEventSchema,
+
+  AssignEventSchema,
+  CommittedEventSchema,
+  ReviewRequestEventSchema,
   ReviewedEventSchema,
-  UnassignedEventSchema,
 } from './timeline-events';
 
 export type { Repository, NewRepository } from './repositories';
@@ -26,13 +26,22 @@ export type { RepositoryToMember, NewRepositoryToMember } from './repositories-t
 export type { MergeRequestNote, NewMergeRequestNote } from './merge-request-notes';
 export type { GitIdentities, NewGitIdentities } from './git-identities';
 export type { 
-  TimelineEvents, 
-  NewTimelineEvents,
-  AssignedEvent,
+  TimelineEvent, 
+  NewTimelineEvent,
+  TimelineEventOfType,
+  NewTimelineEventOfType,
+
+  AssignEvent,
+  ClosedEvent,
+  CommentedEvent,
   CommittedEvent,
-  ReviewRequestRemovedEvent,
-  ReviewRequestedEvent,
+  ConvertToDraftEvent,
+  MergedEvent,
+  ReadyForReviewEvent,
+  ReviewRequestEvent,
   ReviewedEvent,
-  UnassignedEvent,
+  
+  TimelineEventTypeUnion,
   TimelineEventType,
 } from './timeline-events';
+

@@ -2,7 +2,7 @@ import type { SourceControl } from '..';
 import { Octokit } from '@octokit/rest';
 import parseLinkHeader from "parse-link-header";
 
-import type { NewRepository, NewNamespace, NewMergeRequest, NewMember, NewMergeRequestDiff, Repository, Namespace, MergeRequest, NewMergeRequestCommit, NewMergeRequestNote, NewTimelineEvents, TimelineEventType } from "@acme/extract-schema";
+import type { NewRepository, NewNamespace, NewMergeRequest, NewMember, NewMergeRequestDiff, Repository, Namespace, MergeRequest, NewMergeRequestCommit, NewMergeRequestNote, NewTimelineEvent, TimelineEventType, NewTimelineEventOfType } from "@acme/extract-schema";
 import type { Pagination, TimePeriod } from '../source-control';
 import type { components } from '@octokit/openapi-types';
 import { TimelineEventTypes } from '../../../../../packages/schemas/extract/src/timeline-events';
@@ -344,7 +344,7 @@ export class GitHubSourceControl implements SourceControl {
     }
   }
 
-  async fetchTimelineEvents(repository: Repository, namespace: Namespace, mergeRequest: MergeRequest): Promise<{ timelineEvents: NewTimelineEvents[] }> {
+  async fetchTimelineEvents(repository: Repository, namespace: Namespace, mergeRequest: MergeRequest): Promise<{ timelineEvents: NewTimelineEvent[] }> {
     const response = await this.api.issues.listEventsForTimeline({
       owner: namespace.name,
       repo: repository.name,
@@ -361,69 +361,70 @@ export class GitHubSourceControl implements SourceControl {
           const assignedEvent = singleEvent as components["schemas"]["timeline-assigned-issue-event"] | components["schemas"]["timeline-unassigned-issue-event"];
           return {
             externalId: assignedEvent.id,
-            type: assignedEvent.event as TimelineEventType,
+            type: singleEvent.event,
             mergeRequestId: mergeRequest.id,
             timestamp: new Date(assignedEvent.created_at),
             actorName: assignedEvent.actor.login,
             actorId: assignedEvent.actor.id,
-            data: {
-              assigneeId: assignedEvent.assignee.id,
-              assigneeName: assignedEvent.assignee.login,
+            data: {                                                          
+              assigneeId: assignedEvent.assignee.id,              
+              assigneeName: assignedEvent.assignee.login,              
             },
-          } satisfies NewTimelineEvents;
+          } satisfies NewTimelineEventOfType;
         case 'committed':
           const committedEvent = singleEvent as components["schemas"]["timeline-committed-event"]
           return {
             externalId: parseInt(committedEvent.sha.slice(0,7), 16),
-            type: committedEvent.event as TimelineEventType,
+            type: singleEvent.event,
             mergeRequestId: mergeRequest.id,
             timestamp: new Date(committedEvent.author.date),
             actorName: committedEvent.author.name,
             actorEmail: committedEvent.author.email,
-            data: {
+            data: {              
               committerEmail: committedEvent.committer.email,
               committerName: committedEvent.committer.name,
               committedDate: new Date(committedEvent.committer.date),
             },
-          } satisfies NewTimelineEvents;
+          } satisfies NewTimelineEventOfType;
         case 'review_requested':
         case 'review_request_removed':
           const requestedEvent = singleEvent as components["schemas"]["review-requested-issue-event"] | components["schemas"]["review-request-removed-issue-event"];
           return {
             externalId: requestedEvent.id,
-            type: requestedEvent.event as TimelineEventType,
+            type: singleEvent.event,
             mergeRequestId: mergeRequest.id,
             timestamp: new Date(requestedEvent.created_at),
             actorName: requestedEvent.actor.login,
             actorId: requestedEvent.actor.id,
-            data: {
+            data: {                                          
               requestedReviewerId: requestedEvent.requested_reviewer?.id,
               requestedReviewerName: requestedEvent.requested_reviewer?.login,
             },
-          } satisfies NewTimelineEvents;
+          } satisfies NewTimelineEventOfType;
         case 'reviewed':
           const reviewedEvent = singleEvent as components["schemas"]["timeline-reviewed-event"]
           return {
             externalId: reviewedEvent.id,
-            type: reviewedEvent.event as TimelineEventType,
+            type: singleEvent.event,
             mergeRequestId: mergeRequest.id,
             timestamp: new Date(reviewedEvent.submitted_at as string),
             actorName: reviewedEvent.user.login,
             actorId: reviewedEvent.user.id,
             data: {
-              state: reviewedEvent.state,
+              state: reviewedEvent.state,              
             },
-          } satisfies NewTimelineEvents;
+          } satisfies NewTimelineEventOfType;
         default:
           const generalEvent = singleEvent as components["schemas"]["state-change-issue-event"];
           return {
             externalId: generalEvent.id,
-            type: generalEvent.event as TimelineEventType,
+            type: generalEvent.event as (NewTimelineEventOfType & { data: null })['type'],
             mergeRequestId: mergeRequest.id,
             timestamp: new Date(generalEvent.created_at),
             actorName: generalEvent.actor.login,
             actorId: generalEvent.actor.id,
-          } satisfies NewTimelineEvents;
+            data: null
+          } satisfies NewTimelineEventOfType & { data: null };
       }
     });
     return {

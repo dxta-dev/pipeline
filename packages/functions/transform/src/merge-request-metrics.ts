@@ -331,7 +331,7 @@ type TransformUserArgs = {
   bot: transform.ForgeUser['bot'];
 }
 
-function getUserData(timelineEvents: TimelineEventData[], authorExternalId: number) {
+function getUserData(timelineEvents: TimelineEventDataOfType[], authorExternalId: number) {
   const reviewers = new Set<number>();
   const approvers = new Set<number>();
   const committers = new Set<string>();
@@ -345,12 +345,12 @@ function getUserData(timelineEvents: TimelineEventData[], authorExternalId: numb
           break;
         }
         reviewers.add(timelineEvent.actorId);
-        if (timelineEvent.data && ((timelineEvent.data as extract.ReviewedEvent).state === 'approved')) {
+        if (timelineEvent.data.state === 'approved') {
           approvers.add(timelineEvent.actorId);
         }
         break;
       case 'committed':
-        committers.add((timelineEvent.data as extract.CommittedEvent).committerName);
+        committers.add(timelineEvent.data.committerName);
         break;
       case 'merged':
         if (!timelineEvent.actorId) {
@@ -503,12 +503,9 @@ type MergeRequestData = {
   authorExternalId: extract.MergeRequest['authorExternalId']
 }
 
-export type TimelineEventData = {
-  type: extract.TimelineEvents['type'];
-  timestamp: extract.TimelineEvents['timestamp'];
-  actorId: extract.TimelineEvents['actorId'];
-  data: extract.TimelineEvents['data'];
-}
+export type TimelineEventData = Pick<extract.TimelineEvent, 'type' | 'timestamp' | 'actorId' | 'data'>;
+type TimelineEventDataOfType<T extends extract.TimelineEventTypeUnion = extract.TimelineEventTypeUnion> = TimelineEventData & T ;
+
 
 export type MergeRequestNoteData = {
   type: 'note';
@@ -569,7 +566,7 @@ async function selectExtractData(db: ExtractDatabase, extractMergeRequestId: num
   })
     .from(timelineEvents)
     .where(eq(timelineEvents.mergeRequestId, extractMergeRequestId))
-    .all() satisfies TimelineEventData[];
+    .all() satisfies TimelineEventData[] as TimelineEventDataOfType[];
 
   return {
     diffs: mergerRequestDiffsData,
@@ -586,7 +583,7 @@ export type RunContext = {
 };
 
 export type TimelineMapKey = {
-  type: extract.TimelineEvents['type'] | 'note',
+  type: extract.TimelineEvent['type'] | 'note',
   timestamp: Date,
 }
 
@@ -757,7 +754,7 @@ export function calculateTimeline(timelineMapKeys: TimelineMapKey[], timelineMap
   };
 }
 
-function runTimeline(mergeRequestData: MergeRequestData, timelineEvents: TimelineEventData[], notes: MergeRequestNoteData[]) {
+function runTimeline(mergeRequestData: MergeRequestData, timelineEvents: TimelineEventDataOfType[], notes: MergeRequestNoteData[]) {
   const timelineMap = setupTimeline(timelineEvents, notes);
   const timelineMapKeys = [...timelineMap.keys()];
 
@@ -770,7 +767,7 @@ function runTimeline(mergeRequestData: MergeRequestData, timelineEvents: Timelin
     });
 
   // TODO: can this be optimized with the map ?
-  const approved = timelineEvents.find(ev => ev.type === 'reviewed' && (ev.data as extract.ReviewedEvent).state === 'approved') !== undefined;
+  const approved = timelineEvents.find(ev => ev.type === 'reviewed' && ev.data.state === 'approved') !== undefined;
 
   return {
     startedCodingAt,
@@ -815,7 +812,7 @@ async function selectForgeUsers<K>(db: TransformDatabase, users: { key: K, userI
   if (isActor) {
     users.forEach(u => {
       if (u.type === 'committed') {
-        const committerName = (u.data as extract.CommittedEvent).committerName;
+        const committerName = (u as extract.CommittedEvent).data.committerName;
         if (!uniqueUserQuery.has(committerName)) {
           uniqueUserQuery.set(committerName, committerName);
           userQuery.push(eq(transformForgeUsers.name, committerName));
@@ -831,28 +828,28 @@ async function selectForgeUsers<K>(db: TransformDatabase, users: { key: K, userI
     users.forEach(u => {
       switch (u.type) {
         case 'assigned':
-          const assigneeId = (u.data as extract.AssignedEvent).assigneeId;
+          const assigneeId = (u as extract.AssignEvent).data.assigneeId;
           if (!uniqueUserQuery.has(assigneeId)) {
             uniqueUserQuery.set(assigneeId, assigneeId);
             userQuery.push(eq(transformForgeUsers.externalId, assigneeId));
           }
           break;
         case 'unassigned':
-          const unassigneeId = (u.data as extract.AssignedEvent).assigneeId;
+          const unassigneeId = (u as extract.AssignEvent).data.assigneeId;
           if (!uniqueUserQuery.has(unassigneeId)) {
             uniqueUserQuery.set(unassigneeId, unassigneeId);
             userQuery.push(eq(transformForgeUsers.externalId, unassigneeId));
           }
           break;
         case 'review_requested':
-          const requestedReviewerId = (u.data as extract.ReviewRequestedEvent).requestedReviewerId;
+          const requestedReviewerId = (u as extract.ReviewRequestEvent).data.requestedReviewerId;
           if (requestedReviewerId !== undefined && !uniqueUserQuery.has(requestedReviewerId)) {
             uniqueUserQuery.set(requestedReviewerId, requestedReviewerId);
             userQuery.push(eq(transformForgeUsers.externalId, requestedReviewerId));
           }
           break;
         case 'review_request_removed':
-          const requestedReviewerRemovedId = (u.data as extract.ReviewRequestRemovedEvent).requestedReviewerId;
+          const requestedReviewerRemovedId = (u as extract.ReviewRequestEvent).data.requestedReviewerId;
           if (requestedReviewerRemovedId !== undefined && !uniqueUserQuery.has(requestedReviewerRemovedId)) {
             uniqueUserQuery.set(requestedReviewerRemovedId, requestedReviewerRemovedId);
             userQuery.push(eq(transformForgeUsers.externalId, requestedReviewerRemovedId));
@@ -880,24 +877,24 @@ async function selectForgeUsers<K>(db: TransformDatabase, users: { key: K, userI
     let userIdentifier;
     if (isActor) {
       if (u.type === 'committed') {
-        userIdentifier = (u.data as extract.CommittedEvent).committerName;
+        userIdentifier = (u as extract.CommittedEvent).data.committerName;
       } else {
         userIdentifier = u.userId;
       }
     } else {
       switch (u.type) {
         case 'assigned':
-          userIdentifier = (u.data as extract.AssignedEvent).assigneeId;
+          userIdentifier = (u as extract.AssignEvent).data.assigneeId;
           break;
         case 'unassigned':
-          userIdentifier = (u.data as extract.UnassignedEvent).assigneeId;
+          userIdentifier = (u as extract.AssignEvent).data.assigneeId;
           break;
         case 'review_requested':
-          const requestedReviewerId = (u.data as extract.ReviewRequestedEvent).requestedReviewerId;
+          const requestedReviewerId = (u  as extract.ReviewRequestEvent).data.requestedReviewerId;
           userIdentifier = requestedReviewerId === undefined ? null : requestedReviewerId;
           break;
         case 'review_request_removed':
-          const unrequestedReviewerId = (u.data as extract.ReviewRequestRemovedEvent).requestedReviewerId
+          const unrequestedReviewerId = (u as extract.ReviewRequestEvent).data.requestedReviewerId
           userIdentifier = unrequestedReviewerId === undefined ? null : unrequestedReviewerId;
           break;
         default:
@@ -919,7 +916,7 @@ async function selectCommittedDates(db: TransformDatabase, users: { key: { type:
 
   users.forEach(u => {
     if (u.type === 'committed') {
-      const committedDate = new Date((u.data as extract.CommittedEvent).committedDate);
+      const committedDate = new Date((u as extract.CommittedEvent).data.committedDate);
       if (!uniqueDateQuery.has(committedDate)) {
         uniqueDateQuery.set(committedDate, committedDate);
         const committedDateDMY = getDMY(committedDate);
@@ -947,7 +944,7 @@ async function selectCommittedDates(db: TransformDatabase, users: { key: { type:
   return users.map(u => {
     let committedDate: Date | null = null;
     if (u.type === 'committed') {
-      committedDate = new Date((u.data as extract.CommittedEvent).committedDate);
+      committedDate = new Date((u as extract.CommittedEvent).data.committedDate);
     }
     return {
       key: u.key,

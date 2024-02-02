@@ -1,6 +1,6 @@
 import type { SourceControl, Pagination, TimePeriod } from "../source-control";
 import type { Gitlab as GitlabType, ShowExpanded, Sudo, MergeRequestDiffSchema, OffsetPagination } from '@gitbeaker/core';
-import type { NewRepository, NewNamespace, NewMergeRequest, NewMember, NewMergeRequestDiff, Repository, Namespace, MergeRequest, NewMergeRequestCommit, NewMergeRequestNote, NewTimelineEvents } from "@acme/extract-schema";
+import type { NewRepository, NewNamespace, NewMergeRequest, NewMember, NewMergeRequestDiff, Repository, Namespace, MergeRequest, NewMergeRequestCommit, NewMergeRequestNote, NewTimelineEvent } from "@acme/extract-schema";
 import { Gitlab } from '@gitbeaker/rest';
 
 export class GitlabSourceControl implements SourceControl {
@@ -208,7 +208,7 @@ export class GitlabSourceControl implements SourceControl {
     };
   }
 
-  fetchTimelineEvents(_repository: Repository, _namespace: Namespace, _mergeRequest: MergeRequest): Promise<{ timelineEvents: NewTimelineEvents[]; }> {
+  fetchTimelineEvents(_repository: Repository, _namespace: Namespace, _mergeRequest: MergeRequest): Promise<{ timelineEvents: NewTimelineEvent[]; }> {
     throw new Error("Method not implemented.");
   }
 }
