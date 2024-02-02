@@ -1,4 +1,4 @@
-import type { TimelineEvents } from "@acme/extract-schema";
+import type { TimelineEvent } from "@acme/extract-schema";
 import type { Entities, ExtractFunction } from "./config"
 import type { SourceControl } from "@acme/source-control";
 import { eq, sql } from "drizzle-orm";
@@ -10,7 +10,7 @@ export type GetTimelineEventsInputs = {
 }
 
 export type GetTimelineEventsOutput = {
-  timelineEvents: TimelineEvents[];
+  timelineEvents: TimelineEvent[];
 };
 
 export type GetTimelineEventsSourceControl = Pick<SourceControl, "fetchTimelineEvents">;
