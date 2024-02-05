@@ -13,7 +13,7 @@ export const members = sqliteTable('members', {
   name: text('name'),
   username: text('username').notNull(),
   email: text('email'),
-  extractedSource: Enum('extracted_source', { enum: ['repository', 'namespace', 'notes'] }),
+  extractedSource: Enum('extracted_source', { enum: ['repository', 'namespace', 'notes', 'timeline'] }),
   _createdAt: integer('__created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
   _updatedAt: integer('__updated_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
   _extractedAt: integer('__extracted_at', { mode: 'timestamp' }),
