@@ -85,8 +85,11 @@ const apiContextSchema = z.object({
 });
 
 const inputSchema = z.object({
+  from: z.coerce.date(),
+  to: z.coerce.date(),
   tenantId: z.number(),
 });
+
 export const apiHandler = ApiHandler(async (ev) => {
   const body = useJsonBody() as unknown;
 
@@ -109,7 +112,7 @@ export const apiHandler = ApiHandler(async (ev) => {
     }
   }
 
-  const { tenantId } = inputValidation.data;
+  const { tenantId, from, to } = inputValidation.data;
 
   try {
     await sender.send({
@@ -118,8 +121,8 @@ export const apiHandler = ApiHandler(async (ev) => {
       version: 1,
       caller: 'transform-tenants:apiHandler',
       timestamp: Date.now(),
-      from: new Date(0),
-      to: new Date(),
+      from,
+      to,
       tenantId: -1,
     });
   } catch (error) {
@@ -131,6 +134,6 @@ export const apiHandler = ApiHandler(async (ev) => {
 
   return {
     statusCode: 200,
-    body: JSON.stringify({ message: 'started transform' })
+    body: JSON.stringify({ message: `Transforming tenant ${tenantId} from ${from} to ${to}` }),
   };
 });
