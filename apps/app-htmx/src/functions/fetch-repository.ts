@@ -24,7 +24,7 @@ export const tryFetchRepository = async ({
   const token = await getUserForgeAccessToken(userId, forge);
 
   let sc: SourceControl;
-  if (forge === 'github') sc = new GitHubSourceControl(token);
+  if (forge === 'github') sc = new GitHubSourceControl({ auth: token });
   else sc = new GitlabSourceControl(token);
 
   try {
