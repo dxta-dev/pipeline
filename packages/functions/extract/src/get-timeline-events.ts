@@ -1,4 +1,4 @@
-import type { TimelineEvents } from "@acme/extract-schema";
+import type { Member, NewMember, TimelineEvents } from "@acme/extract-schema";
 import type { Entities, ExtractFunction } from "./config"
 import type { SourceControl } from "@acme/source-control";
 import { eq, sql } from "drizzle-orm";
@@ -11,10 +11,11 @@ export type GetTimelineEventsInputs = {
 
 export type GetTimelineEventsOutput = {
   timelineEvents: TimelineEvents[];
+  members: Member[];
 };
 
 export type GetTimelineEventsSourceControl = Pick<SourceControl, "fetchTimelineEvents">;
-export type GetTimelineEventsEntities = Pick<Entities, "namespaces" | "repositories" | "mergeRequests" | "timelineEvents">;
+export type GetTimelineEventsEntities = Pick<Entities, "namespaces" | "repositories" | "mergeRequests" | "timelineEvents" | "members" | "repositoriesToMembers">;
 
 export type GetTimelineEventsFunction = ExtractFunction<GetTimelineEventsInputs, GetTimelineEventsOutput, GetTimelineEventsSourceControl, GetTimelineEventsEntities>
 
@@ -37,6 +38,42 @@ export const getTimelineEvents: GetTimelineEventsFunction = async (
 
   const { timelineEvents } = await integrations.sourceControl.fetchTimelineEvents(repository, namespace, mergeRequest);
 
+  const nonCommitEvents = timelineEvents.filter(ev => ev.type !== "committed");
+
+  const uniqueTimelineActors = [...nonCommitEvents.reduce((externalIdToActor, event) =>
+    event.actorId ? externalIdToActor.set(event.actorId, { // actorId is optional due to commit events
+      externalId: event.actorId,
+      username: event.actorName,
+      forgeType: repository.forgeType,
+      extractedSource: 'timeline',
+    }) : externalIdToActor, new Map<number, NewMember>()).values()];
+
+
+  const insertedUniqueTimelineActors = uniqueTimelineActors.length === 0 ? [] : await db.transaction(async (tx) => {
+    return Promise.all(uniqueTimelineActors.map(actor =>
+      tx.insert(entities.members).values(actor)
+        .onConflictDoUpdate({
+          target: [
+            entities.members.externalId,
+            entities.members.forgeType
+          ],
+          set: {
+            username: actor.username,
+            _updatedAt: sql`(strftime('%s', 'now'))`,
+          },
+        })
+        .returning()
+        .get()
+    ));
+  });
+
+  if (insertedUniqueTimelineActors.length > 0) {
+    await db.insert(entities.repositoriesToMembers)
+      .values(insertedUniqueTimelineActors.map(member => ({ memberId: member.id, repositoryId })))
+      .onConflictDoNothing()
+      .run();
+  }
+
   const insertedTimelineEvents = await db.transaction(async (tx) => {
     return Promise.all(timelineEvents.map(event =>
       tx.insert(entities.timelineEvents).values(event)
@@ -54,5 +91,6 @@ export const getTimelineEvents: GetTimelineEventsFunction = async (
 
   return {
     timelineEvents: insertedTimelineEvents,
+    members: insertedUniqueTimelineActors
   };
 }

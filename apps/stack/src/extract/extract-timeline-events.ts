@@ -3,14 +3,15 @@ import { createMessageHandler } from "@stack/config/create-message";
 import { z } from "zod";
 
 import { getTimelineEvents, type Context, type GetTimelineEventsEntities, type GetTimelineEventsSourceControl } from "@acme/extract-functions";
-import { mergeRequests, MergeRequestSchema, namespaces, NamespaceSchema, repositories, RepositorySchema, timelineEvents } from "@acme/extract-schema";
+import { members, mergeRequests, MergeRequestSchema, namespaces, NamespaceSchema, repositories, repositoriesToMembers, RepositorySchema, timelineEvents } from "@acme/extract-schema";
 import { GitHubSourceControl, GitlabSourceControl } from "@acme/source-control";
 
-import { extractMergeRequestsEvent } from "./events";
+import { extractMembersEvent, extractMergeRequestsEvent } from "./events";
 import { getClerkUserToken } from "./get-clerk-user-token";
 import { MessageKind, metadataSchema } from "./messages";
 import { getTenantDb, type OmitDb } from "@stack/config/get-tenant-db";
 import { Config } from "sst/node/config";
+import { filterNewExtractMembers } from "./filter-extract-members";
 
 export const timelineEventsSenderHandler = createMessageHandler({
   queueId: 'ExtractQueue',
@@ -29,14 +30,30 @@ export const timelineEventsSenderHandler = createMessageHandler({
 
     context.integrations.sourceControl = await initSourceControl(message.metadata.userId, message.metadata.sourceControl);
 
+    const { userId, sourceControl } = message.metadata;
     const { mergeRequestId, namespaceId, repositoryId } = message.content;
 
-    await getTimelineEvents({
+    const { members } = await getTimelineEvents({
         mergeRequestId,
         namespaceId,
         repositoryId,
       }, { ...context, db: getTenantDb(message.metadata.tenantId) }
     );
+
+    const memberIds = filterNewExtractMembers(members).map(member => member.id);
+    if (memberIds.length === 0) return;
+
+    await extractMembersEvent.publish({ memberIds }, {
+      crawlId: message.metadata.crawlId,
+      version: 1,
+      caller: 'extract-timeline-events',
+      sourceControl,
+      userId,
+      timestamp: new Date().getTime(),
+      from: message.metadata.from,
+      to: message.metadata.to,
+      tenantId: message.metadata.tenantId,
+    });
   }
 });
 
@@ -51,6 +68,8 @@ const context: OmitDb<Context<
     repositories,
     mergeRequests,
     timelineEvents,
+    members,
+    repositoriesToMembers
   },
   integrations: {
     sourceControl: null,
