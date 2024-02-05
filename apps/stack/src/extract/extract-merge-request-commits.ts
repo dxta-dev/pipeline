@@ -58,7 +58,7 @@ const { sender } = mrcsh;
 
 const initSourceControl = async (userId: string, sourceControl: 'github' | 'gitlab') => {
   const accessToken = await getClerkUserToken(userId, `oauth_${sourceControl}`);
-  if (sourceControl === 'github') return new GitHubSourceControl(accessToken);
+  if (sourceControl === 'github') return new GitHubSourceControl({ auth: accessToken });
   if (sourceControl === 'gitlab') return new GitlabSourceControl(accessToken);
   return null;
 }

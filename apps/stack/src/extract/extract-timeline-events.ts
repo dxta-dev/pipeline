@@ -10,6 +10,7 @@ import { extractMergeRequestsEvent } from "./events";
 import { getClerkUserToken } from "./get-clerk-user-token";
 import { MessageKind, metadataSchema } from "./messages";
 import { getTenantDb, type OmitDb } from "@stack/config/get-tenant-db";
+import { Config } from "sst/node/config";
 
 export const timelineEventsSenderHandler = createMessageHandler({
   queueId: 'ExtractQueue',
@@ -58,7 +59,7 @@ const context: OmitDb<Context<
 
 const initSourceControl = async (userId: string, sourceControl: "github" | "gitlab") => {
   const accessToken = await getClerkUserToken(userId, `oauth_${sourceControl}`);
-  if (sourceControl === "github") return new GitHubSourceControl(accessToken);
+  if (sourceControl === 'github') return new GitHubSourceControl({ auth: accessToken, fetchTimelineEventsPerPage: Number(Config.FETCH_TIMELINE_EVENTS_PER_PAGE) });
   if (sourceControl === "gitlab") return new GitlabSourceControl(accessToken);
   return null;
 };
