@@ -42,7 +42,8 @@ const extractRepository = async (input: Input, userId: string) => {
   if (sourceControl === "gitlab") {
     context.integrations.sourceControl = new GitlabSourceControl(sourceControlAccessToken);
   } else if (sourceControl === "github") {
-    if (sourceControl === 'github') return new GitHubSourceControl({ auth: sourceControlAccessToken });
+    if (sourceControl === 'github') 
+    context.integrations.sourceControl = new GitHubSourceControl({ auth: sourceControlAccessToken });
   }
 
   const { repository, namespace } = await getRepository({ externalRepositoryId: repositoryId, repositoryName, namespaceName }, { ...context, db });

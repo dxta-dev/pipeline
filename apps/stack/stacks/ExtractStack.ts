@@ -95,7 +95,8 @@ export function ExtractStack({ stack }: StackContext) {
         REDIS_URL,
         REDIS_TOKEN,
         REDIS_USER_TOKEN_TTL,
-        PER_PAGE
+        PER_PAGE,
+        FETCH_TIMELINE_EVENTS_PER_PAGE
       ],
       handler: "src/extract/queue.handler",
     },
