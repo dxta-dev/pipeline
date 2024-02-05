@@ -875,7 +875,7 @@ async function selectForgeUsers<K>(db: TransformDatabase, users: { key: K, userI
       )
     )
     .all();
-    
+
   return users.map(u => {
     let userIdentifier;
     if (isActor) {
@@ -943,7 +943,7 @@ async function selectCommittedDates(db: TransformDatabase, users: { key: { type:
       )
     )
     .all();
-    
+
   return users.map(u => {
     let committedDate: Date | null = null;
     if (u.type === 'committed') {
@@ -956,6 +956,78 @@ async function selectCommittedDates(db: TransformDatabase, users: { key: { type:
   });
 }
 
+
+type MetricsEvents = {
+  opened: transform.NewMergeRequestEvent,
+  startedCoding: transform.NewMergeRequestEvent,
+  startedPickup: transform.NewMergeRequestEvent,
+  startedReview: transform.NewMergeRequestEvent,
+}
+
+function createMetricEvents(
+  mrAuthorId: number,
+  openedAt: Date | null,
+  openedAtId: number,
+  startedCodingAt: Date | null,
+  startedCodingAtId: number,
+  startedPickupAt: Date | null,
+  startedPickupAtId: number,
+  startedReviewAt: Date | null,
+  startedReviewAtId: number,
+  repositoryId: number,
+  mergeRequestId: number,
+  nullDateId: number,
+  nullUserId: number,
+): MetricsEvents {
+
+  return {
+    opened: {
+      mergeRequest: mergeRequestId,
+      mergeRequestEventType: 'opened',
+      timestamp: openedAt || new Date(0),
+      occuredOn: openedAtId,
+      commitedAt: nullDateId,
+      actor: mrAuthorId,
+      subject: nullUserId,
+      repository: repositoryId,
+      reviewState: 'unknown',
+    },
+    startedCoding: {
+      mergeRequest: mergeRequestId,
+      mergeRequestEventType: 'started_coding',
+      timestamp: startedCodingAt || new Date(0),
+      occuredOn: startedCodingAtId,
+      commitedAt: nullDateId,
+      actor: nullUserId,
+      subject: nullUserId,
+      repository: repositoryId,
+      reviewState: 'unknown',
+    },
+    startedPickup: {
+      mergeRequest: mergeRequestId,
+      mergeRequestEventType: 'started_pickup',
+      timestamp: startedPickupAt || new Date(0),
+      occuredOn: startedPickupAtId,
+      commitedAt: nullDateId,
+      actor: nullUserId,
+      subject: nullUserId,
+      repository: repositoryId,
+      reviewState: 'unknown',
+    },
+    startedReview: {
+      mergeRequest: mergeRequestId,
+      mergeRequestEventType: 'started_review',
+      timestamp: startedReviewAt || new Date(0),
+      occuredOn: startedReviewAtId,
+      commitedAt: nullDateId,
+      actor: nullUserId,
+      subject: nullUserId,
+      repository: repositoryId,
+      reviewState: 'unknown',
+    }
+  }
+}
+
 async function upsertMergeRequestEvents(
   tx: SQLiteTransaction<"async", ResultSet, Record<string, unknown>, ExtractTablesWithRelations<Record<string, unknown>>>,
   db: TransformDatabase,
@@ -963,7 +1035,8 @@ async function upsertMergeRequestEvents(
   mergeRequestId: transform.MergeRequest['id'],
   timelineEvents: TimelineEventData[],
   nullDateId: number,
-  nullUserId: number
+  nullUserId: number,
+  metricEvents: MetricsEvents
 ) {
   const transformDates = await selectEventDates(
     db,
@@ -1008,7 +1081,7 @@ async function upsertMergeRequestEvents(
     nullDateId,
   );
 
-  const events = timelineEvents.map(timelineEvent => {
+  const events: transform.NewMergeRequestEvent[] = timelineEvents.map(timelineEvent => {
     const td = transformDates.find(td => td.key.type === timelineEvent.type && td.key.timestamp.getTime() === timelineEvent.timestamp.getTime());
     const tfua = transformForgeUserActors.find(tfu => tfu.key.type === timelineEvent.type && tfu.key.timestamp.getTime() === timelineEvent.timestamp.getTime());
     const tfus = transformForgeUserSubjects.find(tfu => tfu.key.type === timelineEvent.type && tfu.key.timestamp.getTime() === timelineEvent.timestamp.getTime());
@@ -1047,6 +1120,10 @@ async function upsertMergeRequestEvents(
     } satisfies transform.NewMergeRequestEvent;
   })
 
+  events.push(metricEvents.opened);
+  events.push(metricEvents.startedCoding);
+  events.push(metricEvents.startedPickup);
+  events.push(metricEvents.startedReview);
 
   await deleteMergeRequestEvents(tx, mergeRequestId);
   console.log(events.length);
@@ -1118,7 +1195,7 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
     title: extractData.mergeRequest.title,
     webUrl: extractData.mergeRequest.webUrl,
   })
-    .get();
+  .get();
 
   const metricData = {
     mrSize: mrSize || -1,
@@ -1133,6 +1210,24 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
     reviewed: timeline.approved,
   }
   const metricInfo = await selectMetricInfo(ctx.transformDatabase, transformMergeRequestId).get();
+
+
+  const metricEvents = createMetricEvents(
+    usersJunk.author,
+    extractData.mergeRequest.openedAt,
+    transformDates.openedAt.id,
+    timeline.startedCodingAt,
+    transformDates.startedCodingAt.id,
+    timeline.startedPickupAt,
+    transformDates.startedPickupAt.id,
+    timeline.startedReviewAt,
+    transformDates.startedReviewAt.id,
+    transformRepositoryId,
+    transformMergeRequestId,
+    nullDateId,
+    nullUserId,
+  );
+
 
   if (metricInfo) {
     await ctx.transformDatabase.transaction(
@@ -1167,7 +1262,8 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
           transformMergeRequestId,
           extractData.timelineEvents,
           nullDateId,
-          nullUserId
+          nullUserId,
+          metricEvents
         );
       }
     )
@@ -1201,7 +1297,8 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
           transformMergeRequestId,
           extractData.timelineEvents,
           nullDateId,
-          nullUserId
+          nullUserId,
+          metricEvents
         );
       }
     )
