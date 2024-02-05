@@ -25,6 +25,7 @@ export function ExtractStack({ stack }: StackContext) {
   const REDIS_TOKEN = new Config.Secret(stack, "REDIS_TOKEN");
   const REDIS_USER_TOKEN_TTL = new Config.Parameter(stack, "REDIS_USER_TOKEN_TTL", { value: (20 * 60).toString() });
   const PER_PAGE = new Config.Parameter(stack, "PER_PAGE", { value: (30).toString() });
+  const FETCH_TIMELINE_EVENTS_PER_PAGE = new Config.Parameter(stack, "FETCH_TIMELINE_EVENTS_PER_PAGE", { value: (1000).toString() });
 
   const bus = new EventBus(stack, "ExtractBus", {
     rules: {
@@ -154,7 +155,7 @@ export function ExtractStack({ stack }: StackContext) {
   bus.addTargets(stack, 'githubMergeRequests', {
     extractTimelineEvents: {
       function: {
-        bind: [bus, extractQueue],
+        bind: [bus, extractQueue, FETCH_TIMELINE_EVENTS_PER_PAGE],
         handler: "src/extract/extract-timeline-events.eventHandler",
       }
     }
