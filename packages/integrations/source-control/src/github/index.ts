@@ -52,13 +52,17 @@ const FILE_STATUS_FLAGS_MAPPING: Record<
   }
 }
 
+type GitHubSourceControlOptions = {
+  fetchTimelineEventsPerPage?: number;
+  auth?: string | object;
+}
 export class GitHubSourceControl implements SourceControl {
 
   private api: Octokit;
 
-  constructor(auth?: string | object) {
+  constructor(private options: GitHubSourceControlOptions) {
     this.api = new Octokit({
-      auth, // TODO: Need to look into https://github.com/octokit/authentication-strategies.js
+      auth: options.auth, // TODO: Need to look into https://github.com/octokit/authentication-strategies.js
     })
   }
 
@@ -349,6 +353,7 @@ export class GitHubSourceControl implements SourceControl {
       owner: namespace.name,
       repo: repository.name,
       issue_number: mergeRequest.canonId,
+      per_page: this.options.fetchTimelineEventsPerPage
     });
 
     const timelineEvents = response.data.filter(
