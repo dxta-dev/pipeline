@@ -13,11 +13,6 @@ const config = {
       "./packages/**/*/tsconfig.json",
     ],
   },
-  settings: {
-    next: {
-      rootDir: ["apps/app"]
-    },
-  },
 };
 
 module.exports = config;
