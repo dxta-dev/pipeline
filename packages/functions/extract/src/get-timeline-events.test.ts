@@ -4,7 +4,7 @@ import { createClient } from '@libsql/client';
 
 import type { Context } from "./config";
 import { type GetTimelineEventsEntities, type GetTimelineEventsSourceControl, getTimelineEvents } from "./get-timeline-events";
-import { namespaces, repositories, mergeRequests, timelineEvents } from "@acme/extract-schema";
+import { namespaces, repositories, mergeRequests, timelineEvents, members, repositoriesToMembers } from "@acme/extract-schema";
 import type { Repository, Namespace, MergeRequest, NewRepository, NewNamespace, NewMergeRequest } from "@acme/extract-schema";
 import fs from 'fs';
 
@@ -70,7 +70,9 @@ beforeAll(async () => {
       timelineEvents,
       namespaces,
       repositories,
-      mergeRequests
+      mergeRequests,
+      members,
+      repositoriesToMembers
     },
     integrations: {
       sourceControl: { fetchTimelineEvents }
