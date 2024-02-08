@@ -167,7 +167,7 @@ export function ExtractStack({ stack }: StackContext) {
       authorizer: "JwtAuthorizer",
       function: {
         bind: [
-          bus,
+          extractQueue,
           TENANT_DATABASE_AUTH_TOKEN,
           SUPER_DATABASE_AUTH_TOKEN,
           SUPER_DATABASE_URL,      
@@ -189,7 +189,7 @@ export function ExtractStack({ stack }: StackContext) {
       },
     },
     routes: {
-      "POST /start": "src/extract/extract-repository.handler",
+      "POST /start": "src/extract/extract-tenants.apiHandler",
     },
   });
   
