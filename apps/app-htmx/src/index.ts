@@ -7,10 +7,10 @@ import { clerkPlugin } from "@clerk/fastify";
 import { Home } from "./pages/page.home.js";
 import fastifyFormbody from "@fastify/formbody";
 import { SignIn } from "./pages/page.sign-in.js";
-import { ExtractRepository } from "./pages/repository/extract.js";
 import { RegisterRepository } from "./pages/repository/register.js";
 import { AppConfig } from "./app-config.js";
 import { StartTransform } from "./pages/start-transform.js";
+import { StartExtract } from "./pages/start-extract.js";
 
 AppConfig; // ensure loaded before starting server
 
@@ -30,7 +30,7 @@ await fastify.register(fastifyFormbody);
 
 fastify.get('/', Home);
 fastify.get('/sign-in',SignIn);
-fastify.post('/repository/extract', ExtractRepository); 
+fastify.post('/extract', StartExtract);
 fastify.post('/repository/register', RegisterRepository);
 fastify.post('/transform', StartTransform);
 

@@ -1,8 +1,8 @@
+import { clerkClient, getAuth } from "@clerk/fastify";
 import type { RouteHandlerMethod } from "fastify";
-import { clerkClient, getAuth } from "@clerk/fastify"
-import { z } from "zod";
-import { tenantListContext } from "src/context/tenant-list.context";
 import { AppConfig } from "src/app-config";
+import { tenantListContext } from "src/context/tenant-list.context";
+import { z } from "zod";
 
 const QuerySchema = z.object({
   tenant: z.string(),
@@ -20,7 +20,7 @@ const InputSchema = z.discriminatedUnion("qtype", [
   })
 ]);
 
-export const StartTransform: RouteHandlerMethod = async (request, reply) => {
+export const StartExtract: RouteHandlerMethod = async (request, reply) => {
   const auth = getAuth(request);
   if (!auth.userId) return reply.status(404).send();  
   
@@ -34,7 +34,6 @@ export const StartTransform: RouteHandlerMethod = async (request, reply) => {
 
   const apiToken = await clerkClient.sessions.getToken(auth.sessionId, "dashboard") as string;
 
-
   const parsedInput = InputSchema.safeParse(request.body);
   if (!parsedInput.success) return reply.status(400).send();
   const input = parsedInput.data;
@@ -47,9 +46,9 @@ export const StartTransform: RouteHandlerMethod = async (request, reply) => {
     to = input.to;
   }
 
-  const requestBody = JSON.stringify({ tenantId: tenant.id, from, to });
-  
-  const res = await fetch(AppConfig.apis.transformStart, {
+  const requestBody = JSON.stringify({ tenant: tenant.id, from, to });
+
+  const res = await fetch(AppConfig.apis.extractStart, {
     method: 'post',
     body: requestBody,
     headers: {

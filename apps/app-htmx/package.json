@@ -16,6 +16,8 @@
   "dependencies": {
     "@acme/source-control": "*",
     "@acme/super-schema": "*",
+    "@acme/extract-schema": "*",
+    "@acme/extract-functions": "*",
     "@clerk/fastify": "0.6.30",
     "@fastify/formbody": "7.4.0",
     "@fastify/view": "8.2.0",
