@@ -1126,10 +1126,7 @@ async function upsertMergeRequestEvents(
   events.push(metricEvents.startedReview);
 
   await deleteMergeRequestEvents(tx, mergeRequestId);
-  console.log(events.length);
-  if (events.length > 0) {
-    await insertMergeRequestEvents(tx, events).run();
-  }
+  await Promise.all(events.map(ev => insertMergeRequestEvents(tx, [ev]).run()))
 }
 
 
