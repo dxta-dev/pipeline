@@ -25,6 +25,12 @@ export type GetMergeRequestsEntities = Pick<Entities, "mergeRequests">;
 export type GetMergeRequestsFunction = ExtractFunction<GetMergeRequestsInput, GetMergeRequestsOutput, GetMergeRequestsSourceControl, GetMergeRequestsEntities>;
 
 
+export const wasMergeRequestUpdatedInTimePeriod = (mergeRequest: MergeRequest, timePeriod: TimePeriod) => {
+  const timestamp = mergeRequest.updatedAt || mergeRequest.createdAt; // TODO: why is updatedAt nullable ? Add note in table
+  
+  return timestamp.getTime() < timePeriod.to.getTime() && timestamp.getTime() >= timePeriod.from.getTime();
+}
+
 export const getMergeRequests: GetMergeRequestsFunction = async (
   { externalRepositoryId, namespaceName, repositoryName, repositoryId, page, perPage, timePeriod, totalPages },
   { integrations, db, entities },
@@ -53,8 +59,13 @@ export const getMergeRequests: GetMergeRequestsFunction = async (
     ))
   });
 
-  return {
+  if (timePeriod === undefined) return {
     mergeRequests: insertedMergeRequests,
+    paginationInfo: pagination
+  }
+
+  return {
+    mergeRequests: insertedMergeRequests.filter(mr => wasMergeRequestUpdatedInTimePeriod(mr, timePeriod)),
     paginationInfo: pagination,
   };
 };
