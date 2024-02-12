@@ -70,7 +70,7 @@ export function TransformStack({ stack }: StackContext) {
 
   if (ENV.CRON_DISABLED !== 'true') {
     new Cron(stack, "TransformCron", {
-      schedule: "cron(00 13 * * ? *)",
+      schedule: "cron(0/15 * * * ? *)",
       job: {
         function: {
           handler: "src/transform/transform-tenant.cronHandler",
