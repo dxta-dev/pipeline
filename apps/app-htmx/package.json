@@ -14,6 +14,8 @@
     "esbuild": "^0.19.9"
   },
   "dependencies": {
+    "@acme/extract-functions": "*",
+    "@acme/extract-schema": "*",
     "@acme/source-control": "*",
     "@acme/super-schema": "*",
     "@clerk/fastify": "0.6.30",

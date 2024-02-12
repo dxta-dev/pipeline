@@ -30,7 +30,6 @@ export const Home: RouteHandlerMethod = async (request, reply) => {
   const tenantQuery = query.tenant || tenantList.tenantList[0]!.name;
   const tenant = tenantList.tenantList.find(t => t.name === tenantQuery);
   if (!tenant) return reply.redirect(303, "/");
-  const targetTenantId = tenant.id;
 
   const db = drizzle(createClient({
     url: tenant.dbUrl,
@@ -46,8 +45,7 @@ export const Home: RouteHandlerMethod = async (request, reply) => {
     ...page,
     ...htmx,
     ...tenantList,
-    targetTenant: tenant,
-    targetTenantId,
+    tenant,
     repos,
     dates: {
       yesterday: new Date(new Date().setDate(new Date().getDate() - 1)).toISOString().slice(0, 10),

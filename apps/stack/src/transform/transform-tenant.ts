@@ -114,6 +114,13 @@ export const apiHandler = ApiHandler(async (ev) => {
 
   const { tenantId, from, to } = inputValidation.data;
 
+  const tenants = getTenants();
+  const tenant = tenants.find(tenant => tenant.id === tenantId);
+  if (!tenant) return {
+    statusCode: 404,
+    message: JSON.stringify({ error: "Tenant not found" })
+  }
+
   try {
     await sender.send({
       tenantId
@@ -134,6 +141,6 @@ export const apiHandler = ApiHandler(async (ev) => {
 
   return {
     statusCode: 200,
-    body: JSON.stringify({ message: `Transforming tenant ${tenantId} from ${from} to ${to}` }),
+    body: JSON.stringify({ message: `Transforming tenant "${tenant.name}" merge requests in period (${from.toISOString()}...${to.toISOString()})` }),
   };
 });

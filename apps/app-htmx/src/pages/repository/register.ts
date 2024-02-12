@@ -1,8 +1,10 @@
 import type { RouteHandlerMethod } from "fastify";
 import { getAuth } from "@clerk/fastify"
 import { z } from "zod";
-import { tryFetchRepository } from "src/functions/fetch-repository";
 import { tenantListContext } from "src/context/tenant-list.context";
+import { type GetRepositoryFunction, getRepository } from "@acme/extract-functions";
+import { namespaces, repositories } from "@acme/extract-schema";
+import { extractContext } from "src/functions/extract-context";
 
 const RegisterInput = z.object({
   target_tenant_id: z.coerce.number(),
@@ -11,6 +13,13 @@ const RegisterInput = z.object({
   repo: z.string().optional(),
   project_id: z.string().optional()
 })
+
+const getRepositoryEntitiesContext = {
+  entities: {
+    namespaces: namespaces,
+    repositories: repositories,
+  },
+} satisfies Pick<Parameters<GetRepositoryFunction>[1], 'entities'>;
 
 export const RegisterRepository: RouteHandlerMethod = async (request, reply) => {
   const auth = getAuth(request);
@@ -21,37 +30,49 @@ export const RegisterRepository: RouteHandlerMethod = async (request, reply) => 
   const safeInput = RegisterInput.safeParse(request.body);
   if (!safeInput.success) return reply.status(400).send();
 
+  const targetTenantId = safeInput.data.target_tenant_id;
+  const tenant = tenantList.find(tenant => tenant.id === targetTenantId);
+  if (!tenant) return reply.view("component.log.html", { error: `Invalid target_tenant_id: ${targetTenantId}` });
+  
+  const { userId } = auth;
+  const { forge } = safeInput.data;
+  
   const input = {
-    userId: auth.userId,
-    forge: safeInput.data.forge,
+    externalRepositoryId: Number(safeInput.data.project_id) || 0,
     namespaceName: safeInput.data.owner || "",
     repositoryName: safeInput.data.repo || "",
-    repositoryId: Number(safeInput.data.project_id) || 0
   }
 
-  const { repository, namespace } = await tryFetchRepository(input);
+  const getRepositoryContext = await extractContext({ tenant, userId, forge }, getRepositoryEntitiesContext);
 
-  if (!repository || !namespace) return reply.view("component.log.html",
-    safeInput.data.forge === "github" ? { error: `Repository ${input.namespaceName}/${input.repositoryName} not found` }
-      : { error: `Project ${input.repositoryId} not found` });
+  try {    
+    const { repository, namespace } = await getRepository(input, getRepositoryContext);
 
-  const targetTenantId = safeInput.data.target_tenant_id;
-  const tenant = tenantList.find(tenant=>tenant.id === targetTenantId);
-  if (!tenant) return reply.view("component.log.html", { error: `Invalid target_tenant_id: ${targetTenantId}` });
-
-  const repo = {
-    name: repository.name,
-    org: namespace.name,
-    forge: repository.forgeType,
-    projectId: repository.externalId
-  }
-  
-  return reply.view("component.repository.html", {
-    repo,
-    targetTenantId,
-    dates: {
-      yesterday: new Date(new Date().setDate(new Date().getDate() - 1)).toISOString().slice(0, 10),
-      today: new Date().toISOString().slice(0, 10)
+    if (repository._createdAt?.getTime() !== repository._updatedAt?.getTime()) {
+      return reply.view("component.log.html", { log: `Repository : ${namespace.name}/${repository.name} is already registered.` });
     }
-  });
+
+    const repo = {
+      key: `${forge}-${repository.externalId}`,
+      name: repository.name,
+      org: namespace.name,
+      forge,
+      projectId: repository.externalId,
+    }
+
+    return reply.view("component.repository.html", {
+      repo,
+      tenant,
+      dates: {
+        yesterday: new Date(new Date().setDate(new Date().getDate() - 1)).toISOString().slice(0, 10),
+        today: new Date().toISOString().slice(0, 10)
+      }
+    });
+  
+  } catch (error) {
+    console.log(error);
+    const errorMessage = error instanceof Error? error.message : error;
+    return reply.view("component.log.html", { error: errorMessage });
+  }
+
 }

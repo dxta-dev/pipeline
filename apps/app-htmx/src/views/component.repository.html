@@ -1,4 +1,4 @@
-<div style="display: inline-block; padding: 1em; margin: 0.5em; box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;">
+<div id="{{repo.key}}" style="display: inline-block; padding: 1em; margin: 0.5em; box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;">
   <div style="display: flex; align-items: center;">
     {% if repo.forge == "gitlab" %}
     <img src="https://about.gitlab.com/nuxt-images/ico/favicon-32x32.png" width="32" height="32">
@@ -7,34 +7,4 @@
     {% endif %}
     <h4 style="margin-left: 0.5em;">{{repo.org}}/{{repo.name}}</h4>
   </div>
-  <form>
-    <input type="hidden" name="target_tenant_id" value="{{targetTenantId}}" />
-    <input type="hidden" name="forge" value="{{repo.forge}}" />
-    <input type="hidden" name="project_id" value="{{repo.projectId}}" />
-    <input type="hidden" name="repo" value="{{repo.name}}" />
-    <input type="hidden" name="owner" value="{{repo.org}}" />
-
-    <select name="qtype">
-      <option value="last">Last</option>
-      <option value="between">Between</option>
-    </select>
-    <select name="last">
-      <option value="14">2 weeks</option>
-      <option value="1">day</option>
-      <option value="7">week</option>
-      <option value="30">month</option>
-      <option value="90">3 months</option>
-      <option value="180">6 months</option>
-    </select>
-    </br>
-    </br>
-    <label for="from">From</label>
-    <input type="date" name="from" id="from" value="{{dates.yesterday}}"/></br>
-    <label for="to">To&nbsp;&nbsp;</label>
-    <input type="date" name="to" id="to" value="{{dates.today}}" />
-    </br>
-    </br>
-    <button hx-post="/repository/extract" hx-swap="none">Extract</button>
-    <hr/>
-  </form>
 </div>

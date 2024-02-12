@@ -1,32 +1,10 @@
 {% extends "layout.app.html" %}
 
 {% block content %}
-<h2>{{targetTenant.name}}</h2>
-<h3>Register Repository</h3>
-<form>
-  <select name="forge">
-    <option value="github">GitHub</option>
-    <option value="gitlab">Gitlab</option>
-  </select>
-  <input type="hidden" name="target_tenant_id" value="{{targetTenantId}}" />
-  <span for="github"><input type="text" name="owner" placeholder="OWNER" />/<input type="text" name="repo"
-      placeholder="REPO" /></span>
-  <span for="gitlab"><input type="text" name="project_id" placeholder="PROJECT ID" /></span>
-  <button hx-post="/repository/register" hx-target="#repos" hx-swap="beforeend">Submit</button>
-</form>
-<h3>Repositories</h3>
-<div id="repos">
-  {% for repo in repos %}
-  {% include "component.repository.html" %}
-  {% endfor %}
-</div>
-<h3>Transform whole tenant</h3>
+<h2>{{tenant.name}}</h2>
 <div style="display: inline-block; padding: 1em; margin: 0.5em; box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;">
-  <div style="display: flex; align-items: center;">
-    <h4 style="margin-left: 0.5em;">{{targetTenant.name}}</h4>
-  </div>
   <form>
-    <input type="hidden" name="target_tenant_id" value="{{targetTenantId}}" />
+
     <select name="qtype">
       <option value="last">Last</option>
       <option value="between">Between</option>
@@ -39,17 +17,38 @@
       <option value="90">3 months</option>
       <option value="180">6 months</option>
     </select>
-    </br>
-    </br>
-    <label for="from">From</label>
-    <input type="date" name="from" id="from" value="{{dates.yesterday}}"/></br>
-    <label for="to">To&nbsp;&nbsp;</label>
-    <input type="date" name="to" id="to" value="{{dates.today}}" />
-    </br>
-    </br>
-    <button hx-post="/transform" hx-swap="none">Transform</button>
-    <hr/>
-  </form>
+  </br>
+</br>
+<label for="from">From</label>
+<input type="date" name="from" id="from" value="{{dates.yesterday}}"/></br>
+<label for="to">To&nbsp;&nbsp;</label>
+<input type="date" name="to" id="to" value="{{dates.today}}" />
+</br>
+</br>
+<button hx-post="/extract?tenant={{tenant.name}}" hx-swap="none">Extract</button>
+<button hx-post="/transform?tenant={{tenant.name}}" hx-swap="none">Transform</button>
+</form>
+</div>
+
+<h3>Register Repository</h3>
+<div style="display: inline-block; padding: 1em; margin: 0.5em; box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;">
+<form>
+  <select name="forge">
+    <option value="github">GitHub</option>
+    <option value="gitlab">Gitlab</option>
+  </select>
+  <input type="hidden" name="target_tenant_id" value="{{tenant.id}}" />
+  <span for="github"><input type="text" name="owner" placeholder="OWNER" />/<input type="text" name="repo"
+      placeholder="REPO" /></span>
+  <span for="gitlab"><input type="text" name="project_id" placeholder="PROJECT ID" /></span>
+  <button hx-post="/repository/register" hx-target="#repos" hx-swap="beforeend">Submit</button>
+</form>
+</div>
+<h3>Repositories</h3>
+<div id="repos">
+  {% for repo in repos %}
+  {% include "component.repository.html" %}
+  {% endfor %}
 </div>
 <h3>Logs</h3>
 <div id="logs" style="background: whitesmoke; padding: 1em">

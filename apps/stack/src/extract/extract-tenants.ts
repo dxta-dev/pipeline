@@ -6,6 +6,7 @@ import { getTenantDb } from "@stack/config/get-tenant-db";
 import { namespaces, repositories } from "@acme/extract-schema";
 import { eq } from "drizzle-orm";
 import { repositorySenderHandler } from "./extract-repository";
+import { ApiHandler, useJsonBody } from "sst/node/api";
 
 export const tenantSenderHandler = createMessageHandler({
   queueId: 'ExtractQueue',
@@ -78,3 +79,67 @@ export const cronHandler = async ()=> {
    
 };
 
+const contextSchema = z.object({
+  authorizer: z.object({
+    jwt: z.object({
+      claims: z.object({
+        sub: z.string(),
+      }),
+    }),
+  }),
+});
+
+const inputSchema = z.object({
+  tenant: z.number(),
+  from: z.coerce.date(),
+  to: z.coerce.date()
+});
+
+export const apiHandler = ApiHandler(async (ev) => {
+  
+  const body = useJsonBody() as unknown;
+
+  const lambdaContextValidation = contextSchema.safeParse(ev.requestContext);
+
+  if (!lambdaContextValidation.success) {
+    console.log("Error: Authorization failed - ", lambdaContextValidation.error.issues); // TODO: compliance check, might be insufficient_scope or something
+    return {
+      statusCode: 401,
+      body: JSON.stringify({ message: "Unauthorized" }),
+    }
+  }
+
+  const inputValidation = inputSchema.safeParse(body);
+
+  if (!inputValidation.success) {
+    console.log("Error: Input validation failed - ", inputValidation.error.issues);
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ error: inputValidation.error.toString() }),
+    }
+  }
+
+  const { tenant: tenantId, from, to } = inputValidation.data;
+  const { sub } = lambdaContextValidation.data.authorizer.jwt.claims;
+
+  const tenants = getTenants();
+  const tenant = tenants.find(tenant => tenant.id === tenantId);
+  if (!tenant) return {
+    statusCode: 404,
+    message: JSON.stringify({ error: "Tenant not found" })
+  }
+
+  await sender.sendAll([{ tenantId }], {
+    version: -1,
+    caller: 'extract-tenant:apiHandler',
+    timestamp: Date.now(),
+    userId: sub,
+    from,
+    to,
+    tenantId: -1,
+  });
+  return {
+    statusCode: 200,
+    body: JSON.stringify({ message: `Extracting tenant ${tenant.name} repositories in period (${from.toISOString()}...${to.toISOString()})` })
+  };
+});
