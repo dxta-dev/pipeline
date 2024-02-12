@@ -156,7 +156,7 @@ export const eventHandler = EventHandler(
       { ...context, db },
     );
 
-    if (mergeRequests.length === 0 && (paginationInfo.totalPages - paginationInfo.totalPages) === 0) return;
+    if (mergeRequests.length === 0 && (paginationInfo.totalPages - paginationInfo.page) === 0) return;
 
     await insertEvent(
       {
