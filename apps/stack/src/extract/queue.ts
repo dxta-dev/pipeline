@@ -40,7 +40,7 @@ logMap.set(MessageKind.Tenant, ['content.tenantId']);
 
 logMap.set(MessageKind.Repository, ['content.forgeType', 'content.externalRepositoryId', 'content.repositoryName']);
 
-logMap.set(MessageKind.MergeRequest, ['content.repository.id', 'content.namespace.id', 'content.pagination', 'content.timePeriod']);
+logMap.set(MessageKind.MergeRequest, ['content.repository.id', 'content.namespace.id', 'content.pagination', 'metadata.from', 'metadata.to']);
 
 logMap.set(MessageKind.MergeRequestDiff, ['content.repositoryId', 'content.namespaceId', 'content.mergeRequestId']);
 
