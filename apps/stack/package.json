@@ -26,13 +26,13 @@
     "@acme/transform-functions": "*",
     "@acme/transform-schema": "*",
     "@aws-sdk/client-sqs": "^3.470.0",
-    "@clerk/clerk-sdk-node": "^4.12.5",
+    "@clerk/clerk-sdk-node": "^4.13.9",
     "@tsconfig/node16": "^16.1.1",
     "@upstash/redis": "^1.25.1",
     "aws-cdk-lib": "2.84.0",
     "aws-lambda": "^1.0.7",
     "constructs": "10.1.156",
-    "nanoid": "^4.0.2",
+    "nanoid": "^5.0.5",
     "sst": "2.20.1"
   },
   "devDependencies": {
