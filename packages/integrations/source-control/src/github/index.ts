@@ -6,6 +6,7 @@ import type { NewRepository, NewNamespace, NewMergeRequest, NewMember, NewMergeR
 import type { Pagination, TimePeriod } from '../source-control';
 import type { components } from '@octokit/openapi-types';
 import { TimelineEventTypes } from '../../../../../packages/schemas/extract/src/timeline-events';
+import { RequestError } from '@octokit/request-error';
 
 const FILE_STATUS_FLAGS_MAPPING: Record<
   "added"
@@ -137,13 +138,30 @@ export class GitHubSourceControl implements SourceControl {
   async fetchMembers(externalRepositoryId: number, namespaceName: string, repositoryName: string, perPage: number, page?: number): Promise<{ members: NewMember[], pagination: Pagination }> {
     page = page || 1;
 
-    const result = await this.api.repos.listCollaborators({
-      owner: namespaceName,
-      repo: repositoryName,
-      page,
-      per_page: perPage,
-      affiliation: 'all',
-    });
+    let result: Awaited<ReturnType<Octokit['repos']['listCollaborators']>>;
+    try {
+      result = await this.api.repos.listCollaborators({
+        owner: namespaceName,
+        repo: repositoryName,
+        page,
+        per_page: perPage,
+        affiliation: 'all',
+      });
+    } catch (error) {
+      if (error instanceof RequestError && error.message === "Must have push access to view repository collaborators."){
+        console.log("SUPPRESSED: Must have push access to view repository collaborators.")
+        return {
+          members: [],
+          pagination: {
+            page: 1,
+            perPage: perPage,
+            totalPages: 1,
+          }
+        }  
+      }
+
+      throw error;
+    }
 
     const linkHeader = parseLinkHeader(result.headers.link) || { next: { per_page: perPage } };
 
