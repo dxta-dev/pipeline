@@ -29,7 +29,7 @@
     "drizzle-zod": "0.5.1",
     "eslint": "8.55.0",
     "prettier": "2.8.8",
-    "turbo": "1.10.15",
+    "turbo": "1.12.3",
     "typescript": "5.3.3",
     "zod": "3.22.4"
   },
