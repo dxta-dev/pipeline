@@ -33,6 +33,11 @@ export const getNamespaceMembers: GetNamespaceMembersFunction = async (
 
   const { members, pagination } = await integrations.sourceControl.fetchNamespaceMembers(externalNamespaceId, namespaceName, perPage, page);
 
+  if (members.length === 0 && pagination.totalPages === 1) return {
+    members: [],
+    paginationInfo: pagination,
+  }
+
   // TODO: Deki is not a wizard
   const insertedMembers = await db.transaction(async (tx) => {
     return Promise.all(members.map(member =>
