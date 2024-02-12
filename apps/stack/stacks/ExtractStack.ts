@@ -195,7 +195,7 @@ export function ExtractStack({ stack }: StackContext) {
   
   if (ENV.CRON_DISABLED !== 'true') {
     new Cron(stack, "ExtractCron", { 
-      schedule: "cron(00 10 * * ? *)",
+      schedule: "cron(8/15 * * * ? *)",
       job: {
         function: {
           handler: "src/extract/extract-tenants.cronHandler",

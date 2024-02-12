@@ -7,6 +7,7 @@ import { namespaces, repositories } from "@acme/extract-schema";
 import { eq } from "drizzle-orm";
 import { repositorySenderHandler } from "./extract-repository";
 import { ApiHandler, useJsonBody } from "sst/node/api";
+import { timePeriodOf } from "@stack/config/time-period";
 
 export const tenantSenderHandler = createMessageHandler({
   queueId: 'ExtractQueue',
@@ -62,18 +63,20 @@ export const cronHandler = async ()=> {
   const tenants = getTenants();
   const tenantIds = tenants.map(tenant => ({ tenantId: tenant.id }));
 
-  const utcTodayAt10AM = new Date();
-  utcTodayAt10AM.setUTCHours(10, 0, 0, 0);
-  const utcYesterdayAt10AM = new Date(utcTodayAt10AM);
-  utcYesterdayAt10AM.setHours(utcTodayAt10AM.getUTCHours() - 24);
+  const PERIOD_DURATION = 15 * 60 * 1000; // 15 minutes
+  const PERIOD_START_MARGIN = 5 * 60 * 1000; // 5 minutes
+  const PERIOD_LATENCY = 8 * 60 * 1000; // extract delay
+  const { from, to } = timePeriodOf(Date.now(), PERIOD_DURATION, PERIOD_START_MARGIN, -PERIOD_LATENCY);
 
+  console.log(`CRON-EXTRACT:`, { from, to, now: new Date() })
+  
   await sender.sendAll(tenantIds, {
     version: 1,
     caller: 'extract-tenant:cronHandler',
     timestamp: Date.now(),
     userId: CRON_USER_ID,
-    from: utcYesterdayAt10AM,
-    to: utcTodayAt10AM,
+    from,
+    to,
     tenantId: -1, // -1 means no db access ?
   });
    
