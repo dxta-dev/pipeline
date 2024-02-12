@@ -64,6 +64,8 @@ export const mergeRequestSenderHandler = createMessageHandler({
       { ...context, db: getTenantDb(message.metadata.tenantId) },
     );
 
+    if (mergeRequests.length === 0) return;
+
     await extractMergeRequestsEvent.publish(
       {
         mergeRequestIds: mergeRequests.map((mr) => mr.id),
@@ -154,6 +156,8 @@ export const eventHandler = EventHandler(
       { ...context, db },
     );
 
+    if (mergeRequests.length === 0 && (paginationInfo.totalPages - paginationInfo.totalPages) === 0) return;
+
     await insertEvent(
       {
         crawlId: ev.metadata.crawlId,
@@ -166,24 +170,26 @@ export const eventHandler = EventHandler(
       { db, entities: { events } },
     );
 
-    await extractMergeRequestsEvent.publish(
-      {
-        mergeRequestIds: mergeRequests.map((mr) => mr.id),
-        namespaceId: namespace.id,
-        repositoryId: repository.id,
-      },
-      {
-        crawlId: ev.metadata.crawlId,
-        version: 1,
-        caller: "extract-merge-requests",
-        sourceControl,
-        userId: ev.metadata.userId,
-        timestamp: new Date().getTime(),
-        from: ev.metadata.from,
-        to: ev.metadata.to,
-        tenantId: ev.metadata.tenantId,
-      },
-    );
+    if (mergeRequests.length !== 0) {
+      await extractMergeRequestsEvent.publish(
+        {
+          mergeRequestIds: mergeRequests.map((mr) => mr.id),
+          namespaceId: namespace.id,
+          repositoryId: repository.id,
+        },
+        {
+          crawlId: ev.metadata.crawlId,
+          version: 1,
+          caller: "extract-merge-requests",
+          sourceControl,
+          userId: ev.metadata.userId,
+          timestamp: new Date().getTime(),
+          from: ev.metadata.from,
+          to: ev.metadata.to,
+          tenantId: ev.metadata.tenantId,
+        },
+      );
+    }
 
     const arrayOfExtractMergeRequests = [];
     for (let i = paginationInfo.page + 1; i <= paginationInfo.totalPages; i++) {
