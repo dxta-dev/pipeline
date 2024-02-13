@@ -885,16 +885,25 @@ function createMetricEvents(
 function getTimelineEventSubjectId(ev:TimelineEventData) {
   switch (ev.type) {
     case 'assigned':
+      return (ev.data as extract.AssignedEvent).assigneeId;
     case 'closed':
+      return null;
     case 'commented':
+      return null;
     case 'convert_to_draft':
+      return null;
     case 'merged':
+      return null;
     case 'ready_for_review':
+      return null;
     case 'review_request_removed':
+      return (ev.data as extract.ReviewRequestRemovedEvent).requestedReviewerId || null
     case 'review_requested':
+      return (ev.data as extract.ReviewRequestedEvent).requestedReviewerId || null
     case 'reviewed':
+      return null;
     case 'unassigned':
-      return ev.actorId;
+      return (ev.data as extract.UnassignedEvent).assigneeId;
     case 'committed':
       return null;
     default:
