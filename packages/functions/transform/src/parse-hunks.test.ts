@@ -47,9 +47,9 @@ const multipleHunks = `@@ -1,10 +1,10 @@
 
 const deletionMultipleHunks = `@@ -3,7 +3,6 @@ import { z } from "zod";
 
- import { MergeRequestSchema } from "@acme/extract-schema/src/merge-requests";
+ import { MergeRequestSchema } from "@dxta/extract-schema/src/merge-requests";
  import { createEvent } from "./create-event";
--import { NamespaceSchema, RepositorySchema } from "@acme/extract-schema";
+-import { NamespaceSchema, RepositorySchema } from "@dxta/extract-schema";
 
  const extractRepositoryEventSchema = z.object({
    repositoryId: z.number(),
@@ -418,7 +418,7 @@ describe('parse-hunks:', () => {
       expect(result).toEqual(
         [
           {
-            content: "@@ -3,7 +3,6 @@ import { z } from \"zod\";\n\n import { MergeRequestSchema } from \"@acme/extract-schema/src/merge-requests\";\n import { createEvent } from \"./create-event\";\n-import { NamespaceSchema, RepositorySchema } from \"@acme/extract-schema\";\n\n const extractRepositoryEventSchema = z.object({\n   repositoryId: z.number(),",
+            content: "@@ -3,7 +3,6 @@ import { z } from \"zod\";\n\n import { MergeRequestSchema } from \"@dxta/extract-schema/src/merge-requests\";\n import { createEvent } from \"./create-event\";\n-import { NamespaceSchema, RepositorySchema } from \"@dxta/extract-schema\";\n\n const extractRepositoryEventSchema = z.object({\n   repositoryId: z.number(),",
             oldStart: 3,
             newStart: 3,
             oldLines: 7,
@@ -438,7 +438,7 @@ describe('parse-hunks:', () => {
                 newLineNumber: 3,
               },
               {
-                content: "import { MergeRequestSchema } from \"@acme/extract-schema/src/merge-requests\";",
+                content: "import { MergeRequestSchema } from \"@dxta/extract-schema/src/merge-requests\";",
                 type: "normal",
                 oldLineNumber: 4,
                 newLineNumber: 4
@@ -450,7 +450,7 @@ describe('parse-hunks:', () => {
                 newLineNumber: 5
               },
               {
-                content: "import { NamespaceSchema, RepositorySchema } from \"@acme/extract-schema\";",
+                content: "import { NamespaceSchema, RepositorySchema } from \"@dxta/extract-schema\";",
                 type: "delete",
                 lineNumber: 6
               },

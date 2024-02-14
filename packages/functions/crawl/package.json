@@ -1,5 +1,5 @@
 {
-  "name": "@acme/crawl-functions",
+  "name": "@dxta/crawl-functions",
   "version": "1.0.0",
   "description": "",
   "main": "src/index.ts",
@@ -11,7 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@acme/crawl-schema": "^1.0.0"
+    "@dxta/crawl-schema": "^1.0.0"
   },
   "devDependencies": {
     "@jest/globals": "^29.7.0",

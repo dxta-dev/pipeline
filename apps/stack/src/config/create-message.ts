@@ -5,9 +5,9 @@ import { nanoid } from "nanoid";
 import type { SQSEvent } from "aws-lambda";
 
 import { Queue } from 'sst/node/queue'
-import type { EventNamespaceType } from "@acme/crawl-schema";
+import type { EventNamespaceType } from "@dxta/crawl-schema";
 import { crawlComplete, crawlFailed } from "./crawl";
-import type { Tenant } from "@acme/super-schema";
+import type { Tenant } from "@dxta/super-schema";
 
 const sqs = new SQSClient();
 

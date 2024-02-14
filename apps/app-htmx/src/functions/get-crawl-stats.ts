@@ -1,4 +1,4 @@
-import type { Tenant } from "@acme/super-schema";
+import type { Tenant } from "@dxta/super-schema";
 import { type Client, createClient } from "@libsql/client";
 import { fromUnixTime } from "date-fns/fromUnixTime";
 import { formatDistanceToNow } from "date-fns/formatDistanceToNow";

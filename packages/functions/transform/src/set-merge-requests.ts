@@ -1,7 +1,7 @@
 import { eq, inArray } from "drizzle-orm";
 import type { ExtractEntities, TransformEntities, TransformFunction } from "./config";
-import type { NewMergeRequest as TransformedMergeRequest } from "@acme/transform-schema";
-import type { MergeRequest as ExtractMergeRequest } from "@acme/extract-schema";
+import type { NewMergeRequest as TransformedMergeRequest } from "@dxta/transform-schema";
+import type { MergeRequest as ExtractMergeRequest } from "@dxta/extract-schema";
 import { sql } from "drizzle-orm";
 
 export type SetMergeRequestsInput = {

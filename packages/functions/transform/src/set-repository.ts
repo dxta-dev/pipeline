@@ -1,6 +1,6 @@
 import { eq, sql } from "drizzle-orm";
 import type { ExtractEntities, TransformEntities, TransformFunction } from "./config";
-import type { NewRepository as TransformedRepository } from "@acme/transform-schema";
+import type { NewRepository as TransformedRepository } from "@dxta/transform-schema";
 
 export type SetRepositoryInput = {
   extractRepositoryId: number;

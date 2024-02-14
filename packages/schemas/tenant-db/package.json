@@ -1,5 +1,5 @@
 {
-  "name": "@acme/tenant-db-schema",
+  "name": "@dxta/tenant-db-schema",
   "version": "1.0.0",
   "description": "",
   "main": "src/index.ts",
@@ -13,9 +13,9 @@
     "with-env": "dotenv -e ../../../.env --"
   },
   "dependencies": {
-    "@acme/crawl-schema": "*",
-    "@acme/extract-schema": "*",
-    "@acme/transform-schema": "*"
+    "@dxta/crawl-schema": "*",
+    "@dxta/extract-schema": "*",
+    "@dxta/transform-schema": "*"
   },
   "devDependencies": {
     "dotenv-cli": "^7.3.0",

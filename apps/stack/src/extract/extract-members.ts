@@ -1,11 +1,11 @@
 import { EventHandler } from "@stack/config/create-event";
 import { extractMembersEvent, extractRepositoryEvent } from "./events";
-import { getMembers } from "@acme/extract-functions";
-import type { Context, GetMembersEntities, GetMembersSourceControl } from "@acme/extract-functions";
-import { members, namespaces, repositories, repositoriesToMembers, NamespaceSchema, RepositorySchema } from "@acme/extract-schema";
-import type { Namespace, Repository } from "@acme/extract-schema";
-import { GitHubSourceControl, GitlabSourceControl } from "@acme/source-control";
-import type { Pagination } from "@acme/source-control";
+import { getMembers } from "@dxta/extract-functions";
+import type { Context, GetMembersEntities, GetMembersSourceControl } from "@dxta/extract-functions";
+import { members, namespaces, repositories, repositoriesToMembers, NamespaceSchema, RepositorySchema } from "@dxta/extract-schema";
+import type { Namespace, Repository } from "@dxta/extract-schema";
+import { GitHubSourceControl, GitlabSourceControl } from "@dxta/source-control";
+import type { Pagination } from "@dxta/source-control";
 import { Config } from "sst/node/config";
 
 import { createMessageHandler } from "@stack/config/create-message";
@@ -13,8 +13,8 @@ import { eq } from "drizzle-orm";
 import { metadataSchema, paginationSchema, MessageKind } from "./messages";
 import { z } from 'zod';
 import { getClerkUserToken } from "./get-clerk-user-token";
-import { insertEvent } from "@acme/crawl-functions";
-import { events } from "@acme/crawl-schema";
+import { insertEvent } from "@dxta/crawl-functions";
+import { events } from "@dxta/crawl-schema";
 import { getTenantDb, type OmitDb } from "@stack/config/get-tenant-db";
 import { filterNewExtractMembers } from "./filter-extract-members";
 

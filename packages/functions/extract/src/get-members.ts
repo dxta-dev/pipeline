@@ -1,6 +1,6 @@
-import type { Member } from "@acme/extract-schema";
+import type { Member } from "@dxta/extract-schema";
 import type { ExtractFunction, Entities } from "./config";
-import type { Pagination, SourceControl } from "@acme/source-control";
+import type { Pagination, SourceControl } from "@dxta/source-control";
 import { sql } from "drizzle-orm";
 
 export type GetMembersInput = {

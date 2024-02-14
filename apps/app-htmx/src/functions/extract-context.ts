@@ -1,5 +1,5 @@
-import { GitHubSourceControl, GitlabSourceControl, type SourceControl } from "@acme/source-control"
-import type { Tenant } from "@acme/super-schema"
+import { GitHubSourceControl, GitlabSourceControl, type SourceControl } from "@dxta/source-control"
+import type { Tenant } from "@dxta/super-schema"
 import type { LibSQLDatabase } from "drizzle-orm/libsql"
 import { clerkClient } from "@clerk/fastify";
 import { tenantDb } from "./tenant-db";

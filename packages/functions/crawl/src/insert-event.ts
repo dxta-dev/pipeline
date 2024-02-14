@@ -1,5 +1,5 @@
-import type { EventDetailType, EventNamespaceType, CrawlInfo, CrawlFailed, CrawlComplete } from "@acme/crawl-schema";
-import { CrawlInfoSchema, CrawlFailedSchema, CrawlCompleteSchema } from "@acme/crawl-schema";
+import type { EventDetailType, EventNamespaceType, CrawlInfo, CrawlFailed, CrawlComplete } from "@dxta/crawl-schema";
+import { CrawlInfoSchema, CrawlFailedSchema, CrawlCompleteSchema } from "@dxta/crawl-schema";
 import type { CrawlFunction, Entities } from "./config";
 
 

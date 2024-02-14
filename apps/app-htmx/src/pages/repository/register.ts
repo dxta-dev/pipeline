@@ -2,8 +2,8 @@ import type { RouteHandlerMethod } from "fastify";
 import { getAuth } from "@clerk/fastify"
 import { z } from "zod";
 import { tenantListContext } from "src/context/tenant-list.context";
-import { type GetRepositoryFunction, getRepository } from "@acme/extract-functions";
-import { namespaces, repositories } from "@acme/extract-schema";
+import { type GetRepositoryFunction, getRepository } from "@dxta/extract-functions";
+import { namespaces, repositories } from "@dxta/extract-schema";
 import { extractContext } from "src/functions/extract-context";
 
 const RegisterInput = z.object({

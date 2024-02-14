@@ -1,8 +1,8 @@
 import { z } from "zod";
 
 import { createEvent } from "@stack/config/create-event";
-import { MergeRequestSchema } from "@acme/extract-schema/src/merge-requests";
-import { MemberSchema, NamespaceSchema, RepositorySchema } from "@acme/extract-schema";
+import { MergeRequestSchema } from "@dxta/extract-schema/src/merge-requests";
+import { MemberSchema, NamespaceSchema, RepositorySchema } from "@dxta/extract-schema";
 
 const extractRepositoryEventSchema = z.object({
   repositoryId: z.number(),

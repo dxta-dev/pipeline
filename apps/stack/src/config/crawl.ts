@@ -1,9 +1,9 @@
-import { insertEvent } from "@acme/crawl-functions";
-import { events } from "@acme/crawl-schema";
-import type { Context, InsertEventEntities } from "@acme/crawl-functions";
-import type { EventNamespaceType } from "@acme/crawl-schema/src/events";
+import { insertEvent } from "@dxta/crawl-functions";
+import { events } from "@dxta/crawl-schema";
+import type { Context, InsertEventEntities } from "@dxta/crawl-functions";
+import type { EventNamespaceType } from "@dxta/crawl-schema/src/events";
 import { getTenantDb, type OmitDb } from "./get-tenant-db";
-import type { Tenant } from "@acme/super-schema";
+import type { Tenant } from "@dxta/super-schema";
 
 const context: OmitDb<Context<InsertEventEntities>> = {
   entities: {

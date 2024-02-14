@@ -3,11 +3,11 @@ import { describe, expect, test } from '@jest/globals';
 import { drizzle } from "drizzle-orm/libsql";
 import { migrate } from "drizzle-orm/libsql/migrator";
 import { createClient } from '@libsql/client';
-import { members } from '@acme/extract-schema';
+import { members } from '@dxta/extract-schema';
 import type { Context } from './config';
 import type { GetMemberInfoSourceControl, GetMemberInfoEntities } from './get-member-info';
 import { getMemberInfo } from './get-member-info';
-import type { SourceControl } from '@acme/source-control';
+import type { SourceControl } from '@dxta/source-control';
 import { eq } from 'drizzle-orm';
 import fs from 'fs';
 

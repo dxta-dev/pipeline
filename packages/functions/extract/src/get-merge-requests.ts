@@ -1,6 +1,6 @@
-import type { MergeRequest } from "@acme/extract-schema";
+import type { MergeRequest } from "@dxta/extract-schema";
 import type { ExtractFunction, Entities } from "./config";
-import type { Pagination, SourceControl, TimePeriod } from "@acme/source-control";
+import type { Pagination, SourceControl, TimePeriod } from "@dxta/source-control";
 import { sql } from "drizzle-orm";
 
 export type GetMergeRequestsInput = {

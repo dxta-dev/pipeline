@@ -1,5 +1,5 @@
 {
-  "name": "@acme/extract-functions",
+  "name": "@dxta/extract-functions",
   "version": "1.0.0",
   "description": "",
   "main": "src/index.ts",
@@ -11,8 +11,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@acme/extract-schema": "^1.0.0",
-    "@acme/source-control": "^1.0.0"
+    "@dxta/extract-schema": "^1.0.0",
+    "@dxta/source-control": "^1.0.0"
   },
   "devDependencies": {
     "@jest/globals": "^29.7.0",

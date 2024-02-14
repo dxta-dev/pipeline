@@ -7,10 +7,10 @@ import { createClient } from '@libsql/client';
 import { describe, expect, test } from '@jest/globals';
 import { getMembers } from './get-members';
 
-import { type NewRepository, members, repositoriesToMembers, repositories, type NewNamespace, namespaces } from '@acme/extract-schema';
+import { type NewRepository, members, repositoriesToMembers, repositories, type NewNamespace, namespaces } from '@dxta/extract-schema';
 import type { Context } from './config';
 import type { GetMembersSourceControl, GetMembersEntities } from './get-members';
-import type { SourceControl } from '@acme/source-control';
+import type { SourceControl } from '@dxta/source-control';
 import fs from 'fs';
 
 let sqlite: ReturnType<typeof createClient>;

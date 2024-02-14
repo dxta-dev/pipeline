@@ -1,12 +1,12 @@
 import { extractRepositoryEvent } from "./events";
-import { getRepository } from "@acme/extract-functions";
-import type { Context, GetRepositorySourceControl, GetRepositoryEntities } from "@acme/extract-functions";
-import { GitlabSourceControl, GitHubSourceControl } from "@acme/source-control";
-import { repositories, namespaces, RepositorySchema, NamespaceSchema } from "@acme/extract-schema";
-import { instances } from "@acme/crawl-schema";
+import { getRepository } from "@dxta/extract-functions";
+import type { Context, GetRepositorySourceControl, GetRepositoryEntities } from "@dxta/extract-functions";
+import { GitlabSourceControl, GitHubSourceControl } from "@dxta/source-control";
+import { repositories, namespaces, RepositorySchema, NamespaceSchema } from "@dxta/extract-schema";
+import { instances } from "@dxta/crawl-schema";
 import { z } from "zod";
 import { getClerkUserToken } from "./get-clerk-user-token";
-import { setInstance } from "@acme/crawl-functions";
+import { setInstance } from "@dxta/crawl-functions";
 import { getTenantDb, type OmitDb } from "@stack/config/get-tenant-db";
 import { MessageKind, metadataSchema } from "./messages";
 import { createMessageHandler } from "@stack/config/create-message";

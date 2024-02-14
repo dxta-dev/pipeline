@@ -2,9 +2,9 @@ import { EventHandler } from "@stack/config/create-event";
 import { createMessageHandler } from "@stack/config/create-message";
 import { z } from "zod";
 
-import { getTimelineEvents, type Context, type GetTimelineEventsEntities, type GetTimelineEventsSourceControl } from "@acme/extract-functions";
-import { members, mergeRequests, MergeRequestSchema, namespaces, NamespaceSchema, repositories, repositoriesToMembers, RepositorySchema, timelineEvents } from "@acme/extract-schema";
-import { GitHubSourceControl, GitlabSourceControl } from "@acme/source-control";
+import { getTimelineEvents, type Context, type GetTimelineEventsEntities, type GetTimelineEventsSourceControl } from "@dxta/extract-functions";
+import { members, mergeRequests, MergeRequestSchema, namespaces, NamespaceSchema, repositories, repositoriesToMembers, RepositorySchema, timelineEvents } from "@dxta/extract-schema";
+import { GitHubSourceControl, GitlabSourceControl } from "@dxta/source-control";
 
 import { extractMembersEvent, extractMergeRequestsEvent } from "./events";
 import { getClerkUserToken } from "./get-clerk-user-token";

@@ -1,5 +1,5 @@
 {
-  "name": "@acme/transform-functions",
+  "name": "@dxta/transform-functions",
   "version": "1.0.0",
   "description": "",
   "main": "src/index.ts",
@@ -11,8 +11,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@acme/extract-schema": "*",
-    "@acme/transform-schema": "*"
+    "@dxta/extract-schema": "*",
+    "@dxta/transform-schema": "*"
   },
   "devDependencies": {
     "@jest/globals": "^29.7.0",

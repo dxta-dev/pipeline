@@ -6,8 +6,8 @@ import type { EventBridgeEvent } from "aws-lambda";
 import { EventBus } from "sst/node/event-bus";
 import { z } from "zod";
 import { crawlComplete, crawlFailed } from "./crawl";
-import type { EventNamespaceType } from "@acme/crawl-schema";
-import type { Tenant } from "@acme/super-schema";
+import type { EventNamespaceType } from "@dxta/crawl-schema";
+import type { Tenant } from "@dxta/super-schema";
 
 const client = new EventBridgeClient({});
 type InferShapeOutput<Shape extends z.ZodRawShape> = z.infer<

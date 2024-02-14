@@ -3,7 +3,7 @@ import { MessageKind, metadataSchema } from "./messages";
 import { z } from "zod";
 import { getTenants } from "@stack/config/tenants";
 import { getTenantDb } from "@stack/config/get-tenant-db";
-import { namespaces, repositories } from "@acme/extract-schema";
+import { namespaces, repositories } from "@dxta/extract-schema";
 import { eq } from "drizzle-orm";
 import { repositorySenderHandler } from "./extract-repository";
 import { ApiHandler, useJsonBody } from "sst/node/api";

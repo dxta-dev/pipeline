@@ -4,22 +4,22 @@ import { eq } from "drizzle-orm";
 import { Config } from "sst/node/config";
 import { z } from "zod";
 
-import { insertEvent } from "@acme/crawl-functions";
-import { events } from "@acme/crawl-schema";
+import { insertEvent } from "@dxta/crawl-functions";
+import { events } from "@dxta/crawl-schema";
 import {
   getMergeRequests,
   type Context,
   type GetMergeRequestsEntities,
   type GetMergeRequestsSourceControl,
-} from "@acme/extract-functions";
+} from "@dxta/extract-functions";
 import {
   mergeRequests,
   namespaces,
   NamespaceSchema,
   repositories,
   RepositorySchema,
-} from "@acme/extract-schema";
-import { GitHubSourceControl, GitlabSourceControl } from "@acme/source-control";
+} from "@dxta/extract-schema";
+import { GitHubSourceControl, GitlabSourceControl } from "@dxta/source-control";
 
 import { extractMergeRequestsEvent, extractRepositoryEvent } from "./events";
 import { getClerkUserToken } from "./get-clerk-user-token";

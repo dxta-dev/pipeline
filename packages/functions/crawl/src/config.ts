@@ -1,5 +1,5 @@
 import type { LibSQLDatabase } from 'drizzle-orm/libsql';
-import type { instances, events } from '@acme/crawl-schema';
+import type { instances, events } from '@dxta/crawl-schema';
 
 export type Entities = {
   instances: typeof instances;

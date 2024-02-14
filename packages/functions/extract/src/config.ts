@@ -1,6 +1,6 @@
 import type { LibSQLDatabase } from 'drizzle-orm/libsql';
-import type { repositories, namespaces, mergeRequests, members, repositoriesToMembers, mergeRequestDiffs, mergeRequestCommits, mergeRequestNotes, timelineEvents } from '@acme/extract-schema';
-import type { SourceControl } from '@acme/source-control';
+import type { repositories, namespaces, mergeRequests, members, repositoriesToMembers, mergeRequestDiffs, mergeRequestCommits, mergeRequestNotes, timelineEvents } from '@dxta/extract-schema';
+import type { SourceControl } from '@dxta/source-control';
 
 
 export type Database = LibSQLDatabase<Record<string, unknown>>;

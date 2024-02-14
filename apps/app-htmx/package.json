@@ -1,5 +1,5 @@
 {
-  "name": "@acme/app-htmx",
+  "name": "@dxta/app-htmx",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -14,11 +14,11 @@
     "esbuild": "^0.19.9"
   },
   "dependencies": {
-    "@acme/extract-functions": "*",
-    "@acme/extract-schema": "*",
-    "@acme/source-control": "*",
-    "@acme/super-schema": "*",
     "@clerk/fastify": "0.6.30",
+    "@dxta/extract-functions": "*",
+    "@dxta/extract-schema": "*",
+    "@dxta/source-control": "*",
+    "@dxta/super-schema": "*",
     "@fastify/formbody": "7.4.0",
     "@fastify/view": "8.2.0",
     "date-fns": "3.3.1",

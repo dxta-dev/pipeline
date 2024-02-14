@@ -1,6 +1,6 @@
-import type { Namespace, Repository } from "@acme/extract-schema";
+import type { Namespace, Repository } from "@dxta/extract-schema";
 import type { ExtractFunction, Entities } from "./config";
-import type { SourceControl } from "@acme/source-control";
+import type { SourceControl } from "@dxta/source-control";
 import { sql } from 'drizzle-orm';
 
 export type GetRepositoryInput = {

@@ -6,10 +6,10 @@ import { createClient } from '@libsql/client';
 import { describe, expect, test } from '@jest/globals';
 import { getMergeRequests } from './get-merge-requests';
 
-import { type NewMergeRequest, mergeRequests, type NewRepository, repositories, type NewNamespace, namespaces } from '@acme/extract-schema';
+import { type NewMergeRequest, mergeRequests, type NewRepository, repositories, type NewNamespace, namespaces } from '@dxta/extract-schema';
 import type { Context } from './config';
 import type { GetMergeRequestsSourceControl, GetMergeRequestsEntities } from './get-merge-requests';
-import type { SourceControl, TimePeriod } from '@acme/source-control';
+import type { SourceControl, TimePeriod } from '@dxta/source-control';
 import fs from 'fs';
 
 let sqlite: ReturnType<typeof createClient>;

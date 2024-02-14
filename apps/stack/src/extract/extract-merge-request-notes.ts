@@ -1,14 +1,14 @@
-import { mergeRequestNotes, mergeRequests, repositories, namespaces, MergeRequestSchema, NamespaceSchema, RepositorySchema, members, repositoriesToMembers } from "@acme/extract-schema";
+import { mergeRequestNotes, mergeRequests, repositories, namespaces, MergeRequestSchema, NamespaceSchema, RepositorySchema, members, repositoriesToMembers } from "@dxta/extract-schema";
 import { createMessageHandler } from "@stack/config/create-message";
 import { MessageKind, metadataSchema } from "./messages";
 import { z } from "zod";
-import { GitHubSourceControl, GitlabSourceControl } from "@acme/source-control";
-import { getMergeRequestNotes, type Context, type GetMergeRequestNotesEntities, type GetMergeRequestNotesSourceControl } from "@acme/extract-functions";
+import { GitHubSourceControl, GitlabSourceControl } from "@dxta/source-control";
+import { getMergeRequestNotes, type Context, type GetMergeRequestNotesEntities, type GetMergeRequestNotesSourceControl } from "@dxta/extract-functions";
 import { EventHandler } from "@stack/config/create-event";
 import { extractMembersEvent, extractMergeRequestsEvent } from "./events";
 import { getClerkUserToken } from "./get-clerk-user-token";
-import { insertEvent } from "@acme/crawl-functions";
-import { events } from "@acme/crawl-schema";
+import { insertEvent } from "@dxta/crawl-functions";
+import { events } from "@dxta/crawl-schema";
 import { getTenantDb, type OmitDb } from "@stack/config/get-tenant-db";
 import { filterNewExtractMembers } from "./filter-extract-members";
 
