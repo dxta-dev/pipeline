@@ -1,5 +1,5 @@
-import type { NewRepository, NewNamespace, NewMergeRequest, NewMember, NewMergeRequestDiff, NewMergeRequestCommit, NewMergeRequestNote, NewTimelineEvents } from "@acme/extract-schema";
-import type { Repository, Namespace, MergeRequest } from "@acme/extract-schema";
+import type { NewRepository, NewNamespace, NewMergeRequest, NewMember, NewMergeRequestDiff, NewMergeRequestCommit, NewMergeRequestNote, NewTimelineEvents } from "@dxta/extract-schema";
+import type { Repository, Namespace, MergeRequest } from "@dxta/extract-schema";
 
 export type Pagination = {
   perPage: number;

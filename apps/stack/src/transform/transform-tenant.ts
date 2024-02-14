@@ -1,5 +1,5 @@
 import { z } from "zod";
-import * as extract from "@acme/extract-schema";
+import * as extract from "@dxta/extract-schema";
 import { getTenants } from "@stack/config/tenants";
 import { ApiHandler, useJsonBody } from "sst/node/api";
 import { MessageKind, metadataSchema } from "./messages";

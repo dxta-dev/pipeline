@@ -1,6 +1,6 @@
-import type { Member, NewMember, TimelineEvents } from "@acme/extract-schema";
+import type { Member, NewMember, TimelineEvents } from "@dxta/extract-schema";
 import type { Entities, ExtractFunction } from "./config"
-import type { SourceControl } from "@acme/source-control";
+import type { SourceControl } from "@dxta/source-control";
 import { eq, sql } from "drizzle-orm";
 
 export type GetTimelineEventsInputs = {

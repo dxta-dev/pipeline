@@ -1,16 +1,16 @@
-import { GitHubSourceControl, GitlabSourceControl } from "@acme/source-control";
+import { GitHubSourceControl, GitlabSourceControl } from "@dxta/source-control";
 import { Config } from "sst/node/config";
-import type { Context, GetMergeRequestDiffsEntities, GetMergeRequestDiffsSourceControl } from "@acme/extract-functions";
-import { getMergeRequestsDiffs } from "@acme/extract-functions";
-import { mergeRequestDiffs, mergeRequests, repositories, namespaces, MergeRequestSchema, RepositorySchema, NamespaceSchema } from "@acme/extract-schema";
+import type { Context, GetMergeRequestDiffsEntities, GetMergeRequestDiffsSourceControl } from "@dxta/extract-functions";
+import { getMergeRequestsDiffs } from "@dxta/extract-functions";
+import { mergeRequestDiffs, mergeRequests, repositories, namespaces, MergeRequestSchema, RepositorySchema, NamespaceSchema } from "@dxta/extract-schema";
 import { EventHandler } from "@stack/config/create-event";
 import { extractMergeRequestsEvent } from "./events";
 import { createMessageHandler } from "@stack/config/create-message";
 import { MessageKind, metadataSchema } from "./messages";
 import { z } from "zod";
 import { getClerkUserToken } from "./get-clerk-user-token";
-import { insertEvent } from "@acme/crawl-functions";
-import { events } from "@acme/crawl-schema";
+import { insertEvent } from "@dxta/crawl-functions";
+import { events } from "@dxta/crawl-schema";
 import { getTenantDb, type OmitDb } from "@stack/config/get-tenant-db";
 
 export const mergeRequestDiffSenderHandler = createMessageHandler({

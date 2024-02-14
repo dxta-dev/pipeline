@@ -5,12 +5,12 @@ import { createClient } from '@libsql/client';
 import { describe, expect, test } from '@jest/globals';
 import { getNamespaceMembers } from './get-namespace-members';
 
-import { members, repositories, repositoriesToMembers } from '@acme/extract-schema';
+import { members, repositories, repositoriesToMembers } from '@dxta/extract-schema';
 import type { Context } from './config';
 import type { GetNamespaceMembersSourceControl, GetNamespaceMembersEntities } from './get-namespace-members';
-import type { SourceControl } from '@acme/source-control';
+import type { SourceControl } from '@dxta/source-control';
 import fs from 'fs';
-import { namespaces } from "@acme/extract-schema/src/namespaces";
+import { namespaces } from "@dxta/extract-schema/src/namespaces";
 
 let sqlite: ReturnType<typeof createClient>;
 let db: ReturnType<typeof drizzle>;
@@ -37,7 +37,7 @@ beforeAll(async () => {
   await db.insert(repositories).values({
     id: 1,
     namespaceId: 1,
-    name: 'mr-tool-monorepo',
+    name: 'pipeline',
     externalId: 1000,
     forgeType: 'github',
   }).run();

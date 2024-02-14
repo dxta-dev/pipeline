@@ -1,6 +1,6 @@
 import { z } from "zod";
-import type { TransformDatabase, ExtractDatabase } from "@acme/transform-functions";
-import { run } from "@acme/transform-functions";
+import type { TransformDatabase, ExtractDatabase } from "@dxta/transform-functions";
+import { run } from "@dxta/transform-functions";
 import { createMessageHandler } from "@stack/config/create-message";
 import { getTenantDb } from "@stack/config/get-tenant-db";
 import { MessageKind, metadataSchema } from "./messages";

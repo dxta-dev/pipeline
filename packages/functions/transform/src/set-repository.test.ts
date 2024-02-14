@@ -6,8 +6,8 @@ import { createClient } from "@libsql/client";
 import { eq } from "drizzle-orm";
 import fs from "fs";
 
-import * as extract from "@acme/extract-schema";
-import * as transform from "@acme/transform-schema";
+import * as extract from "@dxta/extract-schema";
+import * as transform from "@dxta/transform-schema";
 import type { Context } from "./config";
 import type { SetRepositoryExtractEntities, SetRepositoryTransformEntities } from "./set-repository";
 import { setRepository } from "./set-repository";

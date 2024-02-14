@@ -6,8 +6,8 @@ import { createClient } from '@libsql/client';
 import { describe, expect, test } from '@jest/globals';
 import { getMergeRequestsDiffs } from './get-merge-request-diffs';
 
-import { mergeRequestDiffs, mergeRequests, namespaces, repositories } from "@acme/extract-schema";
-import type { MergeRequest, Namespace, NewMergeRequest, NewNamespace, NewRepository, Repository } from "@acme/extract-schema";
+import { mergeRequestDiffs, mergeRequests, namespaces, repositories } from "@dxta/extract-schema";
+import type { MergeRequest, Namespace, NewMergeRequest, NewNamespace, NewRepository, Repository } from "@dxta/extract-schema";
 import type { Context } from './config';
 import type { GetMergeRequestDiffsSourceControl, GetMergeRequestDiffsEntities } from './get-merge-request-diffs';
 import fs from 'fs';

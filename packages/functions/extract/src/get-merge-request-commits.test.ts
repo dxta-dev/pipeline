@@ -4,8 +4,8 @@ import { createClient } from '@libsql/client';
 
 import type { Context } from "./config";
 import { type GetMergeRequestCommitsEntities, type GetMergeRequestCommitsSourceControl, getMergeRequestCommits } from "./get-merge-request-commits";
-import { mergeRequestCommits, namespaces, repositories, mergeRequests } from "@acme/extract-schema";
-import type { Repository, Namespace, MergeRequest, NewRepository, NewNamespace, NewMergeRequest } from "@acme/extract-schema";
+import { mergeRequestCommits, namespaces, repositories, mergeRequests } from "@dxta/extract-schema";
+import type { Repository, Namespace, MergeRequest, NewRepository, NewNamespace, NewMergeRequest } from "@dxta/extract-schema";
 import fs from 'fs';
 
 let sqlite: ReturnType<typeof createClient>;

@@ -1,4 +1,4 @@
-import { namespaces, repositories } from "@acme/extract-schema";
+import { namespaces, repositories } from "@dxta/extract-schema";
 import { eq } from "drizzle-orm";
 import type { LibSQLDatabase } from "drizzle-orm/libsql";
 

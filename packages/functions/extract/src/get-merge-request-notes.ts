@@ -1,6 +1,6 @@
-import type { SourceControl } from "@acme/source-control"
+import type { SourceControl } from "@dxta/source-control"
 import type { ExtractFunction, Entities } from "./config";
-import { type Member, type MergeRequestNote, type NewMember } from "@acme/extract-schema";
+import { type Member, type MergeRequestNote, type NewMember } from "@dxta/extract-schema";
 import { eq, sql } from "drizzle-orm";
 
 export type GetMergeRequestNotesInput = {

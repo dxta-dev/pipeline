@@ -1,15 +1,15 @@
-import { GitHubSourceControl, GitlabSourceControl } from "@acme/source-control";
-import type { Context, GetMemberInfoEntities, GetMemberInfoSourceControl } from "@acme/extract-functions";
-import { members } from "@acme/extract-schema";
+import { GitHubSourceControl, GitlabSourceControl } from "@dxta/source-control";
+import type { Context, GetMemberInfoEntities, GetMemberInfoSourceControl } from "@dxta/extract-functions";
+import { members } from "@dxta/extract-schema";
 import { EventHandler } from "@stack/config/create-event";
 import { extractMemberInfoEvent, extractMembersEvent } from "./events";
 import { createMessageHandler } from "@stack/config/create-message";
 import { MessageKind, metadataSchema } from "./messages";
 import { z } from "zod";
-import { getMemberInfo } from "@acme/extract-functions";
+import { getMemberInfo } from "@dxta/extract-functions";
 import { getClerkUserToken } from "./get-clerk-user-token";
-import { insertEvent } from "@acme/crawl-functions";
-import { events } from "@acme/crawl-schema";
+import { insertEvent } from "@dxta/crawl-functions";
+import { events } from "@dxta/crawl-schema";
 import { getTenantDb, type OmitDb } from "@stack/config/get-tenant-db";
 
 export const memberInfoSenderHandler = createMessageHandler({

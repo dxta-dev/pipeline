@@ -2,7 +2,7 @@ import { createClient } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
 import { Config } from "sst/node/config";
 import { getTenants } from "./tenants";
-import type { Tenant } from "@acme/super-schema";
+import type { Tenant } from "@dxta/super-schema";
 
 export type OmitDb<T> = Omit<T, 'db'>;
 

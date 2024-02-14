@@ -1,6 +1,6 @@
 import type { LibSQLDatabase } from 'drizzle-orm/libsql';
-import type * as extract from '@acme/extract-schema';
-import type * as transform from '@acme/transform-schema';
+import type * as extract from '@dxta/extract-schema';
+import type * as transform from '@dxta/transform-schema';
 
 export type Database = LibSQLDatabase<Record<string, unknown>>;
 

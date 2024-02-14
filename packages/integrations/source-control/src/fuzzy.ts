@@ -1,4 +1,4 @@
-import type { GitIdentities, Member } from "@acme/extract-schema";
+import type { GitIdentities, Member } from "@dxta/extract-schema";
 import Fuse from "fuse.js";
 
 const extractUserFromEmail = (email: string | null) => {

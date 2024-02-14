@@ -1,5 +1,5 @@
-import * as extract from '@acme/extract-schema';
-import * as transform from '@acme/transform-schema';
+import * as extract from '@dxta/extract-schema';
+import * as transform from '@dxta/transform-schema';
 import { sql, eq, or, and, type ExtractTablesWithRelations, inArray } from "drizzle-orm";
 import type { LibSQLDatabase } from 'drizzle-orm/libsql';
 import { isCodeGen } from './is-codegen';

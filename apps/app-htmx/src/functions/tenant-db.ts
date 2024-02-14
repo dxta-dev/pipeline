@@ -1,4 +1,4 @@
-import type { Tenant } from "@acme/super-schema";
+import type { Tenant } from "@dxta/super-schema";
 import { createClient } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
 import { AppConfig } from "src/app-config";

@@ -1,5 +1,5 @@
 {
-  "name": "@acme/crawl-schema",
+  "name": "@dxta/crawl-schema",
   "version": "1.0.0",
   "main": "src/index.ts",
   "type": "module",

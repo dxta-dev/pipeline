@@ -10,7 +10,7 @@ import { mergeRequestNoteSenderHandler } from "./extract-merge-request-notes";
 import { memberSenderHandler } from "./extract-members";
 import { namespaceMemberSenderHandler } from "./extract-namespace-members";
 import { timelineEventsSenderHandler } from "./extract-timeline-events";
-import type { EventNamespaceType } from "@acme/crawl-schema";
+import type { EventNamespaceType } from "@dxta/crawl-schema";
 
 const messageHandlers = new Map<string, unknown>();
 

@@ -1,6 +1,6 @@
 import { inArray } from "drizzle-orm";
 import type { ExtractEntities, TransformEntities, TransformFunction } from "./config";
-import type { NewForgeUser } from "@acme/transform-schema";
+import type { NewForgeUser } from "@dxta/transform-schema";
 import { sql } from "drizzle-orm";
 import { isMemberKnownBot } from "./known-bots";
 

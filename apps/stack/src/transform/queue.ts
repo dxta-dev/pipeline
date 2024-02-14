@@ -1,7 +1,7 @@
 import { QueueHandler } from "@stack/config/create-message";
 import { MessageKind } from "./messages";
 import { timelineSenderHandler } from "./transform-timeline";
-import type { EventNamespaceType } from "@acme/crawl-schema"; // shouldn't use this
+import type { EventNamespaceType } from "@dxta/crawl-schema"; // shouldn't use this
 import { tenantSenderHandler } from "./transform-tenant";
 
 const messageHandlers = new Map<string, unknown>();

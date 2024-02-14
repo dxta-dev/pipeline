@@ -6,8 +6,8 @@ import { describe, expect, test } from '@jest/globals';
 import { getRepository } from './get-repository';
 
 import { eq } from "drizzle-orm";
-import { namespaces, repositories } from '@acme/extract-schema';
-import type { NewNamespace, NewRepository } from '@acme/extract-schema';
+import { namespaces, repositories } from '@dxta/extract-schema';
+import type { NewNamespace, NewRepository } from '@dxta/extract-schema';
 import type { Context } from './config';
 import type { GetRepositorySourceControl, GetRepositoryEntities } from './get-repository';
 import fs from 'fs';
