@@ -8,6 +8,7 @@ import { eq } from "drizzle-orm";
 import { repositorySenderHandler } from "./extract-repository";
 import { ApiHandler, useJsonBody } from "sst/node/api";
 import { timePeriodOf } from "@stack/config/time-period";
+import { Config } from "sst/node/config";
 
 export const tenantSenderHandler = createMessageHandler({
   queueId: 'ExtractQueue',
@@ -47,19 +48,7 @@ export const tenantSenderHandler = createMessageHandler({
 });
 const { sender } = tenantSenderHandler;
 
-const CRON_ENV = z.object({
-  CRON_USER_ID: z.string(),
-});
 export const cronHandler = async ()=> {
-  const validEnv = CRON_ENV.safeParse(process.env);
-
-  if (!validEnv.success) {
-    console.error("Invalid environment in lambda 'extract-tenant.cronHandler':", ...validEnv.error.issues);
-    throw new Error("Invalid environment");
-  }
-
-  const { CRON_USER_ID } = validEnv.data;
-
   const tenants = getTenants();
   const tenantIds = tenants.map(tenant => ({ tenantId: tenant.id }));
 
@@ -72,7 +61,7 @@ export const cronHandler = async ()=> {
     version: 1,
     caller: 'extract-tenant:cronHandler',
     timestamp: Date.now(),
-    userId: CRON_USER_ID,
+    userId: Config.CRON_USER_ID,
     from,
     to,
     tenantId: -1, // -1 means no db access ?

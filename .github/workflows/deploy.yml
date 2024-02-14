@@ -1,0 +1,43 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  deploy:
+    name: Deploying
+    runs-on: ubuntu-latest
+    env:
+      CLERK_JWT_ISSUER: ${{ secrets.CLERK_JWT_ISSUER }}
+      CLERK_JWT_AUDIENCE: ${{ secrets.CLERK_JWT_AUDIENCE }}  
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Configure AWS credentials
+         uses: aws-actions/configure-aws-credentials@v2
+         with:
+           role-to-assume: ${{ secrets.IAMROLE_GITHUB }}
+           role-duration-seconds: 14390 #adjust as needed for your build time
+           aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Set Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+      - name: Install dependecies
+        run: npm ci
+
+      - name: Type checking
+        run: npm run type-check
+
+      - name: Run tests
+        run: npm run test
+  
+      - name: Deploy
+        run: npm run -w ./apps/stack deploy:stage prod

@@ -12,7 +12,6 @@ export function ExtractStack({ stack }: StackContext) {
   const ENVSchema = z.object({
     CLERK_JWT_ISSUER: z.string(),
     CLERK_JWT_AUDIENCE: z.string(),
-    CRON_USER_ID: z.string(),
     CRON_DISABLED: z.literal('true').optional(),
   });
   const ENV = ENVSchema.parse(process.env);
@@ -26,7 +25,8 @@ export function ExtractStack({ stack }: StackContext) {
   const REDIS_USER_TOKEN_TTL = new Config.Parameter(stack, "REDIS_USER_TOKEN_TTL", { value: (20 * 60).toString() });
   const PER_PAGE = new Config.Parameter(stack, "PER_PAGE", { value: (30).toString() });
   const FETCH_TIMELINE_EVENTS_PER_PAGE = new Config.Parameter(stack, "FETCH_TIMELINE_EVENTS_PER_PAGE", { value: (1000).toString() });
-
+  const CRON_USER_ID = new Config.Secret(stack, "CRON_USER_ID");
+  
   const bus = new EventBus(stack, "ExtractBus", {
     rules: {
       repository: {
@@ -199,9 +199,6 @@ export function ExtractStack({ stack }: StackContext) {
       job: {
         function: {
           handler: "src/extract/extract-tenants.cronHandler",
-          environment: {
-            CRON_USER_ID: ENV.CRON_USER_ID,
-          },
           bind: [
             extractQueue,
             SUPER_DATABASE_AUTH_TOKEN,
@@ -210,6 +207,7 @@ export function ExtractStack({ stack }: StackContext) {
             REDIS_URL,
             REDIS_TOKEN,
             REDIS_USER_TOKEN_TTL,  
+            CRON_USER_ID
           ],
         }
       }
@@ -224,6 +222,6 @@ export function ExtractStack({ stack }: StackContext) {
     ExtractBus: bus,
     TENANT_DATABASE_AUTH_TOKEN,
     SUPER_DATABASE_AUTH_TOKEN,
-    SUPER_DATABASE_URL,
+    SUPER_DATABASE_URL
   };
 }
