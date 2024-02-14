@@ -1,6 +1,6 @@
 import * as extract from '@acme/extract-schema';
 import * as transform from '@acme/transform-schema';
-import { sql, eq, or, and, type ExtractTablesWithRelations, inArray, type SQL } from "drizzle-orm";
+import { sql, eq, or, and, type ExtractTablesWithRelations, inArray } from "drizzle-orm";
 import type { LibSQLDatabase } from 'drizzle-orm/libsql';
 import { isCodeGen } from './is-codegen';
 import { parseHunks } from './parse-hunks';
@@ -10,6 +10,7 @@ import { isMemberKnownBot } from './known-bots';
 import { getDateInfo } from '../../../schemas/transform/src/seed/dimensions';
 
 type BrandedDatabase<T> = LibSQLDatabase<Record<string, never>> & { __brand: T }
+type DatabaseTransaction = SQLiteTransaction<"async", ResultSet, Record<string, unknown>, ExtractTablesWithRelations<Record<string, unknown>>>;
 
 export type TransformDatabase = BrandedDatabase<'transform'>;
 export type ExtractDatabase = BrandedDatabase<'extract'>;
@@ -91,7 +92,32 @@ function upsertMergeRequest(db: TransformDatabase, mergeRequest: transform.NewMe
     .returning();
 }
 
-function upsertForgeUser(db: TransformDatabase, forgeUser: transform.NewForgeUser) {
+type SelectUserData = {
+  externalId: extract.Member['externalId'];
+  forgeType: extract.Member['forgeType'];
+  name: extract.Member['name'];
+  username: extract.Member['username'];
+  email: extract.Member['email'];
+}
+function selectUsersAndCommitters(db: ExtractDatabase, ids: extract.Member['externalId'][], committers: string[]) {
+  return db.select({
+    externalId: extract.members.externalId,
+    forgeType: extract.members.forgeType,
+    name: extract.members.name,
+    username: extract.members.username,
+    email: extract.members.email
+  })
+    .from(extract.members)
+    .where(
+      or(
+        inArray(extract.members.externalId, ids),
+        committers.length > 0 ? inArray(extract.members.name, committers) : undefined,
+        committers.length > 0 ? inArray(extract.members.username, committers) : undefined,
+      )
+    );
+}
+
+function upsertForgeUser(db: DatabaseTransaction | TransformDatabase, forgeUser: transform.NewForgeUser) {
   return db.insert(transform.forgeUsers)
     .values(forgeUser)
     .onConflictDoUpdate({
@@ -104,6 +130,37 @@ function upsertForgeUser(db: TransformDatabase, forgeUser: transform.NewForgeUse
         _updatedAt: sql`(strftime('%s', 'now'))`,
       }
     })
+}
+
+async function transformUsersAndCommitters(
+  db: TransformDatabase, 
+  usersAndCommitters: SelectUserData[], 
+  mergeRequestUserIds: Set<extract.Member['externalId']>,
+  mergeRequestCommitters: Set<string>,
+  ) {
+  const newForgeUsers = usersAndCommitters.map(x=>({
+    externalId: x.externalId,
+    name: x.name || x.username,    
+    forgeType: x.forgeType,
+    bot: isMemberKnownBot(x.forgeType, x),
+  } satisfies transform.NewForgeUser))
+
+  const forgeUsers = await db.transaction(async tx => {    
+    return await Promise.all(newForgeUsers.map(x=>upsertForgeUser(tx, x).returning().get()));
+  });
+
+  const transformUserMap = new Map<extract.Member['externalId'], transform.ForgeUser['id']>();
+  const transformCommitterMap = new Map<string, transform.ForgeUser['id']>();
+
+  forgeUsers.forEach(fu=>{
+    if (mergeRequestUserIds.has(fu.externalId)) transformUserMap.set(fu.externalId, fu.id);
+    if (mergeRequestCommitters.has(fu.name)) transformCommitterMap.set(fu.name, fu.id);
+  });
+
+  return {
+    transformUserMap,
+    transformCommitterMap
+  }
 }
 
 function insertUserJunk(tx: SQLiteTransaction<"async", ResultSet, Record<string, unknown>, ExtractTablesWithRelations<Record<string, unknown>>>, users: transform.NewMergeRequestUsersJunk) {
@@ -241,35 +298,6 @@ function getDateIdOrNullDateId(dmy: DMY | null, datesData: {
     month: date.month,
     year: date.year,
     week: date.week,
-  };
-}
-
-function getUserIdOrNullUserId(userIdentifier: string | number | null, forgeUsersData: {
-  id: number;
-  name: string;
-  externalId: number;
-}[], nullUserId: number) {
-  if (userIdentifier === null) {
-    return {
-      id: nullUserId,
-    }
-  }
-  let user;
-  if (typeof userIdentifier === 'number') {
-    user = forgeUsersData.find(({ externalId }) => externalId === userIdentifier);
-  } else {
-    user = forgeUsersData.find(({ name }) => name === userIdentifier);
-  }
-  if (!user) {
-    return {
-      id: nullUserId,
-    };
-  }
-
-  return {
-    id: user.id,
-    name: user.name,
-    externalId: user.externalId,
   };
 }
 
@@ -497,6 +525,7 @@ function calculateDuration(start: Date | null, end: Date | null) {
 
 type MergeRequestData = {
   openedAt: extract.MergeRequest['createdAt'],
+  updatedAt: extract.MergeRequest['updatedAt'],
   mergedAt: extract.MergeRequest['mergedAt'],
   closedAt: extract.MergeRequest['closedAt'],
   externalId: extract.MergeRequest['externalId'],
@@ -782,181 +811,6 @@ function runTimeline(mergeRequestData: MergeRequestData, timelineEvents: Timelin
   }
 }
 
-
-async function selectEventDates<K>(db: TransformDatabase, dates: { key: K, dmy: DMY | null }[], nullDateId: number) {
-
-  const { dates: transformDates } = transform;
-
-  const dmyQuery = dates.map(d => getDMYQuery(d.dmy));
-
-  const datesData = await db.select({
-    id: transformDates.id,
-    year: transformDates.year,
-    month: transformDates.month,
-    day: transformDates.day,
-    week: transformDates.week,
-  }).from(transformDates)
-    .where(
-      or(
-        ...dmyQuery
-      )
-    )
-    .all();
-
-
-  return dates.map(d => ({ key: d.key, dateId: getDateIdOrNullDateId(d.dmy, datesData, nullDateId) }));
-}
-
-async function selectForgeUsers<K>(db: TransformDatabase, users: { key: K, userId: number | null, type: string, data: unknown }[], nullUserId: number, isActor: boolean) {
-  const { forgeUsers: transformForgeUsers } = transform;
-  const userQuery: (SQL<unknown> | undefined)[] = [];
-  const uniqueUserQuery = new Map();
-
-  if (isActor) {
-    users.forEach(u => {
-      if (u.type === 'committed') {
-        const committerName = (u.data as extract.CommittedEvent).committerName;
-        if (!uniqueUserQuery.has(committerName)) {
-          uniqueUserQuery.set(committerName, committerName);
-          userQuery.push(eq(transformForgeUsers.name, committerName));
-        }
-      } else if (u.userId !== null) {
-        if (!uniqueUserQuery.has(u.userId)) {
-          uniqueUserQuery.set(u.userId, u.userId);
-          userQuery.push(eq(transformForgeUsers.externalId, u.userId))
-        }
-      }
-    })
-  } else {
-    users.forEach(u => {
-      switch (u.type) {
-        case 'assigned':
-          const assigneeId = (u.data as extract.AssignedEvent).assigneeId;
-          if (!uniqueUserQuery.has(assigneeId)) {
-            uniqueUserQuery.set(assigneeId, assigneeId);
-            userQuery.push(eq(transformForgeUsers.externalId, assigneeId));
-          }
-          break;
-        case 'unassigned':
-          const unassigneeId = (u.data as extract.AssignedEvent).assigneeId;
-          if (!uniqueUserQuery.has(unassigneeId)) {
-            uniqueUserQuery.set(unassigneeId, unassigneeId);
-            userQuery.push(eq(transformForgeUsers.externalId, unassigneeId));
-          }
-          break;
-        case 'review_requested':
-          const requestedReviewerId = (u.data as extract.ReviewRequestedEvent).requestedReviewerId;
-          if (requestedReviewerId !== undefined && !uniqueUserQuery.has(requestedReviewerId)) {
-            uniqueUserQuery.set(requestedReviewerId, requestedReviewerId);
-            userQuery.push(eq(transformForgeUsers.externalId, requestedReviewerId));
-          }
-          break;
-        case 'review_request_removed':
-          const requestedReviewerRemovedId = (u.data as extract.ReviewRequestRemovedEvent).requestedReviewerId;
-          if (requestedReviewerRemovedId !== undefined && !uniqueUserQuery.has(requestedReviewerRemovedId)) {
-            uniqueUserQuery.set(requestedReviewerRemovedId, requestedReviewerRemovedId);
-            userQuery.push(eq(transformForgeUsers.externalId, requestedReviewerRemovedId));
-          }
-          break;
-        default:
-          break;
-      }
-    });
-  }
-
-  const forgeUsersData = await db.select({
-    id: transformForgeUsers.id,
-    externalId: transformForgeUsers.externalId,
-    name: transformForgeUsers.name,
-  }).from(transformForgeUsers)
-    .where(
-      or(
-        ...userQuery
-      )
-    )
-    .all();
-
-  return users.map(u => {
-    let userIdentifier;
-    if (isActor) {
-      if (u.type === 'committed') {
-        userIdentifier = (u.data as extract.CommittedEvent).committerName;
-      } else {
-        userIdentifier = u.userId;
-      }
-    } else {
-      switch (u.type) {
-        case 'assigned':
-          userIdentifier = (u.data as extract.AssignedEvent).assigneeId;
-          break;
-        case 'unassigned':
-          userIdentifier = (u.data as extract.UnassignedEvent).assigneeId;
-          break;
-        case 'review_requested':
-          const requestedReviewerId = (u.data as extract.ReviewRequestedEvent).requestedReviewerId;
-          userIdentifier = requestedReviewerId === undefined ? null : requestedReviewerId;
-          break;
-        case 'review_request_removed':
-          const unrequestedReviewerId = (u.data as extract.ReviewRequestRemovedEvent).requestedReviewerId
-          userIdentifier = unrequestedReviewerId === undefined ? null : unrequestedReviewerId;
-          break;
-        default:
-          userIdentifier = null;
-          break;
-      }
-    }
-    return {
-      key: u.key,
-      userId: getUserIdOrNullUserId(userIdentifier, forgeUsersData, nullUserId),
-    }
-  });
-}
-
-async function selectCommittedDates(db: TransformDatabase, users: { key: { type: string, timestamp: Date }, type: string, data: unknown }[], nullDateId: number) {
-  const { dates: transformDates } = transform;
-  const committedDates: DMY[] = [];
-  const uniqueDateQuery = new Map();
-
-  users.forEach(u => {
-    if (u.type === 'committed') {
-      const committedDate = new Date((u.data as extract.CommittedEvent).committedDate);
-      if (!uniqueDateQuery.has(committedDate)) {
-        uniqueDateQuery.set(committedDate, committedDate);
-        const committedDateDMY = getDMY(committedDate);
-        committedDates.push(committedDateDMY as DMY);
-      }
-    }
-  })
-
-  const dmyQuery = committedDates.map(d => getDMYQuery(d));
-
-  const datesData = await db.select({
-    id: transformDates.id,
-    year: transformDates.year,
-    month: transformDates.month,
-    day: transformDates.day,
-    week: transformDates.week,
-  }).from(transformDates)
-    .where(
-      or(
-        ...dmyQuery
-      )
-    )
-    .all();
-
-  return users.map(u => {
-    let committedDate: Date | null = null;
-    if (u.type === 'committed') {
-      committedDate = new Date((u.data as extract.CommittedEvent).committedDate);
-    }
-    return {
-      key: u.key,
-      committedDateId: getDateIdOrNullDateId(getDMY(committedDate), datesData, nullDateId)
-    }
-  });
-}
-
-
 type MetricsEvents = {
   opened: transform.NewMergeRequestEvent,
   startedCoding: transform.NewMergeRequestEvent,
@@ -1028,107 +882,218 @@ function createMetricEvents(
   }
 }
 
-async function upsertMergeRequestEvents(
-  tx: SQLiteTransaction<"async", ResultSet, Record<string, unknown>, ExtractTablesWithRelations<Record<string, unknown>>>,
-  db: TransformDatabase,
-  repositoryId: transform.Repository['id'],
-  mergeRequestId: transform.MergeRequest['id'],
-  timelineEvents: TimelineEventData[],
-  nullDateId: number,
-  nullUserId: number,
-  metricEvents: MetricsEvents
-) {
-  const transformDates = await selectEventDates(
-    db,
-    timelineEvents.map(t => ({
-      key: { type: t.type, timestamp: t.timestamp },
-      dmy: getDMY(t.timestamp)
-    })),
-    nullDateId
-  );
-
-  const transformForgeUserActors = await selectForgeUsers(
-    db,
-    timelineEvents.map(t => ({
-      key: { type: t.type, timestamp: t.timestamp },
-      userId: t.actorId,
-      type: t.type,
-      data: t.data
-    })),
-    nullUserId,
-    true
-  );
-
-  const transformForgeUserSubjects = await selectForgeUsers(
-    db,
-    timelineEvents.map(t => ({
-      key: { type: t.type, timestamp: t.timestamp },
-      type: t.type,
-      data: t.data,
-      userId: null
-    })),
-    nullUserId,
-    false
-  );
-
-  const transformCommittedDates = await selectCommittedDates(
-    db,
-    timelineEvents.map(t => ({
-      key: { type: t.type, timestamp: t.timestamp },
-      type: t.type,
-      data: t.data
-    })),
-    nullDateId,
-  );
-
-  const events: transform.NewMergeRequestEvent[] = timelineEvents.map(timelineEvent => {
-    const td = transformDates.find(td => td.key.type === timelineEvent.type && td.key.timestamp.getTime() === timelineEvent.timestamp.getTime());
-    const tfua = transformForgeUserActors.find(tfu => tfu.key.type === timelineEvent.type && tfu.key.timestamp.getTime() === timelineEvent.timestamp.getTime());
-    const tfus = transformForgeUserSubjects.find(tfu => tfu.key.type === timelineEvent.type && tfu.key.timestamp.getTime() === timelineEvent.timestamp.getTime());
-    const tcd = transformCommittedDates.find(tfu => tfu.key.type === timelineEvent.type && tfu.key.timestamp.getTime() === timelineEvent.timestamp.getTime());
-
-    let type: transform.MergeRequestEventType;
-
-    switch (timelineEvent.type) {
-      case 'assigned':
-      case 'unassigned':
-      case 'review_request_removed':
-      case 'review_requested':
-      case 'closed':
-      case 'convert_to_draft':
-      case 'commented':
-      case 'merged':
-      case 'ready_for_review':
-      case 'reviewed':
-      case 'committed':
-        type = timelineEvent.type;
-        break;
-      default:
-        type = 'unknown';
-        break;
-    }
-    return {
-      mergeRequest: mergeRequestId,
-      mergeRequestEventType: type,
-      timestamp: timelineEvent.timestamp,
-      occuredOn: td?.dateId.id ? td.dateId.id : nullDateId,
-      commitedAt: tcd?.committedDateId.id ? tcd.committedDateId.id : nullDateId,
-      actor: tfua?.userId.id ? tfua.userId.id : nullUserId,
-      subject: tfus?.userId.id ? tfus.userId.id : nullUserId,
-      repository: repositoryId,
-      reviewState: 'unknown',
-    } satisfies transform.NewMergeRequestEvent;
-  })
-
-  events.push(metricEvents.opened);
-  events.push(metricEvents.startedCoding);
-  events.push(metricEvents.startedPickup);
-  events.push(metricEvents.startedReview);
-
-  await deleteMergeRequestEvents(tx, mergeRequestId);
-  await Promise.all(events.map(ev => insertMergeRequestEvents(tx, [ev]).run()))
+function getTimelineEventSubjectId(ev:TimelineEventData) {
+  switch (ev.type) {
+    case 'assigned':
+      return (ev.data as extract.AssignedEvent).assigneeId;
+    case 'closed':
+      return null;
+    case 'commented':
+      return null;
+    case 'convert_to_draft':
+      return null;
+    case 'merged':
+      return null;
+    case 'ready_for_review':
+      return null;
+    case 'review_request_removed':
+      return (ev.data as extract.ReviewRequestRemovedEvent).requestedReviewerId || null
+    case 'review_requested':
+      return (ev.data as extract.ReviewRequestedEvent).requestedReviewerId || null
+    case 'reviewed':
+      return null;
+    case 'unassigned':
+      return (ev.data as extract.UnassignedEvent).assigneeId;
+    case 'committed':
+      return null;
+    default:
+      return null;
+  }
 }
 
+function getTimelineEventCommitter(ev:TimelineEventData) {
+  if (ev.type === "committed") return (ev.data as extract.CommittedEvent).committerName;
+  return null;
+} 
+
+function getTimelineEventActorId(ev: TimelineEventData) {
+  if (ev.type !== "committed") return ev.actorId;
+  return null;
+}
+
+type transformEventsProps = {
+  repository: transform.Repository['id'],
+  mergeRequest: transform.MergeRequest['id'],
+  transformUserMap: Map<number, transform.ForgeUser['id']>,
+  transformCommitterMap: Map<string, transform.ForgeUser['id']>,
+  transformDateMap: Map<number, transform.TransformDate['id']>,
+  nullUserId: number,
+  nullDateId: number,
+  timelineEvents: TimelineEventData[],
+  mergeRequestNotes: MergeRequestNoteData[],
+  metricEvents: MetricsEvents
+}
+function transformTimelineEvents({
+  repository,
+  mergeRequest,
+  transformUserMap,
+  transformCommitterMap,
+  transformDateMap,
+  nullUserId,
+  nullDateId,
+  timelineEvents,
+  mergeRequestNotes,
+  metricEvents,
+}: transformEventsProps): transform.NewMergeRequestEvent[] {
+  const transformedEvents = timelineEvents.map<transform.NewMergeRequestEvent>(ev => {
+    const type: transform.MergeRequestEventType = ev.type;
+    const actorId = getTimelineEventActorId(ev);
+    const actorName = getTimelineEventCommitter(ev);
+    const subjectId = getTimelineEventSubjectId(ev);
+
+    const actor = (actorId !== null ? transformUserMap.get(actorId) : actorName !== null ? transformCommitterMap.get(actorName) : undefined);
+    const subject = (subjectId !== null ? transformUserMap.get(subjectId) : undefined);
+
+    const committedDate = ev.type === 'committed' ? new Date((ev.data as extract.CommittedEvent).committedDate) : null;
+
+    return {
+      repository,
+      mergeRequest,
+      mergeRequestEventType: type,
+      timestamp: ev.timestamp,
+      occuredOn: mapTimestampToTransformDateId(transformDateMap, nullDateId, ev.timestamp),
+      commitedAt: mapTimestampToTransformDateId(transformDateMap, nullDateId, committedDate),
+      actor: actor || nullUserId,
+      subject: subject || nullUserId,
+      reviewState: 'unknown',
+    } satisfies transform.NewMergeRequestEvent;
+  });
+
+  const transformedNotes = mergeRequestNotes.map(n => {
+    return {
+      repository,
+      mergeRequest,
+      mergeRequestEventType: 'noted',
+      timestamp: n.timestamp,
+      occuredOn: mapTimestampToTransformDateId(transformDateMap, nullDateId, n.timestamp),
+      commitedAt: nullDateId,
+      actor: transformUserMap.get(n.authorExternalId) || nullUserId,
+      subject: nullUserId,
+      reviewState: 'unknown',
+    } satisfies transform.NewMergeRequestEvent;
+  });
+
+  const metricEventsList = [
+    metricEvents.opened,
+    metricEvents.startedCoding,
+    metricEvents.startedPickup,
+    metricEvents.startedReview
+  ] satisfies transform.NewMergeRequestEvent[];
+
+  return transformedEvents.concat(transformedNotes).concat(metricEventsList);
+}
+
+function getMergeRequestUserIds(
+  events: TimelineEventData[],
+  notes: MergeRequestNoteData[],
+  author: extract.Member['externalId'],
+  ) {
+  const userIds = new Set<extract.Member['externalId']>([author]);
+
+  events.forEach(ev=>{
+    const actorId = getTimelineEventActorId(ev);
+    const subjectId = getTimelineEventSubjectId(ev);
+    if (actorId !== null) userIds.add(actorId);
+    if (subjectId !== null) userIds.add(subjectId);
+  });
+
+  notes.forEach(n => {
+    userIds.add(n.authorExternalId);
+  });
+
+  return userIds;
+}
+
+function getMergeRequestCommitterNames(events: TimelineEventData[]) {
+  const userNames = new Set<string>();
+  events.forEach(ev=>{
+    const actorName = getTimelineEventCommitter(ev);
+    if (actorName !== null) userNames.add(actorName);
+  });
+  return userNames;
+}
+
+function timestampToTransformDateKey(timestamp: Date) {
+  return Math.floor(timestamp.getTime() / 86400000);
+}
+
+function timestampFromTransformDateKey(key: number) {
+  return new Date(key * 86400000);
+}
+
+function dmyToTransformDateKey(dmy: DMY) {
+  return timestampToTransformDateKey(new Date(Date.UTC(dmy.year, dmy.month - 1, dmy.day)));
+}
+
+type getMergeRequestDateTimeStampsProps = {  
+  mergeRequest: MergeRequestData,
+  timelineEvents: TimelineEventData[],
+  notes: MergeRequestNoteData[],
+}
+function getMergeRequestDateTimestamps({
+  timelineEvents,
+  notes,
+  mergeRequest,
+}: getMergeRequestDateTimeStampsProps) {
+  const days = new Set<number>();
+
+  if (mergeRequest.updatedAt) days.add(timestampToTransformDateKey(mergeRequest.updatedAt))
+  if (mergeRequest.mergedAt) days.add(timestampToTransformDateKey(mergeRequest.mergedAt))
+  if (mergeRequest.closedAt) days.add(timestampToTransformDateKey(mergeRequest.closedAt))
+  days.add(timestampToTransformDateKey(mergeRequest.openedAt))
+
+  timelineEvents.forEach(ev=>{
+    if (ev.type === 'committed') days.add(timestampToTransformDateKey(new Date((ev.data as extract.CommittedEvent).committedDate)))
+    days.add(timestampToTransformDateKey(ev.timestamp));
+  })
+
+  notes.forEach(n=>days.add(timestampToTransformDateKey(n.timestamp)));
+
+  return [...days.values()].map(day=>timestampFromTransformDateKey(day))
+}
+async function selectTransformDateMap(db: TransformDatabase, dates: Date[]) {
+  const transformDateMap = new Map<number, transform.TransformDate['id']>();
+  
+  const selectedDates = await db.select({
+    id: transform.dates.id,
+    year: transform.dates.year,
+    month: transform.dates.month,
+    day: transform.dates.day,
+    week: transform.dates.week,
+  }).from(transform.dates)
+  .where(
+    or(
+      ...dates.map(date => getDMYQuery(getDMY(date)))
+    )
+  ).all()
+
+  selectedDates.forEach(transformDate => {
+    transformDateMap.set(dmyToTransformDateKey(transformDate), transformDate.id)
+  });
+
+  return { transformDateMap };
+}
+
+function mapTimestampToTransformDateId(
+  transformDateMap: Map<number, transform.TransformDate['id']>, 
+  nullDateId: transform.TransformDate['id'],
+  timestamp: Date | null) {
+  if (timestamp === null) return nullDateId;
+  const transformDateId = transformDateMap.get(timestampToTransformDateKey(timestamp))
+  if (transformDateId) return transformDateId;
+  
+  return nullDateId;
+}
 
 export async function run(extractMergeRequestId: number, ctx: RunContext) {
   const extractData = await selectExtractData(ctx.extractDatabase, extractMergeRequestId);
@@ -1146,8 +1111,29 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
     throw new Error(`No repository found for id ${extractData.mergeRequest.repositoryId}`);
   }
 
-  const timeline = runTimeline(extractData.mergeRequest, extractData.timelineEvents, extractData.notes);
+  const mergeRequestUserIds = getMergeRequestUserIds(
+    extractData.timelineEvents, 
+    extractData.notes, 
+    extractData.mergeRequest.authorExternalId as number);
+  const mergeRequestCommitterNames = getMergeRequestCommitterNames(extractData.timelineEvents);
 
+  const usersAndCommitters = await selectUsersAndCommitters(ctx.extractDatabase, 
+    [...mergeRequestUserIds.values()], 
+    [...mergeRequestCommitterNames.values()]
+  ).all();
+
+  const {
+    transformDateMap
+  } = await selectTransformDateMap(ctx.transformDatabase, getMergeRequestDateTimestamps(extractData))
+  
+  const { transformUserMap, transformCommitterMap } = await transformUsersAndCommitters(
+    ctx.transformDatabase, 
+    usersAndCommitters, 
+    mergeRequestUserIds, 
+    mergeRequestCommitterNames);
+
+  const timeline = runTimeline(extractData.mergeRequest, extractData.timelineEvents, extractData.notes);
+  
   const timelineUsers = getUserData(extractData.timelineEvents, extractData.mergeRequest.authorExternalId as number);
 
   const transformUsersIds = await getTransformUserData(ctx.extractDatabase, ctx.transformDatabase, timelineUsers);
@@ -1208,7 +1194,6 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
   }
   const metricInfo = await selectMetricInfo(ctx.transformDatabase, transformMergeRequestId).get();
 
-
   const metricEvents = createMetricEvents(
     usersJunk.author,
     extractData.mergeRequest.openedAt,
@@ -1225,6 +1210,18 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
     nullUserId,
   );
 
+  const transformedTimeline = transformTimelineEvents({
+    mergeRequest: transformMergeRequestId,
+    repository: transformRepositoryId,
+    mergeRequestNotes: extractData.notes,
+    timelineEvents: extractData.timelineEvents,
+    nullDateId,
+    nullUserId,
+    transformCommitterMap,
+    transformUserMap,
+    transformDateMap,
+    metricEvents
+  });
 
   if (metricInfo) {
     await ctx.transformDatabase.transaction(
@@ -1252,16 +1249,8 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
           mergeRequest: transformMergeRequestId,
         }).run();
 
-        await upsertMergeRequestEvents(
-          tx,
-          ctx.transformDatabase,
-          transformRepositoryId,
-          transformMergeRequestId,
-          extractData.timelineEvents,
-          nullDateId,
-          nullUserId,
-          metricEvents
-        );
+        await deleteMergeRequestEvents(tx, transformMergeRequestId).run();
+        await Promise.all(transformedTimeline.map(ev => insertMergeRequestEvents(tx, [ev]).run()))
       }
     )
   } else {
@@ -1287,16 +1276,8 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
           mergeRequest: transformMergeRequestId,
         }).run()
 
-        await upsertMergeRequestEvents(
-          tx,
-          ctx.transformDatabase,
-          transformRepositoryId,
-          transformMergeRequestId,
-          extractData.timelineEvents,
-          nullDateId,
-          nullUserId,
-          metricEvents
-        );
+        await deleteMergeRequestEvents(tx, transformMergeRequestId).run();
+        await Promise.all(transformedTimeline.map(ev => insertMergeRequestEvents(tx, [ev]).run()))
       }
     )
   }
