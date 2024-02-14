@@ -67,8 +67,6 @@ export const cronHandler = async ()=> {
   const PERIOD_START_MARGIN = 5 * 60 * 1000; // 5 minutes
   const PERIOD_LATENCY = 8 * 60 * 1000; // extract delay
   const { from, to } = timePeriodOf(Date.now(), PERIOD_DURATION, PERIOD_START_MARGIN, -PERIOD_LATENCY);
-
-  console.log(`CRON-EXTRACT:`, { from, to, now: new Date() })
   
   await sender.sendAll(tenantIds, {
     version: 1,

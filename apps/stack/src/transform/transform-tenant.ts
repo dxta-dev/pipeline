@@ -64,8 +64,6 @@ export const cronHandler = async () => {
   const PERIOD_LATENCY = (15 - 8) * 60 * 1000; // extract delay
   const { from, to } = timePeriodOf(Date.now(), PERIOD_DURATION, PERIOD_START_MARGIN, PERIOD_LATENCY);
 
-  console.log(`CRON-TRANSFORM:`, { from, to, now: new Date() })
-
   await sender.sendAll(tenants, {
     version: 1,
     caller: 'transform-tenants:cronHandler',
