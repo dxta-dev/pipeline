@@ -587,7 +587,7 @@ async function selectExtractData(db: ExtractDatabase, extractMergeRequestId: num
       externalId: repositories.externalId,
       name: repositories.name,
       forgeType: repositories.forgeType,
-      namespaceId: namespaces.name,
+      namespaceName: namespaces.name,
     }
   }).from(repositories)
     .where(eq(repositories.id, mergeRequestData?.mergeRequest.repositoryId || 0))
@@ -1197,7 +1197,7 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
     externalId: extractData.repository.externalId,
     forgeType: extractData.repository.forgeType,
     name: extractData.repository.name,
-    namespaceName: extractData.repository.name,
+    namespaceName: extractData.repository.namespaceName,
   })
   .get();
 
