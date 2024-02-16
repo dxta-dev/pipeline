@@ -1,7 +1,6 @@
 import type { SSTConfig } from "sst";
 import { ExtractStack } from "./stacks/ExtractStack";
 import { TransformStack } from "stacks/TransformStack";
-import { InfoStack } from "stacks/InfoStack";
 
 export default {
   config(_input) {
@@ -21,6 +20,5 @@ export default {
     });
     app.stack(ExtractStack);
     app.stack(TransformStack);
-    app.stack(InfoStack);
   }
 } satisfies SSTConfig;
