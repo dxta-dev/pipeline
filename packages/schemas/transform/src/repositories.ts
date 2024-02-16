@@ -10,6 +10,7 @@ export const repositories = sqliteTable('repositories', {
   forgeType: Enum('forge_type', { enum: ['unknown', 'github', 'gitlab'] }).notNull(),
   // tenantId: integer('tenant_id').notNull(),
   name: text('name').notNull(),
+  namespaceName: text('namespace_name').default(''),
   // url: text('url').notNull(),
   _createdAt: integer('__created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
   _updatedAt: integer('__updated_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),

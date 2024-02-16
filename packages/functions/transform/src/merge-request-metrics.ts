@@ -563,7 +563,7 @@ export type MergeRequestNoteData = {
 }
 
 async function selectExtractData(db: ExtractDatabase, extractMergeRequestId: number) {
-  const { mergeRequests, mergeRequestDiffs, mergeRequestNotes, timelineEvents, repositories } = extract;
+  const { mergeRequests, mergeRequestDiffs, mergeRequestNotes, timelineEvents, repositories, namespaces } = extract;
 
   const mergeRequestData = await db.select({
     mergeRequest: {
@@ -587,6 +587,7 @@ async function selectExtractData(db: ExtractDatabase, extractMergeRequestId: num
       externalId: repositories.externalId,
       name: repositories.name,
       forgeType: repositories.forgeType,
+      namespaceName: namespaces.name,
     }
   }).from(repositories)
     .where(eq(repositories.id, mergeRequestData?.mergeRequest.repositoryId || 0))
@@ -1192,7 +1193,13 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
     reviewers: transformUsersIds.reviewers,
   }, nullUserId);
 
-  const { id: transformRepositoryId } = await upsertRepository(ctx.transformDatabase, extractData.repository).get();
+  const { id: transformRepositoryId } = await upsertRepository(ctx.transformDatabase, {
+    externalId: extractData.repository.externalId,
+    forgeType: extractData.repository.forgeType,
+    name: extractData.repository.name,
+    namespaceName: extractData.repository.namespaceName,
+  })
+  .get();
 
   const { id: transformMergeRequestId } = await upsertMergeRequest(ctx.transformDatabase, {
     externalId: extractData.mergeRequest.externalId,
