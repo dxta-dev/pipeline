@@ -554,6 +554,7 @@ async function selectExtractData(db: ExtractDatabase, extractMergeRequestId: num
       mergedAt: mergeRequests.mergedAt,
       closedAt: mergeRequests.closedAt,
       externalId: mergeRequests.externalId,
+      canonId: mergeRequests.canonId,
       authorExternalId: mergeRequests.authorExternalId,
       updatedAt: mergeRequests.updatedAt,
       repositoryId: mergeRequests.repositoryId,
@@ -1174,6 +1175,7 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
 
   const { id: transformMergeRequestId } = await upsertMergeRequest(ctx.transformDatabase, {
     externalId: extractData.mergeRequest.externalId,
+    canonId: extractData.mergeRequest.canonId,
     forgeType: extractData.repository.forgeType,
     title: extractData.mergeRequest.title,
     webUrl: extractData.mergeRequest.webUrl,

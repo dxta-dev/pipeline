@@ -22,6 +22,13 @@
       "when": 1706701861357,
       "tag": "0002_wise_swarm",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1708008449310,
+      "tag": "0003_striped_lilandra",
+      "breakpoints": true
     }
   ]
 }
