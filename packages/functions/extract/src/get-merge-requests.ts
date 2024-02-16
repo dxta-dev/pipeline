@@ -51,7 +51,17 @@ export const getMergeRequests: GetMergeRequestsFunction = async (
             entities.mergeRequests.repositoryId,
           ],
           set: {
+            title: mergeRequest.title,
+            updatedAt: mergeRequest.updatedAt,
+            mergedAt: mergeRequest.mergedAt,
+            mergerExternalId: mergeRequest.mergerExternalId,
+            closedAt: mergeRequest.closedAt,
+            closerExternalId: mergeRequest.closerExternalId,
+            state: mergeRequest.state,
+            targetBranch: mergeRequest.targetBranch,
+            sourceBranch: mergeRequest.sourceBranch,
             _updatedAt: sql`(strftime('%s', 'now'))`,
+
           },
         })
         .returning()
