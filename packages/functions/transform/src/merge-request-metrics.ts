@@ -592,6 +592,7 @@ async function selectExtractData(db: ExtractDatabase, extractMergeRequestId: num
     }
   }).from(repositories)
     .where(eq(repositories.id, mergeRequestData?.mergeRequest.repositoryId || 0))
+    .innerJoin(namespaces, eq(namespaces.id, repositories.namespaceId))
     .get();
 
   const mergerRequestDiffsData = await db.select({
