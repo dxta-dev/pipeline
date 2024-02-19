@@ -1,0 +1,1 @@
+ALTER TABLE transform_repositories ADD `namespace_name` text DEFAULT '';
