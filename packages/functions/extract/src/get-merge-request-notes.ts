@@ -78,6 +78,8 @@ export const getMergeRequestNotes: GetMergeRequestNotesFunction = async (
         .onConflictDoUpdate({
           target: [entities.mergeRequestNotes.mergeRequestId, entities.mergeRequestNotes.externalId],
           set: {
+            authorUsername: mergeRequestNote.authorUsername,
+            body: mergeRequestNote.body, // gitlab system notes could change format            
             updatedAt: mergeRequestNote.updatedAt,
             _updatedAt: sql`(strftime('%s', 'now'))`,
           }
