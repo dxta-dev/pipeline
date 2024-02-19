@@ -68,7 +68,7 @@ function upsertRepository(db: TransformDatabase, repo: transform.NewRepository) 
         transform.repositories.forgeType
       ],
       set: {
-        name: repo.name,
+        name: repo.name,        
         _updatedAt: sql`(strftime('%s', 'now'))`,
       },
     })
@@ -85,7 +85,7 @@ function upsertMergeRequest(db: TransformDatabase, mergeRequest: transform.NewMe
       ],
       set: {
         title: mergeRequest.title,
-        webUrl: mergeRequest.webUrl,
+        webUrl: mergeRequest.webUrl,        
         _updatedAt: sql`(strftime('%s', 'now'))`,
       }
     })
@@ -121,12 +121,13 @@ function upsertForgeUser(db: DatabaseTransaction | TransformDatabase, forgeUser:
   return db.insert(transform.forgeUsers)
     .values(forgeUser)
     .onConflictDoUpdate({
-      target: [
+      target: [        
         transform.forgeUsers.externalId,
         transform.forgeUsers.forgeType,
       ],
       set: {
         name: forgeUser.name,
+        bot: forgeUser.bot,
         _updatedAt: sql`(strftime('%s', 'now'))`,
       }
     })
@@ -591,6 +592,7 @@ async function selectExtractData(db: ExtractDatabase, extractMergeRequestId: num
     }
   }).from(repositories)
     .where(eq(repositories.id, mergeRequestData?.mergeRequest.repositoryId || 0))
+    .innerJoin(namespaces, eq(namespaces.id, repositories.namespaceId))
     .get();
 
   const mergerRequestDiffsData = await db.select({

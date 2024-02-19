@@ -55,6 +55,7 @@ export const getRepository: GetRepositoryFunction = async (
         ],
         set: {
           name: repository.name,
+          namespaceId: insertedNamespace.id,
           _updatedAt: sql`(strftime('%s', 'now'))`,
         },
       }).returning()
