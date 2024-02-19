@@ -15,6 +15,7 @@ export const mergeRequests = sqliteTable(
     canonId: integer("canon_id").notNull(),
     repositoryId: integer("repository_id").references(() => repositories.id).notNull(),
     title: text("title").notNull(),
+    description: text("description"),
     webUrl: text("web_url").notNull(),
     createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),
     updatedAt: integer('updated_at', { mode: 'timestamp_ms' }),
