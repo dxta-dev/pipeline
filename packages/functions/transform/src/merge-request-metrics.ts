@@ -69,6 +69,7 @@ function upsertRepository(db: TransformDatabase, repo: transform.NewRepository) 
       ],
       set: {
         name: repo.name,        
+        namespaceName: repo.namespaceName,        
         _updatedAt: sql`(strftime('%s', 'now'))`,
       },
     })
