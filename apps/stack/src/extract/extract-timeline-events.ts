@@ -3,7 +3,7 @@ import { createMessageHandler } from "@stack/config/create-message";
 import { z } from "zod";
 
 import { getTimelineEvents, type Context, type GetTimelineEventsEntities, type GetTimelineEventsSourceControl } from "@dxta/extract-functions";
-import { members, mergeRequests, MergeRequestSchema, namespaces, NamespaceSchema, repositories, repositoriesToMembers, RepositorySchema, timelineEvents } from "@dxta/extract-schema";
+import { members, mergeRequests, MergeRequestSchema, namespaces, NamespaceSchema, repositories, repositoriesToMembers, RepositorySchema, timelineEvents, gitIdentities } from "@dxta/extract-schema";
 import { GitHubSourceControl, GitlabSourceControl } from "@dxta/source-control";
 
 import { extractMembersEvent, extractMergeRequestsEvent } from "./events";
@@ -69,7 +69,8 @@ const context: OmitDb<Context<
     mergeRequests,
     timelineEvents,
     members,
-    repositoriesToMembers
+    repositoriesToMembers,
+    gitIdentities,
   },
   integrations: {
     sourceControl: null,
