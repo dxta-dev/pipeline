@@ -88,7 +88,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v2
         with:
           role-to-assume: ${{ secrets.IAMROLE_GITHUB }}
-          role-duration-seconds: 14390 # (3.98hrs) <- adjust as needed for your build time
+          role-duration-seconds: 3599 # (0.99hrs) <- adjust as needed for your build time
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Set Node.js
