@@ -5,7 +5,7 @@ import { TransformStack } from "stacks/TransformStack";
 export default {
   config(_input) {
     return {
-      name: "mr-tool",
+      name: "dxta-pipeline",
       region: "eu-central-1",
     };
   },
