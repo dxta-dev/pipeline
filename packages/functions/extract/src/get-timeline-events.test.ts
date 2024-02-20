@@ -4,7 +4,7 @@ import { createClient } from '@libsql/client';
 
 import type { Context } from "./config";
 import { type GetTimelineEventsEntities, type GetTimelineEventsSourceControl, getTimelineEvents } from "./get-timeline-events";
-import { namespaces, repositories, mergeRequests, timelineEvents, members, repositoriesToMembers } from "@dxta/extract-schema";
+import { namespaces, repositories, mergeRequests, timelineEvents, members, repositoriesToMembers, gitIdentities } from "@dxta/extract-schema";
 import type { Repository, Namespace, MergeRequest, NewRepository, NewNamespace, NewMergeRequest } from "@dxta/extract-schema";
 import fs from 'fs';
 
@@ -45,7 +45,7 @@ beforeAll(async () => {
               actorName: 'MOCK ACTOR',
               actorId: 123,
               actorEmail: 'ACTOR EMAIL',
-              data: '{"committerEmail":"COMMITTER EMAIL","committerName":"COMMITTER NAME","committedDate":"2023-01-02T00:00:00.000Z"}',
+              data: {"committerEmail":"COMMITTER EMAIL","committerName":"COMMITTER NAME","committedDate":"2023-01-02T00:00:00.000Z"},
             },
             {
               externalId: 54321,
@@ -72,7 +72,8 @@ beforeAll(async () => {
       repositories,
       mergeRequests,
       members,
-      repositoriesToMembers
+      repositoriesToMembers,
+      gitIdentities,
     },
     integrations: {
       sourceControl: { fetchTimelineEvents }

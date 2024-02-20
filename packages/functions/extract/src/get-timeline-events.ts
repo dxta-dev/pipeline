@@ -64,7 +64,8 @@ export const getTimelineEvents: GetTimelineEventsFunction = async (
         .onConflictDoUpdate({
           target: [
             entities.gitIdentities.email,
-            entities.gitIdentities.name
+            entities.gitIdentities.name,
+            entities.gitIdentities.repositoryId,
           ],
           set: {
             name: committer.name,
