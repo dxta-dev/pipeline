@@ -11,6 +11,7 @@ export const mergeRequests = sqliteTable('merge_requests', {
   forgeType: Enum('forge_type', { enum: ['unknown', 'github', 'gitlab'] }).notNull(),
   // TODO: tenantId: integer('tenant_id').notNull(),
   title: text('title').notNull(),
+  description: text('description').default(''),
   webUrl: text('web_url').notNull(),
   _createdAt: integer('__created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
   _updatedAt: integer('__updated_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),

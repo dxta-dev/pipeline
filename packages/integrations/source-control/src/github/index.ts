@@ -189,7 +189,7 @@ export class GitHubSourceControl implements SourceControl {
     page = page || 1;
     const serchPRs = async (namespaceName: string, repositoryName: string, page: number, perPage: number, from: Date, to: Date | 'today') => {
       let updated;
-
+      
       if (to === 'today') {
         updated = `>=${from.toISOString().slice(0, 10)}`;
       } else {
@@ -255,7 +255,6 @@ export class GitHubSourceControl implements SourceControl {
       sort: 'updated',
       direction: 'desc',
     });
-
     const linkHeader = parseLinkHeader(result.headers.link) || { next: { per_page: perPage } };
 
     const pullsTotalPages = (!('last' in linkHeader)) ? page : Number(linkHeader.last?.page);
@@ -273,6 +272,7 @@ export class GitHubSourceControl implements SourceControl {
           canonId: mergeRequest.number,
           repositoryId,
           title: mergeRequest.title,
+          description: mergeRequest.body,
           webUrl: mergeRequest.html_url,
           createdAt: new Date(mergeRequest.created_at),
           updatedAt: new Date(mergeRequest.updated_at),

@@ -1,0 +1,1 @@
+ALTER TABLE transform_merge_requests ADD `description` text DEFAULT '';

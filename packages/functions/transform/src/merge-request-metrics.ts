@@ -86,6 +86,7 @@ function upsertMergeRequest(db: TransformDatabase, mergeRequest: transform.NewMe
       ],
       set: {
         title: mergeRequest.title,
+        description: mergeRequest.description,
         webUrl: mergeRequest.webUrl,        
         _updatedAt: sql`(strftime('%s', 'now'))`,
       }
@@ -566,7 +567,6 @@ export type MergeRequestNoteData = {
 
 async function selectExtractData(db: ExtractDatabase, extractMergeRequestId: number) {
   const { mergeRequests, mergeRequestDiffs, mergeRequestNotes, timelineEvents, repositories, namespaces } = extract;
-
   const mergeRequestData = await db.select({
     mergeRequest: {
       openedAt: mergeRequests.createdAt,
@@ -578,6 +578,7 @@ async function selectExtractData(db: ExtractDatabase, extractMergeRequestId: num
       updatedAt: mergeRequests.updatedAt,
       repositoryId: mergeRequests.repositoryId,
       title: mergeRequests.title,
+      description: mergeRequests.description,
       webUrl: mergeRequests.webUrl,
     }
   }).from(mergeRequests)
@@ -1209,6 +1210,7 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
     canonId: extractData.mergeRequest.canonId,
     forgeType: extractData.repository.forgeType,
     title: extractData.mergeRequest.title,
+    description: extractData.mergeRequest.description,
     webUrl: extractData.mergeRequest.webUrl,
   })
     .get();
