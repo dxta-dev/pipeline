@@ -8,6 +8,7 @@ import { type SQLiteTransaction } from 'drizzle-orm/sqlite-core';
 import { type ResultSet } from '@libsql/client/.';
 import { isMemberKnownBot } from './known-bots';
 import { getDateInfo } from '../../../schemas/transform/src/seed/dimensions';
+import { compare } from './compare';
 
 type BrandedDatabase<T> = LibSQLDatabase<Record<string, never>> & { __brand: T }
 type DatabaseTransaction = SQLiteTransaction<"async", ResultSet, Record<string, unknown>, ExtractTablesWithRelations<Record<string, unknown>>>;
@@ -351,7 +352,7 @@ type MappedUsersTypesArgs = {
   author: number,
   mergedBy: number | null,
   approvers: number[],
-  committers: string[],
+  committers: number[],
   reviewers: number[]
 }
 
@@ -362,10 +363,57 @@ type TransformUserArgs = {
   bot: transform.ForgeUser['bot'];
 }
 
-function getUserData(timelineEvents: TimelineEventData[], authorExternalId: number) {
+function getCommitters(gitIdentity: extract.CommittedEvent, members: extract.Member[]): (number | null) {
+  const frags = gitIdentity.committerEmail.split("+");
+
+  if (frags.length > 1) {
+    const member = members.find((m) => Number(m.externalId) === Number(frags[0]));
+    if (member) {
+      return member.externalId;
+    }
+  }
+
+  let member = members.find((m) => m.email !== null && m.email?.toLowerCase() === gitIdentity.committerEmail?.toLowerCase());
+  if (member) {
+    return member.externalId;
+  }
+
+  member = members.find((m) => m.name !== null && m.name?.toLowerCase() === gitIdentity.committerName.toLowerCase());
+  if (member) {
+    return member.externalId;
+  }
+
+  member = members.find((m) => m.username.toLowerCase() === gitIdentity.committerName.toLowerCase());
+  if (member) {
+    return member.externalId;
+  }
+
+  member = members.find((m) => m.name !== null && compare(m.name, gitIdentity.committerName));
+  if (member) {
+    return member.externalId;
+  }
+
+  member = members.find((m) => m.email !== null && compare(m.email, gitIdentity.committerEmail));
+  if (member) {
+    return member.externalId;
+  }
+
+  member = members.find((m) => m.username !== null && compare(m.username, gitIdentity.committerName));
+  if (member) {
+    return member.externalId;
+  }
+
+  if(frags.length > 1) {
+    console.log("Found new member by externalId (the email way)", frags[0]);
+  }
+
+  return null;
+}
+
+function getUserData(timelineEvents: TimelineEventData[], authorExternalId: number, members: extract.Member[]) {
   const reviewers = new Set<number>();
   const approvers = new Set<number>();
-  const committers = new Set<string>();
+  const committers = new Set<number>();
   let mergedBy: number | undefined;
   const author: number = authorExternalId;
 
@@ -381,7 +429,10 @@ function getUserData(timelineEvents: TimelineEventData[], authorExternalId: numb
         }
         break;
       case 'committed':
-        committers.add((timelineEvent.data as extract.CommittedEvent).committerName);
+        const committer = getCommitters(timelineEvent.data as extract.CommittedEvent, members);
+        if (committer) {
+          committers.add(committer);
+        }
         break;
       case 'merged':
         if (!timelineEvent.actorId) {
@@ -585,6 +636,15 @@ async function selectExtractData(db: ExtractDatabase, extractMergeRequestId: num
     .where(eq(mergeRequests.id, extractMergeRequestId))
     .get();
 
+  const membersData = await db.select({
+    externalId: extract.members.externalId,
+    name: extract.members.name,
+    username: extract.members.username,
+    email: extract.members.email,
+  })
+    .from(extract.members)
+    .all();
+
   const repositoryData = await db.select({
     repository: {
       externalId: repositories.externalId,
@@ -629,6 +689,7 @@ async function selectExtractData(db: ExtractDatabase, extractMergeRequestId: num
     notes: mergeRequestNotesData.map(note => ({ ...note, type: 'note' as const })),
     timelineEvents: timelineEventsData,
     ...repositoryData || { repository: null },
+    members: membersData,
   };
 }
 
@@ -1157,7 +1218,7 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
 
   const timeline = runTimeline(extractData.mergeRequest, extractData.timelineEvents, extractData.notes);
 
-  const timelineUsers = getUserData(extractData.timelineEvents, extractData.mergeRequest.authorExternalId as number);
+  const timelineUsers = getUserData(extractData.timelineEvents, extractData.mergeRequest.authorExternalId as number, extractData.members);
 
   const transformUsersIds = await getTransformUserData(ctx.extractDatabase, ctx.transformDatabase, timelineUsers);
 
