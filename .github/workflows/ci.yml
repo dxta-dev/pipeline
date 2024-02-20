@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   setup-node:
-    name: Setup Node and Dependencies
+    name: Setup
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -28,7 +28,7 @@ jobs:
         run: npm ci
 
   lint:
-    name: Linting
+    name: Lint
     needs: [setup-node]
     runs-on: ubuntu-latest
     steps:
@@ -48,7 +48,7 @@ jobs:
         run: npm run lint
 
   test:
-    name: Testing
+    name: Test
     needs: [setup-node]
     runs-on: ubuntu-latest
     steps:
@@ -76,7 +76,7 @@ jobs:
         run: npm run build
 
   deploy: # runs only on pushes to main
-    name: Deploying
+    name: Deploy
     needs: [setup-node, lint, test, dry-build]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
