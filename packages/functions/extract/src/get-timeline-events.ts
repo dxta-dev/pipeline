@@ -81,6 +81,9 @@ export const getTimelineEvents: GetTimelineEventsFunction = async (
           target: [entities.timelineEvents.externalId, entities.timelineEvents.mergeRequestId, entities.timelineEvents.type],
           set: {
             data: event.data,
+            timestamp: event.timestamp,
+            actorEmail: event.actorEmail,
+            actorName: event.actorName,
             _updatedAt: sql`(strftime('%s', 'now'))`,
           }
         })
