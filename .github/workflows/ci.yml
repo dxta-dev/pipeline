@@ -7,9 +7,46 @@ on:
   pull_request:
 
 jobs:
+  setup-node:
+    name: Setup Node and Dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+      - name: Install dependecies
+        run: npm ci
+
+  lint:
+    name: Linting
+    needs: [setup-node]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install dependecies
+        run: npm ci
+
+      - name: Type checking
+        run: npm run type-check
+
+      - name: Package checking
+        run: npm run manypkg
+
+      - name: Eslint
+        run: npm run lint
+
   deploy: # runs only on pushes to main
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     name: Deploying
+    needs: [setup-node, lint]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     env:
       CLERK_JWT_ISSUER: ${{ secrets.CLERK_JWT_ISSUER }}
