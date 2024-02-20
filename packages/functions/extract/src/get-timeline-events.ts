@@ -1,4 +1,4 @@
-import type { Member, NewMember, TimelineEvents } from "@dxta/extract-schema";
+import type { CommittedEvent, Member, NewMember, TimelineEvents } from "@dxta/extract-schema";
 import type { Entities, ExtractFunction } from "./config"
 import type { SourceControl } from "@dxta/source-control";
 import { eq, sql } from "drizzle-orm";
@@ -15,7 +15,7 @@ export type GetTimelineEventsOutput = {
 };
 
 export type GetTimelineEventsSourceControl = Pick<SourceControl, "fetchTimelineEvents">;
-export type GetTimelineEventsEntities = Pick<Entities, "namespaces" | "repositories" | "mergeRequests" | "timelineEvents" | "members" | "repositoriesToMembers">;
+export type GetTimelineEventsEntities = Pick<Entities, "namespaces" | "repositories" | "mergeRequests" | "timelineEvents" | "members" | "repositoriesToMembers" | "gitIdentities">;
 
 export type GetTimelineEventsFunction = ExtractFunction<GetTimelineEventsInputs, GetTimelineEventsOutput, GetTimelineEventsSourceControl, GetTimelineEventsEntities>
 
@@ -40,6 +40,43 @@ export const getTimelineEvents: GetTimelineEventsFunction = async (
 
   const nonCommitEvents = timelineEvents.filter(ev => ev.type !== "committed");
 
+  const commitEvents = timelineEvents.filter(ev => ev.type === "committed");
+
+  const committers = commitEvents.flatMap(ev => {
+    const result = [];
+    const { committerEmail, committerName } = ev.data as CommittedEvent; 
+    result.push({ email: committerEmail, name: committerName });
+
+    if(!!ev.actorEmail && ev.actorEmail !== committerEmail) {
+      result.push({ email: ev.actorEmail, name: ev.actorName });
+    }
+
+    return result;
+  });
+
+  const insertedCommitters = await db.transaction(async (tx) => {
+    return Promise.all(committers.map(committer =>
+      tx.insert(entities.gitIdentities).values({
+        name: committer.name,
+        email: committer.email,
+        repositoryId: repository.id,
+      })
+        .onConflictDoUpdate({
+          target: [
+            entities.gitIdentities.email,
+            entities.gitIdentities.name
+          ],
+          set: {
+            name: committer.name,
+            email: committer.email,
+            _updatedAt: sql`(strftime('%s', 'now'))`,
+          }
+        })
+        .returning()
+        .get()
+    ));
+  });
+
   const uniqueTimelineActors = [...nonCommitEvents.reduce((externalIdToActor, event) =>
     event.actorId ? externalIdToActor.set(event.actorId, { // actorId is optional due to commit events
       externalId: event.actorId,
@@ -47,7 +84,6 @@ export const getTimelineEvents: GetTimelineEventsFunction = async (
       forgeType: repository.forgeType,
       extractedSource: 'timeline',
     }) : externalIdToActor, new Map<number, NewMember>()).values()];
-
 
   const insertedUniqueTimelineActors = uniqueTimelineActors.length === 0 ? [] : await db.transaction(async (tx) => {
     return Promise.all(uniqueTimelineActors.map(actor =>
@@ -94,6 +130,7 @@ export const getTimelineEvents: GetTimelineEventsFunction = async (
 
   return {
     timelineEvents: insertedTimelineEvents,
-    members: insertedUniqueTimelineActors
+    members: insertedUniqueTimelineActors,
+    gitIdentities: insertedCommitters,
   };
 }
