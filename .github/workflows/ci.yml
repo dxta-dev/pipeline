@@ -83,7 +83,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v2
         with:
           role-to-assume: ${{ secrets.IAMROLE_GITHUB }}
-          role-duration-seconds: 180 # (3m) <- adjust as needed for your build time
+          role-duration-seconds: 900 # (15m) <- adjust as needed for your build time
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: aws whoami
