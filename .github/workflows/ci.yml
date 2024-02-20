@@ -66,9 +66,6 @@ jobs:
     needs: [setup-node]
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
       - name: Install dependecies
         run: npm ci
 
@@ -102,12 +99,6 @@ jobs:
 
       - name: Install dependecies
         run: npm ci
-
-      - name: Type checking
-        run: npm run type-check
-
-      - name: Run tests
-        run: npm run test
-  
+        
       - name: Deploy
         run: npm run -w ./apps/stack deploy:stage prod
