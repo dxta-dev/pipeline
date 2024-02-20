@@ -75,23 +75,9 @@ jobs:
       - name: Build
         run: npm run build
 
-  whoami:
-    name: AWS Credential Test
-    runs-on: ubuntu-latest
-    steps:
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          role-to-assume: ${{ secrets.IAMROLE_GITHUB }}
-          role-duration-seconds: 900 # (15m) <- adjust as needed for your build time
-          aws-region: ${{ secrets.AWS_REGION }}
-
-      - name: Get Caller Identity
-        run: aws sts get-caller-identity
-
   deploy: # runs only on pushes to main
     name: Deploying
-    needs: [setup-node, whoami, lint, test, dry-build]
+    needs: [setup-node, lint, test, dry-build]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     env:
