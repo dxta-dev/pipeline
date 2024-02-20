@@ -24,9 +24,6 @@ jobs:
           node-version-file: '.nvmrc'
           cache: 'npm'
 
-      - name: Install dependecies
-        run: npm ci
-
   lint:
     name: Lint
     needs: [setup-node]
