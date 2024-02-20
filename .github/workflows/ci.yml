@@ -66,8 +66,8 @@ jobs:
     needs: [setup-node]
     runs-on: ubuntu-latest
     steps:
-      - name: Install dependecies
-        run: npm ci
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
       - name: Build
         run: npm run build
