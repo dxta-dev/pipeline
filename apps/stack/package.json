@@ -10,6 +10,7 @@
     "dev": "npm run with-env sst dev",
     "build": "npm run with-env sst build",
     "deploy": "sst deploy",
+    "deploy:stage": "sst deploy --stage",
     "remove": "npm run with-env sst remove",
     "console": "sst console",
     "with-env": "dotenv -e ../../.env --"

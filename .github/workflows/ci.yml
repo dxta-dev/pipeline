@@ -1,0 +1,104 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  setup-node:
+    name: Setup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+  lint:
+    name: Lint
+    needs: [setup-node]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install dependecies
+        run: npm ci
+
+      - name: Type checking
+        run: npm run type-check
+
+      - name: Package checking
+        run: npm run manypkg
+
+      - name: Eslint
+        run: npm run lint
+
+  test:
+    name: Test
+    needs: [setup-node]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependecies
+        run: npm ci
+
+      - name: Run tests
+        run: npm run test
+
+  dry-build:
+    name: Dry Build
+    needs: [setup-node]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install dependecies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+  deploy: # runs only on pushes to main
+    name: Deploy
+    needs: [setup-node, lint, test, dry-build]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    env:
+      CLERK_JWT_ISSUER: ${{ secrets.CLERK_JWT_ISSUER }}
+      CLERK_JWT_AUDIENCE: ${{ secrets.CLERK_JWT_AUDIENCE }}  
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.IAMROLE_GITHUB }}
+          role-duration-seconds: 14390 # (3.98hrs) <- adjust as needed for your build time
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Set Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+      - name: Install dependecies
+        run: npm ci
+        
+      - name: Deploy
+        run: npm run -w ./apps/stack deploy:stage prod

@@ -67,6 +67,13 @@ declare module "sst/node/config" {
       value: string;
     }
   }
+}import "sst/node/config";
+declare module "sst/node/config" {
+  export interface SecretResources {
+    "CRON_USER_ID": {
+      value: string;
+    }
+  }
 }import "sst/node/event-bus";
 declare module "sst/node/event-bus" {
   export interface EventBusResources {
