@@ -86,8 +86,8 @@ jobs:
           role-duration-seconds: 900 # (15m) <- adjust as needed for your build time
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: aws whoami
-        run: aws whoami
+      - name: Get Caller Identity
+        run: aws sts get-caller-identity
 
   deploy: # runs only on pushes to main
     name: Deploying
