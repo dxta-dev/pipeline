@@ -7,7 +7,9 @@
       "persistent": true,
       "cache": false
     },
-    "db:generate": {},
+    "db:generate": {
+      "cache": false
+    },
     "build": {
       "dependsOn": ["^build"],
       "outputs": [".next/**"]

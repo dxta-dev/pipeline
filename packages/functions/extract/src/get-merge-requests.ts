@@ -41,7 +41,6 @@ export const getMergeRequests: GetMergeRequestsFunction = async (
   }
 
   const { mergeRequests, pagination } = await integrations.sourceControl.fetchMergeRequests(externalRepositoryId, namespaceName, repositoryName, repositoryId, perPage, timePeriod, page, totalPages);
-
   const insertedMergeRequests = await db.transaction(async (tx) => {
     return Promise.all(mergeRequests.map(mergeRequest =>
       tx.insert(entities.mergeRequests).values(mergeRequest)
@@ -52,6 +51,7 @@ export const getMergeRequests: GetMergeRequestsFunction = async (
           ],
           set: {
             title: mergeRequest.title,
+            description: mergeRequest.description,
             updatedAt: mergeRequest.updatedAt,
             mergedAt: mergeRequest.mergedAt,
             mergerExternalId: mergeRequest.mergerExternalId,
