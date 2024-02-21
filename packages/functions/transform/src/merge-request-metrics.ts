@@ -1210,7 +1210,7 @@ function mapTimestampToTransformDateId(
   return nullDateId;
 }
 
-function getMergeRequestMembersandCommitters({
+function getMergeRequestMembersandGitIdentities({
   extractMembers,
   mergeRequest,
   timelineEvents,
@@ -1347,7 +1347,7 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
   }, nullDateId);
 
   // Get the all members / commiters from events and upsert forge users
-  const { mergeRequestMembers, mergeRequestGitIdentities: _unusedIdentities } = getMergeRequestMembersandCommitters({
+  const { mergeRequestMembers, mergeRequestGitIdentities: _unusedIdentities } = getMergeRequestMembersandGitIdentities({
     extractMembers: extractData.members,
     mergeRequest: extractData.mergeRequest,
     timelineEvents: extractData.timelineEvents,
@@ -1363,15 +1363,14 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
         bot: isMemberKnownBot(member.forgeType, member),
       }).returning().get()));
 
-
-      // upsert committers ??? how do we map back from this then ??
+      // upsert committers ??? how do we map back
 
       return { forgeUsers };
     }
   );
 
   // get maps -> key is externalId, value is forgeUserId, key is email, value is forgeUserId
-  const mapOfUsers = forgeUsers.reduce((map, user) => map.set(user.externalId, user), new Map<number, transform.ForgeUser>())
+  const mapOfUsers = forgeUsers.reduce((map, user) => map.set(user.externalId, user.id), new Map<number, transform.ForgeUser['id']>())
 
   const usersJunk = mapUsersToJunk({
     author: transformUsersIds.author,
