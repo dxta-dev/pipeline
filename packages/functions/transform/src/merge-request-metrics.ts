@@ -305,8 +305,21 @@ function getDateIdOrNullDateId(dmy: DMY | null, datesData: {
   };
 }
 
-async function upsertForgeUsers(db: TransformDatabase, members: Set<extract.NewMember>) {
-  return [] as transform.ForgeUser[];
+async function upsertForgeUsers(db: TransformDatabase, members: extract.NewMember[]) {
+
+
+  const newForgeUsers = members.map((member) => ({
+    externalId: member.externalId,
+    forgeType: member.forgeType,
+    name: member.name || member.username,
+    bot: isMemberKnownBot(member.forgeType, member),
+  } satisfies transform.NewForgeUser));
+
+  const forgeUsers = await db.transaction(async tx => {
+    return await Promise.all(newForgeUsers.map(x => upsertForgeUser(tx, x).returning().get()));
+  });
+
+  return forgeUsers satisfies transform.ForgeUser[];
 }
 
 
@@ -1347,21 +1360,21 @@ function getMergeRequestMembers({
   notes: MergeRequestNoteData[],
 }) {
 
-  const memberSet = new Set<extract.NewMember["externalId"]>();
+  const membersArray = [];
 
   if (mergeRequest.authorExternalId !== null) {
     const author = members.find(m => m.externalId === mergeRequest.authorExternalId);
-    if (author) memberSet.add(author.externalId);
+    if (author) membersArray.push(author);
   }
 
   for (const timelineEvent of timelineEvents) {
     const actor = members.find(m => m.externalId === timelineEvent.actorId);
     if (actor) {
-      memberSet.add(actor.externalId);
+      membersArray.push(actor);
     } else {
       const actor = members.find(m => m.email === timelineEvent.actorEmail);
       if (actor) {
-        memberSet.add(actor.externalId);
+        membersArray.push(actor);
       }
     }
 
@@ -1369,17 +1382,22 @@ function getMergeRequestMembers({
       const committer = getCommitter(timelineEvent.data as extract.CommittedEvent, members);
 
       if (committer) {
-        memberSet.add(committer.externalId);
+        membersArray.push(committer);
       }
     }
   }
 
   for (const note of notes) {
     const author = members.find(m => m.externalId === note.authorExternalId);
-    if (author) memberSet.add(author.externalId);
+    if (author) membersArray.push(author);
   }
 
-  return memberSet;
+  return membersArray.reduce((acc, member) => {
+    if (!acc.some(m => m.externalId === member.externalId)) {
+      acc.push(member);
+    }
+    return acc;
+  }, [] as extract.NewMember[]);
 }
 
 export async function run(extractMergeRequestId: number, ctx: RunContext) {
@@ -1475,19 +1493,76 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
 
 
   /**** MergeRequestUsersJunk ****/
-  const mergeRequestMembersSet = getMergeRequestMembers({
+  const mergeRequestMembers = getMergeRequestMembers({
     members: extractData.members,
     mergeRequest: extractData.mergeRequest,
     timelineEvents: extractData.timelineEvents,
     notes: extractData.notes,
   });
 
-  const forgeUsers = await upsertForgeUsers(ctx.transformDatabase, mergeRequestMembersSet);
+  const forgeUsers = await upsertForgeUsers(ctx.transformDatabase, mergeRequestMembers);
 
   const memberEmailForgeUserIdMap = new Map<extract.Member['email'], transform.ForgeUser['id']>();
   const memberExternalIdForgeUserIdMap = new Map<extract.Member['externalId'], transform.ForgeUser['id']>();
 
-  const usersJunk = mapUsersToJunk({} as any, 1);
+  forgeUsers.forEach(forgeUser => {
+    const member = mergeRequestMembers.find(m => m.externalId === forgeUser.externalId);
+    if (member && member.email) {
+      memberEmailForgeUserIdMap.set(member.email, forgeUser.id);
+    }
+    memberExternalIdForgeUserIdMap.set(forgeUser.externalId, forgeUser.id);
+  });
+
+
+  const author = extractData.mergeRequest.authorExternalId ? memberExternalIdForgeUserIdMap.get(extractData.mergeRequest.authorExternalId) || nullUserId : nullUserId;
+
+  const committers: number[] = [];
+  const reviewers: number[] = [];
+  const approvers: number[] = [];
+  let mergedBy: number = nullUserId;
+
+  for (const timelineEvent of extractData.timelineEvents) {
+
+    switch (timelineEvent.type) {
+      case 'committed': {
+        const committerEmail = (timelineEvent.data as extract.CommittedEvent).committerEmail;
+        if (committerEmail) {
+          const forgeUserId = memberEmailForgeUserIdMap.get(committerEmail);
+          if (forgeUserId) {
+            committers.push(forgeUserId);
+          }
+        }
+        break;
+      }
+      case 'reviewed': {
+        const forgeUserId =
+          timelineEvent.actorId
+            ? memberExternalIdForgeUserIdMap.get(timelineEvent.actorId) || nullUserId
+            : nullUserId;
+        reviewers.push(forgeUserId);
+        if ((timelineEvent.data as extract.ReviewedEvent).state === 'approved') {
+          approvers.push(forgeUserId);
+        }
+        break;
+      }
+      case 'merged': {
+        const forgeUserId =
+          timelineEvent.actorId
+            ? memberExternalIdForgeUserIdMap.get(timelineEvent.actorId) || nullUserId
+            : nullUserId;
+        mergedBy = forgeUserId;
+        break;
+      }
+    }
+  }
+
+  const usersJunk = mapUsersToJunk({
+    author,
+    mergedBy,
+    approvers,
+    committers,
+    reviewers,
+  }, nullUserId);
   /**** MergeRequestUsersJunk end ****/
 
   const mergeRequestEvents = mapMergeRequestEvents();
