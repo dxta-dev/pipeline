@@ -735,16 +735,6 @@ type MetricsEvents = {
   startedReview: transform.NewMergeRequestEvent,
 }
 
-function mapMergeRequestEventNotes(
-): transform.NewMergeRequestEvent[] {
-  return [];
-}
-
-function mapMergeRequestEvents(
-): transform.NewMergeRequestEvent[] {
-  return [];
-}
-
 function mapLifecycleEvents(
   mrAuthorId: number,
   openedAt: Date | null,
@@ -1016,7 +1006,13 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
   const approvers: number[] = [];
   let mergedBy: number = nullUserId;
 
+  const timelineEventForgeUsersIdsMap = new Map<TimelineEventData, { actorId: transform.ForgeUser['id'], committerId: transform.ForgeUser['id'] }>();
+
   for (const timelineEvent of extractData.timelineEvents) {
+    if(timelineEvent.actorId) {
+      const forgeUserId = memberExternalIdForgeUserIdMap.get(timelineEvent.actorId) || nullUserId;
+      timelineEventForgeUsersIdsMap.set(timelineEvent, { actorId: forgeUserId, committerId: nullUserId });
+    }
 
     switch (timelineEvent.type) {
       case 'committed': {
@@ -1025,6 +1021,10 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
           const forgeUserId = memberEmailForgeUserIdMap.get(committerEmail);
           if (forgeUserId) {
             committers.push(forgeUserId);
+            const value = timelineEventForgeUsersIdsMap.get(timelineEvent);
+            if (value) {
+              timelineEventForgeUsersIdsMap.set(timelineEvent, { actorId: value.actorId, committerId: forgeUserId });
+            }
           }
         }
         break;
@@ -1060,29 +1060,53 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
   }, nullUserId);
   /**** MergeRequestUsersJunk end ****/
 
-  const mergeRequestEvents = mapMergeRequestEvents();
+  const mergeRequestEvents: transform.NewMergeRequestEvent[] = []; 
 
-  // mapiraj ostale evente / notes
-  /*const events = mapMergeRequestEvents();
+  extractData.timelineEvents.forEach((event) => {
+    mergeRequestEvents.push({
+      repository: transformRepositoryId,
+      mergeRequest: transformMergeRequestId,
+      timestamp: event.timestamp,
+      occuredOn: timestampDateMap.get(event.timestamp.getTime()) || nullDateId,
+      commitedAt: event.type === 'committed' ? timestampDateMap.get((event.data as extract.CommittedEvent).committedDate.getTime()) || nullDateId : nullDateId,
+      actor: timelineEventForgeUsersIdsMap.get(event)?.actorId || nullUserId,
+      subject: nullUserId,
+      mergeRequestEventType: event.type,
+      reviewState: 'unknown',
+    });
+  });
 
-  const notes = mapMergeRequestEventNotes();
+  extractData.notes.forEach((note) => {
+    mergeRequestEvents.push({
+      repository: transformRepositoryId,
+      mergeRequest: transformMergeRequestId,
+      timestamp: note.timestamp,
+      occuredOn: timestampDateMap.get(note.timestamp.getTime()) || nullDateId,
+      commitedAt: nullDateId,
+      actor: memberExternalIdForgeUserIdMap.get(note.authorExternalId) || nullUserId,
+      subject: nullUserId,
+      mergeRequestEventType: 'noted',
+      reviewState: 'unknown',
+    });
+  });
 
   const metricEvents = mapLifecycleEvents(
     usersJunk.author,
     extractData.mergeRequest.openedAt,
-    transformDates.openedAt.id,
+    openedAtId,
     timeline.startedCodingAt,
-    transformDates.startedCodingAt.id,
+    startedCodingAtId,
     timeline.startedPickupAt,
-    transformDates.startedPickupAt.id,
+    startedPickupAtId,
     timeline.startedReviewAt,
-    transformDates.startedReviewAt.id,
+    startedReviewAtId,
     transformRepositoryId,
     transformMergeRequestId,
     nullDateId,
     nullUserId,
   );
-*/
+
+  mergeRequestEvents.push(metricEvents.opened, metricEvents.startedCoding, metricEvents.startedPickup, metricEvents.startedReview);
 
 
   await ctx.transformDatabase.transaction(
