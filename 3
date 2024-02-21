@@ -394,54 +394,48 @@ type TransformUserArgs = {
   bot: transform.ForgeUser['bot'];
 }
 
-function getCommitter(gitIdentity: extract.CommittedEvent, members: extract.NewMember[]) {
+function getCommitters(gitIdentity: extract.CommittedEvent, members: extract.Member[]): (number | null) {
   const frags = gitIdentity.committerEmail.split("+");
 
   if (frags.length > 1) {
     const member = members.find((m) => Number(m.externalId) === Number(frags[0]));
     if (member) {
-      return member;
+      return member.externalId;
     }
   }
 
   let member = members.find((m) => m.email !== null && m.email?.toLowerCase() === gitIdentity.committerEmail?.toLowerCase());
   if (member) {
-    return member
+    return member.externalId;
   }
 
   member = members.find((m) => m.name !== null && m.name?.toLowerCase() === gitIdentity.committerName.toLowerCase());
   if (member) {
-    return member;
+    return member.externalId;
   }
 
   member = members.find((m) => m.username.toLowerCase() === gitIdentity.committerName.toLowerCase());
   if (member) {
-    return member;
+    return member.externalId;
   }
 
-  member = members.find((m) => !!m.name && compare(m.name, gitIdentity.committerName));
+  member = members.find((m) => m.name !== null && compare(m.name, gitIdentity.committerName));
   if (member) {
-    return member;
+    return member.externalId;
   }
 
-  member = members.find((m) => !!m.email && compare(m.email, gitIdentity.committerEmail));
+  member = members.find((m) => m.email !== null && compare(m.email, gitIdentity.committerEmail));
   if (member) {
-    return member;
+    return member.externalId;
   }
 
   member = members.find((m) => m.username !== null && compare(m.username, gitIdentity.committerName));
   if (member) {
-    return member;
+    return member.externalId;
   }
 
   if (frags.length > 1) {
-    return {
-      externalId: Number(frags[0]),
-      forgeType: "github",
-      name: gitIdentity.committerName,
-      username: gitIdentity.committerName,
-      email: gitIdentity.committerEmail,
-    } satisfies extract.NewMember;
+    console.log("Found new member by externalId (the email way)", frags[0]);
   }
 
   return null;
@@ -652,7 +646,7 @@ export type TimelineEventData = {
   timestamp: extract.TimelineEvents['timestamp'];
   actorId: extract.TimelineEvents['actorId'];
   actorName: extract.TimelineEvents['actorName']; // is commitAuthorName for commit events
-  actorEmail: extract.TimelineEvents['actorEmail'];
+  commitAuthorEmail: extract.TimelineEvents['actorEmail'];
   data: extract.TimelineEvents['data'];
 }
 
@@ -726,7 +720,7 @@ async function selectExtractData(db: ExtractDatabase, extractMergeRequestId: num
     timestamp: timelineEvents.timestamp,
     actorId: timelineEvents.actorId,
     actorName: timelineEvents.actorName,
-    actorEmail: timelineEvents.actorEmail,
+    commitAuthorEmail: timelineEvents.actorEmail,
     data: timelineEvents.data
   })
     .from(timelineEvents)
@@ -1341,45 +1335,13 @@ function getMergeRequestMembers({
   timelineEvents,
   notes,
 }: {
-  members: extract.NewMember[],
+  members: extract.Member[],
   mergeRequest: MergeRequestData,
   timelineEvents: TimelineEventData[],
   notes: MergeRequestNoteData[],
-}) {
-
-  const memberSet = new Set<extract.NewMember["externalId"]>();
-
-  if (mergeRequest.authorExternalId !== null) {
-    const author = members.find(m => m.externalId === mergeRequest.authorExternalId);
-    if (author) memberSet.add(author.externalId);
-  }
-
-  for (const timelineEvent of timelineEvents) {
-    const actor = members.find(m => m.externalId === timelineEvent.actorId);
-    if (actor) {
-      memberSet.add(actor.externalId);
-    } else {
-      const actor = members.find(m => m.email === timelineEvent.actorEmail);
-      if (actor) {
-        memberSet.add(actor.externalId);
-      }
-    }
-
-    if (timelineEvent.type === 'committed') {
-      const committer = getCommitter(timelineEvent.data as extract.CommittedEvent, members);
-
-      if (committer) {
-        memberSet.add(committer.externalId);
-      }
-    }
-  }
-
-  for (const note of notes) {
-    const author = members.find(m => m.externalId === note.authorExternalId);
-    if (author) memberSet.add(author.externalId);
-  }
-
-  return memberSet;
+}): Set<extract.NewMember> {
+  // povezi commitere sa memberima
+  return new Set<extract.NewMember>();
 }
 
 export async function run(extractMergeRequestId: number, ctx: RunContext) {
@@ -1451,7 +1413,7 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
   /**** MergeRequestMetrics End ****/
 
   /**** MergeRequestDatesJunk ****/
-  const mergeRequestTimestamps = getMergeRequestTimestamps({
+  const mergeRequestTimestamps = getMergeRequestTimestamps({ 
     mergeRequest: extractData.mergeRequest,
     timelineEvents: extractData.timelineEvents,
     notes: extractData.notes,
@@ -1476,7 +1438,7 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
 
   /**** MergeRequestUsersJunk ****/
   const mergeRequestMembersSet = getMergeRequestMembers({
-    members: extractData.members,
+    extractMembers: extractData.members,
     mergeRequest: extractData.mergeRequest,
     timelineEvents: extractData.timelineEvents,
     notes: extractData.notes,
