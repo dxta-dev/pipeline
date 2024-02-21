@@ -593,6 +593,14 @@ function calculateDuration(start: Date | null, end: Date | null) {
   return end.getTime() - start.getTime();
 }
 
+type MemberData = {
+  forgeType: extract.Member['forgeType'];
+  externalId: extract.Member['externalId'];
+  name: extract.Member['name'];
+  username: extract.Member['username'];
+  email: extract.Member['email'];
+}
+
 type MergeRequestData = {
   openedAt: extract.MergeRequest['createdAt'],
   updatedAt: extract.MergeRequest['updatedAt'],
@@ -606,6 +614,8 @@ export type TimelineEventData = {
   type: extract.TimelineEvents['type'];
   timestamp: extract.TimelineEvents['timestamp'];
   actorId: extract.TimelineEvents['actorId'];
+  actorName: extract.TimelineEvents['actorName']; // is commitAuthorName for commit events
+  commitAuthorEmail: extract.TimelineEvents['actorEmail'];
   data: extract.TimelineEvents['data'];
 }
 
@@ -635,15 +645,6 @@ async function selectExtractData(db: ExtractDatabase, extractMergeRequestId: num
     .where(eq(mergeRequests.id, extractMergeRequestId))
     .get();
 
-  const membersData = await db.select({
-    externalId: extract.members.externalId,
-    name: extract.members.name,
-    username: extract.members.username,
-    email: extract.members.email,
-  })
-    .from(extract.members)
-    .all();
-
   const repositoryData = await db.select({
     repository: {
       externalId: repositories.externalId,
@@ -655,6 +656,17 @@ async function selectExtractData(db: ExtractDatabase, extractMergeRequestId: num
     .where(eq(repositories.id, mergeRequestData?.mergeRequest.repositoryId || 0))
     .innerJoin(namespaces, eq(namespaces.id, repositories.namespaceId))
     .get();
+
+    const membersData = await db.select({
+      forgeType: extract.members.forgeType,
+      externalId: extract.members.externalId,
+      name: extract.members.name,
+      username: extract.members.username,
+      email: extract.members.email,
+    })
+      .from(extract.members)
+      .where(eq(extract.members.forgeType, repositoryData?.repository.forgeType || "github")) // idk man
+      .all() satisfies MemberData[];  
 
   const mergerRequestDiffsData = await db.select({
     stringifiedHunks: mergeRequestDiffs.diff,
@@ -676,6 +688,8 @@ async function selectExtractData(db: ExtractDatabase, extractMergeRequestId: num
     type: timelineEvents.type,
     timestamp: timelineEvents.timestamp,
     actorId: timelineEvents.actorId,
+    actorName: timelineEvents.actorName,
+    commitAuthorEmail: timelineEvents.actorEmail,
     data: timelineEvents.data
   })
     .from(timelineEvents)
@@ -1196,6 +1210,61 @@ function mapTimestampToTransformDateId(
   return nullDateId;
 }
 
+function getMergeRequestMembersandCommitters({
+  extractMembers,
+  mergeRequest,
+  timelineEvents,
+  notes,
+}: {
+  extractMembers: MemberData[],
+  mergeRequest: MergeRequestData,
+  timelineEvents: TimelineEventData[],
+  notes: MergeRequestNoteData[],
+}) {
+
+  const mergeRequestMemberMap = new Map<extract.Member['externalId'], MemberData>();
+  const mergeRequestGitIdentityMap = new Map<string, { name: string, email: string }>(); // WHAT IS THIS ?????
+
+  // mr author
+  const mergeRequestAuthor = extractMembers.find(m => mergeRequest.authorExternalId === m.externalId);
+  if (mergeRequestAuthor) {
+    mergeRequestMemberMap.set(mergeRequestAuthor.externalId, mergeRequestAuthor);
+  }
+  // timeline actors / subjects / committers
+  for(const timelineEvent of timelineEvents) {
+    if (timelineEvent.type === 'committed') { // TODO: do we want to keep unique combinations or just emails ? not clear
+      const authorName = timelineEvent.actorName;
+      const authorEmail = timelineEvent.commitAuthorEmail!;
+      const committerName = (timelineEvent.data as extract.CommittedEvent).committerName;
+      const committerEmail = (timelineEvent.data as extract.CommittedEvent).committerEmail;
+
+      mergeRequestGitIdentityMap.set(authorEmail, { email: authorEmail, name: authorName });
+      mergeRequestGitIdentityMap.set(committerEmail, { email: committerEmail, name: committerName });
+    } else {
+      const timelineEventActor = extractMembers.find(m => timelineEvent.actorId === m.externalId);
+      if (timelineEventActor) {
+        mergeRequestMemberMap.set(timelineEventActor.externalId, timelineEventActor);
+      }
+      const timelineEventSubject = extractMembers.find(m => getTimelineEventSubjectId(timelineEvent) === m.externalId);
+      if (timelineEventSubject) {
+        mergeRequestMemberMap.set(timelineEventSubject.externalId, timelineEventSubject);
+      }  
+    }
+  }
+  // note authors
+  for(const note of notes) {
+    const noteAuthor = extractMembers.find(m => m.externalId === note.authorExternalId);
+    if (noteAuthor) {
+      mergeRequestMemberMap.set(noteAuthor.externalId, noteAuthor);
+    }
+  }
+  
+  return {
+    mergeRequestMembers: [...mergeRequestMemberMap.values()],
+    mergeRequestGitIdentities: [...mergeRequestGitIdentityMap.values()],
+  };
+}
+
 export async function run(extractMergeRequestId: number, ctx: RunContext) {
   const extractData = await selectExtractData(ctx.extractDatabase, extractMergeRequestId);
 
@@ -1278,9 +1347,32 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
   }, nullDateId);
 
   // Get the all members / commiters from events and upsert forge users
-  //
+  const { mergeRequestMembers, mergeRequestGitIdentities: _unusedIdentities } = getMergeRequestMembersandCommitters({
+    extractMembers: extractData.members,
+    mergeRequest: extractData.mergeRequest,
+    timelineEvents: extractData.timelineEvents,
+    notes: extractData.notes,
+  });
+
+  const { forgeUsers } = await ctx.transformDatabase.transaction(
+    async (tx) => {
+      const forgeUsers = await Promise.all(mergeRequestMembers.map(member => upsertForgeUser(tx, {
+        forgeType: member.forgeType,
+        externalId: member.externalId,
+        name: member.name || member.username,
+        bot: isMemberKnownBot(member.forgeType, member),
+      }).returning().get()));
+
+
+      // upsert committers ??? how do we map back from this then ??
+
+      return { forgeUsers };
+    }
+  );
+
   // get maps -> key is externalId, value is forgeUserId, key is email, value is forgeUserId
-  //
+  const mapOfUsers = forgeUsers.reduce((map, user) => map.set(user.externalId, user), new Map<number, transform.ForgeUser>())
+
   const usersJunk = mapUsersToJunk({
     author: transformUsersIds.author,
     mergedBy: transformUsersIds.mergedBy,
