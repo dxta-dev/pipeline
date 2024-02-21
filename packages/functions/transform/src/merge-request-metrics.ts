@@ -1265,6 +1265,8 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
   /**** MergeRequestMetrics End ****/
 
   // Refactor this!!! (split mapping and querying data)
+  //
+  // get map -> key is timestamp, value is transformDateId
   const transformDates = await mapDatesToTransformedDates(ctx.transformDatabase, {
     openedAt: extractData.mergeRequest.openedAt,
     mergedAt: extractData.mergeRequest.mergedAt,
@@ -1276,7 +1278,9 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
   }, nullDateId);
 
   // Get the all members / commiters from events and upsert forge users
-
+  //
+  // get maps -> key is externalId, value is forgeUserId, key is email, value is forgeUserId
+  //
   const usersJunk = mapUsersToJunk({
     author: transformUsersIds.author,
     mergedBy: transformUsersIds.mergedBy,
@@ -1286,9 +1290,10 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
   }, nullUserId);
 
 
+  const mergeRequestEvents = mapMergeRequestEvents();
 
   // mapiraj ostale evente / notes
-  const events = mapMergeRequestEvents();
+  /*const events = mapMergeRequestEvents();
 
   const notes = mapMergeRequestEventNotes();
 
@@ -1307,9 +1312,7 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
     nullDateId,
     nullUserId,
   );
-
-  const mergeRequestEvents = [...events, ...notes, metricEvents.opened, metricEvents.startedCoding, metricEvents.startedPickup, metricEvents.startedReview];
-
+*/
 
   await ctx.transformDatabase.transaction(
     async (tx) => {
