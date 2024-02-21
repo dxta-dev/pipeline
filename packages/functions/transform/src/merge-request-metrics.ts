@@ -305,7 +305,26 @@ function getDateIdOrNullDateId(dmy: DMY | null, datesData: {
   };
 }
 
-async function selectDates(db: TransformDatabase, dates: selectDatesArgs, nullDateId: number) {
+async function selectDates(db: TransformDatabase, dmys: DMY[]) {
+  const datesData = await db.select({
+    id: transform.dates.id,
+    year: transform.dates.year,
+    month: transform.dates.month,
+    day: transform.dates.day,
+    week: transform.dates.week,
+  }).from(transform.dates)
+    .where(
+      or(
+        ...dmys.map(dmy => getDMYQuery(dmy))
+      )
+    )
+    .all();
+
+  return datesData;
+}
+
+// Make this function only a mapping ??
+async function _selectDates(db: TransformDatabase, dates: selectDatesArgs, nullDateId: number) {
 
   const { dates: transformDates } = transform;
 
@@ -1265,6 +1284,39 @@ function getMergeRequestMembersandGitIdentities({
   };
 }
 
+function getMergeRequestTimestamps({
+  mergeRequest,
+  timelineEvents,
+  notes
+}: {
+  mergeRequest: MergeRequestData,
+  timelineEvents: TimelineEventData[],
+  notes: MergeRequestNoteData[],
+}) {
+  const timestamps = new Set<number>();
+
+  timestamps.add(mergeRequest.openedAt.getTime());
+  if (mergeRequest.closedAt) timestamps.add(mergeRequest.closedAt.getTime());
+  if (mergeRequest.mergedAt) timestamps.add(mergeRequest.mergedAt.getTime());
+  if (mergeRequest.updatedAt) timestamps.add(mergeRequest.updatedAt.getTime());
+
+  for (const timelineEvent of timelineEvents)  {
+
+    // Required for transform.MergeRequest['commitedAt']
+    // new Date() required bcuz JSON.parse(done by drizzle) doesn't coerce ISO8601 strings
+    if (timelineEvent.type === 'committed') timestamps.add(new Date((timelineEvent.data as extract.CommittedEvent).committedDate).getTime());
+
+    timestamps.add(timelineEvent.timestamp.getTime());
+  }
+
+  for(const note of notes) {
+    timestamps.add(note.timestamp.getTime());
+  }
+
+  // TODO: map to Dates ?
+  return [...timestamps.values()];
+}
+
 export async function run(extractMergeRequestId: number, ctx: RunContext) {
   const extractData = await selectExtractData(ctx.extractDatabase, extractMergeRequestId);
 
@@ -1334,8 +1386,23 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
   /**** MergeRequestMetrics End ****/
 
   // Refactor this!!! (split mapping and querying data)
-  //
+  const mergeRequestTimestamps = getMergeRequestTimestamps({
+    mergeRequest: extractData.mergeRequest,
+    timelineEvents: extractData.timelineEvents,
+    notes: extractData.notes,
+  });
+
+  // issue(optimization, non-blocking): DMY is not unique here, only timestamps
+  // issue(non-blocking): getDmy nullable, but isnt in number[]
+  const mergeRequestDates = await selectDates(ctx.transformDatabase, mergeRequestTimestamps.map(ts => getDMY(new Date(ts))!));
   // get map -> key is timestamp, value is transformDateId
+  const timestampDateMap = mergeRequestTimestamps.reduce(
+    (map, ts) => map.set(ts, getDateIdOrNullDateId(getDMY(new Date(ts)), mergeRequestDates, nullDateId).id),
+    new Map<number, transform.TransformDate['id']>()
+  );
+
+
+  // THIS SHOULD BE REFACTOR TO BE A MAP INSTEAD OF QUERY USING timestampDateMap!!!
   const transformDates = await mapDatesToTransformedDates(ctx.transformDatabase, {
     openedAt: extractData.mergeRequest.openedAt,
     mergedAt: extractData.mergeRequest.mergedAt,
