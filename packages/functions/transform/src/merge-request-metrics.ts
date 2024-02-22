@@ -1050,7 +1050,7 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
     commitedAt: nullDateId,
     actor: author,
     subject: nullUserId,
-    repository: transformMergeRequestId,
+    repository: transformRepositoryId,
     reviewState: 'unknown',
   } satisfies transform.NewMergeRequestEvent;
 
@@ -1062,7 +1062,7 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
     commitedAt: nullDateId,
     actor: author,
     subject: nullUserId,
-    repository: transformMergeRequestId,
+    repository: transformRepositoryId,
     reviewState: 'unknown',
   } satisfies transform.NewMergeRequestEvent;
 
