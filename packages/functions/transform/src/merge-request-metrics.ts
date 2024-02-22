@@ -1008,7 +1008,7 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
       mergeRequest: transformMergeRequestId,
       timestamp: event.timestamp,
       occuredOn: timestampDateMap.get(event.timestamp.getTime()) || nullDateId,
-      commitedAt: event.type === 'committed' ? timestampDateMap.get((event.data as extract.CommittedEvent).committedDate.getTime()) || nullDateId : nullDateId,
+      commitedAt: event.type === 'committed' ? timestampDateMap.get(new Date((event.data as extract.CommittedEvent).committedDate).getTime()) || nullDateId : nullDateId,
       actor: event.type === 'committed' ? timelineEventForgeUsersIdsMap.get(event)?.committerId || nullUserId : timelineEventForgeUsersIdsMap.get(event)?.actorId || nullUserId,
       subject: nullUserId,
       mergeRequestEventType: event.type,
