@@ -265,57 +265,71 @@ type MapUsersToJunksArgs = {
   reviewers: transform.ForgeUser['id'][]
 }
 
-function getCommitter(gitIdentity: extract.CommittedEvent, members: extract.NewMember[]) {
+function getCommitter(gitIdentity: extract.CommittedEvent, members: extract.NewMember[]): extract.NewMember[] {
+
+  function splitMembersByEmail(member: extract.NewMember, email: string) {
+    if (member.email === email) {
+      return [member];
+    }
+    return [member, {
+      externalId: member.externalId,
+      forgeType: member.forgeType,
+      name: member.name,
+      username: member.username,
+      email: email,
+    }] satisfies extract.NewMember[];
+  }
+
   const frags = gitIdentity.committerEmail.split("+");
 
   if (frags.length > 1) {
     const member = members.find((m) => Number(m.externalId) === Number(frags[0]));
     if (member) {
-      return member;
+      return [member];
     }
   }
 
   let member = members.find((m) => m.email !== null && m.email?.toLowerCase() === gitIdentity.committerEmail?.toLowerCase());
   if (member) {
-    return member
+    return [member];
   }
 
   member = members.find((m) => m.name !== null && m.name?.toLowerCase() === gitIdentity.committerName.toLowerCase());
   if (member) {
-    return member;
+    return splitMembersByEmail(member, gitIdentity.committerEmail);
   }
 
   member = members.find((m) => m.username.toLowerCase() === gitIdentity.committerName.toLowerCase());
   if (member) {
-    return member;
+    return splitMembersByEmail(member, gitIdentity.committerEmail);
   }
 
   member = members.find((m) => !!m.name && compare(m.name, gitIdentity.committerName));
   if (member) {
-    return member;
+    return splitMembersByEmail(member, gitIdentity.committerEmail);
   }
 
   member = members.find((m) => !!m.email && compare(m.email, gitIdentity.committerEmail));
   if (member) {
-    return member;
+    return splitMembersByEmail(member, gitIdentity.committerEmail);
   }
 
   member = members.find((m) => m.username !== null && compare(m.username, gitIdentity.committerName));
   if (member) {
-    return member;
+    return splitMembersByEmail(member, gitIdentity.committerEmail);
   }
 
   if (frags.length > 1) {
-    return {
+    return [{
       externalId: Number(frags[0]),
       forgeType: "github",
       name: gitIdentity.committerName,
       username: gitIdentity.committerName,
       email: gitIdentity.committerEmail,
-    } satisfies extract.NewMember;
+    }] satisfies extract.NewMember[];
   }
 
-  return null;
+  return [];
 }
 
 
@@ -863,11 +877,7 @@ function getMergeRequestMembers({
     }
 
     if (timelineEvent.type === 'committed') {
-      const committer = getCommitter(timelineEvent.data as extract.CommittedEvent, members);
-
-      if (committer) {
-        membersArray.push(committer);
-      }
+      membersArray.push(...getCommitter(timelineEvent.data as extract.CommittedEvent, members));
     }
   }
 
@@ -1220,5 +1230,5 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
       await deleteMergeRequestEvents(tx, transformMergeRequestId).run();
       await Promise.all(mergeRequestEvents.map(event => insertMergeRequestEvent(tx, event).run()));
     })
-    /**** DB update / insert end ****/
+  /**** DB update / insert end ****/
 }
