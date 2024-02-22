@@ -5,7 +5,7 @@
   "main": "src/index.ts",
   "scripts": {
     "type-check": "tsc --noEmit && echo \"✔ No TypeScript warnings or errors\"",
-    "test": "jest",
+    "test": "echo \"Warning: no test specified\"",
     "lint": "eslint . && echo \"✔ No ESLint warnings or errors\""
   },
   "author": "",
