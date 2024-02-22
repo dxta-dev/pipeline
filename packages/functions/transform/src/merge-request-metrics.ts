@@ -997,9 +997,8 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
     memberExternalIdForgeUserIdMap.set(forgeUser.externalId, forgeUser.id);
   });
 
-
-  const author = extractData.mergeRequest.authorExternalId 
-    ? memberExternalIdForgeUserIdMap.get(extractData.mergeRequest.authorExternalId) || nullUserId 
+  const author = extractData.mergeRequest.authorExternalId
+    ? memberExternalIdForgeUserIdMap.get(extractData.mergeRequest.authorExternalId) || nullUserId
     : nullUserId;
   const committers: number[] = [];
   const reviewers: number[] = [];
@@ -1009,7 +1008,7 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
   const timelineEventForgeUsersIdsMap = new Map<TimelineEventData, { actorId: transform.ForgeUser['id'], committerId: transform.ForgeUser['id'] }>();
 
   for (const timelineEvent of extractData.timelineEvents) {
-    if(timelineEvent.actorId) {
+    if (timelineEvent.actorId) {
       const forgeUserId = memberExternalIdForgeUserIdMap.get(timelineEvent.actorId) || nullUserId;
       timelineEventForgeUsersIdsMap.set(timelineEvent, { actorId: forgeUserId, committerId: nullUserId });
     }
@@ -1060,7 +1059,8 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
   }, nullUserId);
   /**** MergeRequestUsersJunk end ****/
 
-  const mergeRequestEvents: transform.NewMergeRequestEvent[] = []; 
+  /**** MergeRequestEvents ****/
+  const mergeRequestEvents: transform.NewMergeRequestEvent[] = [];
 
   extractData.timelineEvents.forEach((event) => {
     mergeRequestEvents.push({
@@ -1090,25 +1090,59 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
     });
   });
 
-  const metricEvents = mapLifecycleEvents(
-    usersJunk.author,
-    extractData.mergeRequest.openedAt,
-    openedAtId,
-    timeline.startedCodingAt,
-    startedCodingAtId,
-    timeline.startedPickupAt,
-    startedPickupAtId,
-    timeline.startedReviewAt,
-    startedReviewAtId,
-    transformRepositoryId,
-    transformMergeRequestId,
-    nullDateId,
-    nullUserId,
-  );
+  const opened = {
+    mergeRequest: transformMergeRequestId,
+    mergeRequestEventType: 'opened',
+    timestamp: extractData.mergeRequest.openedAt || new Date(0),
+    occuredOn: openedAtId,
+    commitedAt: nullDateId,
+    actor: author,
+    subject: nullUserId,
+    repository: transformRepositoryId,
+    reviewState: 'unknown',
+  } satisfies transform.NewMergeRequestEvent;
 
-  mergeRequestEvents.push(metricEvents.opened, metricEvents.startedCoding, metricEvents.startedPickup, metricEvents.startedReview);
+  const startedCoding = {
+    mergeRequest: transformMergeRequestId,
+    mergeRequestEventType: 'started_coding',
+    timestamp: timeline.startedCodingAt || new Date(0),
+    occuredOn: startedCodingAtId,
+    commitedAt: nullDateId,
+    actor: author,
+    subject: nullUserId,
+    repository: transformMergeRequestId,
+    reviewState: 'unknown',
+  } satisfies transform.NewMergeRequestEvent;
+
+  const startedPickup = {
+    mergeRequest: transformMergeRequestId,
+    mergeRequestEventType: 'started_pickup',
+    timestamp: timeline.startedPickupAt || new Date(0),
+    occuredOn: startedPickupAtId,
+    commitedAt: nullDateId,
+    actor: author,
+    subject: nullUserId,
+    repository: transformMergeRequestId,
+    reviewState: 'unknown',
+  } satisfies transform.NewMergeRequestEvent;
+
+  const startedReview = {
+    mergeRequest: transformMergeRequestId,
+    mergeRequestEventType: 'started_review',
+    timestamp: timeline.startedReviewAt || new Date(0),
+    occuredOn: startedReviewAtId,
+    commitedAt: nullDateId,
+    actor: author,
+    subject: nullUserId,
+    repository: transformRepositoryId,
+    reviewState: 'unknown',
+  } satisfies transform.NewMergeRequestEvent;
+
+  mergeRequestEvents.push(opened, startedCoding, startedPickup, startedReview);
+  /**** MergeRequestEvents end ****/
 
 
+  /**** DB update / insert ****/
   await ctx.transformDatabase.transaction(
     async (tx) => {
       if (mergeRequestMetricsId && datesJunkId && usersJunkId) {
@@ -1186,4 +1220,5 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
       await deleteMergeRequestEvents(tx, transformMergeRequestId).run();
       await Promise.all(mergeRequestEvents.map(event => insertMergeRequestEvent(tx, event).run()));
     })
+    /**** DB update / insert end ****/
 }
