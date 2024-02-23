@@ -272,7 +272,7 @@ type MapUsersToJunksArgs = {
   reviewers: transform.ForgeUser['id'][]
 }
 
-function getCommitter(gitIdentity: extract.CommittedEvent, members: extract.NewMember[]): extract.NewMember[] {
+function getCommitter(gitIdentity: extract.CommittedEvent & { committerId: number | null }, members: extract.NewMember[]): extract.NewMember[] {
 
   function splitMembersByEmail(member: extract.NewMember, email: string) {
     if (member.email === email) {
@@ -287,6 +287,14 @@ function getCommitter(gitIdentity: extract.CommittedEvent, members: extract.NewM
     }] satisfies extract.NewMember[];
   }
 
+  if (gitIdentity.committerId !== null) {
+    const member = members.find((m) => m.externalId === gitIdentity.committerId);
+    if (member) {
+      return [member];
+    }
+  }
+
+  // This should do anything? This should be removed
   const frags = gitIdentity.committerEmail.split("+");
 
   if (frags.length > 1) {
@@ -829,7 +837,7 @@ function getMergeRequestMembers({
     }
 
     if (timelineEvent.type === 'committed') {
-      membersArray.push(...getCommitter(timelineEvent.data as extract.CommittedEvent, members));
+      membersArray.push(...getCommitter(timelineEvent.data as extract.CommittedEvent & { committerId: number | null }, members));
     }
   }
 
