@@ -288,6 +288,8 @@ function getCommitter(gitIdentity: extract.CommittedEvent, members: extract.NewM
       name: member.name,
       username: member.username,
       email: email,
+      avatarUrl: member.avatarUrl,
+      profileUrl: member.profileUrl,
     }] satisfies extract.NewMember[];
   }
 
