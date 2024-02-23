@@ -719,6 +719,7 @@ export function calculateTimeline(timelineMapKeys: TimelineMapKey[], timelineMap
     mergedAt,
     reviewed,
     reviewDepth,
+    handover: 0
   };
 }
 
