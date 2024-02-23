@@ -72,6 +72,8 @@ export class GitHubSourceControl implements SourceControl {
       username
     });
 
+    console.log('fetchUserInfoFunkcija');
+
     return {
       member: {
         externalId: result.data.id,
@@ -79,6 +81,8 @@ export class GitHubSourceControl implements SourceControl {
         name: result.data.name,
         username: result.data.login,
         email: result.data.email,
+        profileUrl: result.data.html_url,
+        avatarUrl: result.data.avatar_url
       }
     }
   }
@@ -137,7 +141,7 @@ export class GitHubSourceControl implements SourceControl {
 
   async fetchMembers(externalRepositoryId: number, namespaceName: string, repositoryName: string, perPage: number, page?: number): Promise<{ members: NewMember[], pagination: Pagination }> {
     page = page || 1;
-
+    console.log('fetchMembersFunkcija');
     let result: Awaited<ReturnType<Octokit['repos']['listCollaborators']>>;
     try {
       result = await this.api.repos.listCollaborators({

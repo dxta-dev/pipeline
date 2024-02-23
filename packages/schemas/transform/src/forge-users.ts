@@ -9,6 +9,8 @@ export const forgeUsers = sqliteTable('forge_users', {
   externalId: integer('external_id').notNull(),
   forgeType: Enum('forge_type', { enum: ['unknown', 'github', 'gitlab'] }).notNull(),
   name: text('name').notNull(),
+  profileUrl: text('profile_url').default(''),
+  avatarUrl: text('avatar_url').default(''),
   bot: integer('bot', { mode: 'boolean' }).notNull(),
   _createdAt: integer('__created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
   _updatedAt: integer('__updated_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
