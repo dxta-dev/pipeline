@@ -64,6 +64,13 @@
       "when": 1708673689039,
       "tag": "0008_light_weapon_omega",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "5",
+      "when": 1708694988128,
+      "tag": "0009_plain_nico_minoru",
+      "breakpoints": true
     }
   ]
 }

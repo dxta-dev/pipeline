@@ -106,6 +106,8 @@ function upsertForgeUser(db: DatabaseTransaction | TransformDatabase, forgeUser:
       set: {
         name: forgeUser.name,
         bot: forgeUser.bot,
+        avatarUrl: forgeUser.avatarUrl,
+        profileUrl: forgeUser.profileUrl,
         _updatedAt: sql`(strftime('%s', 'now'))`,
       }
     })
@@ -228,6 +230,8 @@ async function upsertForgeUsers(db: TransformDatabase, members: extract.NewMembe
     externalId: member.externalId,
     forgeType: member.forgeType,
     name: member.name || member.username,
+    avatarUrl: member.avatarUrl,
+    profileUrl: member.profileUrl,
     bot: isMemberKnownBot(member.forgeType, member),
   } satisfies transform.NewForgeUser));
 
@@ -284,6 +288,8 @@ function getCommitter(gitIdentity: extract.CommittedEvent & { committerId: numbe
       name: member.name,
       username: member.username,
       email: email,
+      avatarUrl: member.avatarUrl,
+      profileUrl: member.profileUrl,
     }] satisfies extract.NewMember[];
   }
 
