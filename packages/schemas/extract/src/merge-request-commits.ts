@@ -17,8 +17,12 @@ export const mergeRequestCommits = sqliteTable('merge_request_commits', {
   message: text('message').notNull(),
   authorName: text('author_name').notNull(),
   authorEmail: text('author_email').notNull(),
+  authorExternalId: integer('author_external_id'),
+  authorUsername: text('author_username'),
   committerName: text('committer_name'),
   committerEmail: text('committer_email'),
+  committerExternalId: integer('committer_external_id'),
+  committerUsername: text('committer_username'),
   _createdAt: integer('__created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
   _updatedAt: integer('__updated_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
 }, (commits) => ({

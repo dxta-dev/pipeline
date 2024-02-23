@@ -4,7 +4,7 @@ import { createClient } from '@libsql/client';
 
 import type { Context } from "./config";
 import { type GetMergeRequestCommitsEntities, type GetMergeRequestCommitsSourceControl, getMergeRequestCommits } from "./get-merge-request-commits";
-import { mergeRequestCommits, namespaces, repositories, mergeRequests } from "@dxta/extract-schema";
+import { mergeRequestCommits, namespaces, repositories, mergeRequests, members, repositoriesToMembers } from "@dxta/extract-schema";
 import type { Repository, Namespace, MergeRequest, NewRepository, NewNamespace, NewMergeRequest } from "@dxta/extract-schema";
 import fs from 'fs';
 
@@ -71,7 +71,9 @@ beforeAll(async () => {
       mergeRequestCommits,
       namespaces,
       repositories,
-      mergeRequests
+      mergeRequests,
+      members,
+      repositoriesToMembers
     },
     integrations: {
       sourceControl: { fetchMergeRequestCommits }

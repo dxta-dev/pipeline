@@ -15,7 +15,7 @@ export const members = sqliteTable('members', {
   email: text('email'),
   profileUrl: text('profile_url').default(''),
   avatarUrl: text('avatar_url').default(''),
-  extractedSource: Enum('extracted_source', { enum: ['repository', 'namespace', 'notes', 'timeline'] }),
+  extractedSource: Enum('extracted_source', { enum: ['repository', 'namespace', 'notes', 'timeline', 'commit'] }),
   _createdAt: integer('__created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
   _updatedAt: integer('__updated_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
   _extractedAt: integer('__extracted_at', { mode: 'timestamp' }),

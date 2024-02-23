@@ -341,9 +341,13 @@ export class GitHubSourceControl implements SourceControl {
         message: mrc.commit.message,
         authorName: mrc.commit.author?.name || '',
         authorEmail: mrc.commit.author?.email || '',
+        authorExternalId: mrc.author?.id,
+        authorUsername: mrc.author?.login, // Is resolved GitHub UserName, different from commit name
         committerName: mrc.commit.committer?.name || '',
         committerEmail: mrc.commit.committer?.email || '',
-      })),
+        committerExternalId: mrc.committer?.id,
+        committerUsername: mrc.committer?.login, // Is resolved GitHub UserName, different from commit name
+      } satisfies NewMergeRequestCommit)),
     }
   }
 
