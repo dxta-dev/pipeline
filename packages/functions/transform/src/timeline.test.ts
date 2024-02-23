@@ -1450,7 +1450,7 @@ describe("timelines", () => {
 
     const result = calculateTimeline(keys as unknown as TimelineMapKey[], map as Map<TimelineMapKey, MergeRequestNoteData | TimelineEventData>, { authorExternalId, createdAt: new Date(pr.openedAt) });
 
-    const { startedCodingAt, mergedAt, reviewed, reviewDepth } = result;
+    const { startedCodingAt, mergedAt, reviewed, reviewDepth, handover } = result;
 
     const getTime = (date: Date | null) => date?.getTime() || null;
 
@@ -1470,5 +1470,9 @@ describe("timelines", () => {
     test('reviewDepth', () => {
       expect(reviewDepth).toEqual(expected.reviewDepth);
     });
+
+    test('handover', () => {
+      expect(handover).toEqual(expected.handover);
+    })
   });
 });

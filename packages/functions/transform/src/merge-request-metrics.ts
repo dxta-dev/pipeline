@@ -712,6 +712,37 @@ export function calculateTimeline(timelineMapKeys: TimelineMapKey[], timelineMap
     }
   }
 
+  let prevActorId: number | null = null;
+  let handover = 0;
+
+  sortedTimelineMapKeys.forEach(key => {
+    const value = timelineMap.get(key)
+    if (value  && value.type === 'note') {
+      return;
+    }
+    
+    if (value && value.type === "committed") {
+      const actorId = (value.data as { committerId: number | null}).committerId;
+      if (prevActorId !== null && actorId !== prevActorId) {
+        handover++;
+      }
+      prevActorId = actorId;
+      return;
+    }
+
+    if (value) {
+      const actorId = (value as unknown as TimelineEventData).actorId;
+      if (prevActorId !== null && actorId !== prevActorId) {
+        handover++;
+      }
+      prevActorId = actorId;
+      return;
+    }
+    });
+
+
+ 
+
   return {
     startedCodingAt,
     startedPickupAt,
@@ -719,7 +750,7 @@ export function calculateTimeline(timelineMapKeys: TimelineMapKey[], timelineMap
     mergedAt,
     reviewed,
     reviewDepth,
-    handover: 0
+    handover,
   };
 }
 
