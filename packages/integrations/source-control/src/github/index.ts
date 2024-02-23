@@ -178,6 +178,8 @@ export class GitHubSourceControl implements SourceControl {
         name: member.name,
         username: member.login,
         email: member.email,
+        profileUrl: member.html_url,
+        avatarUrl: member.avatar_url,
         extractedSource: 'repository',
       })),
       pagination
