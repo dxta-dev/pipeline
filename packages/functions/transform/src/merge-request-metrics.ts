@@ -459,7 +459,7 @@ export type MergeRequestNoteData = {
 }
 
 async function selectExtractData(db: ExtractDatabase, extractMergeRequestId: number) {
-  const { mergeRequests, mergeRequestDiffs, mergeRequestNotes, timelineEvents, repositories, namespaces } = extract;
+  const { mergeRequests, mergeRequestDiffs, mergeRequestNotes, timelineEvents, repositories, namespaces, mergeRequestCommits } = extract;
   const mergeRequestData = await db.select({
     mergeRequest: {
       openedAt: mergeRequests.createdAt,
@@ -529,6 +529,21 @@ async function selectExtractData(db: ExtractDatabase, extractMergeRequestId: num
     .where(eq(timelineEvents.mergeRequestId, extractMergeRequestId))
     .all() satisfies TimelineEventData[];
 
+  const commitsData = await db.select({
+    authorExternalId: mergeRequestCommits.authorExternalId,
+    authorName: mergeRequestCommits.authorName,
+    authorEmail: mergeRequestCommits.authorEmail,
+    committedDate: mergeRequestCommits.committedDate,
+    committerExternalId: mergeRequestCommits.committerExternalId,
+    committerName: mergeRequestCommits.committerName,
+    committerEmail: mergeRequestCommits.committerEmail,
+    createdAt: mergeRequestCommits.createdAt,
+  })
+    .from(mergeRequestCommits)
+    .where(eq(mergeRequestCommits.mergeRequestId, extractMergeRequestId))
+    .all();
+
+
   return {
     diffs: mergerRequestDiffsData,
     ...mergeRequestData || { mergeRequest: null },
@@ -536,6 +551,7 @@ async function selectExtractData(db: ExtractDatabase, extractMergeRequestId: num
     timelineEvents: timelineEventsData,
     ...repositoryData || { repository: null },
     members: membersData,
+    commits: commitsData,
   };
 }
 
@@ -866,6 +882,27 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
     repositoryId: _nullRepositoryId
   } = await selectNullRows(ctx.transformDatabase);
 
+  /**** Prepare timeline from commits ****/
+
+  const preparedTimelineEvents = extractData.timelineEvents.filter(ev => ev.type !== 'committed');
+
+  extractData.commits.forEach(commit => {
+    preparedTimelineEvents.push({
+      type: 'committed',
+      timestamp: commit.committedDate,
+      actorId: commit.authorExternalId,
+      actorName: commit.authorName,
+      actorEmail: commit.authorEmail,
+      data: {
+        committerId: commit.committerExternalId,
+        committerName: commit.committerName,
+        committerEmail: commit.committerEmail,
+        committedDate: commit.committedDate,
+      }
+    });
+  });
+  /**** Prepare end ****/
+
   /**** MergeRequestMetrics ****/
 
   // Get users and dates junk if they exist
@@ -951,19 +988,26 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
   const timelineEventForgeUsersIdsMap = new Map<TimelineEventData, { actorId: transform.ForgeUser['id'], committerId: transform.ForgeUser['id'] }>();
 
   for (const timelineEvent of extractData.timelineEvents) {
+    let forgeUserId = nullUserId;
     if (timelineEvent.actorId) {
-      const forgeUserId = memberExternalIdForgeUserIdMap.get(timelineEvent.actorId) || nullUserId;
+      forgeUserId = memberExternalIdForgeUserIdMap.get(timelineEvent.actorId) || nullUserId;
       timelineEventForgeUsersIdsMap.set(timelineEvent, { actorId: forgeUserId, committerId: nullUserId });
     }
 
     switch (timelineEvent.type) {
       case 'committed': {
+        const committerId = (timelineEvent.data as { committerId: number | null }).committerId;
+        if (committerId) {
+          committers.push(committerId);
+          timelineEventForgeUsersIdsMap.set(timelineEvent, { actorId: forgeUserId, committerId });
+          break;
+        }
         const committerEmail = (timelineEvent.data as extract.CommittedEvent).committerEmail;
         if (committerEmail) {
-          const forgeUserId = memberEmailForgeUserIdMap.get(committerEmail);
-          if (forgeUserId) {
-            committers.push(forgeUserId);
-            timelineEventForgeUsersIdsMap.set(timelineEvent, { actorId: nullUserId, committerId: forgeUserId });
+          const commiterId = memberEmailForgeUserIdMap.get(committerEmail) || nullUserId;
+          if (commiterId) {
+            committers.push(commiterId);
+            timelineEventForgeUsersIdsMap.set(timelineEvent, { actorId: forgeUserId, committerId: commiterId });
           }
         }
         break;

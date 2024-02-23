@@ -45,7 +45,7 @@ const pr1Expected = {
   startedReviewAt: null,
   mergedAt: new Date(40),
   reviewed: false,
-  reviewDepth: 0
+  reviewDepth: 0,
 };
 
 
