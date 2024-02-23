@@ -79,6 +79,8 @@ export class GitHubSourceControl implements SourceControl {
         name: result.data.name,
         username: result.data.login,
         email: result.data.email,
+        profileUrl: result.data.html_url,
+        avatarUrl: result.data.avatar_url
       }
     }
   }
