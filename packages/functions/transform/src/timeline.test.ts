@@ -166,6 +166,14 @@ const pr39 = {
   "authorExternalId": 1,
   "timeline": [
     {
+      "type": "reviewed",
+      "timestamp": 10,
+      "actorId": 3,
+      "data": {
+        "state": "pending"
+      }
+    },
+    {
       "type": "committed",
       "timestamp": 20,
       "actorId": null,
@@ -211,7 +219,7 @@ const pr39 = {
         "committerEmail": "Efawl@dontemailme.com",
         "committerName": "Mr. Iohai",
         "committedDate": 70,
-        "committerId": 2
+        "committerId": 2 // HANDOVER 1
       }
     },
     {
@@ -222,7 +230,7 @@ const pr39 = {
         "committerEmail": "Ourwp@dontemailme.com",
         "committerName": "Mr. Xkehk",
         "committedDate": 80,
-        "committerId": 1
+        "committerId": 1  // HANDOVER 2
       }
     },
     {
@@ -281,14 +289,6 @@ const pr39 = {
       }
     },
     {
-      "type": "reviewed",
-      "timestamp": 10,
-      "actorId": 3,
-      "data": {
-        "state": "pending"
-      }
-    },
-    {
       "type": "committed",
       "timestamp": 140,
       "actorId": null,
@@ -318,18 +318,18 @@ const pr39 = {
         "committerEmail": "Efawl@dontemailme.com",
         "committerName": "Mr. Nyjkq",
         "committedDate": 160,
-        "committerId": 2
+        "committerId": 2  // HANDOVER 3
       }
     },
     {
       "type": "ready_for_review",
       "timestamp": 170,
-      "actorId": 1
+      "actorId": 1  
     },
     {
       "type": "merged",
       "timestamp": 180,
-      "actorId": 1
+      "actorId": 1 // HANDOVER 4
     },
     {
       "type": "closed",
@@ -346,7 +346,7 @@ const pr39Expected = {
   mergedAt: new Date(180),
   reviewed: false,
   reviewDepth: 0,
-  handover: 6
+  handover: 4
 };
 
 const pr143 = {

@@ -718,6 +718,11 @@ export function calculateTimeline(timelineMapKeys: TimelineMapKey[], timelineMap
   sortedTimelineMapKeys.forEach(key => {
     const value = timelineMap.get(key)
     if (value  && value.type === 'note') {
+      const authorExternalId = value.authorExternalId;
+      if (prevActorId !== null && authorExternalId !== prevActorId) {
+        handover++;
+      }
+      prevActorId = authorExternalId;
       return;
     }
     
@@ -727,6 +732,19 @@ export function calculateTimeline(timelineMapKeys: TimelineMapKey[], timelineMap
         handover++;
       }
       prevActorId = actorId;
+      return;
+    }
+
+    if (value && value.type === "reviewed") {
+      const actorId = (value as unknown as TimelineEventData).actorId;
+      const isStatePending = (value.data as extract.ReviewedEvent).state === 'pending';
+    
+      if (prevActorId !== null && actorId !== prevActorId && !isStatePending) {
+        handover++;
+      }
+      if(!isStatePending) {
+        prevActorId = actorId;
+      }
       return;
     }
 
