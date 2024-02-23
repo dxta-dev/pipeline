@@ -57,20 +57,6 @@
       "when": 1708433028165,
       "tag": "0007_tough_odin",
       "breakpoints": true
-    },
-    {
-      "idx": 8,
-      "version": "5",
-      "when": 1708673506555,
-      "tag": "0008_tidy_shaman",
-      "breakpoints": true
-    },
-    {
-      "idx": 9,
-      "version": "5",
-      "when": 1708677579944,
-      "tag": "0009_little_groot",
-      "breakpoints": true
     }
   ]
 }
