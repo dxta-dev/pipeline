@@ -836,28 +836,28 @@ const pr100 = {
         "committerId": 1
       }
     },
-    {
-      "type": "committed",
-      "timestamp": 40,
-      "actorId": null,
-      "data": {
-        "committerEmail": "Cgxfb@dontemailme.com",
-        "committerName": "Mr. Dyrqe",
-        "committedDate": 40
-        // BOT
-      }
-    },
-    {
-      "type": "committed",
-      "timestamp": 50,
-      "actorId": null,
-      "data": {
-        "committerEmail": "Cgxfb@dontemailme.com",
-        "committerName": "Mr. Swkjp",
-        "committedDate": 50
-        // BOT
-      }
-    },
+    // {
+    //   "type": "committed",
+    //   "timestamp": 40,
+    //   "actorId": null,
+    //   "data": {
+    //     "committerEmail": "Cgxfb@dontemailme.com",
+    //     "committerName": "Mr. Dyrqe",
+    //     "committedDate": 40
+    //     // BOT
+    //   }
+    // },
+    // {
+    //   "type": "committed",
+    //   "timestamp": 50,
+    //   "actorId": null,
+    //   "data": {
+    //     "committerEmail": "Cgxfb@dontemailme.com",
+    //     "committerName": "Mr. Swkjp",
+    //     "committedDate": 50
+    //     // BOT
+    //   }
+    // },
     {
       "type": "reviewed",
       "timestamp": 60,
@@ -871,17 +871,17 @@ const pr100 = {
       "timestamp": 70,
       "actorId": 1
     },
-    {
-      "type": "committed",
-      "timestamp": 80,
-      "actorId": null,
-      "data": {
-        "committerEmail": "Cgxfb@dontemailme.com",
-        "committerName": "Mr. Nzyxs",
-        "committedDate": 80
-        // BOT
-      }
-    },
+    // {
+    //   "type": "committed",
+    //   "timestamp": 80,
+    //   "actorId": null,
+    //   "data": {
+    //     "committerEmail": "Cgxfb@dontemailme.com",
+    //     "committerName": "Mr. Nzyxs",
+    //     "committedDate": 80
+    //     // BOT
+    //   }
+    // },
     {
       "type": "merged",
       "timestamp": 90,
