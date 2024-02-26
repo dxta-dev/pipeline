@@ -1005,7 +1005,7 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
 
 
   // Caluculate the rest of the metrics for MergeRequestMetrics
-  const timeline = runTimeline(extractData.mergeRequest, extractData.timelineEvents, extractData.notes);
+  const timeline = runTimeline(extractData.mergeRequest, preparedTimelineEvents, extractData.notes);
 
 
   // Calculate merged and closed for MergeRequestMetrics
