@@ -9,10 +9,12 @@ email: [project|group]\_[0-9]{1,}\_bot\_[a-zA-Z0-9]{1,}@noreply.gitlab.com
 */
 type GitIdentity = { name: string; email: string; };
 
+const isBotUsername = (name: string) => name.endsWith("[bot]");
+
 const listOfKnownBotGitIdentitiesGitHub = [
   {
-    name: "renovate[bot]",
-    email: "29139614+renovate[bot]@users.noreply.github.com",
+    name: "GitHub", // GitHub web-flow
+    email: "noreply@github.com",
   },
   {
     name: "CroCoder Bot",
@@ -30,13 +32,15 @@ export function isGitIdentityKnownBot(forgeType: 'github' | 'gitlab', gitIdentit
 
   if (forgeType === 'gitlab' && isGitIdentityGitlabServiceAccount(gitIdentity)) return true;
 
+  if (isBotUsername(gitIdentity.name)) return true;
+
   return false;
 }
 type Member = { externalId: number, username: string };
 const listOfKnownBotMembersGitHub = [
   {
-    externalId: 29139614,
-    username: "renovate[bot]",
+    externalId: 19864447, // GitHub web-flow
+    username: "web-flow"
   },
   {
     externalId: 71839055,
@@ -52,6 +56,8 @@ export function isMemberKnownBot(forgeType: 'github' | 'gitlab', member: Member)
   if (listOfKnownBotMembers.find(bot => bot.externalId === member.externalId)) return true;
 
   if (forgeType === 'gitlab' && isMemberGitlabServiceAccount(member)) return true;
+
+  if (isBotUsername(member.username)) return true;
 
   return false;
 }
