@@ -992,17 +992,17 @@ const pr312 = {
         "state": "approved"
       }
     },
-    {
-      "type": "committed",
-      "timestamp": 50,
-      "actorId": null,
-      "data": {
-        "committerEmail": "Cgxfb@dontemailme.com",
-        "committerName": "Mr. Tcbkb",
-        "committedDate": 50
-        // BOT
-      }
-    },
+    // {
+    //   "type": "committed",
+    //   "timestamp": 50,
+    //   "actorId": null,
+    //   "data": {
+    //     "committerEmail": "Cgxfb@dontemailme.com",
+    //     "committerName": "Mr. Tcbkb",
+    //     "committedDate": 50
+    //     // BOT
+    //   }
+    // },
     {
       "type": "merged",
       "timestamp": 60,
