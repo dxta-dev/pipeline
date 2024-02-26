@@ -714,6 +714,7 @@ export function calculateTimeline(timelineMapKeys: TimelineMapKey[], timelineMap
 
   let prevActorId: number | null = null;
   let handover = 0;
+  let isClosed = false;
 
   sortedTimelineMapKeys.forEach(key => {
     const value = timelineMap.get(key)
@@ -725,8 +726,12 @@ export function calculateTimeline(timelineMapKeys: TimelineMapKey[], timelineMap
       prevActorId = authorExternalId;
       return;
     }
+
+    if (value && value.type == "closed") {
+      isClosed = true;
+    }
     
-    if (value && value.type === "committed") {
+    if (value && value.type === "committed" && !isClosed) {
       const actorId = (value.data as { committerId: number | null}).committerId;
       if (prevActorId !== null && actorId !== prevActorId) {
         handover++;
@@ -735,7 +740,7 @@ export function calculateTimeline(timelineMapKeys: TimelineMapKey[], timelineMap
       return;
     }
 
-    if (value && value.type === "reviewed") {
+    if (value && value.type === "reviewed" && !isClosed) {
       const actorId = (value as unknown as TimelineEventData).actorId;
       const isStatePending = (value.data as extract.ReviewedEvent).state === 'pending';
     
@@ -748,7 +753,7 @@ export function calculateTimeline(timelineMapKeys: TimelineMapKey[], timelineMap
       return;
     }
 
-    if (value) {
+    if (value && !isClosed) {
       const actorId = (value as unknown as TimelineEventData).actorId;
       if (prevActorId !== null && actorId !== prevActorId) {
         handover++;
@@ -756,7 +761,7 @@ export function calculateTimeline(timelineMapKeys: TimelineMapKey[], timelineMap
       prevActorId = actorId;
       return;
     }
-    });
+  });
 
 
  
