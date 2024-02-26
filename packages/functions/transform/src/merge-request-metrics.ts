@@ -551,7 +551,7 @@ export type RunContext = {
 };
 
 export type TimelineMapKey = {
-  type: extract.TimelineEvents['type'] | 'note',
+  type: extract.TimelineEvents['type'] | 'note' | 'opened',
   timestamp: Date,
 }
 
@@ -606,7 +606,12 @@ function getMergedAt(timelineMapKeys: TimelineMapKey[]) {
   return null;
 }
 
-export function calculateTimeline(timelineMapKeys: TimelineMapKey[], timelineMap: Map<TimelineMapKey, MergeRequestNoteData | TimelineEventData>, { authorExternalId, createdAt }: calcTimelineArgs) {
+type OpenedEventData =  {
+  actorId : extract.MergeRequest['authorExternalId'],
+  type : 'opened',
+}
+
+export function calculateTimeline(timelineMapKeys: TimelineMapKey[], timelineMap: Map<TimelineMapKey, MergeRequestNoteData | TimelineEventData | OpenedEventData>, { authorExternalId, createdAt }: calcTimelineArgs) {
 
   const sortedTimelineMapKeys = [...timelineMapKeys]
   sortedTimelineMapKeys.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
@@ -715,8 +720,18 @@ export function calculateTimeline(timelineMapKeys: TimelineMapKey[], timelineMap
   let prevActorId: number | null = null;
   let handover = 0;
   let isClosed = false;
-
-  sortedTimelineMapKeys.forEach(key => {
+  const handoverSortedTimelineMapKeys = [...sortedTimelineMapKeys];
+  if (createdAt !== null) {
+    const index = handoverSortedTimelineMapKeys.findIndex(key => key.timestamp >= createdAt);
+    const openedEventKey = {timestamp: createdAt, type: 'opened'} as const;
+    if (index === -1) {
+      handoverSortedTimelineMapKeys.push(openedEventKey);
+    } else {
+      handoverSortedTimelineMapKeys.splice(index, 0, openedEventKey);
+    }
+    timelineMap.set(openedEventKey, {type: 'opened', actorId: authorExternalId});
+  }
+  handoverSortedTimelineMapKeys.forEach(key => {
     const value = timelineMap.get(key)
     if (value  && value.type === 'note') {
       const authorExternalId = value.authorExternalId;

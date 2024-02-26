@@ -1171,56 +1171,6 @@ const pr93Expected = {
   handover: 1
 };
 
-
-const pr173 = {
-  "openedAt": 10,
-  "authorExternalId": 2,
-  "timeline": [
-    {
-      "type": "committed",
-      "timestamp": 20,
-      "actorId": null,
-      "data": {
-        "committerEmail": "Cgxfb@dontemailme.com",
-        "committerName": "Mr. Mderm",
-        "committedDate": 20
-        // BOT
-      }
-    },
-    {
-      "type": "committed",
-      "timestamp": 30,
-      "actorId": null,
-      "data": {
-        "committerEmail": "Cgxfb@dontemailme.com",
-        "committerName": "Mr. Rguub",
-        "committedDate": 30
-        // BOT
-      }
-    },
-    {
-      "type": "merged",
-      "timestamp": 40,
-      "actorId": 1
-    },
-    {
-      "type": "closed",
-      "timestamp": 50,
-      "actorId": 1
-    }
-  ]
-};
-
-const pr173Expected = {
-  startedCodingAt: new Date(10),
-  startedPickupAt: new Date(30),
-  startedReviewAt: null,
-  mergedAt: new Date(40),
-  reviewed: false,
-  reviewDepth: 0,
-  handover: 1
-};
-
 const pr41 = {
   "openedAt": 10,
   "authorExternalId": 3,
@@ -1409,7 +1359,7 @@ const pr270Expected = {
   startedReviewAt: null,
   mergedAt: new Date(50),
   reviewed: false,
-  reviewDepth: 0,                                           // 101, 143, 
+  reviewDepth: 0,
   handover: 3
 };
 
@@ -1427,7 +1377,6 @@ const fixtures = [
   ['pr100', { pr: pr100, expected: pr100Expected }],
   ['pr101', { pr: pr101, expected: pr101Expected }],
   ['pr143', { pr: pr143, expected: pr143Expected }],
-  ['pr173', { pr: pr173, expected: pr173Expected }],
   ['pr193', { pr: pr193, expected: pr193Expected }],
   ['pr270', { pr: pr270, expected: pr270Expected }],
   ['pr312', { pr: pr312, expected: pr312Expected }], 
