@@ -768,17 +768,17 @@ const pr99 = {
         "requestedReviewerName": "Mr. Iciqz"
       }
     },
-    {
-      "type": "committed",
-      "timestamp": 50,
-      "actorId": null,
-      "data": {
-        "committerEmail": "Cgxfb@dontemailme.com",
-        "committerName": "Mr. Mtadz",
-        "committedDate": 50,
-        // BOT
-      }
-    },
+    // {
+    //   "type": "committed",
+    //   "timestamp": 50,
+    //   "actorId": null,
+    //   "data": {
+    //     "committerEmail": "Cgxfb@dontemailme.com",
+    //     "committerName": "Mr. Mtadz",
+    //     "committedDate": 50,
+    //     // BOT
+    //   }
+    // },
     {
       "type": "reviewed",
       "timestamp": 60,
@@ -1137,17 +1137,17 @@ const pr93 = {
         "requestedReviewerName": "Mr. Kaius"
       }
     },
-    {
-      "type": "committed",
-      "timestamp": 120,
-      "actorId": null,
-      "data": {
-        "committerEmail": "Cgxfb@dontemailme.com",
-        "committerName": "Mr. Laxfc",
-        "committedDate": 120
-        // BOT
-      }
-    },
+    // {
+    //   "type": "committed",
+    //   "timestamp": 120,
+    //   "actorId": null,
+    //   "data": {
+    //     "committerEmail": "Cgxfb@dontemailme.com",
+    //     "committerName": "Mr. Laxfc",
+    //     "committedDate": 120
+    //     // BOT
+    //   }
+    // },
     {
       "type": "merged",
       "timestamp": 130,
@@ -1421,16 +1421,16 @@ const fixtures = [
   ['pr41', { pr: pr41, expected: pr41Expected }],
   ['pr73', { pr: pr73, expected: pr73Expected }],
   ['pr74', { pr: pr74, expected: pr74Expected }],
-  // ['pr83', { pr: pr83, expected: pr83Expected }],
-  // ['pr93', { pr: pr93, expected: pr93Expected }],
-  // ['pr99', { pr: pr99, expected: pr99Expected }],
-  // ['pr100', { pr: pr100, expected: pr100Expected }],
-  // ['pr101', { pr: pr101, expected: pr101Expected }],
-  // ['pr143', { pr: pr143, expected: pr143Expected }],
-  // ['pr173', { pr: pr173, expected: pr173Expected }],
-  // ['pr193', { pr: pr193, expected: pr193Expected }],
-  // ['pr270', { pr: pr270, expected: pr270Expected }],
-  // ['pr312', { pr: pr312, expected: pr312Expected }], 
+  ['pr83', { pr: pr83, expected: pr83Expected }],
+  ['pr93', { pr: pr93, expected: pr93Expected }],
+  ['pr99', { pr: pr99, expected: pr99Expected }],
+  ['pr100', { pr: pr100, expected: pr100Expected }],
+  ['pr101', { pr: pr101, expected: pr101Expected }],
+  ['pr143', { pr: pr143, expected: pr143Expected }],
+  ['pr173', { pr: pr173, expected: pr173Expected }],
+  ['pr193', { pr: pr193, expected: pr193Expected }],
+  ['pr270', { pr: pr270, expected: pr270Expected }],
+  ['pr312', { pr: pr312, expected: pr312Expected }], 
 ] as [string, { pr: typeof pr1 | typeof pr5 | typeof pr143, expected: typeof pr1Expected | typeof pr5Expected | typeof pr143Expected }][]
 
 
