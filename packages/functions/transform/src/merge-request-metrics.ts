@@ -105,7 +105,6 @@ function upsertForgeUser(db: DatabaseTransaction | TransformDatabase, forgeUser:
       ],
       set: {
         name: forgeUser.name,
-        // bot: forgeUser.bot, // should be manually maintained
         avatarUrl: forgeUser.avatarUrl,
         profileUrl: forgeUser.profileUrl,
         _updatedAt: sql`(strftime('%s', 'now'))`,
