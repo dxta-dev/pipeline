@@ -1306,17 +1306,17 @@ const pr193 = {
         "state": "approved"
       }
     },
-    {
-      "type": "committed",
-      "timestamp": 50,
-      "actorId": null,
-      "data": {
-        "committerEmail": "Cgxfb@dontemailme.com",
-        "committerName": "Mr. Vdfeg",
-        "committedDate": 50
-        // BOT
-      }
-    },
+    // {
+    //   "type": "committed",
+    //   "timestamp": 50,
+    //   "actorId": null,
+    //   "data": {
+    //     "committerEmail": "Cgxfb@dontemailme.com",
+    //     "committerName": "Mr. Vdfeg",
+    //     "committedDate": 50
+    //     // BOT
+    //   }
+    // },
     {
       "type": "merged",
       "timestamp": 60,
@@ -1409,7 +1409,7 @@ const pr270Expected = {
   startedReviewAt: null,
   mergedAt: new Date(50),
   reviewed: false,
-  reviewDepth: 0,
+  reviewDepth: 0,                                           // 101, 143, 
   handover: 3
 };
 
