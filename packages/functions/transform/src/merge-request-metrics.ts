@@ -575,7 +575,7 @@ export type RunContext = {
 };
 
 export type TimelineMapKey = {
-  type: extract.TimelineEvents['type'] | 'note',
+  type: extract.TimelineEvents['type'] | 'note' | 'opened',
   timestamp: Date,
 }
 
@@ -630,7 +630,12 @@ function getMergedAt(timelineMapKeys: TimelineMapKey[]) {
   return null;
 }
 
-export function calculateTimeline(timelineMapKeys: TimelineMapKey[], timelineMap: Map<TimelineMapKey, MergeRequestNoteData | TimelineEventData>, { authorExternalId, createdAt }: calcTimelineArgs) {
+type OpenedEventData =  {
+  actorId : extract.MergeRequest['authorExternalId'],
+  type : 'opened',
+}
+
+export function calculateTimeline(timelineMapKeys: TimelineMapKey[], timelineMap: Map<TimelineMapKey, MergeRequestNoteData | TimelineEventData | OpenedEventData>, { authorExternalId, createdAt }: calcTimelineArgs) {
 
   const sortedTimelineMapKeys = [...timelineMapKeys]
   sortedTimelineMapKeys.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
@@ -736,6 +741,70 @@ export function calculateTimeline(timelineMapKeys: TimelineMapKey[], timelineMap
     }
   }
 
+  let prevActorId: number | null = null;
+  let handover = 0;
+  let isClosed = false;
+  const handoverSortedTimelineMapKeys = [...sortedTimelineMapKeys];
+  if (createdAt !== null) {
+    const index = handoverSortedTimelineMapKeys.findIndex(key => key.timestamp >= createdAt);
+    const openedEventKey = {timestamp: createdAt, type: 'opened'} as const;
+    if (index === -1) {
+      handoverSortedTimelineMapKeys.push(openedEventKey);
+    } else {
+      handoverSortedTimelineMapKeys.splice(index, 0, openedEventKey);
+    }
+    timelineMap.set(openedEventKey, {type: 'opened', actorId: authorExternalId});
+  }
+  handoverSortedTimelineMapKeys.forEach(key => {
+    const value = timelineMap.get(key)
+    if (value  && value.type === 'note') {
+      const authorExternalId = value.authorExternalId;
+      if (prevActorId !== null && authorExternalId !== prevActorId) {
+        handover++;
+      }
+      prevActorId = authorExternalId;
+      return;
+    }
+
+    if (value && value.type == "closed") {
+      isClosed = true;
+    }
+    
+    if (value && value.type === "committed" && !isClosed) {
+      const actorId = (value.data as { committerId: number | null}).committerId;
+      if (prevActorId !== null && actorId !== prevActorId) {
+        handover++;
+      }
+      prevActorId = actorId;
+      return;
+    }
+
+    if (value && value.type === "reviewed" && !isClosed) {
+      const actorId = (value as unknown as TimelineEventData).actorId;
+      const isStatePending = (value.data as extract.ReviewedEvent).state === 'pending';
+    
+      if (prevActorId !== null && actorId !== prevActorId && !isStatePending) {
+        handover++;
+      }
+      if(!isStatePending) {
+        prevActorId = actorId;
+      }
+      return;
+    }
+
+    if (value && !isClosed) {
+      const actorId = (value as unknown as TimelineEventData).actorId;
+      if (prevActorId !== null && actorId !== prevActorId) {
+        handover++;
+      }
+      prevActorId = actorId;
+      return;
+    }
+  });
+
+
+ 
+
   return {
     startedCodingAt,
     startedPickupAt,
@@ -743,6 +812,7 @@ export function calculateTimeline(timelineMapKeys: TimelineMapKey[], timelineMap
     mergedAt,
     reviewed,
     reviewDepth,
+    handover,
   };
 }
 
