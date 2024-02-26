@@ -105,7 +105,7 @@ function upsertForgeUser(db: DatabaseTransaction | TransformDatabase, forgeUser:
       ],
       set: {
         name: forgeUser.name,
-        bot: forgeUser.bot,
+        // bot: forgeUser.bot, // should be manually maintained
         avatarUrl: forgeUser.avatarUrl,
         profileUrl: forgeUser.profileUrl,
         _updatedAt: sql`(strftime('%s', 'now'))`,
@@ -966,32 +966,32 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
     repositoryId: _nullRepositoryId
   } = await selectNullRows(ctx.transformDatabase);
 
+  /**** Transform forge users ****/
   const mergeRequestMembers = getMergeRequestMembers({
     members: extractData.members,
     mergeRequest: extractData.mergeRequest,
     timelineEvents: extractData.timelineEvents,
     notes: extractData.notes,
   });
+  const forgeUsers = await upsertForgeUsers(ctx.transformDatabase, mergeRequestMembers);
+  const isForgeUserBotByIdSearch = (memberExternalId: number | null)=> {
+    if (memberExternalId === null) return false; // if no id, cant tell if its a bot
+    return forgeUsers.filter(m => m.externalId === memberExternalId).find(m => m.bot === true) !== undefined
+  }
+  /**** Transform forge users end****/
 
   /**** Prepare timeline from commits ****/
-
-
-  const isBotMemberByIdSearch = (memberExternalId: number | null)=> {
-    if (memberExternalId === null) return false; // if no id, cant tell if its a bot
-    return mergeRequestMembers.filter(m => m.externalId === memberExternalId).find(m => isMemberKnownBot(m.forgeType, m)) !== undefined
-  }
   const preparedTimelineEvents = extractData.timelineEvents.filter(ev =>
-    ev.type !== 'committed' && !isBotMemberByIdSearch(ev.actorId)
+    ev.type !== 'committed' && !isForgeUserBotByIdSearch(ev.actorId)
   );
 
   extractData.commits.forEach(commit => {
-    if (isBotMemberByIdSearch(commit.authorExternalId) || isBotMemberByIdSearch(commit.committerExternalId)) return;
+    if (isForgeUserBotByIdSearch(commit.authorExternalId) || isForgeUserBotByIdSearch(commit.committerExternalId)) return;
 
     if (isGitIdentityKnownBot(extractData.repository.forgeType, {
       name: commit.authorName,
       email: commit.authorEmail
     })) return;
-
     if (commit.committerName && commit.committerEmail 
       && isGitIdentityKnownBot(extractData.repository.forgeType, {
       name: commit.committerName,
@@ -1066,8 +1066,6 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
 
 
   /**** MergeRequestUsersJunk ****/
-  const forgeUsers = await upsertForgeUsers(ctx.transformDatabase, mergeRequestMembers);
-
   const memberEmailForgeUserIdMap = new Map<extract.Member['email'], transform.ForgeUser['id']>();
   const memberExternalIdForgeUserIdMap = new Map<extract.Member['externalId'], transform.ForgeUser['id']>();
 
