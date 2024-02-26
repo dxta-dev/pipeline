@@ -22,7 +22,6 @@ const filteredGitIdentitiesGitHub = [
   { name: 'dejan-crocoder', email: '139872861+dejan-crocoder@users.noreply.github.com' },
   { name: 'Dejan Tot', email: '139872861+dejan-crocoder@users.noreply.github.com' },
   { name: 'Ante-Koceic', email: '97022082+Ante-Koceic@users.noreply.github.com' },
-  { name: 'GitHub', email: 'noreply@github.com' },
 ];
 
 const gitIdentitiesGitlab = [
