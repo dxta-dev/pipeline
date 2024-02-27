@@ -1153,7 +1153,7 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
   /**** MergeRequestEvents ****/
   const mergeRequestEvents: transform.NewMergeRequestEvent[] = [];
 
-  extractData.timelineEvents.forEach((event) => {
+  preparedTimelineEvents.forEach((event) => {
     mergeRequestEvents.push({
       repository: transformRepositoryId,
       mergeRequest: transformMergeRequestId,
