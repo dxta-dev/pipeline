@@ -6,7 +6,7 @@ import { isCodeGen } from './is-codegen';
 import { parseHunks } from './parse-hunks';
 import { type SQLiteTransaction } from 'drizzle-orm/sqlite-core';
 import { type ResultSet } from '@libsql/client/.';
-import { isGitIdentityKnownBot, isMemberKnownBot } from './known-bots';
+import { isMemberKnownBot } from './known-bots';
 import { getDateInfo } from '../../../schemas/transform/src/seed/dimensions';
 import { compare } from './compare';
 
@@ -971,39 +971,13 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
     repositoryId: _nullRepositoryId
   } = await selectNullRows(ctx.transformDatabase);
 
-  /**** Transform forge users ****/
-  const mergeRequestMembers = getMergeRequestMembers({
-    members: extractData.members,
-    mergeRequest: extractData.mergeRequest,
-    timelineEvents: extractData.timelineEvents,
-    notes: extractData.notes,
-  });
-  const forgeUsers = await upsertForgeUsers(ctx.transformDatabase, mergeRequestMembers);
-  const isForgeUserBotByIdSearch = (memberExternalId: number | null)=> {
-    if (memberExternalId === null) return false; // if no id, cant tell if its a bot
-    return forgeUsers.filter(m => m.externalId === memberExternalId).find(m => m.bot === true) !== undefined
-  }
-  /**** Transform forge users end****/
-
   /**** Prepare timeline from commits ****/
-  const preparedTimelineEvents = extractData.timelineEvents.filter(ev =>
-    ev.type !== 'committed' && !isForgeUserBotByIdSearch(ev.actorId)
+  const prePreparedTimelineEvents = extractData.timelineEvents.filter(ev =>
+    ev.type !== 'committed'
   );
 
   extractData.commits.forEach(commit => {
-    if (isForgeUserBotByIdSearch(commit.authorExternalId) || isForgeUserBotByIdSearch(commit.committerExternalId)) return;
-
-    if (isGitIdentityKnownBot(extractData.repository.forgeType, {
-      name: commit.authorName,
-      email: commit.authorEmail
-    })) return;
-    if (commit.committerName && commit.committerEmail 
-      && isGitIdentityKnownBot(extractData.repository.forgeType, {
-      name: commit.committerName,
-      email: commit.committerEmail
-    })) return;
-
-    preparedTimelineEvents.push({
+    prePreparedTimelineEvents.push({
       type: 'committed',
       timestamp: commit.committedDate,
       actorId: commit.authorExternalId,
@@ -1018,6 +992,29 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
     });
   });
   /**** Prepare end ****/
+
+  /**** Transform forge users and filter bot events ****/
+  const mergeRequestMembers = getMergeRequestMembers({
+    members: extractData.members,
+    mergeRequest: extractData.mergeRequest,
+    timelineEvents: prePreparedTimelineEvents,
+    notes: extractData.notes,
+  });
+  const forgeUsers = await upsertForgeUsers(ctx.transformDatabase, mergeRequestMembers);
+  const isForgeUserBotByIdSearch = (memberExternalId: number | null) => {
+    if (memberExternalId === null) return false; // if no id, cant tell if its a bot
+    return forgeUsers.filter(m => m.externalId === memberExternalId).find(m => m.bot === true) !== undefined
+  }
+
+  const preparedTimelineEvents = prePreparedTimelineEvents.filter(event => {
+    if (isForgeUserBotByIdSearch(event.actorId)) return false;
+    if (event.type === 'committed') {
+      if (isForgeUserBotByIdSearch((event.data as { committerId: number | null }).committerId)) return false;
+    }
+    return true;
+  })
+  /**** Transform forge users and filter bot events end****/
+
 
   /**** MergeRequestMetrics ****/
 
@@ -1049,7 +1046,7 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
   /**** MergeRequestDatesJunk ****/
   const mergeRequestTimestamps = getMergeRequestTimestamps({
     mergeRequest: extractData.mergeRequest,
-    timelineEvents: extractData.timelineEvents,
+    timelineEvents: preparedTimelineEvents,
     notes: extractData.notes,
   });
 
@@ -1077,7 +1074,7 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
   forgeUsers.forEach(forgeUser => {
     const members = mergeRequestMembers.filter(m => m.externalId === forgeUser.externalId);
     members.forEach(member => {
-      if (member && member.email) {
+      if (member && member.email) {        
         memberEmailForgeUserIdMap.set(member.email, forgeUser.id);
       }
       memberExternalIdForgeUserIdMap.set(forgeUser.externalId, forgeUser.id);
@@ -1094,7 +1091,7 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
 
   const timelineEventForgeUsersIdsMap = new Map<TimelineEventData, { actorId: transform.ForgeUser['id'], committerId: transform.ForgeUser['id'] }>();
 
-  for (const timelineEvent of extractData.timelineEvents) {
+  for (const timelineEvent of preparedTimelineEvents) {
     let forgeUserId = nullUserId;
     if (timelineEvent.actorId) {
       forgeUserId = memberExternalIdForgeUserIdMap.get(timelineEvent.actorId) || nullUserId;
@@ -1103,8 +1100,10 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
 
     switch (timelineEvent.type) {
       case 'committed': {
-        const committerId = (timelineEvent.data as { committerId: number | null }).committerId;
-        if (committerId) {
+        const committerExternalId = (timelineEvent.data as { committerId: number | null }).committerId;
+        if (committerExternalId && memberExternalIdForgeUserIdMap.has(committerExternalId)) {
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          const committerId = memberExternalIdForgeUserIdMap.get(committerExternalId)!;
           committers.push(committerId);
           timelineEventForgeUsersIdsMap.set(timelineEvent, { actorId: forgeUserId, committerId });
           break;
