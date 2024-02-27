@@ -12,7 +12,7 @@ export function TransformStack({ stack }: StackContext) {
   const ENVSchema = z.object({
     CLERK_JWT_ISSUER: z.string(),
     CLERK_JWT_AUDIENCE: z.string(),
-    CRON_DISABLED: z.literal('true').optional(),
+    CRON_DISABLED: z.literal('true').or(z.any()).optional(),
   });
   const ENV = ENVSchema.parse(process.env);
 
