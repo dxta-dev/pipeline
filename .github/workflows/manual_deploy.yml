@@ -27,7 +27,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       CLERK_JWT_ISSUER: ${{ secrets.CLERK_JWT_ISSUER }}
-      CLERK_JWT_AUDIENCE: ${{ secrets.CLERK_JWT_AUDIENCE }}  
+      CLERK_JWT_AUDIENCE: ${{ secrets.CLERK_JWT_AUDIENCE }}
+      CRON_DISABLED: ${{ secrets.CRON_DISABLED }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
