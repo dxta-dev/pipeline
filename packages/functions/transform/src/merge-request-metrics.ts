@@ -215,14 +215,14 @@ function getDateIdOrNullDateId(dmy: DMY | null, datesData: {
   };
 }
 
-async function upsertForgeUsers(db: TransformDatabase, members: extract.NewMember[]) {
+async function upsertForgeUsers(db: TransformDatabase, members: MemberData[]) {
 
   const uniqueMembers = members.reduce((acc, member) => {
     if (!acc.some(m => m.externalId === member.externalId)) {
       acc.push(member);
     }
     return acc;
-  }, [] as extract.NewMember[]);
+  }, [] as MemberData[]);
 
 
   const newForgeUsers = uniqueMembers.map((member) => ({
@@ -275,9 +275,9 @@ type MapUsersToJunksArgs = {
   reviewers: transform.ForgeUser['id'][]
 }
 
-function getCommitter(gitIdentity: extract.CommittedEvent & { committerId: number | null }, members: extract.NewMember[]): extract.NewMember[] {
+function getCommitter(gitIdentity: extract.CommittedEvent & { committerId: number | null }, members: MemberData[]): MemberData[] {
 
-  function splitMembersByEmail(member: extract.NewMember, email: string) {
+  function splitMembersByEmail(member: MemberData, email: string) {
     if (member.email === email) {
       return [member];
     }
@@ -289,7 +289,7 @@ function getCommitter(gitIdentity: extract.CommittedEvent & { committerId: numbe
       email: email,
       avatarUrl: member.avatarUrl,
       profileUrl: member.profileUrl,
-    }] satisfies extract.NewMember[];
+    }] satisfies MemberData[];
   }
 
   if (gitIdentity.committerId !== null) {
@@ -344,9 +344,11 @@ function getCommitter(gitIdentity: extract.CommittedEvent & { committerId: numbe
       externalId: Number(frags[0]),
       forgeType: "github",
       name: gitIdentity.committerName,
-      username: gitIdentity.committerName,
+      username: gitIdentity.committerName,      
       email: gitIdentity.committerEmail,
-    }] satisfies extract.NewMember[];
+      profileUrl: '',
+      avatarUrl: ''
+    }] satisfies MemberData[];
   }
 
   return [];
@@ -445,6 +447,8 @@ type MemberData = {
   name: extract.Member['name'];
   username: extract.Member['username'];
   email: extract.Member['email'];
+  avatarUrl: extract.Member['avatarUrl'];
+  profileUrl: extract.Member['profileUrl'];
 }
 
 type MergeRequestData = {
@@ -509,6 +513,8 @@ async function selectExtractData(db: ExtractDatabase, extractMergeRequestId: num
     name: extract.members.name,
     username: extract.members.username,
     email: extract.members.email,
+    profileUrl: extract.members.profileUrl,
+    avatarUrl: extract.members.avatarUrl,    
   })
     .from(extract.members)
     .where(eq(extract.members.forgeType, repositoryData?.repository.forgeType || "github")) // idk man
@@ -887,7 +893,7 @@ function getMergeRequestMembers({
   timelineEvents,
   notes,
 }: {
-  members: extract.NewMember[],
+  members: MemberData[],
   mergeRequest: MergeRequestData,
   timelineEvents: TimelineEventData[],
   notes: MergeRequestNoteData[],
