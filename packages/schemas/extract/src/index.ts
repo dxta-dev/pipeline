@@ -14,6 +14,7 @@ export {
   ReviewRequestedEventSchema,
   ReviewedEventSchema,
   UnassignedEventSchema,
+  TimelineEventTypes
 } from './timeline-events';
 
 export type { Repository, NewRepository } from './repositories';
