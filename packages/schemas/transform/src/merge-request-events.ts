@@ -57,6 +57,7 @@ export const mergeRequestEvents = sqliteTable('merge_request_events', {
 }, (events) => ({
   eventsOccuredOnIndex: index('merge_request_events_occured_on_idx').on(events.occuredOn),
   eventsMergeRequestIndex: index('merge_request_events_merge_request_idx').on(events.mergeRequest),
+  eventsCommitedAtIndex: index('merge_request_events_commited_at_idx').on(events.commitedAt),
 }));
 
 export type MergeRequestEvent = InferSelectModel<typeof mergeRequestEvents>;
