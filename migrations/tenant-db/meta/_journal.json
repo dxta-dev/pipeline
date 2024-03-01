@@ -71,6 +71,20 @@
       "when": 1708694988128,
       "tag": "0009_plain_nico_minoru",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "5",
+      "when": 1709160546057,
+      "tag": "0010_purple_black_bolt",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "5",
+      "when": 1709229730771,
+      "tag": "0011_fuzzy_felicia_hardy",
+      "breakpoints": true
     }
   ]
 }
