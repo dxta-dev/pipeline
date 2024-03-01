@@ -99,6 +99,7 @@ export function ExtractStack({ stack }: StackContext) {
         FETCH_TIMELINE_EVENTS_PER_PAGE
       ],
       handler: "src/extract/queue.handler",
+      timeout: "30 seconds",
     },
   });
 
