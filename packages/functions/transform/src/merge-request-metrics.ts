@@ -825,7 +825,7 @@ function runTimeline(mergeRequestData: MergeRequestData, timelineEvents: Timelin
   const timelineMap = setupTimeline(timelineEvents, notes);
   const timelineMapKeys = [...timelineMap.keys()];
 
-  const { startedCodingAt, startedReviewAt, startedPickupAt, reviewed, reviewDepth } = calculateTimeline(
+  const { startedCodingAt, startedReviewAt, startedPickupAt, reviewed, reviewDepth, handover } = calculateTimeline(
     timelineMapKeys,
     timelineMap,
     {
@@ -848,6 +848,7 @@ function runTimeline(mergeRequestData: MergeRequestData, timelineEvents: Timelin
     reviewed,
     reviewDepth,
     approved,
+    handover,
     codingDuration,
     pickupDuration,
     reviewDuration,
@@ -1262,7 +1263,7 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
           codingDuration: timeline.codingDuration,
           pickupDuration: timeline.pickupDuration,
           reviewDuration: timeline.reviewDuration,
-          handover: 0,
+          handover: timeline.handover,
           reviewDepth: timeline.reviewDepth,
           merged,
           closed,
@@ -1293,7 +1294,7 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
           codingDuration: timeline.codingDuration,
           pickupDuration: timeline.pickupDuration,
           reviewDuration: timeline.reviewDuration,
-          handover: 0,
+          handover: timeline.handover,
           reviewDepth: timeline.reviewDepth,
           merged,
           closed,
