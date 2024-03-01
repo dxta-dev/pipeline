@@ -973,12 +973,12 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
   } = await selectNullRows(ctx.transformDatabase);
 
   /**** Prepare timeline from commits ****/
-  const prePreparedTimelineEvents = extractData.timelineEvents.filter(ev =>
+  const timelineEventsWithCorrectedCommits = extractData.timelineEvents.filter(ev =>
     ev.type !== 'committed'
   );
 
   extractData.commits.forEach(commit => {
-    prePreparedTimelineEvents.push({
+    timelineEventsWithCorrectedCommits.push({
       type: 'committed',
       timestamp: commit.committedDate,
       actorId: commit.authorExternalId,
@@ -998,7 +998,7 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
   const mergeRequestMembers = getMergeRequestMembers({
     members: extractData.members,
     mergeRequest: extractData.mergeRequest,
-    timelineEvents: prePreparedTimelineEvents,
+    timelineEvents: timelineEventsWithCorrectedCommits,
     notes: extractData.notes,
   });
   const forgeUsers = await upsertForgeUsers(ctx.transformDatabase, mergeRequestMembers);
@@ -1007,7 +1007,7 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
     return forgeUsers.filter(m => m.externalId === memberExternalId).find(m => m.bot === true) !== undefined
   }
 
-  const preparedTimelineEvents = prePreparedTimelineEvents.filter(event => {
+  const timelineEventsWithoutBots = timelineEventsWithCorrectedCommits.filter(event => {
     if (isForgeUserBotByIdSearch(event.actorId)) return false;
     if (event.type === 'committed') {
       if (isForgeUserBotByIdSearch((event.data as { committerId: number | null }).committerId)) return false;
@@ -1035,7 +1035,7 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
 
 
   // Caluculate the rest of the metrics for MergeRequestMetrics
-  const timeline = runTimeline(extractData.mergeRequest, preparedTimelineEvents, extractData.notes);
+  const timeline = runTimeline(extractData.mergeRequest, timelineEventsWithoutBots, extractData.notes);
 
 
   // Calculate merged and closed for MergeRequestMetrics
@@ -1047,7 +1047,7 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
   /**** MergeRequestDatesJunk ****/
   const mergeRequestTimestamps = getMergeRequestTimestamps({
     mergeRequest: extractData.mergeRequest,
-    timelineEvents: preparedTimelineEvents,
+    timelineEvents: timelineEventsWithCorrectedCommits,
     notes: extractData.notes,
   });
 
@@ -1092,7 +1092,7 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
 
   const timelineEventForgeUsersIdsMap = new Map<TimelineEventData, { actorId: transform.ForgeUser['id'], committerId: transform.ForgeUser['id'] }>();
 
-  for (const timelineEvent of preparedTimelineEvents) {
+  for (const timelineEvent of timelineEventsWithCorrectedCommits) {
     let forgeUserId = nullUserId;
     if (timelineEvent.actorId) {
       forgeUserId = memberExternalIdForgeUserIdMap.get(timelineEvent.actorId) || nullUserId;
@@ -1153,7 +1153,7 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
   /**** MergeRequestEvents ****/
   const mergeRequestEvents: transform.NewMergeRequestEvent[] = [];
 
-  preparedTimelineEvents.forEach((event) => {
+  timelineEventsWithCorrectedCommits.forEach((event) => {
     mergeRequestEvents.push({
       repository: transformRepositoryId,
       mergeRequest: transformMergeRequestId,
