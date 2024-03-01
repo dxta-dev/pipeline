@@ -5,7 +5,6 @@ import { sqliteTable } from './user-table';
 
 export const teams = sqliteTable('teams', {
   id: integer('id').primaryKey(),
-  // repository: integer('repository').notNull(), // CONSIDER: is a team per repository ?
   name: text('name').notNull(),
   _createdAt: integer('__created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
   _updatedAt: integer('__updated_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
