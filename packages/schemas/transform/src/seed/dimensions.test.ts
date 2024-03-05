@@ -26,7 +26,7 @@ beforeAll(async () => {
     url: `file:${dbName}`,
   });
   db = drizzle(sqlite);
-  await migrate(db, { migrationsFolder: "../../../migrations/tenant-db" });
+  await migrate(db, { migrationsFolder: "../../../migrations/combined" });
 });
 
 afterAll(() => {

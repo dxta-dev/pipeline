@@ -1,5 +1,5 @@
 {
-  "name": "@dxta/tenant-db-schema",
+  "name": "@dxta/combined-schema",
   "version": "1.0.0",
   "description": "",
   "main": "src/index.ts",
