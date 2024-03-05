@@ -15,8 +15,8 @@
   "dependencies": {
     "@dxta/crawl-schema": "*",
     "@dxta/extract-schema": "*",
-    "@dxta/transform-schema": "*",
-    "@dxta/tenant-schema": "*"
+    "@dxta/tenant-schema": "*",
+    "@dxta/transform-schema": "*"
   },
   "devDependencies": {
     "dotenv-cli": "^7.3.0",
