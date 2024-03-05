@@ -22,5 +22,5 @@ export { mergeRequestEvents as transformMergeRequestEvents } from '@dxta/transfo
 export { instances as crawlInstances } from '@dxta/crawl-schema';
 export { events as crawlEvents } from '@dxta/crawl-schema';
 
-export { teams as userTeams } from '@dxta/user-schema';
-export { teamMembers as userTeamMembers } from '@dxta/user-schema';
+export { teams as tenantTeams } from '@dxta/tenant-schema';
+export { teamMembers as tenantTeamMembers } from '@dxta/tenant-schema';
