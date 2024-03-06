@@ -64,6 +64,7 @@ export async function seed(db: LibSQLDatabase, startDate: Date, endDate: Date) {
     dateId: insertedNullDate.id,
     mergeRequestId: insertedNullMergeRequest.id,
     repositoryId: insertedNullRepo.id,
+    branchId: insertedNullBranch.id,
   }).onConflictDoNothing().returning().get();
 
   return insertedNullRows;
