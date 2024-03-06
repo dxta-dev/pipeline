@@ -8,6 +8,7 @@ import { dates } from "../dates";
 import { mergeRequests } from "../merge-requests";
 import { repositories } from "../repositories";
 import { nullRows } from "../null-rows";
+import { type NewBranch, branches } from "src/branches";
 
 const nullForgeUser = {
   id: 1,
@@ -25,12 +26,19 @@ const nullDate = {
   year: Number.MAX_SAFE_INTEGER,
 } satisfies NewTransformDate;
 
+const nullBranch = {
+  id: 1,
+  name: '',
+} satisfies NewBranch;
+
 const nullMergeRequest = {
   id: 1,
   externalId: Number.MAX_SAFE_INTEGER,
   forgeType: 'unknown',
   title: '',
   webUrl: '',
+  sourceBranch: nullBranch.id,
+  targetBranch: nullBranch.id,
 } satisfies NewMergeRequest;
 
 const nullRepository = {
@@ -43,12 +51,13 @@ const nullRepository = {
 export async function seed(db: LibSQLDatabase, startDate: Date, endDate: Date) {
   const insertedNullForgeUser = await db.insert(forgeUsers).values(nullForgeUser).onConflictDoNothing().returning().get();
   const insertedNullDate = await db.insert(dates).values(nullDate).onConflictDoNothing().returning().get();
+  const insertedNullBranch = await db.insert(branches).values(nullBranch).onConflictDoNothing().returning().get();
   const insertedNullMergeRequest = await db.insert(mergeRequests).values(nullMergeRequest).onConflictDoNothing().returning().get();
   const insertedNullRepo = await db.insert(repositories).values(nullRepository).onConflictDoNothing().returning().get();
   await db.insert(dates).values(generateDates(startDate, endDate)).onConflictDoNothing().run();
   
   // TODO: ???
-  if (!insertedNullForgeUser || !insertedNullDate || !insertedNullMergeRequest || !insertedNullRepo) return undefined;
+  if (!insertedNullBranch || !insertedNullForgeUser || !insertedNullDate || !insertedNullMergeRequest || !insertedNullRepo) return undefined;
 
   const insertedNullRows = await db.insert(nullRows).values({
     userId: insertedNullForgeUser.id,
