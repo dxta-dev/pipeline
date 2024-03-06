@@ -1,7 +1,7 @@
 import type { InferSelectModel, InferInsertModel } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
 import { integer, uniqueIndex } from 'drizzle-orm/sqlite-core';
-import { sqliteTable } from './user-table';
+import { sqliteTable } from './tenant-table';
 import { teams } from './teams';
 
 export const teamMembers = sqliteTable('team_members', {
