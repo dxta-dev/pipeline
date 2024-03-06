@@ -3,6 +3,7 @@ import { sql } from 'drizzle-orm';
 import { text, integer, uniqueIndex } from 'drizzle-orm/sqlite-core';
 import { Enum } from './enum-column';
 import { sqliteTable } from './transform-table';
+import { branches } from './branches';
 
 export const mergeRequests = sqliteTable('merge_requests', {
   id: integer('id').primaryKey(),
@@ -13,6 +14,8 @@ export const mergeRequests = sqliteTable('merge_requests', {
   title: text('title').notNull(),
   description: text('description').default(''),
   webUrl: text('web_url').notNull(),
+  targetBranch: integer('target_branch').notNull().references(() => branches.id),
+  sourceBranch: integer('source_branch').notNull().references(() => branches.id),
   _createdAt: integer('__created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
   _updatedAt: integer('__updated_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
 }, (mergeRequests) => ({
