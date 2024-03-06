@@ -77,6 +77,20 @@ function upsertRepository(db: TransformDatabase, repo: transform.NewRepository) 
     .returning();
 }
 
+function upsertBranch(db: TransformDatabase, branch: transform.NewBranch) {
+  return db.insert(transform.branches)
+    .values(branch)
+    .onConflictDoUpdate({
+      target: [
+        transform.branches.name
+      ],
+      set: {
+        _updatedAt: sql`(strftime('%s', 'now'))`,
+      }
+    })
+    .returning();
+}
+
 function upsertMergeRequest(db: TransformDatabase, mergeRequest: transform.NewMergeRequest) {
   return db.insert(transform.mergeRequests)
     .values(mergeRequest)
@@ -490,6 +504,8 @@ async function selectExtractData(db: ExtractDatabase, extractMergeRequestId: num
       title: mergeRequests.title,
       description: mergeRequests.description,
       webUrl: mergeRequests.webUrl,
+      sourceBranch: mergeRequests.sourceBranch,
+      targetBranch: mergeRequests.targetBranch,
     }
   }).from(mergeRequests)
     .where(eq(mergeRequests.id, extractMergeRequestId))
@@ -955,6 +971,16 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
   })
     .get();
 
+  const { id: transformSourceBranchId } = await upsertBranch(ctx.transformDatabase, {
+    name: extractData.mergeRequest.sourceBranch || "",
+  })
+    .get();
+
+  const { id: transformTargetBranchId } = await upsertBranch(ctx.transformDatabase, {
+    name: extractData.mergeRequest.targetBranch || "",
+  })
+    .get();
+
   const { id: transformMergeRequestId } = await upsertMergeRequest(ctx.transformDatabase, {
     externalId: extractData.mergeRequest.externalId,
     canonId: extractData.mergeRequest.canonId,
@@ -962,6 +988,8 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
     title: extractData.mergeRequest.title,
     description: extractData.mergeRequest.description,
     webUrl: extractData.mergeRequest.webUrl,
+    sourceBranch: transformSourceBranchId,
+    targetBranch: transformTargetBranchId,
   })
     .get();
 
