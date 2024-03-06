@@ -1,0 +1,15 @@
+{
+  "name": "@dxta/tenant-schema",
+  "version": "1.0.0",
+  "main": "src/index.ts",
+  "type": "module",
+  "scripts": {
+    "type-check": "tsc --noEmit && echo \"✔ No TypeScript warnings or errors\"",
+    "test": "echo \"Warning: no test specified\"",
+    "lint": "eslint . && echo \"✔ No ESLint warnings or errors\""
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "drizzle-kit": "^0.20.6"
+  }
+}

@@ -24,7 +24,7 @@ beforeAll(async () => {
   });
   db = drizzle(sqlite);
 
-  await migrate(db, { migrationsFolder: "../../../migrations/tenant-db" });
+  await migrate(db, { migrationsFolder: "../../../migrations/combined" });
 
   fetchUserInfo = jest.fn((externalId: number, username: string) => {
     switch (username) {

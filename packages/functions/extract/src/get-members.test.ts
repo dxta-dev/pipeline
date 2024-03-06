@@ -29,7 +29,7 @@ beforeAll(async () => {
   });
   db = drizzle(sqlite);
 
-  await migrate(db, { migrationsFolder: "../../../migrations/tenant-db" });
+  await migrate(db, { migrationsFolder: "../../../migrations/combined" });
   await db.insert(namespaces).values(TEST_NAMESPACE).run();
   await db.insert(repositories).values(TEST_REPO).run();
 
