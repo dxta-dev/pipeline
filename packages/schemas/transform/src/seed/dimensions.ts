@@ -8,7 +8,7 @@ import { dates } from "../dates";
 import { mergeRequests } from "../merge-requests";
 import { repositories } from "../repositories";
 import { nullRows } from "../null-rows";
-import { type NewBranch, branches } from "src/branches";
+import { type NewBranch, branches } from "../branches";
 
 const nullForgeUser = {
   id: 1,
