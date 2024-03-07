@@ -9,6 +9,7 @@ export const nullRows = sqliteTable('null_rows', {
   userId: integer('users_id').notNull(),
   mergeRequestId: integer('merge_requests_id').notNull(),
   repositoryId: integer('repository_id').notNull(),
+  branchId: integer('branch_id').notNull().default(1),
   _createdAt: integer('__created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
   _updatedAt: integer('__updated_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
 });
