@@ -136,4 +136,13 @@ INSERT INTO transform_merge_request_events
 DROP TABLE `_transform_merge_request_events_old`;--> statement-breakpoint
 DROP TABLE `_transform_merge_request_metrics_old`;--> statement-breakpoint
 DROP TABLE `_transform_merge_requests_old`;--> statement-breakpoint
+
+CREATE UNIQUE INDEX `merge_requests_external_id_forge_type_idx` ON `transform_merge_requests` (`external_id`,`forge_type`);--> statement-breakpoint
+CREATE INDEX `merge_request_events_occured_on_idx` ON `transform_merge_request_events` (`occured_on`);
+CREATE INDEX `merge_request_events_merge_request_idx` ON `transform_merge_request_events` (`merge_request`);--> statement-breakpoint
+CREATE INDEX `merge_request_metrics_users_junk_idx` ON `transform_merge_request_metrics` (`users_junk`);--> statement-breakpoint
+CREATE INDEX `merge_request_metrics_dates_junk_idx` ON `transform_merge_request_metrics` (`dates_junk`);--> statement-breakpoint
+CREATE INDEX `merge_request_metrics_repository_idx` ON `transform_merge_request_metrics` (`repository`);--> statement-breakpoint
+CREATE INDEX `merge_request_events_commited_at_idx` ON `transform_merge_request_events` (`commited_at`);--> statement-breakpoint
+CREATE INDEX `merge_request_metrics_merge_request_idx` ON `transform_merge_request_metrics` (`merge_request`);--> statement-breakpoint
 PRAGMA foreign_keys=on;
