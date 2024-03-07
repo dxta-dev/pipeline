@@ -415,8 +415,8 @@ function calculateMrSize(mergeRequestId: number, diffs: { stringifiedHunks: stri
     console.log("Warn: 0 Diffs found for merge request with id: ", mergeRequestId);
     return {
       mrSize: 0,
-      codeAddition: -1,
-      codeDeletion: -1,
+      codeAddition: 0,
+      codeDeletion: 0,
     }
   }
 
