@@ -15,6 +15,8 @@ ALTER TABLE transform_null_rows ADD `branch_id` integer DEFAULT 1 NOT NULL;--> s
 PRAGMA foreign_keys=off;--> statement-breakpoint
 ALTER TABLE transform_merge_requests RENAME TO _transform_merge_requests_old;--> statement-breakpoint
 ALTER TABLE transform_merge_request_events RENAME TO _transform_merge_request_events_old;--> statement-breakpoint
+ALTER TABLE transform_merge_request_metrics RENAME TO _transform_merge_request_metrics_old;--> statement-breakpoint
+
 CREATE TABLE `transform_merge_requests` (
 	`id` integer PRIMARY KEY NOT NULL,
 	`external_id` integer NOT NULL,
@@ -45,8 +47,6 @@ INSERT INTO transform_merge_requests
 				 `__updated_at`
 	FROM _transform_merge_requests_old;
 --> statement-breakpoint
-
-ALTER TABLE transform_merge_request_metrics RENAME TO _transform_merge_request_metrics_old;--> statement-breakpoint
 CREATE TABLE `transform_merge_request_metrics` (
 	`id` integer PRIMARY KEY NOT NULL,
 	`users_junk` integer NOT NULL,
@@ -132,4 +132,8 @@ INSERT INTO transform_merge_request_events
 				 `__updated_at`
 	FROM _transform_merge_request_events_old;
 --> statement-breakpoint
+
+DROP TABLE `_transform_merge_request_events_old`;--> statement-breakpoint
+DROP TABLE `_transform_merge_request_metrics_old`;--> statement-breakpoint
+DROP TABLE `_transform_merge_requests_old`;--> statement-breakpoint
 PRAGMA foreign_keys=on;
