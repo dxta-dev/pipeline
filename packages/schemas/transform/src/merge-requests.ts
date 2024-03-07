@@ -14,8 +14,8 @@ export const mergeRequests = sqliteTable('merge_requests', {
   title: text('title').notNull(),
   description: text('description').default(''),
   webUrl: text('web_url').notNull(),
-  targetBranch: integer('target_branch').notNull().references(() => branches.id),
-  sourceBranch: integer('source_branch').notNull().references(() => branches.id),
+  targetBranch: integer('target_branch').notNull().default(1).references(() => branches.id),
+  sourceBranch: integer('source_branch').notNull().default(1).references(() => branches.id),
   _createdAt: integer('__created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
   _updatedAt: integer('__updated_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
 }, (mergeRequests) => ({
