@@ -11,4 +11,4 @@ ALTER TABLE `transform_merge_request_metrics` DROP COLUMN `code_deletions_old`;-
 
 UPDATE `transform_merge_request_metrics` SET `code_addition` = 0 WHERE `code_addition` = -1;--> statement-breakpoint
 UPDATE `transform_merge_request_metrics` SET `code_deletion` = 0 WHERE `code_deletion` = -1;--> statement-breakpoint
-UPDATE `transform_merge_request_metrics` SET `mr_size` = 0 WHERE `mr_size` = -1;--> statement-breakpoint
+UPDATE `transform_merge_request_metrics` SET `mr_size` = 0 WHERE `mr_size` = -1;
