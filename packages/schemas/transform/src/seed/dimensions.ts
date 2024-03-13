@@ -49,25 +49,20 @@ const nullRepository = {
 } satisfies NewRepository;
 
 export async function seed(db: LibSQLDatabase, startDate: Date, endDate: Date) {
-  const insertedNullForgeUser = await db.insert(forgeUsers).values(nullForgeUser).onConflictDoNothing().returning().get();
-  const insertedNullDate = await db.insert(dates).values(nullDate).onConflictDoNothing().returning().get();
-  const insertedNullBranch = await db.insert(branches).values(nullBranch).onConflictDoNothing().returning().get();
-  const insertedNullMergeRequest = await db.insert(mergeRequests).values(nullMergeRequest).onConflictDoNothing().returning().get();
-  const insertedNullRepo = await db.insert(repositories).values(nullRepository).onConflictDoNothing().returning().get();
+  await db.insert(forgeUsers).values(nullForgeUser).onConflictDoNothing().returning().get();
+  await db.insert(dates).values(nullDate).onConflictDoNothing().returning().get();
+  await db.insert(branches).values(nullBranch).onConflictDoNothing().returning().get();
+  await db.insert(mergeRequests).values(nullMergeRequest).onConflictDoNothing().returning().get();
+  await db.insert(repositories).values(nullRepository).onConflictDoNothing().returning().get();
   await db.insert(dates).values(generateDates(startDate, endDate)).onConflictDoNothing().run();
-  
-  // TODO: ???
-  if (!insertedNullBranch || !insertedNullForgeUser || !insertedNullDate || !insertedNullMergeRequest || !insertedNullRepo) return undefined;
 
-  const insertedNullRows = await db.insert(nullRows).values({
-    userId: insertedNullForgeUser.id,
-    dateId: insertedNullDate.id,
-    mergeRequestId: insertedNullMergeRequest.id,
-    repositoryId: insertedNullRepo.id,
-    branchId: insertedNullBranch.id,
-  }).onConflictDoNothing().returning().get();
-
-  return insertedNullRows;
+  await db.insert(nullRows).values({
+    userId: nullForgeUser.id,
+    dateId: nullDate.id,
+    mergeRequestId: nullMergeRequest.id,
+    repositoryId: nullRepository.id,
+    branchId: nullBranch.id,
+  }).onConflictDoNothing().returning().get();  
 }
 
 export function getFirstDay(year: number): Date {
