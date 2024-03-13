@@ -138,7 +138,7 @@ DROP TABLE `_transform_merge_request_metrics_old`;--> statement-breakpoint
 DROP TABLE `_transform_merge_requests_old`;--> statement-breakpoint
 
 CREATE UNIQUE INDEX `merge_requests_external_id_forge_type_idx` ON `transform_merge_requests` (`external_id`,`forge_type`);--> statement-breakpoint
-CREATE INDEX `merge_request_events_occured_on_idx` ON `transform_merge_request_events` (`occured_on`);
+CREATE INDEX `merge_request_events_occured_on_idx` ON `transform_merge_request_events` (`occured_on`);--> statement-breakpoint
 CREATE INDEX `merge_request_events_merge_request_idx` ON `transform_merge_request_events` (`merge_request`);--> statement-breakpoint
 CREATE INDEX `merge_request_metrics_users_junk_idx` ON `transform_merge_request_metrics` (`users_junk`);--> statement-breakpoint
 CREATE INDEX `merge_request_metrics_dates_junk_idx` ON `transform_merge_request_metrics` (`dates_junk`);--> statement-breakpoint
