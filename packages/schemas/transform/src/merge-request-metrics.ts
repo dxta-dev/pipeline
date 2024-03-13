@@ -19,8 +19,8 @@ export const mergeRequestMetrics = sqliteTable('merge_request_metrics', {
   datesJunk: integer('dates_junk').notNull().references(() => mergeRequestDatesJunk.id),
 
   mrSize: integer('mr_size').notNull(),
-  codeAddition: integer('code_addition').notNull().default(-1),
-  codeDeletion: integer('code_deletion').notNull().default(-1),
+  codeAddition: integer('code_addition').notNull().default(0),
+  codeDeletion: integer('code_deletion').notNull().default(0),
 
   codingDuration: integer('coding_duration').notNull(),
   pickupDuration: integer('review_start_delay').notNull(),
