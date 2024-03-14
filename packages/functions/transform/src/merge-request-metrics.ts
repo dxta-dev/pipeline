@@ -565,6 +565,7 @@ async function selectExtractData(db: ExtractDatabase, extractMergeRequestId: num
     .all() satisfies TimelineEventData[];
 
   const commitsData = await db.select({
+    authoredDate: mergeRequestCommits.authoredDate,
     authorExternalId: mergeRequestCommits.authorExternalId,
     authorName: mergeRequestCommits.authorName,
     authorEmail: mergeRequestCommits.authorEmail,
@@ -927,7 +928,7 @@ function getMergeRequestMembers({
     const actor = members.find(m => m.externalId === timelineEvent.actorId);
     if (actor) {
       membersArray.push(actor);
-    } else {
+    } else if (timelineEvent.actorEmail) {
       const actor = members.find(m => m.email === timelineEvent.actorEmail);
       if (actor) {
         membersArray.push(actor);
@@ -1008,7 +1009,7 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
   extractData.commits.forEach(commit => {
     timelineEventsWithCorrectedCommits.push({
       type: 'committed',
-      timestamp: commit.committedDate,
+      timestamp: commit.authoredDate,
       actorId: commit.authorExternalId,
       actorName: commit.authorName,
       actorEmail: commit.authorEmail,
@@ -1188,7 +1189,7 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
       timestamp: event.timestamp,
       occuredOn: timestampDateMap.get(event.timestamp.getTime()) || nullDateId,
       commitedAt: event.type === 'committed' ? timestampDateMap.get(new Date((event.data as extract.CommittedEvent).committedDate).getTime()) || nullDateId : nullDateId,
-      actor: event.type === 'committed' ? timelineEventForgeUsersIdsMap.get(event)?.committerId || nullUserId : timelineEventForgeUsersIdsMap.get(event)?.actorId || nullUserId,
+      actor: timelineEventForgeUsersIdsMap.get(event)?.actorId || nullUserId,
       subject: nullUserId,
       mergeRequestEventType: event.type,
       reviewState: 'unknown',
