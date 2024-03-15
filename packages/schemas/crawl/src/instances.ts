@@ -8,6 +8,8 @@ export const instances = sqliteTable('instances', {
   startedAt: integer('started_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
   userId: text('user_id').notNull(),
   repositoryId: integer('repository_id').notNull(),
+  since: integer('since').notNull(),
+  until: integer('until').notNull(),
   _createdAt: integer('__created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
   _updatedAt: integer('__updated_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
 });
