@@ -936,6 +936,15 @@ function getMergeRequestMembers({
     }
 
     if (timelineEvent.type === 'committed') {
+      if (timelineEvent.actorEmail) {
+        const author = {
+          committedDate: timelineEvent.timestamp,
+          committerName: timelineEvent.actorName,
+          committerEmail: timelineEvent.actorEmail,
+          committerId: timelineEvent.actorId,
+        } satisfies (extract.CommittedEvent & { committerId: number | null });
+        membersArray.push(...getCommitter(author, members));
+      }
       membersArray.push(...getCommitter(timelineEvent.data as extract.CommittedEvent & { committerId: number | null }, members));
     }
   }
@@ -949,7 +958,7 @@ function getMergeRequestMembers({
 }
 
 export async function run(extractMergeRequestId: number, ctx: RunContext) {
-  const extractData = await selectExtractData(ctx.extractDatabase, extractMergeRequestId);
+  const extractData = await selectExtractData(ctx.extractDatabase, extractMergeRequestId);  
 
   if (!extractData) {
     console.error(`No extract data found for merge request with id ${extractMergeRequestId}`);
@@ -1131,21 +1140,21 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
     switch (timelineEvent.type) {
       case 'committed': {
         const committerExternalId = (timelineEvent.data as { committerId: number | null }).committerId;
-        if (committerExternalId && memberExternalIdForgeUserIdMap.has(committerExternalId)) {
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          const committerId = memberExternalIdForgeUserIdMap.get(committerExternalId)!;
-          committers.push(committerId);
-          timelineEventForgeUsersIdsMap.set(timelineEvent, { actorId: forgeUserId, committerId });
-          break;
-        }
         const committerEmail = (timelineEvent.data as extract.CommittedEvent).committerEmail;
-        if (committerEmail) {
-          const commiterId = memberEmailForgeUserIdMap.get(committerEmail) || nullUserId;
-          if (commiterId) {
-            committers.push(commiterId);
-            timelineEventForgeUsersIdsMap.set(timelineEvent, { actorId: forgeUserId, committerId: commiterId });
-          }
-        }
+        
+        const authorExternalId = timelineEvent.actorId;
+        const authorEmail = timelineEvent.actorEmail;
+
+        let authorForgeUserId = authorExternalId ? memberExternalIdForgeUserIdMap.get(authorExternalId) : undefined;
+        let committerForgeUserId = committerExternalId ? memberExternalIdForgeUserIdMap.get(committerExternalId) : undefined;
+
+        if (!authorForgeUserId && authorEmail) authorForgeUserId = memberEmailForgeUserIdMap.get(authorEmail);
+        if (!committerForgeUserId && committerEmail) committerForgeUserId = memberEmailForgeUserIdMap.get(committerEmail);
+
+        timelineEventForgeUsersIdsMap.set(timelineEvent, { 
+          actorId: authorForgeUserId || nullUserId, 
+          committerId: committerForgeUserId || nullUserId 
+        });
         break;
       }
       case 'reviewed': {
