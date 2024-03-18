@@ -47,7 +47,7 @@ const extractRepository = async (input: Input, userId: string) => {
 
   const { repository, namespace } = await getRepository({ externalRepositoryId: repositoryId, repositoryName, namespaceName }, { ...context, db });
 
-  const { instanceId } = await setInstance({ repositoryId: repository.id, userId }, { db, entities: { instances } });
+  const { instanceId } = await setInstance({ repositoryId: repository.id, userId, since: from, until: to }, { db, entities: { instances } });
 
   await extractRepositoryEvent.publish(
     {

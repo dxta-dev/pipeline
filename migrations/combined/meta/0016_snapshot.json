@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "663a90fe-ea10-4dd4-83ac-332a24c474bd",
+  "id": "f48e5f32-429b-449f-bbc2-179f51a2f76e",
   "prevId": "0ec24d95-4d57-44c4-ad82-26ddbbd13460",
   "tables": {
     "crawl_events": {
@@ -122,14 +122,14 @@
           "name": "since",
           "type": "integer",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false
         },
         "until": {
           "name": "until",
           "type": "integer",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false
         },
         "__created_at": {
