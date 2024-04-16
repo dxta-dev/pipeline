@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "964298a6-daa2-49ca-8aab-8d8bdd096b54",
+  "id": "ed72d936-a369-4b98-b9a3-868e76777cc4",
   "prevId": "8a624b4c-97a7-4fb6-8434-f013317ed359",
   "tables": {
     "crawl_events": {
@@ -1836,6 +1836,14 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
+        },
+        "commit_url": {
+          "name": "commit_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "''"
         },
         "timestamp": {
           "name": "timestamp",
