@@ -339,7 +339,6 @@ export class GitHubSourceControl implements SourceControl {
         committedDate: new Date(mrc.commit.committer?.date || ''),
         title: mrc.commit.message,
         message: mrc.commit.message,
-        commitUrl: mrc.html_url,
         authorName: mrc.commit.author?.name || '',
         authorEmail: mrc.commit.author?.email || '',
         authorExternalId: mrc.author?.id,
