@@ -127,6 +127,13 @@
       "when": 1710769729148,
       "tag": "0017_spotty_baron_strucker",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "5",
+      "when": 1713267318473,
+      "tag": "0018_bright_prowler",
+      "breakpoints": true
     }
   ]
 }
