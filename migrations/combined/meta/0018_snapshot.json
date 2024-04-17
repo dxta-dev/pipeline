@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "ed72d936-a369-4b98-b9a3-868e76777cc4",
+  "id": "7fe60bd6-46b9-485f-af5c-5ef36912d428",
   "prevId": "8a624b4c-97a7-4fb6-8434-f013317ed359",
   "tables": {
     "crawl_events": {
@@ -395,14 +395,6 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
-        },
-        "commit_url": {
-          "name": "commit_url",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "''"
         },
         "author_name": {
           "name": "author_name",
@@ -1187,6 +1179,13 @@
           "notNull": false,
           "autoincrement": false
         },
+        "html_url": {
+          "name": "html_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
         "__created_at": {
           "name": "__created_at",
           "type": "integer",
@@ -1837,13 +1836,12 @@
           "notNull": true,
           "autoincrement": false
         },
-        "commit_url": {
-          "name": "commit_url",
+        "html_url": {
+          "name": "html_url",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false,
-          "default": "''"
+          "autoincrement": false
         },
         "timestamp": {
           "name": "timestamp",
