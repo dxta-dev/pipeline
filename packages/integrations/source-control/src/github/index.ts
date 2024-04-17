@@ -461,7 +461,6 @@ export class GitHubSourceControl implements SourceControl {
       }
     });
 
-    console.log("EVENTOVIIIIIIII", timelineEvents);
     return {
       timelineEvents: timelineEvents,
     };
