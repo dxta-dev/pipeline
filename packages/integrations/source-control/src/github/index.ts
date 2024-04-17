@@ -339,7 +339,6 @@ export class GitHubSourceControl implements SourceControl {
         committedDate: new Date(mrc.commit.committer?.date || ''),
         title: mrc.commit.message,
         message: mrc.commit.message,
-        commitUrl: mrc.html_url,
         authorName: mrc.commit.author?.name || '',
         authorEmail: mrc.commit.author?.email || '',
         authorExternalId: mrc.author?.id,
@@ -396,6 +395,7 @@ export class GitHubSourceControl implements SourceControl {
             timestamp: new Date(assignedEvent.created_at),
             actorName: assignedEvent.actor.login,
             actorId: assignedEvent.actor.id,
+            htmlUrl: assignedEvent.url,
             data: {
               assigneeId: assignedEvent.assignee.id,
               assigneeName: assignedEvent.assignee.login,
@@ -410,6 +410,7 @@ export class GitHubSourceControl implements SourceControl {
             timestamp: new Date(committedEvent.author.date),
             actorName: committedEvent.author.name,
             actorEmail: committedEvent.author.email,
+            htmlUrl: committedEvent.html_url,
             data: {
               committerEmail: committedEvent.committer.email,
               committerName: committedEvent.committer.name,
@@ -426,6 +427,7 @@ export class GitHubSourceControl implements SourceControl {
             timestamp: new Date(requestedEvent.created_at),
             actorName: requestedEvent.actor.login,
             actorId: requestedEvent.actor.id,
+            htmlUrl: requestedEvent.url,
             data: {
               requestedReviewerId: requestedEvent.requested_reviewer?.id,
               requestedReviewerName: requestedEvent.requested_reviewer?.login,
@@ -440,6 +442,7 @@ export class GitHubSourceControl implements SourceControl {
             timestamp: new Date(reviewedEvent.submitted_at as string),
             actorName: reviewedEvent.user.login,
             actorId: reviewedEvent.user.id,
+            htmlUrl: reviewedEvent.html_url,
             data: {
               state: reviewedEvent.state,
             },
@@ -453,9 +456,12 @@ export class GitHubSourceControl implements SourceControl {
             timestamp: new Date(generalEvent.created_at),
             actorName: generalEvent.actor.login,
             actorId: generalEvent.actor.id,
+            htmlUrl: generalEvent.url,
           } satisfies NewTimelineEvents;
       }
     });
+
+    console.log("EVENTOVIIIIIIII", timelineEvents);
     return {
       timelineEvents: timelineEvents,
     };
