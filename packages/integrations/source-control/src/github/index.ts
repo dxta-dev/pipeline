@@ -347,6 +347,7 @@ export class GitHubSourceControl implements SourceControl {
         committerEmail: mrc.commit.committer?.email || '',
         committerExternalId: mrc.committer?.id,
         committerUsername: mrc.committer?.login, // Is resolved GitHub UserName, different from commit name
+        htmlUrl: mrc.html_url,
       } satisfies NewMergeRequestCommit)),
     }
   }
@@ -366,6 +367,7 @@ export class GitHubSourceControl implements SourceControl {
         updatedAt: new Date(mergeRequestNote.updated_at),
         authorUsername: mergeRequestNote.user.login,
         authorExternalId: mergeRequestNote.user.id,
+        htmlUrl: mergeRequestNote.html_url,
         body: '', // since a github note is a review_comment (equivalent do gitlab DiffNote) whose body we don't need not; sure what to place here
         system: false,
       } satisfies NewMergeRequestNote))
