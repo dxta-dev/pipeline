@@ -1,6 +1,6 @@
 import type { InferSelectModel, InferInsertModel } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
-import { integer, index } from 'drizzle-orm/sqlite-core';
+import { integer, text, index } from 'drizzle-orm/sqlite-core';
 import { repositories } from './repositories';
 import { mergeRequests } from './merge-requests';
 import { forgeUsers } from './forge-users';
@@ -47,6 +47,7 @@ export const mergeRequestEvents = sqliteTable('merge_request_events', {
   commitedAt: integer('commited_at').notNull().references(() => dates.id),
   repository: integer('repository').notNull().references(() => repositories.id),
   mergeRequest: integer('merge_request').notNull().references(() => mergeRequests.id),
+  htmlUrl: text('html_url').notNull().default(''),
 
   timestamp: integer('timestamp', { mode: 'timestamp_ms' }).notNull(),
   reviewState: Enum('review_state_type', { enum: ReviewStates }).notNull(),

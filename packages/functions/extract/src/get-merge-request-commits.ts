@@ -92,6 +92,7 @@ export const getMergeRequestCommits: GetMergeRequestCommitsFunction = async (
         .onConflictDoUpdate({
           target: [entities.mergeRequestCommits.mergeRequestId, entities.mergeRequestCommits.externalId],
           set: {
+            htmlUrl: mergeRequestCommit.htmlUrl,
             createdAt: mergeRequestCommit.createdAt,
             committedDate: mergeRequestCommit.committedDate,
             title: mergeRequestCommit.title,

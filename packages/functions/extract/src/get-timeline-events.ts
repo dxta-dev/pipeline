@@ -117,6 +117,7 @@ export const getTimelineEvents: GetTimelineEventsFunction = async (
         .onConflictDoUpdate({
           target: [entities.timelineEvents.externalId, entities.timelineEvents.mergeRequestId, entities.timelineEvents.type],
           set: {
+            htmlUrl: event.htmlUrl,
             data: event.data,
             timestamp: event.timestamp,
             actorEmail: event.actorEmail,

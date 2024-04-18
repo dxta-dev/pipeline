@@ -14,6 +14,7 @@ export const mergeRequestNotes = sqliteTable('merge_request_notes', {
   authorExternalId: integer('author_external_id').notNull(),
   body: text('body').notNull(),
   system: integer('system', { mode: 'boolean' }).notNull(),
+  htmlUrl: text('html_url'),
   _createdAt: integer('__created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
   _updatedAt: integer('__updated_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
 }, (notes) => ({

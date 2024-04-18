@@ -480,6 +480,7 @@ export type TimelineEventData = {
   actorId: extract.TimelineEvents['actorId'];
   actorName: extract.TimelineEvents['actorName']; // is commitAuthorName for commit events
   actorEmail: extract.TimelineEvents['actorEmail'];
+  htmlUrl: extract.TimelineEvents['htmlUrl'];
   data: extract.TimelineEvents['data'];
 }
 
@@ -547,6 +548,7 @@ async function selectExtractData(db: ExtractDatabase, extractMergeRequestId: num
   const mergeRequestNotesData = await db.select({
     timestamp: mergeRequestNotes.createdAt,
     authorExternalId: mergeRequestNotes.authorExternalId,
+    htmlUrl: mergeRequestNotes.htmlUrl,
   })
     .from(mergeRequestNotes)
     .where(eq(mergeRequestNotes.mergeRequestId, extractMergeRequestId))
@@ -558,6 +560,7 @@ async function selectExtractData(db: ExtractDatabase, extractMergeRequestId: num
     actorId: timelineEvents.actorId,
     actorName: timelineEvents.actorName,
     actorEmail: timelineEvents.actorEmail,
+    htmlUrl: timelineEvents.htmlUrl,
     data: timelineEvents.data
   })
     .from(timelineEvents)
@@ -574,6 +577,7 @@ async function selectExtractData(db: ExtractDatabase, extractMergeRequestId: num
     committerName: mergeRequestCommits.committerName,
     committerEmail: mergeRequestCommits.committerEmail,
     createdAt: mergeRequestCommits.createdAt,
+    htmlUrl: mergeRequestCommits.htmlUrl,
   })
     .from(mergeRequestCommits)
     .where(eq(mergeRequestCommits.mergeRequestId, extractMergeRequestId))
@@ -1022,6 +1026,7 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
       actorId: commit.authorExternalId,
       actorName: commit.authorName,
       actorEmail: commit.authorEmail,
+      htmlUrl: commit.htmlUrl,
       data: {
         committerId: commit.committerExternalId,
         committerName: commit.committerName,
@@ -1199,6 +1204,7 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
       occuredOn: timestampDateMap.get(event.timestamp.getTime()) || nullDateId,
       commitedAt: event.type === 'committed' ? timestampDateMap.get(new Date((event.data as extract.CommittedEvent).committedDate).getTime()) || nullDateId : nullDateId,
       actor: timelineEventForgeUsersIdsMap.get(event)?.actorId || nullUserId,
+      htmlUrl: event.htmlUrl || '',
       subject: nullUserId,
       mergeRequestEventType: event.type,
       reviewState: 'unknown',
@@ -1216,6 +1222,7 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
       subject: nullUserId,
       mergeRequestEventType: 'noted',
       reviewState: 'unknown',
+      htmlUrl: note.htmlUrl || '',
     });
   });
 

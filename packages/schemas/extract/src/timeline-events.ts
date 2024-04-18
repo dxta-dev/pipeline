@@ -35,6 +35,7 @@ export const timelineEvents = sqliteTable('timeline_events', {
   actorId: integer('actor_id'),
   actorEmail: text('actor_email'),
   data: text('data', { mode: 'json' }),
+  htmlUrl: text('html_url'),
   _createdAt: integer('__created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
   _updatedAt: integer('__updated_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
 }, (timelineEvents) => ({
