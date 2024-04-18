@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "7fe60bd6-46b9-485f-af5c-5ef36912d428",
+  "id": "666d1878-4ac7-4895-abfb-c7bdab3432aa",
   "prevId": "8a624b4c-97a7-4fb6-8434-f013317ed359",
   "tables": {
     "crawl_events": {
@@ -452,6 +452,13 @@
           "notNull": false,
           "autoincrement": false
         },
+        "html_url": {
+          "name": "html_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "__created_at": {
           "name": "__created_at",
           "type": "integer",
@@ -679,6 +686,13 @@
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
+          "autoincrement": false
+        },
+        "html_url": {
+          "name": "html_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
           "autoincrement": false
         },
         "__created_at": {
@@ -1183,7 +1197,7 @@
           "name": "html_url",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false
         },
         "__created_at": {
@@ -1841,7 +1855,8 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false
+          "autoincrement": false,
+          "default": "''"
         },
         "timestamp": {
           "name": "timestamp",
