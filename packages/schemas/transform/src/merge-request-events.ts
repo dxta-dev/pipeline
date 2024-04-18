@@ -47,7 +47,7 @@ export const mergeRequestEvents = sqliteTable('merge_request_events', {
   commitedAt: integer('commited_at').notNull().references(() => dates.id),
   repository: integer('repository').notNull().references(() => repositories.id),
   mergeRequest: integer('merge_request').notNull().references(() => mergeRequests.id),
-  html_url: text('html_url').notNull(),
+  htmlUrl: text('html_url').notNull().default(''),
 
   timestamp: integer('timestamp', { mode: 'timestamp_ms' }).notNull(),
   reviewState: Enum('review_state_type', { enum: ReviewStates }).notNull(),
