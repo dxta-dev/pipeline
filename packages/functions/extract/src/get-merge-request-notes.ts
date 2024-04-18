@@ -90,8 +90,6 @@ export const getMergeRequestNotes: GetMergeRequestNotesFunction = async (
     ))
   )
 
-  // console.log("INSERTOVANIIIIIIIIIIIIIIIIIIIi", insertedMergeRequestNotes)
-
   return {
     mergeRequestNotes: insertedMergeRequestNotes,
     members: insertedMembers
