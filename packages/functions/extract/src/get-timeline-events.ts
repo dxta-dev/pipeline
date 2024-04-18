@@ -118,7 +118,6 @@ export const getTimelineEvents: GetTimelineEventsFunction = async (
           target: [entities.timelineEvents.externalId, entities.timelineEvents.mergeRequestId, entities.timelineEvents.type],
           set: {
             data: event.data,
-            html_url: event.html_url,
             timestamp: event.timestamp,
             actorEmail: event.actorEmail,
             actorName: event.actorName,

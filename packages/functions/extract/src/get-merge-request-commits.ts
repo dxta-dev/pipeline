@@ -38,6 +38,8 @@ export const getMergeRequestCommits: GetMergeRequestCommitsFunction = async (
 
   const { mergeRequestCommits } = await integrations.sourceControl.fetchMergeRequestCommits(repository, namespace, mergeRequest);
 
+  console.log("KOMITOVIIIIIIIIIIIII", mergeRequestCommits);
+
   const committersMap = new Map<number, NewMember>();
   mergeRequestCommits.forEach(commit => {
     if (commit.authorExternalId && commit.authorUsername) {
@@ -92,6 +94,7 @@ export const getMergeRequestCommits: GetMergeRequestCommitsFunction = async (
         .onConflictDoUpdate({
           target: [entities.mergeRequestCommits.mergeRequestId, entities.mergeRequestCommits.externalId],
           set: {
+            htmlUrl: mergeRequestCommit.htmlUrl,
             createdAt: mergeRequestCommit.createdAt,
             committedDate: mergeRequestCommit.committedDate,
             title: mergeRequestCommit.title,

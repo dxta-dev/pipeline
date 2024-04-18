@@ -79,7 +79,8 @@ export const getMergeRequestNotes: GetMergeRequestNotesFunction = async (
           target: [entities.mergeRequestNotes.mergeRequestId, entities.mergeRequestNotes.externalId],
           set: {
             authorUsername: mergeRequestNote.authorUsername,
-            body: mergeRequestNote.body, // gitlab system notes could change format            
+            body: mergeRequestNote.body, // gitlab system notes could change format 
+            htmlUrl: mergeRequestNote.htmlUrl,           
             updatedAt: mergeRequestNote.updatedAt,
             _updatedAt: sql`(strftime('%s', 'now'))`,
           }
@@ -88,6 +89,8 @@ export const getMergeRequestNotes: GetMergeRequestNotesFunction = async (
         .get()
     ))
   )
+
+  // console.log("INSERTOVANIIIIIIIIIIIIIIIIIIIi", insertedMergeRequestNotes)
 
   return {
     mergeRequestNotes: insertedMergeRequestNotes,
