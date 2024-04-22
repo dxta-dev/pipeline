@@ -397,7 +397,7 @@ export class GitHubSourceControl implements SourceControl {
             timestamp: new Date(assignedEvent.created_at),
             actorName: assignedEvent.actor.login,
             actorId: assignedEvent.actor.id,
-            htmlUrl: assignedEvent.url,
+            htmlUrl: '',
             data: {
               assigneeId: assignedEvent.assignee.id,
               assigneeName: assignedEvent.assignee.login,
@@ -429,7 +429,7 @@ export class GitHubSourceControl implements SourceControl {
             timestamp: new Date(requestedEvent.created_at),
             actorName: requestedEvent.actor.login,
             actorId: requestedEvent.actor.id,
-            htmlUrl: requestedEvent.url,
+            htmlUrl: '',
             data: {
               requestedReviewerId: requestedEvent.requested_reviewer?.id,
               requestedReviewerName: requestedEvent.requested_reviewer?.login,
@@ -458,7 +458,7 @@ export class GitHubSourceControl implements SourceControl {
             timestamp: new Date(generalEvent.created_at),
             actorName: generalEvent.actor.login,
             actorId: generalEvent.actor.id,
-            htmlUrl: generalEvent.url,
+            htmlUrl: '',
           } satisfies NewTimelineEvents;
       }
     });
