@@ -397,7 +397,7 @@ export class GitHubSourceControl implements SourceControl {
             timestamp: new Date(assignedEvent.created_at),
             actorName: assignedEvent.actor.login,
             actorId: assignedEvent.actor.id,
-            htmlUrl: '',
+            htmlUrl: null,
             data: {
               assigneeId: assignedEvent.assignee.id,
               assigneeName: assignedEvent.assignee.login,
@@ -429,7 +429,7 @@ export class GitHubSourceControl implements SourceControl {
             timestamp: new Date(requestedEvent.created_at),
             actorName: requestedEvent.actor.login,
             actorId: requestedEvent.actor.id,
-            htmlUrl: '',
+            htmlUrl: null,
             data: {
               requestedReviewerId: requestedEvent.requested_reviewer?.id,
               requestedReviewerName: requestedEvent.requested_reviewer?.login,
@@ -449,6 +449,17 @@ export class GitHubSourceControl implements SourceControl {
               state: reviewedEvent.state,
             },
           } satisfies NewTimelineEvents;
+        case 'commented':
+          const commentedEvent = singleEvent as components["schemas"]["timeline-comment-event"]
+          return {
+            externalId: commentedEvent.id,
+            type: commentedEvent.event as TimelineEventType,
+            mergeRequestId: mergeRequest.id,
+            timestamp: new Date(commentedEvent.created_at),
+            htmlUrl: commentedEvent.html_url,
+            actorName: commentedEvent.actor.login,
+            actorId: commentedEvent.actor.id,
+          } satisfies NewTimelineEvents;  
         default:
           const generalEvent = singleEvent as components["schemas"]["state-change-issue-event"];
           return {
@@ -458,7 +469,7 @@ export class GitHubSourceControl implements SourceControl {
             timestamp: new Date(generalEvent.created_at),
             actorName: generalEvent.actor.login,
             actorId: generalEvent.actor.id,
-            htmlUrl: '',
+            htmlUrl: null,
           } satisfies NewTimelineEvents;
       }
     });
