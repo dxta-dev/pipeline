@@ -18,7 +18,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@aws-sdk/client-sqs": "^3.470.0",
+    "@aws-sdk/client-sqs": "^3.556.0",
     "@clerk/clerk-sdk-node": "^4.13.9",
     "@dxta/crawl-functions": "*",
     "@dxta/crawl-schema": "*",
@@ -28,16 +28,17 @@
     "@dxta/super-schema": "*",
     "@dxta/transform-functions": "*",
     "@dxta/transform-schema": "*",
-    "@tsconfig/node16": "^16.1.1",
-    "@upstash/redis": "^1.25.1",
-    "aws-cdk-lib": "2.84.0",
+    "@tsconfig/node16": "^16.1.3",
+    "@upstash/redis": "^1.30.0",
+    "aws-cdk-lib": "2.132.1",
     "aws-lambda": "^1.0.7",
-    "constructs": "10.1.156",
-    "nanoid": "^5.0.5",
-    "sst": "2.20.1"
+    "constructs": "10.3.0",
+    "nanoid": "^5.0.7",
+    "sst": "2.41.4",
+    "@libsql/client": "0.3.6"
   },
   "devDependencies": {
-    "@types/aws-lambda": "^8.10.130",
-    "dotenv-cli": "^7.3.0"
+    "@types/aws-lambda": "^8.10.137",
+    "dotenv-cli": "^7.4.1"
   }
 }
