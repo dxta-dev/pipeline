@@ -1160,6 +1160,9 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
           actorId: authorForgeUserId || nullUserId, 
           committerId: committerForgeUserId || nullUserId 
         });
+        
+        if (authorForgeUserId && !committers.includes(authorForgeUserId)) committers.push(authorForgeUserId);
+        if (committerForgeUserId  && !committers.includes(committerForgeUserId)) committers.push(committerForgeUserId);
         break;
       }
       case 'reviewed': {
