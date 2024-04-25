@@ -14,7 +14,8 @@ export default {
       runtime: 'nodejs18.x',
       nodejs: {
         install: [
-          '@libsql/client'
+          '@libsql/client',
+          '@libsql/linux-x64-gnu'
         ]
       }
     });
