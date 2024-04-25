@@ -28,17 +28,17 @@
     "@dxta/super-schema": "*",
     "@dxta/transform-functions": "*",
     "@dxta/transform-schema": "*",
+    "@libsql/client": "0.3.6",
     "@tsconfig/node16": "^16.1.3",
     "@upstash/redis": "^1.30.0",
     "aws-cdk-lib": "2.132.1",
     "aws-lambda": "^1.0.7",
     "constructs": "10.3.0",
     "nanoid": "^5.0.7",
-    "sst": "2.41.4",
-    "@libsql/client": "0.3.6"
+    "sst": "2.41.4"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.137",
-    "dotenv-cli": "^7.4.1"
+    "dotenv-cli": "^7.3.0"
   }
 }
