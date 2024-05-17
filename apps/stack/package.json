@@ -9,7 +9,7 @@
     "lint": "eslint . && echo \"✔ No ESLint warnings or errors\"",
     "dev": "npm run with-env sst dev",
     "build": "npm run with-env sst build",
-    "deploy": "sst deploy",
+    "deploy": "npm run with-env sst deploy",
     "deploy:stage": "sst deploy --stage",
     "remove": "npm run with-env sst remove",
     "console": "sst console",
