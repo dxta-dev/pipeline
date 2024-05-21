@@ -119,7 +119,6 @@ export function ExtractStack({ stack }: StackContext) {
         OTEL_RESOURCE_ATTRIBUTES: `deployment.environment=${stack.stage}`,
         AWS_LAMBDA_EXEC_WRAPPER: "/opt/otel-handler",
         OTEL_EXPORTER_OTLP_ENDPOINT:"http://localhost:4318",
-        // OTEL_LAMBDA_DISABLE_AWS_CONTEXT_PROPAGATION: 'true',
       },
       layers: [
         otelCollectorLambdaLayer,
@@ -139,7 +138,6 @@ export function ExtractStack({ stack }: StackContext) {
           OTEL_RESOURCE_ATTRIBUTES: `deployment.environment=${stack.stage}`,
           AWS_LAMBDA_EXEC_WRAPPER: "/opt/otel-handler",
           OTEL_EXPORTER_OTLP_ENDPOINT:"http://localhost:4318",
-          // OTEL_LAMBDA_DISABLE_AWS_CONTEXT_PROPAGATION: 'true',
         },
         layers: [
           otelCollectorLambdaLayer,
@@ -277,10 +275,10 @@ export function ExtractStack({ stack }: StackContext) {
   
   if (ENV.CRON_DISABLED !== 'true') {
     new Cron(stack, "ExtractCron", { 
-      schedule: "cron(0/2 * * * ? *)",
+      schedule: "cron(8/15 * * * ? *)",
       job: {
         function: {
-          handler: "src/extract/extract-tenants.cronHandler",          
+          handler: "src/extract/extract-tenants.cronHandler",
           bind: [
             extractQueue,
             configBucket,
@@ -298,7 +296,6 @@ export function ExtractStack({ stack }: StackContext) {
             OTEL_RESOURCE_ATTRIBUTES: `deployment.environment=${stack.stage}`,
             AWS_LAMBDA_EXEC_WRAPPER: "/opt/otel-handler",
             OTEL_EXPORTER_OTLP_ENDPOINT: "http://localhost:4318",
-            // OTEL_LAMBDA_DISABLE_AWS_CONTEXT_PROPAGATION: 'true',
           },
           layers: [
             otelCollectorLambdaLayer,
