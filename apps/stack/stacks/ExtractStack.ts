@@ -113,17 +113,17 @@ export function ExtractStack({ stack }: StackContext) {
         PER_PAGE,
         FETCH_TIMELINE_EVENTS_PER_PAGE
       ],
-      environment: {
-        OPENTELEMETRY_COLLECTOR_CONFIG_FILE: `s3://${configBucket.cdk.bucket.bucketName}.s3.eu-central-1.amazonaws.com/otel_collector_config.yaml`,
-        OTEL_SERVICE_NAME: "dxta-pipeline",
-        OTEL_RESOURCE_ATTRIBUTES: `deployment.environment=${stack.stage}`,
-        AWS_LAMBDA_EXEC_WRAPPER: "/opt/otel-handler",
-        OTEL_EXPORTER_OTLP_ENDPOINT:"http://localhost:4318",
-      },
-      layers: [
-        otelCollectorLambdaLayer,
-        otelInstrumentationLambdaLayer
-      ]
+      // environment: {
+      //   OPENTELEMETRY_COLLECTOR_CONFIG_FILE: `s3://${configBucket.cdk.bucket.bucketName}.s3.eu-central-1.amazonaws.com/otel_collector_config.yaml`,
+      //   OTEL_SERVICE_NAME: "dxta-pipeline",
+      //   OTEL_RESOURCE_ATTRIBUTES: `deployment.environment=${stack.stage}`,
+      //   AWS_LAMBDA_EXEC_WRAPPER: "/opt/otel-handler",
+      //   OTEL_EXPORTER_OTLP_ENDPOINT:"http://localhost:4318",
+      // },
+      // layers: [
+      //   otelCollectorLambdaLayer,
+      //   otelInstrumentationLambdaLayer
+      // ]
     },
   });
 
@@ -132,17 +132,17 @@ export function ExtractStack({ stack }: StackContext) {
       function: {
         bind: [bus, configBucket, extractQueue],
         handler: "src/extract/extract-member-info.eventHandler",
-        environment: {
-          OPENTELEMETRY_COLLECTOR_CONFIG_FILE: `s3://${configBucket.cdk.bucket.bucketName}.s3.eu-central-1.amazonaws.com/otel_collector_config.yaml`,
-          OTEL_SERVICE_NAME: "dxta-pipeline",
-          OTEL_RESOURCE_ATTRIBUTES: `deployment.environment=${stack.stage}`,
-          AWS_LAMBDA_EXEC_WRAPPER: "/opt/otel-handler",
-          OTEL_EXPORTER_OTLP_ENDPOINT:"http://localhost:4318",
-        },
-        layers: [
-          otelCollectorLambdaLayer,
-          otelInstrumentationLambdaLayer
-        ]
+        // environment: {
+        //   OPENTELEMETRY_COLLECTOR_CONFIG_FILE: `s3://${configBucket.cdk.bucket.bucketName}.s3.eu-central-1.amazonaws.com/otel_collector_config.yaml`,
+        //   OTEL_SERVICE_NAME: "dxta-pipeline",
+        //   OTEL_RESOURCE_ATTRIBUTES: `deployment.environment=${stack.stage}`,
+        //   AWS_LAMBDA_EXEC_WRAPPER: "/opt/otel-handler",
+        //   OTEL_EXPORTER_OTLP_ENDPOINT:"http://localhost:4318",
+        // },
+        // layers: [
+        //   otelCollectorLambdaLayer,
+        //   otelInstrumentationLambdaLayer
+        // ]
       },
     },
   });
@@ -152,17 +152,17 @@ export function ExtractStack({ stack }: StackContext) {
       function: {
         bind: [bus, configBucket, extractQueue],
         handler: "src/extract/extract-members.eventHandler",
-        environment: {
-          OPENTELEMETRY_COLLECTOR_CONFIG_FILE: `s3://${configBucket.cdk.bucket.bucketName}.s3.eu-central-1.amazonaws.com/otel_collector_config.yaml`,
-          OTEL_SERVICE_NAME: "dxta-pipeline",
-          OTEL_RESOURCE_ATTRIBUTES: `deployment.environment=${stack.stage}`,
-          AWS_LAMBDA_EXEC_WRAPPER: "/opt/otel-handler",
-          OTEL_EXPORTER_OTLP_ENDPOINT:"http://localhost:4318",
-        },
-        layers: [
-          otelCollectorLambdaLayer,
-          otelInstrumentationLambdaLayer
-        ]
+        // environment: {
+        //   OPENTELEMETRY_COLLECTOR_CONFIG_FILE: `s3://${configBucket.cdk.bucket.bucketName}.s3.eu-central-1.amazonaws.com/otel_collector_config.yaml`,
+        //   OTEL_SERVICE_NAME: "dxta-pipeline",
+        //   OTEL_RESOURCE_ATTRIBUTES: `deployment.environment=${stack.stage}`,
+        //   AWS_LAMBDA_EXEC_WRAPPER: "/opt/otel-handler",
+        //   OTEL_EXPORTER_OTLP_ENDPOINT:"http://localhost:4318",
+        // },
+        // layers: [
+        //   otelCollectorLambdaLayer,
+        //   otelInstrumentationLambdaLayer
+        // ]
       },
     },
     extractNamespaceMember: {
@@ -175,17 +175,17 @@ export function ExtractStack({ stack }: StackContext) {
       function: {
         bind: [bus, configBucket, extractQueue],
         handler: "src/extract/extract-merge-requests.eventHandler",
-        environment: {
-          OPENTELEMETRY_COLLECTOR_CONFIG_FILE: `s3://${configBucket.cdk.bucket.bucketName}.s3.eu-central-1.amazonaws.com/otel_collector_config.yaml`,
-          OTEL_SERVICE_NAME: "dxta-pipeline",
-          OTEL_RESOURCE_ATTRIBUTES: `deployment.environment=${stack.stage}`,
-          AWS_LAMBDA_EXEC_WRAPPER: "/opt/otel-handler",
-          OTEL_EXPORTER_OTLP_ENDPOINT:"http://localhost:4318",
-        },
-        layers: [
-          otelCollectorLambdaLayer,
-          otelInstrumentationLambdaLayer
-        ]
+        // environment: {
+        //   OPENTELEMETRY_COLLECTOR_CONFIG_FILE: `s3://${configBucket.cdk.bucket.bucketName}.s3.eu-central-1.amazonaws.com/otel_collector_config.yaml`,
+        //   OTEL_SERVICE_NAME: "dxta-pipeline",
+        //   OTEL_RESOURCE_ATTRIBUTES: `deployment.environment=${stack.stage}`,
+        //   AWS_LAMBDA_EXEC_WRAPPER: "/opt/otel-handler",
+        //   OTEL_EXPORTER_OTLP_ENDPOINT:"http://localhost:4318",
+        // },
+        // layers: [
+        //   otelCollectorLambdaLayer,
+        //   otelInstrumentationLambdaLayer
+        // ]
       },
     },
   });
@@ -195,17 +195,17 @@ export function ExtractStack({ stack }: StackContext) {
       function: {
         bind: [bus, configBucket, extractQueue],
         handler: "src/extract/extract-merge-request-diffs.eventHandler",
-        environment: {
-          OPENTELEMETRY_COLLECTOR_CONFIG_FILE: `s3://${configBucket.cdk.bucket.bucketName}.s3.eu-central-1.amazonaws.com/otel_collector_config.yaml`,
-          OTEL_SERVICE_NAME: "dxta-pipeline",
-          OTEL_RESOURCE_ATTRIBUTES: `deployment.environment=${stack.stage}`,
-          AWS_LAMBDA_EXEC_WRAPPER: "/opt/otel-handler",
-          OTEL_EXPORTER_OTLP_ENDPOINT:"http://localhost:4318",
-        },
-        layers: [
-          otelCollectorLambdaLayer,
-          otelInstrumentationLambdaLayer
-        ]
+        // environment: {
+        //   OPENTELEMETRY_COLLECTOR_CONFIG_FILE: `s3://${configBucket.cdk.bucket.bucketName}.s3.eu-central-1.amazonaws.com/otel_collector_config.yaml`,
+        //   OTEL_SERVICE_NAME: "dxta-pipeline",
+        //   OTEL_RESOURCE_ATTRIBUTES: `deployment.environment=${stack.stage}`,
+        //   AWS_LAMBDA_EXEC_WRAPPER: "/opt/otel-handler",
+        //   OTEL_EXPORTER_OTLP_ENDPOINT:"http://localhost:4318",
+        // },
+        // layers: [
+        //   otelCollectorLambdaLayer,
+        //   otelInstrumentationLambdaLayer
+        // ]
       }
     },
     extractMergeRequestCommits: {
@@ -227,17 +227,17 @@ export function ExtractStack({ stack }: StackContext) {
       function: {
         bind: [bus, configBucket, extractQueue, FETCH_TIMELINE_EVENTS_PER_PAGE],
         handler: "src/extract/extract-timeline-events.eventHandler",
-        environment: {
-          OPENTELEMETRY_COLLECTOR_CONFIG_FILE: `s3://${configBucket.cdk.bucket.bucketName}.s3.eu-central-1.amazonaws.com/otel_collector_config.yaml`,
-          OTEL_SERVICE_NAME: "dxta-pipeline",
-          OTEL_RESOURCE_ATTRIBUTES: `deployment.environment=${stack.stage}`,
-          AWS_LAMBDA_EXEC_WRAPPER: "/opt/otel-handler",
-          OTEL_EXPORTER_OTLP_ENDPOINT:"http://localhost:4318",
-        },
-        layers: [
-          otelCollectorLambdaLayer,
-          otelInstrumentationLambdaLayer
-        ]
+        // environment: {
+        //   OPENTELEMETRY_COLLECTOR_CONFIG_FILE: `s3://${configBucket.cdk.bucket.bucketName}.s3.eu-central-1.amazonaws.com/otel_collector_config.yaml`,
+        //   OTEL_SERVICE_NAME: "dxta-pipeline",
+        //   OTEL_RESOURCE_ATTRIBUTES: `deployment.environment=${stack.stage}`,
+        //   AWS_LAMBDA_EXEC_WRAPPER: "/opt/otel-handler",
+        //   OTEL_EXPORTER_OTLP_ENDPOINT:"http://localhost:4318",
+        // },
+        // layers: [
+        //   otelCollectorLambdaLayer,
+        //   otelInstrumentationLambdaLayer
+        // ]
       }
     }
   });
