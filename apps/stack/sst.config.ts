@@ -13,6 +13,9 @@ export default {
     app.setDefaultFunctionProps({
       runtime: 'nodejs18.x',
       nodejs: {
+        esbuild: {
+          external: ['@aws-sdk/client-sqs', '@aws-sdk/client-eventbridge']
+        },
         install: [
           '@libsql/client',
           '@libsql/linux-x64-gnu'
