@@ -80,6 +80,7 @@ jobs:
     env:
       CLERK_JWT_ISSUER: ${{ secrets.CLERK_JWT_ISSUER }}
       CLERK_JWT_AUDIENCE: ${{ secrets.CLERK_JWT_AUDIENCE }}  
+      DXTA_CONFIGS_BUCKET_ARN: ${{ secrets.DXTA_CONFIGS_BUCKET_ARN }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
