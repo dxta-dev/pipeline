@@ -1,4 +1,4 @@
-import type { NewRepository, NewNamespace, NewMergeRequest, NewMember, NewMergeRequestDiff, NewMergeRequestCommit, NewMergeRequestNote, NewTimelineEvents } from "@dxta/extract-schema";
+import type { NewRepository, NewNamespace, NewMergeRequest, NewMember, NewMergeRequestDiff, NewMergeRequestCommit, NewMergeRequestNote, NewTimelineEvents, NewDeployment } from "@dxta/extract-schema";
 import type { Repository, Namespace, MergeRequest } from "@dxta/extract-schema";
 
 export type Pagination = {
@@ -22,4 +22,5 @@ export interface SourceControl {
   fetchMergeRequestCommits(repository: Repository, namespace: Namespace, mergeRequest: MergeRequest): Promise<{ mergeRequestCommits: NewMergeRequestCommit[] }>;
   fetchMergeRequestNotes(repository: Repository, namespace: Namespace, mergeRequest: MergeRequest): Promise<{ mergeRequestNotes: NewMergeRequestNote[] }>
   fetchTimelineEvents(repository: Repository, namespace: Namespace, mergeRequest: MergeRequest): Promise<{ timelineEvents: NewTimelineEvents[] }>;
+  fetchDeployments(externalRepositoryId: number, namespaceName: string, repositoryName: string, perPage: number, page?:number): Promise<{deployments: NewDeployment[], pagination: Pagination}>;
 }

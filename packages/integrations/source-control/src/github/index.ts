@@ -2,7 +2,7 @@ import type { SourceControl } from '..';
 import { Octokit } from '@octokit/rest';
 import parseLinkHeader from "parse-link-header";
 
-import type { NewRepository, NewNamespace, NewMergeRequest, NewMember, NewMergeRequestDiff, Repository, Namespace, MergeRequest, NewMergeRequestCommit, NewMergeRequestNote, NewTimelineEvents, TimelineEventType } from "@dxta/extract-schema";
+import type { NewRepository, NewNamespace, NewMergeRequest, NewMember, NewMergeRequestDiff, Repository, Namespace, MergeRequest, NewMergeRequestCommit, NewMergeRequestNote, NewTimelineEvents, TimelineEventType, NewDeployment } from "@dxta/extract-schema";
 import type { Pagination, TimePeriod } from '../source-control';
 import type { components } from '@octokit/openapi-types';
 import { TimelineEventTypes } from '../../../../../packages/schemas/extract/src/timeline-events';
@@ -150,7 +150,7 @@ export class GitHubSourceControl implements SourceControl {
         affiliation: 'all',
       });
     } catch (error) {
-      if (error instanceof RequestError && error.message === "Must have push access to view repository collaborators."){
+      if (error instanceof RequestError && error.message === "Must have push access to view repository collaborators.") {
         console.log("SUPPRESSED: Must have push access to view repository collaborators.")
         return {
           members: [],
@@ -159,7 +159,7 @@ export class GitHubSourceControl implements SourceControl {
             perPage: perPage,
             totalPages: 1,
           }
-        }  
+        }
       }
 
       throw error;
@@ -186,12 +186,12 @@ export class GitHubSourceControl implements SourceControl {
     }
   }
 
-   
+
   async fetchMergeRequests(externalRepositoryId: number, namespaceName: string, repositoryName: string, repositoryId: number, perPage: number, creationPeriod?: TimePeriod, page?: number, totalPages?: number): Promise<{ mergeRequests: NewMergeRequest[]; pagination: Pagination; }> {
     page = page || 1;
     const serchPRs = async (namespaceName: string, repositoryName: string, page: number, perPage: number, from: Date, to: Date | 'today') => {
       let updated;
-      
+
       if (to === 'today') {
         updated = `>=${from.toISOString().slice(0, 10)}`;
       } else {
@@ -322,7 +322,7 @@ export class GitHubSourceControl implements SourceControl {
     }
   }
 
-   
+
   async fetchMergeRequestCommits(repository: Repository, namespace: Namespace, mergeRequest: MergeRequest): Promise<{ mergeRequestCommits: NewMergeRequestCommit[] }> {
     const response = await this.api.pulls.listCommits({
       owner: namespace.name,
@@ -406,7 +406,7 @@ export class GitHubSourceControl implements SourceControl {
         case 'committed':
           const committedEvent = singleEvent as components["schemas"]["timeline-committed-event"]
           return {
-            externalId: parseInt(committedEvent.sha.slice(0,7), 16),
+            externalId: parseInt(committedEvent.sha.slice(0, 7), 16),
             type: committedEvent.event as TimelineEventType,
             mergeRequestId: mergeRequest.id,
             timestamp: new Date(committedEvent.author.date),
@@ -459,7 +459,7 @@ export class GitHubSourceControl implements SourceControl {
             htmlUrl: commentedEvent.html_url,
             actorName: commentedEvent.actor.login,
             actorId: commentedEvent.actor.id,
-          } satisfies NewTimelineEvents;  
+          } satisfies NewTimelineEvents;
         default:
           const generalEvent = singleEvent as components["schemas"]["state-change-issue-event"];
           return {
@@ -478,4 +478,40 @@ export class GitHubSourceControl implements SourceControl {
       timelineEvents: timelineEvents,
     };
   }
+
+  async fetchDeployments(externalRepositoryId: number, owner: string, repo: string, perPage: number, page?: number | undefined): Promise<{ deployments: NewDeployment[]; pagination: Pagination; }> {
+    page = page || 1;
+
+    const result = await this.api.repos.listDeployments({
+      owner,
+      repo,
+      per_page: perPage,
+      page: page,
+    });
+
+    const deployments = result.data.map(deployment => ({
+      externalId: deployment.id,
+      repositoryId: externalRepositoryId,
+      env: deployment.environment,
+      url: deployment.url,
+      ref: deployment.ref,
+      sha: deployment.sha,
+      isMarkedAsProd: deployment.production_environment,
+      createdAt: new Date(deployment.created_at),
+      updatedAt: new Date(deployment.updated_at),
+    } satisfies NewDeployment));
+
+    const linkHeader = parseLinkHeader(result.headers.link) || { next: { per_page: perPage } };
+
+    const pagination = {
+      page,
+      perPage: ('next' in linkHeader) ? Number(linkHeader.next?.per_page) : Number(linkHeader.prev?.per_page),
+      totalPages: (!('last' in linkHeader)) ? page : Number(linkHeader.last?.page)
+    } satisfies Pagination;
+    return {
+      deployments,
+      pagination
+    }
+  }
+
 }
