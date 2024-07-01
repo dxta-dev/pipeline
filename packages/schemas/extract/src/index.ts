@@ -7,6 +7,8 @@ export { members, MemberSchema, NewMemberSchema } from './members';
 export { repositoriesToMembers } from './repositories-to-members';
 export { mergeRequestNotes} from './merge-request-notes';
 export { gitIdentities } from './git-identities';
+export { deployments, NewDeploymentSchema, DeploymentSchema } from './deployments';
+
 export {
   timelineEvents,
   AssignedEventSchema,
@@ -25,6 +27,7 @@ export type { Member, NewMember } from './members';
 export type { RepositoryToMember, NewRepositoryToMember } from './repositories-to-members';
 export type { MergeRequestNote, NewMergeRequestNote } from './merge-request-notes';
 export type { GitIdentities, NewGitIdentities } from './git-identities';
+export type { Deployment, NewDeployment } from './deployments';
 export type { 
   TimelineEvents, 
   NewTimelineEvents,
