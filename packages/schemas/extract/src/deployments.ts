@@ -3,7 +3,6 @@ import { sql } from 'drizzle-orm';
 import { integer, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import { z } from 'zod';
-import { Enum } from './enum-column';
 import { sqliteTable } from './extract-table';
 import { repositories } from './repositories';
 
