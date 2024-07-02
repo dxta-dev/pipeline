@@ -479,7 +479,7 @@ export class GitHubSourceControl implements SourceControl {
     };
   }
 
-  async fetchDeployments(externalRepositoryId: number, owner: string, repo: string, perPage: number, page?: number | undefined): Promise<{ deployments: NewDeployment[]; pagination: Pagination; }> {
+  async fetchDeployments(_externalRepositoryId: number, owner: string, repo: string, repositoryId: number, perPage: number, page?: number | undefined): Promise<{ deployments: NewDeployment[]; pagination: Pagination; }> {
     page = page || 1;
 
     const result = await this.api.repos.listDeployments({
@@ -491,7 +491,7 @@ export class GitHubSourceControl implements SourceControl {
 
     const deployments = result.data.map(deployment => ({
       externalId: deployment.id,
-      repositoryId: externalRepositoryId,
+      repositoryId: repositoryId,
       env: deployment.environment,
       url: deployment.url,
       ref: deployment.ref,

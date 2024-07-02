@@ -22,5 +22,5 @@ export interface SourceControl {
   fetchMergeRequestCommits(repository: Repository, namespace: Namespace, mergeRequest: MergeRequest): Promise<{ mergeRequestCommits: NewMergeRequestCommit[] }>;
   fetchMergeRequestNotes(repository: Repository, namespace: Namespace, mergeRequest: MergeRequest): Promise<{ mergeRequestNotes: NewMergeRequestNote[] }>
   fetchTimelineEvents(repository: Repository, namespace: Namespace, mergeRequest: MergeRequest): Promise<{ timelineEvents: NewTimelineEvents[] }>;
-  fetchDeployments(externalRepositoryId: number, namespaceName: string, repositoryName: string, perPage: number, page?:number): Promise<{deployments: NewDeployment[], pagination: Pagination}>;
+  fetchDeployments(externalRepositoryId: number, namespaceName: string, repositoryName: string, repositoryId: number, perPage: number, page?:number): Promise<{deployments: NewDeployment[], pagination: Pagination}>;
 }

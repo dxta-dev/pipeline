@@ -212,7 +212,7 @@ export class GitlabSourceControl implements SourceControl {
     throw new Error("Method not implemented.");
   }
 
-  fetchDeployments(_externalRepositoryId: number, _namespaceName: string, _repositoryName: string, _perPage: number, _page?: number | undefined): Promise<{ deployments: { externalId: number; repositoryId: number; createdAt: Date; updatedAt: Date; id?: number | undefined; ref?: string | null | undefined; _createdAt?: Date | null | undefined; _updatedAt?: Date | null | undefined; env?: string | null | undefined; url?: string | null | undefined; sha?: string | null | undefined; isMarkedAsProd?: boolean | null | undefined; }[]; pagination: Pagination; }> {
+  fetchDeployments(_externalRepositoryId: number, _namespaceName: string, _repositoryName: string, _repositoryId: number, _perPage: number, _page?: number | undefined): Promise<{ deployments: { externalId: number; repositoryId: number; createdAt: Date; updatedAt: Date; id?: number | undefined; ref?: string | null | undefined; _createdAt?: Date | null | undefined; _updatedAt?: Date | null | undefined; env?: string | null | undefined; url?: string | null | undefined; sha?: string | null | undefined; isMarkedAsProd?: boolean | null | undefined; }[]; pagination: Pagination; }> {
     throw new Error("Method not implemented.");
   }
 }
