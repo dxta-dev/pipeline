@@ -8,6 +8,7 @@ export { repositoriesToMembers as extractRepositoriesToMembers } from '@dxta/ext
 export { mergeRequestNotes as extractMergeRequestNotes } from '@dxta/extract-schema';
 export { gitIdentities as extractGitIdentities } from '@dxta/extract-schema';
 export { timelineEvents as extractTimelineEvents } from '@dxta/extract-schema';
+export { deployments as extractDeployments } from "@dxta/extract-schema";
 
 export { forgeUsers as transformForgeUsers } from '@dxta/transform-schema';
 export { mergeRequests as transformMergeRequests } from '@dxta/transform-schema';
