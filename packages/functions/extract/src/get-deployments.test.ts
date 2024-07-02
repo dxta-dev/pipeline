@@ -6,7 +6,7 @@ import { createClient } from '@libsql/client';
 import { describe, expect, test } from '@jest/globals';
 import { getDeployments } from './get-deployments';
 
-import { type NewRepository, deployments, type NewDeployment, repositories, type NewNamespace, namespaces } from '@dxta/extract-schema';
+import { type NewRepository, deployments, repositories, type NewNamespace, namespaces } from '@dxta/extract-schema';
 import type { Context } from './config';
 import type { GetDeploymentsSourceControl, GetDeploymentsEntities } from './get-deployments';
 import type { SourceControl } from '@dxta/source-control';
