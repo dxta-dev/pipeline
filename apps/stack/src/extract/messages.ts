@@ -29,5 +29,6 @@ export enum MessageKind {
   MergeRequestCommit = "merge-request-commit",
   MergeRequestNote = "merge-request-note",
   TimelineEvent = "timeline-event",
+  Deployment = "deployment",
 };
 

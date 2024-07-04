@@ -25,6 +25,7 @@ const eventNamespaces = [
   'mergeRequestNote',
   'member',
   'memberInfo',
+  'deployment',
 ] as const;
 
 const [namespaceType, ...nammespaceTypeRest] = eventNamespaces;
