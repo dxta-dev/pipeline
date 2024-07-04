@@ -13,6 +13,7 @@ export function TransformStack({ stack }: StackContext) {
     CLERK_JWT_ISSUER: z.string(),
     CLERK_JWT_AUDIENCE: z.string(),
     CRON_DISABLED: z.literal('true').or(z.any()).optional(),
+    OTEL_DISABLED: z.literal('true').or(z.any()).optional(),
   });
   const ENV = ENVSchema.parse(process.env);
 
@@ -24,6 +25,19 @@ export function TransformStack({ stack }: StackContext) {
     OtelCollectorLambdaLayer,
     OtelInstrumentationLambdaLayer
   } = use(ExtractStack);
+
+  const otelCollectorConfigFile = `s3://${ConfigBucket.cdk.bucket.bucketName}.s3.eu-central-1.amazonaws.com/otel_collector_config.yaml`
+
+  const OTEL_ENVIRONMENT_PROPS = ENV.OTEL_DISABLED ? {} : {
+    OPENTELEMETRY_COLLECTOR_CONFIG_FILE: otelCollectorConfigFile,
+    OTEL_RESOURCE_ATTRIBUTES: `deployment.environment=${stack.stage}`,
+    AWS_LAMBDA_EXEC_WRAPPER: "/opt/otel-handler",
+    OTEL_EXPORTER_OTLP_ENDPOINT:"http://localhost:4318",
+  } as Record<string,string>;
+  const OTEL_LAMBDA_LAYERS = ENV.OTEL_DISABLED ? [] : [
+    OtelCollectorLambdaLayer,
+    OtelInstrumentationLambdaLayer
+  ]
 
   const transformQueue = new Queue(stack, "TransformQueue");
   transformQueue.addConsumer(stack, {
@@ -43,15 +57,11 @@ export function TransformStack({ stack }: StackContext) {
       ],
       handler: "src/transform/queue.handler",
       environment: {
-        OPENTELEMETRY_COLLECTOR_CONFIG_FILE: `s3://${ConfigBucket.cdk.bucket.bucketName}.s3.eu-central-1.amazonaws.com/otel_collector_config.yaml`,
         OTEL_SERVICE_NAME: "transform-queue-handler",
-        OTEL_RESOURCE_ATTRIBUTES: `deployment.environment=${stack.stage}`,
-        AWS_LAMBDA_EXEC_WRAPPER: "/opt/otel-handler",
-        OTEL_EXPORTER_OTLP_ENDPOINT:"http://localhost:4318",
+        ...OTEL_ENVIRONMENT_PROPS,
       },
       layers: [
-        OtelCollectorLambdaLayer,
-        OtelInstrumentationLambdaLayer
+        ...OTEL_LAMBDA_LAYERS,
       ]
     },
 
@@ -96,15 +106,11 @@ export function TransformStack({ stack }: StackContext) {
             SUPER_DATABASE_URL,
           ],
           environment: {
-            OPENTELEMETRY_COLLECTOR_CONFIG_FILE: `s3://${ConfigBucket.cdk.bucket.bucketName}.s3.eu-central-1.amazonaws.com/otel_collector_config.yaml`,
             OTEL_SERVICE_NAME: "transform-cron",
-            OTEL_RESOURCE_ATTRIBUTES: `deployment.environment=${stack.stage}`,
-            AWS_LAMBDA_EXEC_WRAPPER: "/opt/otel-handler",
-            OTEL_EXPORTER_OTLP_ENDPOINT:"http://localhost:4318",
+            ...OTEL_ENVIRONMENT_PROPS,
           },
           layers: [
-            OtelCollectorLambdaLayer,
-            OtelInstrumentationLambdaLayer
+            ...OTEL_LAMBDA_LAYERS,
           ]
         }
       }
