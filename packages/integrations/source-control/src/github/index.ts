@@ -2,7 +2,7 @@ import type { SourceControl } from '..';
 import { Octokit } from '@octokit/rest';
 import parseLinkHeader from "parse-link-header";
 
-import type { NewRepository, NewNamespace, NewMergeRequest, NewMember, NewMergeRequestDiff, Repository, Namespace, MergeRequest, NewMergeRequestCommit, NewMergeRequestNote, NewTimelineEvents, TimelineEventType } from "@dxta/extract-schema";
+import type { NewRepository, NewNamespace, NewMergeRequest, NewMember, NewMergeRequestDiff, Repository, Namespace, MergeRequest, NewMergeRequestCommit, NewMergeRequestNote, NewTimelineEvents, TimelineEventType, NewCicdWorkflow, NewCicdRun, cicdRunResultEnum, cicdRunStatusEnum } from "@dxta/extract-schema";
 import type { Pagination, TimePeriod } from '../source-control';
 import type { components } from '@octokit/openapi-types';
 import { TimelineEventTypes } from '../../../../../packages/schemas/extract/src/timeline-events';
@@ -50,6 +50,61 @@ const FILE_STATUS_FLAGS_MAPPING: Record<
     newFile: false,
     deletedFile: false,
     renamedFile: false,
+  }
+}
+
+const values = ['a', 'b'] as const;
+
+type ValueType = typeof values[number];
+
+function mapWorkflowRunStatus(v: string | null): typeof cicdRunStatusEnum[number] | null {
+  if (typeof v !== 'string') return v;
+  switch (v) {
+    case 'completed':
+      return 'completed';
+    case 'action_required':
+    case 'in_progress':
+      return 'in_progress';
+    case 'cancelled':
+      return 'cancelled';
+    case 'failure':
+      console.log(new Error("GithubSourceControl@mapWorkflowRunStatus error: Unexpected status 'failure'"));
+      return 'completed';
+    case 'neutral':
+      console.log(new Error("GithubSourceControl@mapWorkflowRunStatus error: Unexpected status 'neutral'"));
+      return 'unknown';
+    case 'skipped':
+      return 'skipped';
+    case 'stale':
+      console.log(new Error("GithubSourceControl@mapWorkflowRunStatus warn: Unexpected status 'stale'"));
+      return 'unknown';
+    case 'success':
+      console.log(new Error("GithubSourceControl@mapWorkflowRunStatus error: Unexpected status 'success'"));
+      return 'completed';
+    case 'timed_out':
+      return 'timed_out';
+    case 'queued':
+    case 'request':
+    case 'waiting':
+    case 'pending':
+      return 'not_started'
+    default:
+      console.log(new Error(`GithubSourceControl@mapWorkflowRunStatus error: Really unexpected status '${v}'`));
+      return 'unknown';
+  }
+}
+
+function mapWorkflowRunConclusion(v: string | null): typeof cicdRunResultEnum[number] | null {
+  if (typeof v !== 'string') return v;
+
+  switch (v) {
+    case 'success':
+      return 'success';
+    case 'failure':
+      return 'failure';
+    default:
+      console.log(new Error(`GithubSourceControl@mapWorkflowRunConclusion error:`))
+      return "unknown";
   }
 }
 
@@ -150,7 +205,7 @@ export class GitHubSourceControl implements SourceControl {
         affiliation: 'all',
       });
     } catch (error) {
-      if (error instanceof RequestError && error.message === "Must have push access to view repository collaborators."){
+      if (error instanceof RequestError && error.message === "Must have push access to view repository collaborators.") {
         console.log("SUPPRESSED: Must have push access to view repository collaborators.")
         return {
           members: [],
@@ -159,7 +214,7 @@ export class GitHubSourceControl implements SourceControl {
             perPage: perPage,
             totalPages: 1,
           }
-        }  
+        }
       }
 
       throw error;
@@ -186,12 +241,12 @@ export class GitHubSourceControl implements SourceControl {
     }
   }
 
-   
+
   async fetchMergeRequests(externalRepositoryId: number, namespaceName: string, repositoryName: string, repositoryId: number, perPage: number, creationPeriod?: TimePeriod, page?: number, totalPages?: number): Promise<{ mergeRequests: NewMergeRequest[]; pagination: Pagination; }> {
     page = page || 1;
     const serchPRs = async (namespaceName: string, repositoryName: string, page: number, perPage: number, from: Date, to: Date | 'today') => {
       let updated;
-      
+
       if (to === 'today') {
         updated = `>=${from.toISOString().slice(0, 10)}`;
       } else {
@@ -322,7 +377,7 @@ export class GitHubSourceControl implements SourceControl {
     }
   }
 
-   
+
   async fetchMergeRequestCommits(repository: Repository, namespace: Namespace, mergeRequest: MergeRequest): Promise<{ mergeRequestCommits: NewMergeRequestCommit[] }> {
     const response = await this.api.pulls.listCommits({
       owner: namespace.name,
@@ -406,7 +461,7 @@ export class GitHubSourceControl implements SourceControl {
         case 'committed':
           const committedEvent = singleEvent as components["schemas"]["timeline-committed-event"]
           return {
-            externalId: parseInt(committedEvent.sha.slice(0,7), 16),
+            externalId: parseInt(committedEvent.sha.slice(0, 7), 16),
             type: committedEvent.event as TimelineEventType,
             mergeRequestId: mergeRequest.id,
             timestamp: new Date(committedEvent.author.date),
@@ -459,7 +514,7 @@ export class GitHubSourceControl implements SourceControl {
             htmlUrl: commentedEvent.html_url,
             actorName: commentedEvent.actor.login,
             actorId: commentedEvent.actor.id,
-          } satisfies NewTimelineEvents;  
+          } satisfies NewTimelineEvents;
         default:
           const generalEvent = singleEvent as components["schemas"]["state-change-issue-event"];
           return {
@@ -477,5 +532,77 @@ export class GitHubSourceControl implements SourceControl {
     return {
       timelineEvents: timelineEvents,
     };
+  }
+
+  async fetchCicdWorkflows(repository: Repository, namespace: Namespace, perPage: number, page?: number): Promise<{ cicdWorkflows: NewCicdWorkflow[], pagination: Pagination }> {
+    page = page || 1;
+    const response = await this.api.actions.listRepoWorkflows({
+      repo: repository.name,
+      owner: namespace.name,
+      page: page,
+      per_page: perPage
+    });
+
+    const cicdWorkflows = response.data.workflows.map(workflow => ({
+      externalId: workflow.id,
+      name: workflow.name,
+      repositoryId: repository.id,
+      runner: "github_actions",
+      sourcePath: workflow.path,
+    } satisfies NewCicdWorkflow));
+
+    const linkHeader = parseLinkHeader(response.headers.link) || { next: { per_page: perPage } };
+
+    const pagination = {
+      page,
+      perPage: ('next' in linkHeader) ? Number(linkHeader.next?.per_page) : Number(linkHeader.prev?.per_page),
+      totalPages: (!('last' in linkHeader)) ? page : Number(linkHeader.last?.page)
+    } satisfies Pagination;
+
+    return {
+      cicdWorkflows,
+      pagination,
+    }
+  }
+
+  async fetchCicdRuns(repository: Repository, namespace: Namespace, perPage: number, page?: number): Promise<{ cicdRuns: NewCicdRun[], pagination: Pagination }> {
+    page = page || 1;
+
+    const response = await this.api.actions.listWorkflowRunsForRepo({
+      owner: namespace.name,
+      repo: repository.name,
+      page: page,
+      per_page: perPage,
+    });
+
+    const cicdRuns = response.data.workflow_runs.map(run => ({
+      externalId: run.id,
+      gitBranch: run.head_branch || "",
+      gitSha: run.head_sha,
+      repositoryId: run.repository.id,
+      runAttempt: run.run_attempt || -1,
+      status: mapWorkflowRunStatus(run.status),
+      result: mapWorkflowRunConclusion(run.conclusion),
+      workflowExternalId: run.workflow_id,
+      workflowRunner: "github_actions",
+      createdAt: new Date(run.created_at),
+      updatedAt: new Date(run.updated_at),
+      detailsUrl: run.html_url,
+      runStartedAt: run.run_started_at ? new Date(run.run_started_at) : undefined,
+    } satisfies NewCicdRun))
+
+    const linkHeader = parseLinkHeader(response.headers.link) || { next: { per_page: perPage } };
+
+    const pagination = {
+      page,
+      perPage: ('next' in linkHeader) ? Number(linkHeader.next?.per_page) : Number(linkHeader.prev?.per_page),
+      totalPages: (!('last' in linkHeader)) ? page : Number(linkHeader.last?.page)
+    } satisfies Pagination;
+
+    return {
+      cicdRuns,
+      pagination,
+    }
+
   }
 }

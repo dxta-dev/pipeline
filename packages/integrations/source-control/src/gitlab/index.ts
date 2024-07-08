@@ -1,6 +1,6 @@
 import type { SourceControl, Pagination, TimePeriod } from "../source-control";
 import type { Gitlab as GitlabType, ShowExpanded, Sudo, MergeRequestDiffSchema, OffsetPagination } from '@gitbeaker/core';
-import type { NewRepository, NewNamespace, NewMergeRequest, NewMember, NewMergeRequestDiff, Repository, Namespace, MergeRequest, NewMergeRequestCommit, NewMergeRequestNote, NewTimelineEvents } from "@dxta/extract-schema";
+import type { NewRepository, NewNamespace, NewMergeRequest, NewMember, NewMergeRequestDiff, Repository, Namespace, MergeRequest, NewMergeRequestCommit, NewMergeRequestNote, NewTimelineEvents, NewCicdWorkflow, NewCicdRun } from "@dxta/extract-schema";
 import { Gitlab } from '@gitbeaker/rest';
 
 export class GitlabSourceControl implements SourceControl {
@@ -211,4 +211,13 @@ export class GitlabSourceControl implements SourceControl {
   fetchTimelineEvents(_repository: Repository, _namespace: Namespace, _mergeRequest: MergeRequest): Promise<{ timelineEvents: NewTimelineEvents[]; }> {
     throw new Error("Method not implemented.");
   }
+
+  fetchCicdWorkflows(_repository: Repository, _namespace: Namespace, _perPage: number, _page?: number): Promise<{ cicdWorkflows: NewCicdWorkflow[], pagination: Pagination }> {
+    throw new Error("Method not implemented.");
+  }
+  
+  fetchCicdRuns(_repository: Repository, _namespace: Namespace, _perPage: number, _page?: number): Promise<{ cicdRuns: NewCicdRun[], pagination: Pagination }> {
+    throw new Error("Method not implemented.");
+  }
+
 }
