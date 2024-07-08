@@ -16,7 +16,7 @@ export {
   UnassignedEventSchema,
 } from './timeline-events';
 export { cicdWorkflows, CicdWorkflowSchema, NewCicdWorkflowSchema } from './cicd-workflows';
-export { cicdRuns, CicdRunSchema, NewCicdRunSchema } from './cicd-runs';
+export { cicdRuns, CicdRunSchema, NewCicdRunSchema, cicdRunStatusEnum, cicdRunResultEnum } from './cicd-runs';
 
 export type { Repository, NewRepository } from './repositories';
 export type { Namespace, NewNamespace } from './namespaces';

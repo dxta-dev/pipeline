@@ -7,7 +7,7 @@ import { sqliteTable } from './extract-table';
 import { repositories } from './repositories';
 import { Enum } from './enum-column';
 
-const cicdWorkflowRunnersEnum = ['github_actions'] as const;
+export const cicdWorkflowRunnersEnum = ['github_actions'] as const;
 
 export const cicdWorkflows = sqliteTable('cicd_workflows', {
   id: integer('id').primaryKey(),
@@ -19,7 +19,7 @@ export const cicdWorkflows = sqliteTable('cicd_workflows', {
   _createdAt: integer('__created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
   _updatedAt: integer('__updated_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
 }, (cicdWorkflows) => ({
-  uniqueExternalId: uniqueIndex('cicd_workflows_external_id_idx').on(cicdWorkflows.externalId, cicdWorkflows.repositoryId),
+  uniqueExternalId: uniqueIndex('cicd_workflows_external_id_idx').on(cicdWorkflows.externalId, cicdWorkflows.runner, cicdWorkflows.repositoryId),
 }));
 
 export type CicdWorkflow = InferSelectModel<typeof cicdWorkflows>;
