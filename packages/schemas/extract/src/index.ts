@@ -5,7 +5,7 @@ export { mergeRequestDiffs } from './merge-request-diffs';
 export { mergeRequestCommits } from './merge-request-commits';
 export { members, MemberSchema, NewMemberSchema } from './members';
 export { repositoriesToMembers } from './repositories-to-members';
-export { mergeRequestNotes} from './merge-request-notes';
+export { mergeRequestNotes } from './merge-request-notes';
 export { gitIdentities } from './git-identities';
 export {
   timelineEvents,
@@ -15,6 +15,8 @@ export {
   ReviewedEventSchema,
   UnassignedEventSchema,
 } from './timeline-events';
+export { cicdWorkflows, CicdWorkflowSchema, NewCicdWorkflowSchema } from './cicd-workflows';
+export { cicdRuns, CicdRunSchema, NewCicdRunSchema } from './cicd-runs';
 
 export type { Repository, NewRepository } from './repositories';
 export type { Namespace, NewNamespace } from './namespaces';
@@ -25,8 +27,8 @@ export type { Member, NewMember } from './members';
 export type { RepositoryToMember, NewRepositoryToMember } from './repositories-to-members';
 export type { MergeRequestNote, NewMergeRequestNote } from './merge-request-notes';
 export type { GitIdentities, NewGitIdentities } from './git-identities';
-export type { 
-  TimelineEvents, 
+export type {
+  TimelineEvents,
   NewTimelineEvents,
   AssignedEvent,
   CommittedEvent,
@@ -36,3 +38,5 @@ export type {
   UnassignedEvent,
   TimelineEventType,
 } from './timeline-events';
+export type { CicdWorkflow, NewCicdWorkflow } from './cicd-workflows';
+export type { CicdRun, NewCicdRun } from './cicd-runs';
