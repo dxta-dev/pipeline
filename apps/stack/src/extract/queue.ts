@@ -10,6 +10,7 @@ import { mergeRequestNoteSenderHandler } from "./extract-merge-request-notes";
 import { memberSenderHandler } from "./extract-members";
 import { namespaceMemberSenderHandler } from "./extract-namespace-members";
 import { timelineEventsSenderHandler } from "./extract-timeline-events";
+import { workflowsSenderHandler } from "./extract-cicd-workflows";
 import type { EventNamespaceType } from "@dxta/crawl-schema";
 
 const messageHandlers = new Map<string, unknown>();
@@ -34,6 +35,8 @@ messageHandlers.set(MessageKind.MemberInfo, memberInfoSenderHandler);
 
 messageHandlers.set(MessageKind.TimelineEvent, timelineEventsSenderHandler);
 
+messageHandlers.set(MessageKind.Workflow, workflowsSenderHandler);
+
 const logMap = new Map<string, string[]>();
 
 logMap.set(MessageKind.Tenant, ['content.tenantId']);
@@ -56,6 +59,8 @@ logMap.set(MessageKind.MemberInfo, ['content.memberId']);
 
 logMap.set(MessageKind.TimelineEvent, ['content.repositoryId', 'content.namespaceId', 'content.mergeRequestId']);
 
+logMap.set(MessageKind.Workflow, ['content.repository.id', 'content.namespace.id', 'content.pagination']);
+
 const crawlNamespaceMap = new Map<string, EventNamespaceType>();
 
 crawlNamespaceMap.set(MessageKind.MergeRequest, "mergeRequest");
@@ -71,5 +76,7 @@ crawlNamespaceMap.set(MessageKind.Member, "member");
 crawlNamespaceMap.set(MessageKind.NamespaceMember, "member");
 
 crawlNamespaceMap.set(MessageKind.MemberInfo, "memberInfo");
+
+crawlNamespaceMap.set(MessageKind.Workflow, "workflow");
 
 export const handler = QueueHandler(messageHandlers, logMap, crawlNamespaceMap);

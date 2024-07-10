@@ -1,5 +1,5 @@
 import type { LibSQLDatabase } from 'drizzle-orm/libsql';
-import type { repositories, namespaces, gitIdentities, mergeRequests, members, repositoriesToMembers, mergeRequestDiffs, mergeRequestCommits, mergeRequestNotes, timelineEvents } from '@dxta/extract-schema';
+import type { repositories, namespaces, gitIdentities, mergeRequests, members, repositoriesToMembers, mergeRequestDiffs, mergeRequestCommits, mergeRequestNotes, timelineEvents, cicdWorkflows, cicdRuns } from '@dxta/extract-schema';
 import type { SourceControl } from '@dxta/source-control';
 
 
@@ -16,6 +16,8 @@ export type Entities = {
   mergeRequestNotes: typeof mergeRequestNotes;
   timelineEvents: typeof timelineEvents;
   gitIdentities: typeof gitIdentities;
+  cicdWorkflows: typeof cicdWorkflows;
+  cicdRuns: typeof cicdRuns;
 };
 
 export type Context<SC extends Partial<SourceControl>, E extends Partial<Entities>> = {
