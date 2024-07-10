@@ -25,7 +25,6 @@ export const cicdRuns = sqliteTable('cicd_runs', {
   result: Enum('result', { enum: cicdRunResultEnum }),
 
   runStartedAt: integer('run_started_at', { mode: 'timestamp_ms' }),
-  runEndedAt: integer('run_ended_at', { mode: 'timestamp_ms' }),
   createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),
   updatedAt: integer('updated_at', { mode: 'timestamp_ms' }).notNull(),
   _createdAt: integer('__created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
@@ -41,7 +40,6 @@ export const CicdRunSchema = createSelectSchema(cicdRuns, {
   result: z.enum(cicdRunResultEnum),
   workflowRunner: z.enum(cicdWorkflowRunnersEnum),
   runStartedAt: z.coerce.date(),
-  runEndedAt: z.coerce.date(),
   _createdAt: z.coerce.date(),
   _updatedAt: z.coerce.date(),
 });
@@ -50,7 +48,6 @@ export const NewCicdRunSchema = createInsertSchema(cicdRuns, {
   result: z.enum(cicdRunResultEnum),
   workflowRunner: z.enum(cicdWorkflowRunnersEnum),
   runStartedAt: z.coerce.date(),
-  runEndedAt: z.coerce.date(),
   _createdAt: z.coerce.date(),
   _updatedAt: z.coerce.date(),
 });
