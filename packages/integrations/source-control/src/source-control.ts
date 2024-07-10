@@ -24,5 +24,5 @@ export interface SourceControl {
   fetchTimelineEvents(repository: Repository, namespace: Namespace, mergeRequest: MergeRequest): Promise<{ timelineEvents: NewTimelineEvents[] }>;
 
   fetchCicdWorkflows(repository: Repository, namespace: Namespace, perPage: number, page?: number): Promise<{ cicdWorkflows: NewCicdWorkflow[], pagination: Pagination }>;
-  fetchCicdRuns(repository: Repository, namespace: Namespace, perPage: number, page?: number): Promise<{cicdRuns: NewCicdRun[], pagination: Pagination}>;
+  fetchCicdWorkflowRuns(repository: Repository, namespace: Namespace, workflowId: number, perPage: number, page?: number): Promise<{cicdRuns: NewCicdRun[], pagination: Pagination}>;
 }

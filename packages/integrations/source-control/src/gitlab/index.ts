@@ -216,7 +216,7 @@ export class GitlabSourceControl implements SourceControl {
     throw new Error("Method not implemented.");
   }
   
-  fetchCicdRuns(_repository: Repository, _namespace: Namespace, _perPage: number, _page?: number): Promise<{ cicdRuns: NewCicdRun[], pagination: Pagination }> {
+  fetchCicdWorkflowRuns(_repository: Repository, _namespace: Namespace, _workflowId: number, _perPage: number, _page?: number): Promise<{ cicdRuns: NewCicdRun[], pagination: Pagination }> {
     throw new Error("Method not implemented.");
   }
 

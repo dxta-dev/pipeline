@@ -565,12 +565,13 @@ export class GitHubSourceControl implements SourceControl {
     }
   }
 
-  async fetchCicdRuns(repository: Repository, namespace: Namespace, perPage: number, page?: number): Promise<{ cicdRuns: NewCicdRun[], pagination: Pagination }> {
+  async fetchCicdWorkflowRuns(repository: Repository, namespace: Namespace, workflowId: number, perPage: number, page?: number): Promise<{ cicdRuns: NewCicdRun[], pagination: Pagination }> {
     page = page || 1;
 
-    const response = await this.api.actions.listWorkflowRunsForRepo({
+    const response = await this.api.actions.listWorkflowRuns({
       owner: namespace.name,
       repo: repository.name,
+      workflow_id: workflowId,
       page: page,
       per_page: perPage,
     });
