@@ -1,7 +1,7 @@
 import type { CicdWorkflow, Namespace, Repository } from "@dxta/extract-schema";
 import type { ExtractFunction, Entities } from "./config";
 import { Pagination, SourceControl } from "@dxta/source-control";
-import { eq, sql } from "drizzle-orm";
+import {  sql } from "drizzle-orm";
 
 export type GetCicdWorkflowsInput = {
   namespace: Namespace;
