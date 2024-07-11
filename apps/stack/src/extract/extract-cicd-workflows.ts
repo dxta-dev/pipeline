@@ -1,10 +1,12 @@
 import { createMessageHandler } from "@stack/config/create-message";
 import { MessageKind, metadataSchema, paginationSchema } from "./messages";
-import { NamespaceSchema, RepositorySchema, cicdWorkflows, repositories, namespaces, Namespace, Repository } from "@dxta/extract-schema";
+import { NamespaceSchema, RepositorySchema, cicdWorkflows, repositories, namespaces } from "@dxta/extract-schema";
+import type { Namespace, Repository } from '@dxta/extract-schema'
 import { z } from "zod";
-import { OmitDb, getTenantDb } from "@stack/config/get-tenant-db";
-import { Context, GetCicdWorkflowsEntities, GetCicdWorkflowsSourceControl, getCicdWorkflows } from "@dxta/extract-functions";
-import { GitHubSourceControl, GitlabSourceControl, Pagination } from "@dxta/source-control";
+import { type OmitDb, getTenantDb } from "@stack/config/get-tenant-db";
+import type { Context, GetCicdWorkflowsEntities, GetCicdWorkflowsSourceControl } from "@dxta/extract-functions";
+import { getCicdWorkflows } from '@dxta/extract-functions';
+import { GitHubSourceControl, GitlabSourceControl, type Pagination } from "@dxta/source-control";
 import { getClerkUserToken } from "./get-clerk-user-token";
 import { EventHandler } from "@stack/config/create-event";
 import { extractRepositoryEvent } from "./events";
@@ -82,7 +84,7 @@ const extractCicdWorkflowsPage = async ({
   return { pagination: paginationInfo };
 }
 
-export const eventHandler = EventHandler(extractRepositoryEvent, async (ev)=> {
+export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
   const db = getTenantDb(ev.metadata.tenantId);
   const repository = await db.select().from(repositories).where(eq(repositories.id, ev.properties.repositoryId)).get();
   const namespace = await db.select().from(namespaces).where(eq(namespaces.id, ev.properties.namespaceId)).get();
