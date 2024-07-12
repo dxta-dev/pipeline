@@ -586,7 +586,7 @@ export class GitHubSourceControl implements SourceControl {
       externalId: run.id,
       gitBranch: run.head_branch || "",
       gitSha: run.head_sha,
-      repositoryId: run.repository.id,
+      repositoryId: repository.id,
       runAttempt: run.run_attempt || -1,
       status: mapWorkflowRunStatus(run.status),
       result: mapWorkflowRunConclusion(run.conclusion),
