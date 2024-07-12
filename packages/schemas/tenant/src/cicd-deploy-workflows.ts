@@ -9,6 +9,7 @@ export const cicdDeployWorkflows = sqliteTable('cicd_deploy_workflows', {
   workflowExternalid: integer('workflow_external_id').notNull(),
   repositoryExternalId: integer('repository_external_id').notNull(),
   forgeType: Enum('forge_type', { enum: ['github', 'gitlab'] }).notNull(),
+  branch: text('branch'),
   _createdAt: integer('__created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
   _updatedAt: integer('__updated_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
 });

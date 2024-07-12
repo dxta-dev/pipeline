@@ -21,11 +21,12 @@ export const runsSenderHandler = createMessageHandler({
     repository: RepositorySchema,
     namespace: NamespaceSchema,
     workflowId: z.number(),
+    branch: z.string().optional(),
     page: z.number().optional()
   }).shape,
   handler: async (message) => {
     const { userId, sourceControl, from, to, tenantId, crawlId } = message.metadata;
-    const { namespace, repository, workflowId, page } = message.content;
+    const { namespace, repository, workflowId, branch, page } = message.content;
 
     context.integrations.sourceControl = await initSourceControl(userId, sourceControl);
 
@@ -35,6 +36,7 @@ export const runsSenderHandler = createMessageHandler({
       perPage: Number(Config.PER_PAGE),
       timePeriod: { from, to },
       workflowId,
+      branch,
       page
     }, { db: getTenantDb(tenantId), ...context })
 
@@ -96,6 +98,7 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
     namespace,
     repository,
     workflowId: workflow.workflowExternalid,
+    branch: workflow.branch ?? undefined,
   }));
 
   await sender.sendAll(arrayOfExtractRunsPageMessageContent, {

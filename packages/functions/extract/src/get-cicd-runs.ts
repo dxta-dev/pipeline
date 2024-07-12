@@ -8,6 +8,7 @@ export type GetCicdRunsInput = {
   repository: Repository;
   workflowId: number;
   timePeriod: TimePeriod;
+  branch?: string;
   page?: number;
   perPage: number;
 };
@@ -23,7 +24,7 @@ export type GetCicdRunsEntities = Pick<Entities, 'cicdRuns'>;
 export type GetCicdRunsFunction = ExtractFunction<GetCicdRunsInput, GetCicdRunsOutput, GetCicdRunsSourceControl, GetCicdRunsEntities>;
 
 export const getCicdRuns: GetCicdRunsFunction = async (
-  { namespace, repository, workflowId, perPage, page, timePeriod },
+  { namespace, repository, workflowId, perPage, page, timePeriod, branch },
   { db, entities, integrations }
 ) => {
 
@@ -31,7 +32,7 @@ export const getCicdRuns: GetCicdRunsFunction = async (
     throw new Error("Source control integration not configured");
   }
 
-  const { cicdRuns, pagination: paginationInfo } = await integrations.sourceControl.fetchCicdWorkflowRuns(repository, namespace, workflowId, timePeriod, perPage, page);
+  const { cicdRuns, pagination: paginationInfo } = await integrations.sourceControl.fetchCicdWorkflowRuns(repository, namespace, workflowId, timePeriod, perPage, branch, page);
 
   if (cicdRuns.length === 0) return {
     cicdRuns: [],

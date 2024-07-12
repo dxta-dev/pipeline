@@ -569,13 +569,14 @@ export class GitHubSourceControl implements SourceControl {
     }
   }
 
-  async fetchCicdWorkflowRuns(repository: Repository, namespace: Namespace, workflowId: number, timePeriod: TimePeriod, perPage: number, page?: number): Promise<{ cicdRuns: NewCicdRun[], pagination: Pagination }> {
+  async fetchCicdWorkflowRuns(repository: Repository, namespace: Namespace, workflowId: number, timePeriod: TimePeriod, perPage: number, branch?: string, page?: number): Promise<{ cicdRuns: NewCicdRun[], pagination: Pagination }> {
     page = page || 1;
 
     const response = await this.api.actions.listWorkflowRuns({
       owner: namespace.name,
       repo: repository.name,
       workflow_id: workflowId,
+      branch,
       created: dateQueryStrings.dateTimeRange(timePeriod.from, timePeriod.to),
       page: page,
       per_page: perPage,
