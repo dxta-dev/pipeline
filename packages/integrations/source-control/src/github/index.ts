@@ -108,6 +108,10 @@ function mapWorkflowRunConclusion(v: string | null): typeof cicdRunResultEnum[nu
   }
 }
 
+const dateQueryStrings = {
+  dateTimeRange: (since: Date, until: Date) => `${since.toISOString().slice(0,19)}+00:00..${until.toISOString().slice(0,19)}+00:00`
+}
+
 type GitHubSourceControlOptions = {
   fetchTimelineEventsPerPage?: number;
   auth?: string | object;
@@ -565,13 +569,14 @@ export class GitHubSourceControl implements SourceControl {
     }
   }
 
-  async fetchCicdWorkflowRuns(repository: Repository, namespace: Namespace, workflowId: number, perPage: number, page?: number): Promise<{ cicdRuns: NewCicdRun[], pagination: Pagination }> {
+  async fetchCicdWorkflowRuns(repository: Repository, namespace: Namespace, workflowId: number, timePeriod: TimePeriod, perPage: number, page?: number): Promise<{ cicdRuns: NewCicdRun[], pagination: Pagination }> {
     page = page || 1;
 
     const response = await this.api.actions.listWorkflowRuns({
       owner: namespace.name,
       repo: repository.name,
       workflow_id: workflowId,
+      created: dateQueryStrings.dateTimeRange(timePeriod.from, timePeriod.to),
       page: page,
       per_page: perPage,
     });
