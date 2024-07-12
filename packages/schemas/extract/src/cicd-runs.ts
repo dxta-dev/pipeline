@@ -5,7 +5,7 @@ import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import { z } from 'zod';
 import { sqliteTable } from './extract-table';
 import { repositories } from './repositories';
-import { cicdWorkflowRunnersEnum, cicdWorkflows } from './cicd-workflows';
+import { cicdWorkflowRunnersEnum } from './cicd-workflows';
 import { Enum } from './enum-column';
 
 export const cicdRunStatusEnum = ['unknown', 'not_started', 'in_progress', 'completed', 'skipped', 'cancelled', 'timed_out'] as const;
