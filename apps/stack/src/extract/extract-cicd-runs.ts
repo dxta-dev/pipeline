@@ -10,7 +10,7 @@ import { GitHubSourceControl, GitlabSourceControl } from "@dxta/source-control";
 import { getClerkUserToken } from "./get-clerk-user-token";
 import { EventHandler } from "@stack/config/create-event";
 import { extractRepositoryEvent } from "./events";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { Config } from "sst/node/config";
 
 export const runsSenderHandler = createMessageHandler({
@@ -76,10 +76,16 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
   const db = getTenantDb(ev.metadata.tenantId);
   const repository = await db.select().from(repositories).where(eq(repositories.id, ev.properties.repositoryId)).get();
   const namespace = await db.select().from(namespaces).where(eq(namespaces.id, ev.properties.namespaceId)).get();
-  const workflows = await db.select().from(cicdDeployWorkflows).where(eq(cicdDeployWorkflows.repositoryId, ev.properties.repositoryId)).all();
 
   if (!repository) throw new Error("invalid repo id");
   if (!namespace) throw new Error("Invalid namespace id");
+
+  const workflows = await db.select().from(cicdDeployWorkflows).where(
+    and(
+      eq(cicdDeployWorkflows.repositoryExternalId, repository.externalId),
+      eq(cicdDeployWorkflows.forgeType, repository.forgeType)
+    )
+  ).all();
 
   if (workflows.length == 0) {
     console.log("No deployment workflows defined for repository", `${namespace.name}/${repository.name}`);
