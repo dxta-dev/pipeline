@@ -1,5 +1,6 @@
 import { QueueHandler } from "@stack/config/create-message";
 import { MessageKind } from "./messages";
+import type { EventNamespaceType } from "@dxta/crawl-schema";
 import { tenantSenderHandler } from "./extract-tenants";
 import { repositorySenderHandler } from "./extract-repository";
 import { mergeRequestSenderHandler } from "./extract-merge-requests";
@@ -11,7 +12,7 @@ import { memberSenderHandler } from "./extract-members";
 import { namespaceMemberSenderHandler } from "./extract-namespace-members";
 import { timelineEventsSenderHandler } from "./extract-timeline-events";
 import { workflowsSenderHandler } from "./extract-cicd-workflows";
-import type { EventNamespaceType } from "@dxta/crawl-schema";
+import { runsSenderHandler } from "./extract-cicd-runs";
 
 const messageHandlers = new Map<string, unknown>();
 
@@ -37,6 +38,8 @@ messageHandlers.set(MessageKind.TimelineEvent, timelineEventsSenderHandler);
 
 messageHandlers.set(MessageKind.Workflow, workflowsSenderHandler);
 
+messageHandlers.set(MessageKind.CicdRuns, runsSenderHandler);
+
 const logMap = new Map<string, string[]>();
 
 logMap.set(MessageKind.Tenant, ['content.tenantId']);
@@ -60,6 +63,8 @@ logMap.set(MessageKind.MemberInfo, ['content.memberId']);
 logMap.set(MessageKind.TimelineEvent, ['content.repositoryId', 'content.namespaceId', 'content.mergeRequestId']);
 
 logMap.set(MessageKind.Workflow, ['content.repository.id', 'content.namespace.id', 'content.pagination']);
+
+logMap.set(MessageKind.CicdRuns, ['content.repository.id', 'content.namespace.id', 'content.workflowId', 'content.page'])
 
 const crawlNamespaceMap = new Map<string, EventNamespaceType>();
 
