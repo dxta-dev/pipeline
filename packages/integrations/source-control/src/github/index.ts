@@ -53,10 +53,6 @@ const FILE_STATUS_FLAGS_MAPPING: Record<
   }
 }
 
-const values = ['a', 'b'] as const;
-
-type ValueType = typeof values[number];
-
 function mapWorkflowRunStatus(v: string | null): typeof cicdRunStatusEnum[number] | null {
   if (typeof v !== 'string') return v;
   switch (v) {

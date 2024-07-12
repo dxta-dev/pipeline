@@ -1,4 +1,4 @@
-import { type NewRepository, type NewNamespace, type NewMergeRequest, type NewMember, type NewMergeRequestDiff, type NewMergeRequestCommit, type NewMergeRequestNote, type NewTimelineEvents, type NewCicdWorkflow, NewCicdRun } from "@dxta/extract-schema";
+import type { NewRepository, NewNamespace, NewMergeRequest, NewMember, NewMergeRequestDiff, NewMergeRequestCommit, NewMergeRequestNote, NewTimelineEvents, NewCicdWorkflow, NewCicdRun } from "@dxta/extract-schema";
 import type { Repository, Namespace, MergeRequest } from "@dxta/extract-schema";
 
 export type Pagination = {
