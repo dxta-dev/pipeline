@@ -15,7 +15,7 @@ export const cicdRuns = sqliteTable('cicd_runs', {
   id: integer('id').primaryKey(),
   externalId: integer('external_id').notNull(),
   repositoryId: integer('repository_id').references(() => repositories.id).notNull(),
-  workflowExternalId: integer('workflow_external_id').references(() => cicdWorkflows.id).notNull(),
+  workflowExternalId: integer('workflow_external_id').notNull(),
   workflowRunner: Enum('workflow_runner', { enum: cicdWorkflowRunnersEnum }),
   runAttempt: integer('run_attempt').notNull(),
   detailsUrl: text('details_url'),
