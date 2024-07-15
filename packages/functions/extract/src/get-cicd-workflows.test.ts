@@ -7,7 +7,8 @@ import { createClient } from '@libsql/client';
 import { describe, expect, test } from '@jest/globals';
 import { getCicdWorkflows } from './get-cicd-workflows';
 
-import { type NewRepository, repositories, type NewNamespace, namespaces, cicdWorkflows, Repository, Namespace } from '@dxta/extract-schema';
+import { repositories, namespaces, cicdWorkflows } from '@dxta/extract-schema';
+import type { NewNamespace, Namespace, NewRepository, Repository } from '@dxta/extract-schema';
 import type { Context } from './config';
 import type { GetCicdWorkflowsSourceControl, GetCicdWorkflowsEntities } from './get-cicd-workflows';
 import type { SourceControl } from '@dxta/source-control';

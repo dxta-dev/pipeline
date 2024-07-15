@@ -8,7 +8,7 @@ import { describe, expect, test } from '@jest/globals';
 import { getCicdRuns } from './get-cicd-runs';
 
 import { repositories, namespaces, cicdRuns, } from '@dxta/extract-schema';
-import type { NewNamespace, Namespace, NewRepository, Repository, NewCicdRun } from '@dxta/extract-schema';
+import type { NewNamespace, Namespace, NewRepository, Repository } from '@dxta/extract-schema';
 import type { Context } from './config';
 import type { GetCicdRunsSourceControl, GetCicdRunsEntities } from './get-cicd-runs';
 import type { SourceControl } from '@dxta/source-control';
