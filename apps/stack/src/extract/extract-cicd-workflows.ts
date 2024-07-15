@@ -49,8 +49,6 @@ const initSourceControl = async (userId: string, sourceControl: 'github' | 'gitl
 const context: OmitDb<Context<GetCicdWorkflowsSourceControl, GetCicdWorkflowsEntities>> = {
   entities: {
     cicdWorkflows,
-    repositories,
-    namespaces
   },
   integrations: {
     sourceControl: null,

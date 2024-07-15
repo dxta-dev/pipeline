@@ -16,7 +16,7 @@ export type GetCicdWorkflowsOutput = {
 };
 
 export type GetCicdWorkflowsSourceControl = Pick<SourceControl, 'fetchCicdWorkflows'>;
-export type GetCicdWorkflowsEntities = Pick<Entities, 'cicdWorkflows' | 'namespaces' | 'repositories'>;
+export type GetCicdWorkflowsEntities = Pick<Entities, 'cicdWorkflows'>;
 
 export type GetCicdWorkflowsFunction = ExtractFunction<GetCicdWorkflowsInput, GetCicdWorkflowsOutput, GetCicdWorkflowsSourceControl, GetCicdWorkflowsEntities>;
 
