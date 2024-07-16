@@ -60,6 +60,7 @@ export const getMergeRequests: GetMergeRequestsFunction = async (
             state: mergeRequest.state,
             targetBranch: mergeRequest.targetBranch,
             sourceBranch: mergeRequest.sourceBranch,
+            mergeCommitSha: mergeRequest.mergeCommitSha,
             _updatedAt: sql`(strftime('%s', 'now'))`,
 
           },
