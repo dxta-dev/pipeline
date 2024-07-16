@@ -8,6 +8,8 @@ export { repositoriesToMembers as extractRepositoriesToMembers } from '@dxta/ext
 export { mergeRequestNotes as extractMergeRequestNotes } from '@dxta/extract-schema';
 export { gitIdentities as extractGitIdentities } from '@dxta/extract-schema';
 export { timelineEvents as extractTimelineEvents } from '@dxta/extract-schema';
+export { cicdWorkflows as extractCicdWorkflows } from '@dxta/extract-schema';
+export { cicdRuns as extractCicdRuns } from '@dxta/extract-schema';
 
 export { forgeUsers as transformForgeUsers } from '@dxta/transform-schema';
 export { mergeRequests as transformMergeRequests } from '@dxta/transform-schema';
@@ -26,3 +28,4 @@ export { events as crawlEvents } from '@dxta/crawl-schema';
 export { teams as tenantTeams } from '@dxta/tenant-schema';
 export { teamMembers as tenantTeamMembers } from '@dxta/tenant-schema';
 export { tenantConfig } from '@dxta/tenant-schema';
+export { cicdDeployWorkflows as tenantCicdDeployWorkflows } from '@dxta/tenant-schema';

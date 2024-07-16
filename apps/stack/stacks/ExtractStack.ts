@@ -48,6 +48,17 @@ export function ExtractStack({ stack }: StackContext) {
           detailType: ["repository"],
         },
       },
+      githubRepository: {
+        pattern: {
+          source: ["extract"],
+          detailType: ["repository"],
+          detail: {
+            metadata: {
+              sourceControl: ["github"],
+            }
+          }
+        },
+      },
       mergeRequests: {
         pattern: {
           source: ["extract"],
@@ -199,6 +210,43 @@ export function ExtractStack({ stack }: StackContext) {
         ]
       },
     },
+  });
+
+  bus.addTargets(stack, "githubRepository", {
+    workflows: {
+      function: {
+        bind: [bus, extractQueue, configBucket],
+        handler: "src/extract/extract-cicd-workflows.eventHandler",
+        environment: {
+          OPENTELEMETRY_COLLECTOR_CONFIG_FILE: `s3://${configBucket.cdk.bucket.bucketName}.s3.eu-central-1.amazonaws.com/otel_collector_config.yaml`,
+          OTEL_SERVICE_NAME: "extract-cicd-workflows",
+          OTEL_RESOURCE_ATTRIBUTES: `deployment.environment=${stack.stage}`,
+          AWS_LAMBDA_EXEC_WRAPPER: "/opt/otel-handler",
+          OTEL_EXPORTER_OTLP_ENDPOINT: "http://localhost:4318",
+        },
+        layers: [
+          otelCollectorLambdaLayer,
+          otelInstrumentationLambdaLayer
+        ]
+      }
+    },
+    cicdRuns: {
+      function: {
+        bind: [bus, extractQueue, configBucket],
+        handler: "src/extract/extract-cicd-runs.eventHandler",
+        environment: {
+          OPENTELEMETRY_COLLECTOR_CONFIG_FILE: `s3://${configBucket.cdk.bucket.bucketName}.s3.eu-central-1.amazonaws.com/otel_collector_config.yaml`,
+          OTEL_SERVICE_NAME: "extract-cicd-runs",
+          OTEL_RESOURCE_ATTRIBUTES: `deployment.environment=${stack.stage}`,
+          AWS_LAMBDA_EXEC_WRAPPER: "/opt/otel-handler",
+          OTEL_EXPORTER_OTLP_ENDPOINT: "http://localhost:4318",
+        },
+        layers: [
+          otelCollectorLambdaLayer,
+          otelInstrumentationLambdaLayer
+        ]
+      }
+    }
   });
 
   bus.addTargets(stack, "mergeRequests", {
