@@ -339,6 +339,7 @@ export class GitHubSourceControl implements SourceControl {
           state: mergeRequest.state,
           targetBranch: mergeRequest.base.ref,
           sourceBranch: mergeRequest.head.ref,
+          mergeCommitSha: mergeRequest.merge_commit_sha,
         } satisfies NewMergeRequest)),
       pagination
     }

@@ -1,0 +1,1 @@
+ALTER TABLE extract_merge_requests ADD `merge_commit_sha` text;

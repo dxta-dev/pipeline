@@ -124,6 +124,7 @@ export class GitlabSourceControl implements SourceControl {
         state: mr.state,
         targetBranch: mr.target_branch,
         sourceBranch: mr.source_branch,
+        mergeCommitSha: mr.merge_commit_sha,
       } satisfies NewMergeRequest)),
       pagination: {
         page: paginationInfo.current,
