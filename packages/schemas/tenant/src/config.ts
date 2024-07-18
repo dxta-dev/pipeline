@@ -7,6 +7,7 @@ import { teams } from './teams';
 export const tenantConfig = sqliteTable('config', {
   id: integer('id').primaryKey(),
   defaultTeam: integer('default_team').notNull().references(() => teams.id),
+  hqTimezone: integer('hq_timezone').notNull(),
   _createdAt: integer('__created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
   _updatedAt: integer('__updated_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
 }, (config) => ({
