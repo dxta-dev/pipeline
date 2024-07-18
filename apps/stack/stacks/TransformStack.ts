@@ -20,9 +20,7 @@ export function TransformStack({ stack }: StackContext) {
     SUPER_DATABASE_AUTH_TOKEN,
     SUPER_DATABASE_URL,
     TENANT_DATABASE_AUTH_TOKEN,
-    ConfigBucket,
-    OtelCollectorLambdaLayer,
-    OtelInstrumentationLambdaLayer
+    
   } = use(ExtractStack);
 
   const transformQueue = new Queue(stack, "TransformQueue");
@@ -36,23 +34,11 @@ export function TransformStack({ stack }: StackContext) {
     function: {
       bind: [
         transformQueue,
-        ConfigBucket,
         SUPER_DATABASE_AUTH_TOKEN,
         SUPER_DATABASE_URL,
         TENANT_DATABASE_AUTH_TOKEN,
       ],
       handler: "src/transform/queue.handler",
-      environment: {
-        OPENTELEMETRY_COLLECTOR_CONFIG_FILE: `s3://${ConfigBucket.cdk.bucket.bucketName}.s3.eu-central-1.amazonaws.com/otel_collector_config.yaml`,
-        OTEL_SERVICE_NAME: "transform-queue-handler",
-        OTEL_RESOURCE_ATTRIBUTES: `deployment.environment=${stack.stage}`,
-        AWS_LAMBDA_EXEC_WRAPPER: "/opt/otel-handler",
-        OTEL_EXPORTER_OTLP_ENDPOINT:"http://localhost:4318",
-      },
-      layers: [
-        OtelCollectorLambdaLayer,
-        OtelInstrumentationLambdaLayer
-      ]
     },
 
   });
@@ -91,21 +77,9 @@ export function TransformStack({ stack }: StackContext) {
           handler: "src/transform/transform-tenant.cronHandler",
           bind: [
             transformQueue,
-            ConfigBucket,
             SUPER_DATABASE_AUTH_TOKEN,
             SUPER_DATABASE_URL,
           ],
-          environment: {
-            OPENTELEMETRY_COLLECTOR_CONFIG_FILE: `s3://${ConfigBucket.cdk.bucket.bucketName}.s3.eu-central-1.amazonaws.com/otel_collector_config.yaml`,
-            OTEL_SERVICE_NAME: "transform-cron",
-            OTEL_RESOURCE_ATTRIBUTES: `deployment.environment=${stack.stage}`,
-            AWS_LAMBDA_EXEC_WRAPPER: "/opt/otel-handler",
-            OTEL_EXPORTER_OTLP_ENDPOINT:"http://localhost:4318",
-          },
-          layers: [
-            OtelCollectorLambdaLayer,
-            OtelInstrumentationLambdaLayer
-          ]
         }
       }
     });
