@@ -1387,6 +1387,7 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
           codingDuration: timeline.codingDuration,
           pickupDuration: timeline.pickupDuration,
           reviewDuration: timeline.reviewDuration,
+          deployDuration,
           handover: timeline.handover,
           reviewDepth: timeline.reviewDepth,
           merged,
