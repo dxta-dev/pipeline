@@ -14,6 +14,7 @@ export const mergeRequestDatesJunk = sqliteTable('merge_request_fact_dates_junk'
   startedCodingAt: integer('started_coding_at').notNull().references(() => dates.id),
   startedPickupAt: integer('started_pickup_at').notNull().references(() => dates.id),
   startedReviewAt: integer('started_review_at').notNull().references(() => dates.id),
+  startedDeployAt: integer('started_deploy_at').notNull().references(() => dates.id),
 
   _createdAt: integer('__created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
   _updatedAt: integer('__updated_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),

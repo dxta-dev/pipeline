@@ -12,7 +12,8 @@
   "license": "ISC",
   "dependencies": {
     "@dxta/extract-schema": "*",
-    "@dxta/transform-schema": "*"
+    "@dxta/transform-schema": "*",
+    "@dxta/tenant-schema": "*"
   },
   "devDependencies": {
     "@jest/globals": "^29.7.0",
