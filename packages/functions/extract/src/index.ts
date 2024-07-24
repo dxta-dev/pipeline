@@ -10,4 +10,3 @@ export * from "./get-namespace-members";
 export * from "./get-timeline-events";
 export * from "./get-cicd-workflows";
 export * from "./get-cicd-runs";
-export * from "./get-timezone";
