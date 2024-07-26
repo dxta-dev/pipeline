@@ -651,4 +651,8 @@ export class GitHubSourceControl implements SourceControl {
     }
 
   }
+  
+  async fetchX() {
+    return Promise.resolve(3 as const);
+  }
 }
