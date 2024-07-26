@@ -3,11 +3,13 @@ import type { NewForgeUser } from "../forge-users";
 import type { NewMergeRequest } from "../merge-requests";
 import type { NewRepository } from "../repositories";
 import type { LibSQLDatabase } from "drizzle-orm/libsql"
+import type { NewTenantConfig } from "../../../tenant/src/config";
 import { forgeUsers } from "../forge-users";
 import { dates } from "../dates";
 import { mergeRequests } from "../merge-requests";
 import { repositories } from "../repositories";
 import { nullRows } from "../null-rows";
+import { tenantConfig } from "../../../tenant/src/config";
 import { type NewBranch, branches } from "../branches";
 
 const nullForgeUser = {
@@ -48,6 +50,11 @@ const nullRepository = {
   name: '',
 } satisfies NewRepository;
 
+const timezone = {
+  id: 1,
+  hqTimezone: 0,
+} satisfies NewTenantConfig;
+
 export async function seed(db: LibSQLDatabase, startDate: Date, endDate: Date) {
   await db.insert(forgeUsers).values(nullForgeUser).onConflictDoNothing().returning().get();
   await db.insert(dates).values(nullDate).onConflictDoNothing().returning().get();
@@ -55,6 +62,7 @@ export async function seed(db: LibSQLDatabase, startDate: Date, endDate: Date) {
   await db.insert(mergeRequests).values(nullMergeRequest).onConflictDoNothing().returning().get();
   await db.insert(repositories).values(nullRepository).onConflictDoNothing().returning().get();
   await db.insert(dates).values(generateDates(startDate, endDate)).onConflictDoNothing().run();
+  await db.insert(tenantConfig).values(timezone).onConflictDoNothing().run();
 
   await db.insert(nullRows).values({
     userId: nullForgeUser.id,

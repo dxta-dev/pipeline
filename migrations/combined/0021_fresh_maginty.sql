@@ -1,0 +1,1 @@
+ALTER TABLE tenant_config ADD `hq_timezone` integer NOT NULL;

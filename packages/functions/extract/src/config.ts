@@ -2,7 +2,6 @@ import type { LibSQLDatabase } from 'drizzle-orm/libsql';
 import type { repositories, namespaces, gitIdentities, mergeRequests, members, repositoriesToMembers, mergeRequestDiffs, mergeRequestCommits, mergeRequestNotes, timelineEvents, cicdWorkflows, cicdRuns } from '@dxta/extract-schema';
 import type { SourceControl } from '@dxta/source-control';
 
-
 export type Database = LibSQLDatabase<Record<string, unknown>>;
 
 export type Entities = {
