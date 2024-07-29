@@ -1,5 +1,6 @@
 import * as extract from '@dxta/extract-schema';
 import * as transform from '@dxta/transform-schema';
+import * as tenant from '@dxta/tenant-schema';
 import { sql, eq, or, and, type ExtractTablesWithRelations } from "drizzle-orm";
 import type { LibSQLDatabase } from 'drizzle-orm/libsql';
 import { isCodeGen } from './is-codegen';
@@ -15,9 +16,15 @@ type DatabaseTransaction = SQLiteTransaction<"async", ResultSet, Record<string, 
 
 export type TransformDatabase = BrandedDatabase<'transform'>;
 export type ExtractDatabase = BrandedDatabase<'extract'>;
+export type TenantDatabase = BrandedDatabase<'tenant'>;
+
 type TableMeta = {
   _createdAt: Date | null;
   _updatedAt: Date | null;
+}
+
+function getTimezoneInMinutes(db: TenantDatabase) {
+  return db.select({hqTimezone: tenant.tenantConfig.hqTimezone}).from(tenant.tenantConfig).limit(1);
 }
 
 function getUsersDatesMergeRequestMetricsId(db: TransformDatabase, transformMergeRequestId: number) {
@@ -598,7 +605,9 @@ async function selectExtractData(db: ExtractDatabase, extractMergeRequestId: num
 export type RunContext = {
   extractDatabase: ExtractDatabase;
   transformDatabase: TransformDatabase;
+  tenantDatabase: TenantDatabase;
 };
+
 
 export type TimelineMapKey = {
   type: extract.TimelineEvents['type'] | 'note' | 'opened',
@@ -963,6 +972,8 @@ function getMergeRequestMembers({
 
 export async function run(extractMergeRequestId: number, ctx: RunContext) {
   const extractData = await selectExtractData(ctx.extractDatabase, extractMergeRequestId);  
+  const timezone = await getTimezoneInMinutes(ctx.tenantDatabase);
+  console.log(timezone);
 
   if (!extractData) {
     console.error(`No extract data found for merge request with id ${extractMergeRequestId}`);

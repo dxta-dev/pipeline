@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { TransformDatabase, ExtractDatabase } from "@dxta/transform-functions";
+import type { TransformDatabase, ExtractDatabase, TenantDatabase } from "@dxta/transform-functions";
 import { run } from "@dxta/transform-functions";
 import { createMessageHandler } from "@stack/config/create-message";
 import { getTenantDb } from "@stack/config/get-tenant-db";
@@ -18,6 +18,7 @@ export const timelineSenderHandler = createMessageHandler({
     await run(message.content.mergeRequestId, {
       extractDatabase: db as ExtractDatabase,
       transformDatabase: db as TransformDatabase,
+      tenantDatabase: db as TenantDatabase,
     });
   }
 })
