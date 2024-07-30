@@ -263,19 +263,11 @@ async function upsertForgeUsers(db: TransformDatabase, members: MemberData[]) {
 }
 
 
-async function selectDates(db: TransformDatabase, tenantDb: TenantDatabase, timestamps: Set<number>) {
-  const timezoneObj = await getTimezoneInMinutes(tenantDb);
-  const timezone = timezoneObj[0]?.hqTimezone;
-  let timezoneInMilliseconds = 0;
-
-  if (timezone) {
-    timezoneInMilliseconds = timezone * 60 * 1000;
-  }
+async function selectDates(db: TransformDatabase, timestamps: Set<number>) {
 
   const query = [];
   for (const timestamp of timestamps) {
-    const timestampWithTimezone = timestamp + timezoneInMilliseconds;
-    query.push(getDMYQuery(getDMY(new Date(timestampWithTimezone))));
+    query.push(getDMYQuery(getDMY(new Date(timestamp))));
   }
 
   const datesData = await db.select({
@@ -979,8 +971,6 @@ function getMergeRequestMembers({
 
 export async function run(extractMergeRequestId: number, ctx: RunContext) {
   const extractData = await selectExtractData(ctx.extractDatabase, extractMergeRequestId);  
-  const timezone = await getTimezoneInMinutes(ctx.tenantDatabase);
-  console.log(timezone);
 
   if (!extractData) {
     console.error(`No extract data found for merge request with id ${extractMergeRequestId}`);
@@ -1082,7 +1072,6 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
 
   // Get users and dates junk if they exist
   const userAndDatesJunkIdsResult = await getUsersDatesMergeRequestMetricsId(ctx.transformDatabase, transformMergeRequestId).get();
-  console.log("MARKOO", userAndDatesJunkIdsResult);
   const usersJunkId = userAndDatesJunkIdsResult?.usersJunkId || null;
   const datesJunkId = userAndDatesJunkIdsResult?.datesJunkId || null;
   const mergeRequestMetricsId = userAndDatesJunkIdsResult?.mergeRequestMetricId || null;
@@ -1113,11 +1102,22 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
     notes: extractData.notes,
   });
 
-  const mergeRequestDates = await selectDates(ctx.transformDatabase, ctx.tenantDatabase, mergeRequestTimestamps);
-  console.log("JANKO", mergeRequestDates);
+  const timezoneObj = await getTimezoneInMinutes(ctx.tenantDatabase);
+  const timezone = timezoneObj[0]?.hqTimezone;
+  let timezoneInMilliseconds = 0;
+
+  if (timezone) {
+    timezoneInMilliseconds = timezone * 60 * 1000;
+  }
+
+  const timestampsWithTimezone = new Set(
+    Array.from(mergeRequestTimestamps).map(timestamp => timestamp + timezoneInMilliseconds)
+  );
+
+  const mergeRequestDates = await selectDates(ctx.transformDatabase, timestampsWithTimezone);
 
   const timestampDateMap = new Map<number, transform.TransformDate['id']>();
-  mergeRequestTimestamps.forEach(ts => {
+  timestampsWithTimezone.forEach(ts => {
     timestampDateMap.set(ts, getDateIdOrNullDateId(getDMY(new Date(ts)), mergeRequestDates, nullDateId).id);
   });
 
