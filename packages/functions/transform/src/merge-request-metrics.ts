@@ -263,12 +263,19 @@ async function upsertForgeUsers(db: TransformDatabase, members: MemberData[]) {
 }
 
 
-async function selectDates(db: TransformDatabase, timestamps: Set<number>) {
+async function selectDates(db: TransformDatabase, tenantDb: TenantDatabase, timestamps: Set<number>) {
+  const timezoneObj = await getTimezoneInMinutes(tenantDb);
+  const timezone = timezoneObj[0]?.hqTimezone;
+  let timezoneInMilliseconds = 0;
+
+  if (timezone) {
+    timezoneInMilliseconds = timezone * 60 * 1000;
+  }
 
   const query = [];
-
   for (const timestamp of timestamps) {
-    query.push(getDMYQuery(getDMY(new Date(timestamp))));
+    const timestampWithTimezone = timestamp + timezoneInMilliseconds;
+    query.push(getDMYQuery(getDMY(new Date(timestampWithTimezone))));
   }
 
   const datesData = await db.select({
@@ -284,7 +291,7 @@ async function selectDates(db: TransformDatabase, timestamps: Set<number>) {
       )
     )
     .all();
-
+  
   return datesData;
 }
 
@@ -1075,6 +1082,7 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
 
   // Get users and dates junk if they exist
   const userAndDatesJunkIdsResult = await getUsersDatesMergeRequestMetricsId(ctx.transformDatabase, transformMergeRequestId).get();
+  console.log("MARKOO", userAndDatesJunkIdsResult);
   const usersJunkId = userAndDatesJunkIdsResult?.usersJunkId || null;
   const datesJunkId = userAndDatesJunkIdsResult?.datesJunkId || null;
   const mergeRequestMetricsId = userAndDatesJunkIdsResult?.mergeRequestMetricId || null;
@@ -1105,7 +1113,8 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
     notes: extractData.notes,
   });
 
-  const mergeRequestDates = await selectDates(ctx.transformDatabase, mergeRequestTimestamps);
+  const mergeRequestDates = await selectDates(ctx.transformDatabase, ctx.tenantDatabase, mergeRequestTimestamps);
+  console.log("JANKO", mergeRequestDates);
 
   const timestampDateMap = new Map<number, transform.TransformDate['id']>();
   mergeRequestTimestamps.forEach(ts => {
