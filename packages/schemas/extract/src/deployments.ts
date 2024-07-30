@@ -27,3 +27,19 @@ export const deployments = sqliteTable('deployments', {
 
 export type Deployment = InferSelectModel<typeof deployments>;
 export type NewDeployment = InferInsertModel<typeof deployments>;
+export const DeploymentSchema = createSelectSchema(deployments, {
+  status: z.enum(deploymentsStatusEnum),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+  deployedAt: z.coerce.date(),
+  _createdAt: z.coerce.date(),
+  _updatedAt: z.coerce.date(),
+});
+export const NewDeploymentSchema = createInsertSchema(deployments, {
+  status: z.enum(deploymentsStatusEnum),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+  deployedAt: z.coerce.date(),
+  _createdAt: z.coerce.date(),
+  _updatedAt: z.coerce.date(),
+});
