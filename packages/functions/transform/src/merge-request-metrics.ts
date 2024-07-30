@@ -23,9 +23,26 @@ type TableMeta = {
   _updatedAt: Date | null;
 }
 
-function getTimezoneInMinutes(db: TenantDatabase) {
-  return db.select({hqTimezone: tenant.tenantConfig.hqTimezone}).from(tenant.tenantConfig).limit(1);
+async function getTimezoneInMinutes(db: TenantDatabase): Promise<number> {
+  const result = await db
+    .select({ hqTimezone: tenant.tenantConfig.hqTimezone })
+    .from(tenant.tenantConfig)
+    .limit(1)
+
+  if (!result || result.length === 0) {
+    return 0;
+  }
+  const timestamp = result[0];
+
+  if (!timestamp || timestamp.hqTimezone === undefined) {
+    return 0;
+  }
+
+  console.log("AAAAAAAAAAAAAAAAA", timestamp.hqTimezone);
+
+  return timestamp.hqTimezone;
 }
+
 
 function getUsersDatesMergeRequestMetricsId(db: TransformDatabase, transformMergeRequestId: number) {
   return db.select({
@@ -1102,14 +1119,11 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
     notes: extractData.notes,
   });
 
-  const timezoneObj = await getTimezoneInMinutes(ctx.tenantDatabase);
-  const timezone = timezoneObj[0]?.hqTimezone;
+  const timezone = await getTimezoneInMinutes(ctx.tenantDatabase);
   let timezoneInMilliseconds = 0;
 
-  if (timezone) {
-    timezoneInMilliseconds = timezone * 60 * 1000;
-  }
-
+  timezoneInMilliseconds = timezone * 60 * 1000;
+  
   const timestampsWithTimezone = new Set(
     Array.from(mergeRequestTimestamps).map(timestamp => timestamp + timezoneInMilliseconds)
   );
