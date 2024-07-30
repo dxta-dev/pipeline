@@ -1131,8 +1131,8 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
   const mergeRequestDates = await selectDates(ctx.transformDatabase, timestampsWithTimezone);
 
   const timestampDateMap = new Map<number, transform.TransformDate['id']>();
-  timestampsWithTimezone.forEach(ts => {
-    timestampDateMap.set(ts, getDateIdOrNullDateId(getDMY(new Date(ts)), mergeRequestDates, nullDateId).id);
+  mergeRequestTimestamps.forEach(ts => {
+    timestampDateMap.set(ts, getDateIdOrNullDateId(getDMY(new Date(ts + timezoneInMilliseconds)), mergeRequestDates, nullDateId).id);
   });
 
   const mergedAtId = timestampDateMap.get(extractData.mergeRequest.mergedAt?.getTime() || 0) || nullDateId;
