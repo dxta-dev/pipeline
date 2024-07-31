@@ -1,5 +1,6 @@
 import * as extract from '@dxta/extract-schema';
 import * as transform from '@dxta/transform-schema';
+import * as tenant from '@dxta/tenant-schema';
 import { sql, eq, or, and, type ExtractTablesWithRelations } from "drizzle-orm";
 import type { LibSQLDatabase } from 'drizzle-orm/libsql';
 import { isCodeGen } from './is-codegen';
@@ -15,10 +16,31 @@ type DatabaseTransaction = SQLiteTransaction<"async", ResultSet, Record<string, 
 
 export type TransformDatabase = BrandedDatabase<'transform'>;
 export type ExtractDatabase = BrandedDatabase<'extract'>;
+export type TenantDatabase = BrandedDatabase<'tenant'>;
+
 type TableMeta = {
   _createdAt: Date | null;
   _updatedAt: Date | null;
 }
+
+async function getTimezoneInMinutes(db: TenantDatabase): Promise<number> {
+  const result = await db
+    .select({ hqTimezone: tenant.tenantConfig.hqTimezone })
+    .from(tenant.tenantConfig)
+    .limit(1)
+
+  if (!result || result.length === 0) {
+    return 0;
+  }
+  const timestamp = result[0];
+
+  if (!timestamp || timestamp.hqTimezone === undefined) {
+    return 0;
+  }
+  
+  return timestamp.hqTimezone;
+}
+
 
 function getUsersDatesMergeRequestMetricsId(db: TransformDatabase, transformMergeRequestId: number) {
   return db.select({
@@ -259,7 +281,6 @@ async function upsertForgeUsers(db: TransformDatabase, members: MemberData[]) {
 async function selectDates(db: TransformDatabase, timestamps: Set<number>) {
 
   const query = [];
-
   for (const timestamp of timestamps) {
     query.push(getDMYQuery(getDMY(new Date(timestamp))));
   }
@@ -277,7 +298,7 @@ async function selectDates(db: TransformDatabase, timestamps: Set<number>) {
       )
     )
     .all();
-
+  
   return datesData;
 }
 
@@ -598,7 +619,9 @@ async function selectExtractData(db: ExtractDatabase, extractMergeRequestId: num
 export type RunContext = {
   extractDatabase: ExtractDatabase;
   transformDatabase: TransformDatabase;
+  tenantDatabase: TenantDatabase;
 };
+
 
 export type TimelineMapKey = {
   type: extract.TimelineEvents['type'] | 'note' | 'opened',
@@ -1094,11 +1117,20 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
     notes: extractData.notes,
   });
 
-  const mergeRequestDates = await selectDates(ctx.transformDatabase, mergeRequestTimestamps);
+  const timezone = await getTimezoneInMinutes(ctx.tenantDatabase);
+  let timezoneInMilliseconds = 0;
+
+  timezoneInMilliseconds = timezone * 60 * 1000;
+  
+  const timestampsWithTimezone = new Set(
+    Array.from(mergeRequestTimestamps).map(timestamp => timestamp + timezoneInMilliseconds)
+  );
+
+  const mergeRequestDates = await selectDates(ctx.transformDatabase, timestampsWithTimezone);
 
   const timestampDateMap = new Map<number, transform.TransformDate['id']>();
   mergeRequestTimestamps.forEach(ts => {
-    timestampDateMap.set(ts, getDateIdOrNullDateId(getDMY(new Date(ts)), mergeRequestDates, nullDateId).id);
+    timestampDateMap.set(ts, getDateIdOrNullDateId(getDMY(new Date(ts + timezoneInMilliseconds)), mergeRequestDates, nullDateId).id);
   });
 
   const mergedAtId = timestampDateMap.get(extractData.mergeRequest.mergedAt?.getTime() || 0) || nullDateId;
