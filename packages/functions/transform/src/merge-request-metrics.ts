@@ -37,9 +37,7 @@ async function getTimezoneInMinutes(db: TenantDatabase): Promise<number> {
   if (!timestamp || timestamp.hqTimezone === undefined) {
     return 0;
   }
-
-  console.log("AAAAAAAAAAAAAAAAA", timestamp.hqTimezone);
-
+  
   return timestamp.hqTimezone;
 }
 
