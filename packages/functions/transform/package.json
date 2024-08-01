@@ -12,7 +12,8 @@
   "license": "ISC",
   "dependencies": {
     "@dxta/extract-schema": "*",
-    "@dxta/transform-schema": "*"
+    "@dxta/transform-schema": "*",
+    "moment-timezone": "^0.5.45"
   },
   "devDependencies": {
     "@jest/globals": "^29.7.0",
