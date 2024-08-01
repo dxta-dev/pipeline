@@ -61,6 +61,7 @@ export class GitlabSourceControl implements SourceControl {
         externalId: project.id,
         forgeType: 'gitlab',
         name: project.name,
+        defaultBranch: project.default_branch
       } satisfies Omit<NewRepository, "namespaceId">,
       namespace: {
         externalId: namespace.id,
