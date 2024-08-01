@@ -13,6 +13,7 @@ export const repositories = sqliteTable('repositories', {
   namespaceId: integer('namespace_id').references(() => namespaces.id).notNull(),
   forgeType: Enum('forge_type', { enum: ['github', 'gitlab'] }).notNull(),
   name: text('name').notNull(),
+  defaultBranch: text('default_branch'),
   _createdAt: integer('__created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
   _updatedAt: integer('__updated_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
 }, (repositories) => ({

@@ -183,6 +183,7 @@ export class GitHubSourceControl implements SourceControl {
         externalId: result.data.id,
         forgeType: 'github',
         name: result.data.name,
+        defaultBranch: result.data.default_branch,
       } satisfies Omit<NewRepository, "namespaceId">,
       namespace: {
         externalId: result.data.owner.id,

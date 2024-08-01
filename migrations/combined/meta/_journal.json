@@ -162,6 +162,13 @@
       "when": 1721403588240,
       "tag": "0022_lush_sugar_man",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "5",
+      "when": 1722516354577,
+      "tag": "0023_awesome_secret_warriors",
+      "breakpoints": true
     }
   ]
 }
