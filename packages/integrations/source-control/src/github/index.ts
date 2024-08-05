@@ -2,9 +2,9 @@ import type { SourceControl } from '..';
 import { Octokit } from '@octokit/rest';
 import parseLinkHeader from "parse-link-header";
 
-import type { NewRepository, NewNamespace, NewMergeRequest, NewMember, NewMergeRequestDiff, Repository, Namespace, MergeRequest, NewMergeRequestCommit, NewMergeRequestNote, NewTimelineEvents, TimelineEventType, NewCicdWorkflow, NewCicdRun, cicdRunResultEnum, cicdRunStatusEnum, NewCommit } from "@dxta/extract-schema";
+import type { NewRepository, NewNamespace, NewMergeRequest, NewMember, NewMergeRequestDiff, Repository, Namespace, MergeRequest, NewMergeRequestCommit, NewMergeRequestNote, NewTimelineEvents, TimelineEventType, NewCicdWorkflow, NewCicdRun, cicdRunResultEnum, cicdRunStatusEnum } from "@dxta/extract-schema";
 import { marshalSha } from '@dxta/extract-schema';
-import type { Pagination, TimePeriod } from '../source-control';
+import type { CommitData, Pagination, TimePeriod } from '../source-control';
 import type { components } from '@octokit/openapi-types';
 import { TimelineEventTypes } from '../../../../../packages/schemas/extract/src/timeline-events';
 import { RequestError } from '@octokit/request-error';
@@ -538,7 +538,7 @@ export class GitHubSourceControl implements SourceControl {
     };
   }
 
-  async fetchCommits(repository: Repository, namespace: Namespace, perPage: number, ref?: string, period?: TimePeriod, page?: number): Promise<{ commits: NewCommit[], pagination: Pagination }> {
+  async fetchCommits(repository: Repository, namespace: Namespace, perPage: number, ref?: string, period?: TimePeriod, page?: number): Promise<{ commits: CommitData[], pagination: Pagination }> {
     page = page || 1;
 
     const response = await this.api.repos.listCommits({
@@ -559,12 +559,16 @@ export class GitHubSourceControl implements SourceControl {
       totalPages: (!('last' in linkHeader)) ? page : Number(linkHeader.last?.page)
     } satisfies Pagination;
 
-    const commits = response.data.map(x => ({
-      authoredAt: new Date(x.commit.author?.date || 0),
-      committedAt: new Date(x.commit.committer?.date || 0),
-      repositoryId: repository.id,
-      ...marshalSha(x.sha),
-    } satisfies NewCommit));
+    const commits = response.data.map(data => ({
+      commit: {
+        authoredAt: data.commit.author?.date ? new Date(data.commit.author.date) : undefined,
+        committedAt: data.commit.committer?.date ? new Date(data.commit.committer.date) : undefined,
+        repositoryId: repository.id,
+        ...marshalSha(data.sha),
+      },
+      id: data.sha,
+      parents: data.parents.map(parent => parent.sha),
+    } satisfies CommitData));
 
     return {
       commits,

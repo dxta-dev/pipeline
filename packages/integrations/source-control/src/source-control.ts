@@ -12,6 +12,12 @@ export type TimePeriod = {
   to: Date;
 }
 
+export type CommitData = {
+  commit: NewCommit,
+  id: string,
+  parents: string[]
+}
+
 export interface SourceControl {
   fetchRepository(externalRepositoryId: number, namespaceName: string, repositoryName: string): Promise<{ repository: Omit<NewRepository, "namespaceId">, namespace: NewNamespace }>;
   fetchMembers(externalRepositoryId: number, namespaceName: string, repositoryName: string, perPage: number, page?: number): Promise<{ members: NewMember[], pagination: Pagination }>;
@@ -22,7 +28,7 @@ export interface SourceControl {
   fetchMergeRequestCommits(repository: Repository, namespace: Namespace, mergeRequest: MergeRequest): Promise<{ mergeRequestCommits: NewMergeRequestCommit[] }>;
   fetchMergeRequestNotes(repository: Repository, namespace: Namespace, mergeRequest: MergeRequest): Promise<{ mergeRequestNotes: NewMergeRequestNote[] }>
   fetchTimelineEvents(repository: Repository, namespace: Namespace, mergeRequest: MergeRequest): Promise<{ timelineEvents: NewTimelineEvents[] }>;
-  fetchCommits(repository: Repository, namespace: Namespace, perPage: number, ref?: string, period?: TimePeriod, page?: number): Promise<{commits: NewCommit[], pagination: Pagination}>;
+  fetchCommits(repository: Repository, namespace: Namespace, perPage: number, ref?: string, period?: TimePeriod, page?: number): Promise<{commits: CommitData[], pagination: Pagination}>;
 
   fetchCicdWorkflows(repository: Repository, namespace: Namespace, perPage: number, page?: number): Promise<{ cicdWorkflows: NewCicdWorkflow[], pagination: Pagination }>;
   fetchCicdWorkflowRuns(repository: Repository, namespace: Namespace, workflowId: number, timePeriod: TimePeriod, perPage: number, branch?: string, page?: number): Promise<{ cicdRuns: NewCicdRun[], pagination: Pagination }>;
