@@ -14,8 +14,8 @@ export const repositoryCommits = sqliteTable('repository_commits', {
   sha2: integer('sha_2').notNull(),
   sha3: integer('sha_3').notNull(),
   sha4: integer('sha_4').notNull(),
-  committedAt: integer('committed_at').notNull(),
-  authoredAt: integer('authored_at').notNull(),
+  committedAt: integer('committed_at', { mode: 'timestamp_ms' }),
+  authoredAt: integer('authored_at', { mode: 'timestamp_ms' }),
   _createdAt: integer('__created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
   _updatedAt: integer('__updated_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
 }, (commits) => ({
