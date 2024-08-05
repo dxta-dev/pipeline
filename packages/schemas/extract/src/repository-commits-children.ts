@@ -3,7 +3,6 @@ import { sql } from 'drizzle-orm';
 import { integer, uniqueIndex } from 'drizzle-orm/sqlite-core';
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import { z } from 'zod';
-import { repositories } from './repositories';
 import { sqliteTable } from './extract-table';
 import { repositoryCommits } from './repository-commits';
 
