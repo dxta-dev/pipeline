@@ -1,12 +1,13 @@
-import type { NewCommit, Commit, Namespace, Repository, CommitChild, NewCommitChild } from "@dxta/extract-schema";
+import type { NewCommit, Commit, Namespace, Repository, NewCommitChild } from "@dxta/extract-schema";
 import { marshalSha, unmarshalSha } from "@dxta/extract-schema";
 import type { ExtractFunction, Entities } from "./config";
-import type { Pagination, SourceControl } from "@dxta/source-control";
+import type { Pagination, SourceControl, TimePeriod } from "@dxta/source-control";
 import { sql } from "drizzle-orm";
 
 export type GetCommitsInput = {
   namespace: Namespace;
   repository: Repository;
+  timePeriod?: TimePeriod;
   ref?: string;
   page?: number;
   perPage: number;
@@ -23,7 +24,7 @@ export type GetCommitsEntities = Pick<Entities, 'commits' | 'commitsChildren'>;
 export type GetCommitsFunction = ExtractFunction<GetCommitsInput, GetCommitsOutput, GetCommitsSourceControl, GetCommitsEntities>;
 
 export const getCommits: GetCommitsFunction = async (
-  { namespace, repository, ref, perPage, page },
+  { namespace, repository, ref, timePeriod, perPage, page },
   { db, entities, integrations }
 ) => {
 
@@ -31,7 +32,7 @@ export const getCommits: GetCommitsFunction = async (
     throw new Error("Source control integration not configured");
   }
 
-  const { commits: commitData, pagination } = await integrations.sourceControl.fetchCommits(repository, namespace, perPage, ref, undefined, page);
+  const { commits: commitData, pagination } = await integrations.sourceControl.fetchCommits(repository, namespace, perPage, ref, timePeriod, page);
 
   if (commitData.length === 0 && pagination.totalPages === 1) return {
     commits: [],
@@ -111,7 +112,6 @@ export const getCommits: GetCommitsFunction = async (
       });
     }
   };
-
 
   await db.insert(entities.commitsChildren).values(commitChildren).onConflictDoNothing().run();
 
