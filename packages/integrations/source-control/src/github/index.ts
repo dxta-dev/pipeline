@@ -2,7 +2,8 @@ import type { SourceControl } from '..';
 import { Octokit } from '@octokit/rest';
 import parseLinkHeader from "parse-link-header";
 
-import type { NewRepository, NewNamespace, NewMergeRequest, NewMember, NewMergeRequestDiff, Repository, Namespace, MergeRequest, NewMergeRequestCommit, NewMergeRequestNote, NewTimelineEvents, TimelineEventType, NewCicdWorkflow, NewCicdRun, cicdRunResultEnum, cicdRunStatusEnum } from "@dxta/extract-schema";
+import type { NewRepository, NewNamespace, NewMergeRequest, NewMember, NewMergeRequestDiff, Repository, Namespace, MergeRequest, NewMergeRequestCommit, NewMergeRequestNote, NewTimelineEvents, TimelineEventType, NewCicdWorkflow, NewCicdRun, cicdRunResultEnum, cicdRunStatusEnum, NewCommit } from "@dxta/extract-schema";
+import { marshalSha } from '@dxta/extract-schema';
 import type { Pagination, TimePeriod } from '../source-control';
 import type { components } from '@octokit/openapi-types';
 import { TimelineEventTypes } from '../../../../../packages/schemas/extract/src/timeline-events';
@@ -105,7 +106,8 @@ function mapWorkflowRunConclusion(v: string | null): typeof cicdRunResultEnum[nu
 }
 
 const dateQueryStrings = {
-  dateTimeRange: (since: Date, until: Date) => `${since.toISOString().slice(0,19)}+00:00..${until.toISOString().slice(0,19)}+00:00`
+  dateTimeRange: (since: Date, until: Date) => `${since.toISOString().slice(0, 19)}+00:00..${until.toISOString().slice(0, 19)}+00:00`,
+  dateTime: (d: Date) => d.toISOString().slice(0, 19) + 'Z',
 }
 
 type GitHubSourceControlOptions = {
@@ -535,6 +537,41 @@ export class GitHubSourceControl implements SourceControl {
       timelineEvents: timelineEvents,
     };
   }
+
+  async fetchCommits(repository: Repository, namespace: Namespace, perPage: number, ref?: string, period?: TimePeriod, page?: number): Promise<{ commits: NewCommit[], pagination: Pagination }> {
+    page = page || 1;
+
+    const response = await this.api.repos.listCommits({
+      owner: namespace.name,
+      repo: repository.name,
+      sha: ref,
+      page,
+      per_page: perPage,
+      since: period ? dateQueryStrings.dateTime(period.from) : undefined,
+      until: period ? dateQueryStrings.dateTime(period.to) : undefined,
+    });
+
+    const linkHeader = parseLinkHeader(response.headers.link) || { next: { per_page: perPage } };
+
+    const pagination = {
+      page,
+      perPage: ('next' in linkHeader) ? Number(linkHeader.next?.per_page) : Number(linkHeader.prev?.per_page),
+      totalPages: (!('last' in linkHeader)) ? page : Number(linkHeader.last?.page)
+    } satisfies Pagination;
+
+    const commits = response.data.map(x => ({
+      authoredAt: new Date(x.commit.author?.date || 0),
+      committedAt: new Date(x.commit.committer?.date || 0),
+      repositoryId: repository.id,
+      ...marshalSha(x.sha),
+    } satisfies NewCommit));
+
+    return {
+      commits,
+      pagination
+    }
+  }
+
 
   async fetchCicdWorkflows(repository: Repository, namespace: Namespace, perPage: number, page?: number): Promise<{ cicdWorkflows: NewCicdWorkflow[], pagination: Pagination }> {
     page = page || 1;
