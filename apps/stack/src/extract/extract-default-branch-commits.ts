@@ -5,7 +5,7 @@ import { NamespaceSchema, RepositorySchema, repositoryCommits as commits, reposi
 import type { Namespace, Repository } from "@dxta/extract-schema";
 import type { Context, GetCommitsEntities, GetCommitsSourceControl } from "@dxta/extract-functions";
 import { getCommits } from "@dxta/extract-functions";
-import { OmitDb, getTenantDb } from "@stack/config/get-tenant-db";
+import { type OmitDb, getTenantDb } from "@stack/config/get-tenant-db";
 import { Config } from "sst/node/config";
 import { getClerkUserToken } from "./get-clerk-user-token";
 import { GitHubSourceControl, GitlabSourceControl } from "@dxta/source-control";
@@ -129,7 +129,7 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
     });
   }
   await insertEvent(
-    { crawlId: ev.metadata.crawlId, eventNamespace: 'defaultBranchCommit', eventDetail: 'crawlInfo', data: { calls: pagination.totalPages } },
+    { crawlId, eventNamespace: 'defaultBranchCommit', eventDetail: 'crawlInfo', data: { calls: pagination.totalPages } },
     { db, entities: { events } }
   );
 
