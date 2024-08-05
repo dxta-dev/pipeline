@@ -144,6 +144,12 @@ export function ExtractStack({ stack }: StackContext) {
   });
 
   bus.addTargets(stack, "githubRepository", {
+    defaultBranchCommits: {
+      function: {
+        bind: [bus, extractQueue],
+        handler: "src/extract/extract-default-branch-commits.eventHandler",
+      }
+    },
     workflows: {
       function: {
         bind: [bus, extractQueue],
