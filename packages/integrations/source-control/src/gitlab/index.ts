@@ -214,7 +214,7 @@ export class GitlabSourceControl implements SourceControl {
     throw new Error("Method not implemented.");
   }
 
-  fetchCommits(repository: Repository, namespace: Namespace, perPage: number, ref?: string, period?: TimePeriod, page?: number): Promise<{commits: CommitData[], pagination: Pagination}> {
+  fetchCommits(_repository: Repository, _namespace: Namespace, _perPage: number, _ref?: string, _period?: TimePeriod, _page?: number): Promise<{commits: CommitData[], pagination: Pagination}> {
     throw new Error("Method not implemented.");
   }
 
