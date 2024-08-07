@@ -41,8 +41,8 @@ export const getDeployments: GetDeploymentsFunction = async (
             entities.deployments.repositoryId,
           ],
           set: {
-            updatedAt: deployment.updatedAt,            
-            name: deployment.name,
+            updatedAt: deployment.updatedAt,
+            environment: deployment.environment,
             gitSha: deployment.gitSha,
             createdAt: deployment.createdAt,
             _updatedAt: sql`(strftime('%s', 'now'))`,

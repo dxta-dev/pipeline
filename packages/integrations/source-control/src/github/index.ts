@@ -659,15 +659,17 @@ export class GitHubSourceControl implements SourceControl {
       owner: namespace.name,
       repo: repository.name,
       environment,
+      page: page,
+      per_page: perPage,
     });
 
-    const deployments = response.data.map(x=>({
-      externalId: x.id,
+    const deployments = response.data.map(deployment => ({
+      externalId: deployment.id,
       repositoryId: repository.id,
-      name: x.environment,
-      gitSha: x.sha,
-      createdAt: new Date(x.created_at),
-      updatedAt: new Date(x.updated_at),
+      environment: deployment.environment,
+      gitSha: deployment.sha,
+      createdAt: new Date(deployment.created_at),
+      updatedAt: new Date(deployment.updated_at),
     } satisfies NewDeployment));
 
     const linkHeader = parseLinkHeader(response.headers.link) || { next: { per_page: perPage } };

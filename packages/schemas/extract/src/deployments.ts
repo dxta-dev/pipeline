@@ -13,7 +13,7 @@ export const deployments = sqliteTable('deployments', {
   id: integer('id').primaryKey(),
   externalId: integer('external_id').notNull(),
   repositoryId: integer('repository_id').references(() => repositories.id).notNull(),
-  name: text('name').notNull(),
+  environment: text('environment').notNull(),
   gitSha: text('git_sha').notNull(),
   status: Enum('status', { enum: deploymentsStatusEnum }),
   createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),
