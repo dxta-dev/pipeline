@@ -2,7 +2,7 @@ import type { SourceControl } from '..';
 import { Octokit } from '@octokit/rest';
 import parseLinkHeader from "parse-link-header";
 
-import type { NewRepository, NewNamespace, NewMergeRequest, NewMember, NewMergeRequestDiff, Repository, Namespace, MergeRequest, NewMergeRequestCommit, NewMergeRequestNote, NewTimelineEvents, TimelineEventType, NewCicdWorkflow, NewCicdRun, cicdRunResultEnum, cicdRunStatusEnum, NewDeployment } from "@dxta/extract-schema";
+import type { NewRepository, NewNamespace, NewMergeRequest, NewMember, NewMergeRequestDiff, Repository, Namespace, MergeRequest, NewMergeRequestCommit, NewMergeRequestNote, NewTimelineEvents, TimelineEventType, NewCicdWorkflow, NewCicdRun, cicdRunResultEnum, cicdRunStatusEnum, NewDeployment, Deployment } from "@dxta/extract-schema";
 import { marshalSha } from '@dxta/extract-schema';
 import type { CommitData, Pagination, TimePeriod } from '../source-control';
 import type { components } from '@octokit/openapi-types';
@@ -685,4 +685,48 @@ export class GitHubSourceControl implements SourceControl {
       pagination
     }
   }
+
+  async fetchDeployment(repository: Repository, namespace: Namespace, deployment: Deployment): Promise<{ deployment: Deployment }> {
+    const response = await this.api.repos.listDeploymentStatuses({
+      owner: namespace.name,
+      repo: repository.name,
+      deployment_id: deployment.externalId,      
+    });
+
+    response.data.reverse();
+    const firstSuccessStatus = response.data.find(x => x.state === 'success');
+    const firstFailureStatus = response.data.find(x => x.state === 'failure' || x.state === 'error');
+    const finalStatus = response.data[response.data.length - 1];
+    const lastUpdatedAt = finalStatus ? new Date(finalStatus.updated_at) : deployment.updatedAt;
+
+    if (firstSuccessStatus) {
+      return {
+        deployment: {
+          ...deployment,
+          updatedAt: lastUpdatedAt,
+          deployedAt: new Date(firstSuccessStatus.created_at),
+          status: 'success'
+        }
+      }
+    }
+
+    if (firstFailureStatus) {
+      return {
+        deployment: {
+          ...deployment,
+          updatedAt: lastUpdatedAt,
+          status: 'failure'
+        }
+      }
+    }
+
+    return {
+      deployment: {
+        ...deployment,
+        updatedAt: lastUpdatedAt,
+        status: 'unknown'
+      }
+    };
+  }
+  
 }
