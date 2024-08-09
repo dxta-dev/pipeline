@@ -13,6 +13,7 @@ import { namespaceMemberSenderHandler } from "./extract-namespace-members";
 import { timelineEventsSenderHandler } from "./extract-timeline-events";
 import { workflowsSenderHandler } from "./extract-cicd-workflows";
 import { runsSenderHandler } from "./extract-cicd-runs";
+import { commitsSenderHandler } from "./extract-default-branch-commits";
 
 const messageHandlers = new Map<string, unknown>();
 
@@ -40,6 +41,8 @@ messageHandlers.set(MessageKind.Workflow, workflowsSenderHandler);
 
 messageHandlers.set(MessageKind.CicdRuns, runsSenderHandler);
 
+messageHandlers.set(MessageKind.DefaultBranchCommit, commitsSenderHandler);
+
 const logMap = new Map<string, string[]>();
 
 logMap.set(MessageKind.Tenant, ['content.tenantId']);
@@ -66,6 +69,8 @@ logMap.set(MessageKind.Workflow, ['content.repository.id', 'content.namespace.id
 
 logMap.set(MessageKind.CicdRuns, ['content.repository.id', 'content.namespace.id', 'content.workflowId', 'content.page'])
 
+logMap.set(MessageKind.DefaultBranchCommit, ['content.repository.id', 'content.namespace.id', 'content.page'])
+
 const crawlNamespaceMap = new Map<string, EventNamespaceType>();
 
 crawlNamespaceMap.set(MessageKind.MergeRequest, "mergeRequest");
@@ -83,5 +88,7 @@ crawlNamespaceMap.set(MessageKind.NamespaceMember, "member");
 crawlNamespaceMap.set(MessageKind.MemberInfo, "memberInfo");
 
 crawlNamespaceMap.set(MessageKind.Workflow, "workflow");
+
+crawlNamespaceMap.set(MessageKind.MergeRequestCommit, "defaultBranchCommit");
 
 export const handler = QueueHandler(messageHandlers, logMap, crawlNamespaceMap);

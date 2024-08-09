@@ -30,6 +30,7 @@ export enum MessageKind {
   MergeRequestNote = "merge-request-note",
   TimelineEvent = "timeline-event",
   Workflow = "workflow",
-  CicdRuns = "cicd-runs"
+  CicdRuns = "cicd-runs",
+  DefaultBranchCommit = 'default-branch-commit'
 };
 
