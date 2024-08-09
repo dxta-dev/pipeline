@@ -19,6 +19,7 @@ export { cicdWorkflows, CicdWorkflowSchema, NewCicdWorkflowSchema } from './cicd
 export { cicdRuns, CicdRunSchema, NewCicdRunSchema, cicdRunStatusEnum, cicdRunResultEnum } from './cicd-runs';
 export { repositoryCommits, CommitSchema, NewCommitSchema, marshalSha, unmarshalSha } from './repository-commits';
 export { repositoryCommitsChildren, CommitChildSchema, NewCommitChildSchema } from './repository-commits-children';
+export { deployments, deploymentsStatusEnum } from './deployments';
 
 export type { Repository, NewRepository } from './repositories';
 export type { Namespace, NewNamespace } from './namespaces';
@@ -44,3 +45,4 @@ export type { CicdWorkflow, NewCicdWorkflow } from './cicd-workflows';
 export type { CicdRun, NewCicdRun } from './cicd-runs';
 export type { Commit, NewCommit } from './repository-commits';
 export type { CommitChild, NewCommitChild } from './repository-commits-children';
+export type { Deployment, NewDeployment } from './deployments';
