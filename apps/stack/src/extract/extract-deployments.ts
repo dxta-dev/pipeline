@@ -11,9 +11,8 @@ import { getClerkUserToken } from "./get-clerk-user-token";
 import { GitHubSourceControl, GitlabSourceControl } from "@dxta/source-control";
 import { EventHandler } from "@stack/config/create-event";
 import { extractRepositoryEvent } from "./events";
-import { eq } from "drizzle-orm";
-import { insertEvent } from "@dxta/crawl-functions";
-import { events } from "@dxta/crawl-schema";
+import { and, eq } from "drizzle-orm";
+import { deploymentEnvironments } from "@dxta/tenant-schema";
 
 type ExtractDeploymentsPageInput = {
   namespace: Namespace;
@@ -37,7 +36,7 @@ const extractDeploymentsPage = async ({
 }: ExtractDeploymentsPageInput) => {
   context.integrations.sourceControl = await initSourceControl(userId, sourceControl);
 
-  const { paginationInfo: pagination } = await getDeployments({
+  const { paginationInfo: pagination, deployments } = await getDeployments({
     namespace,
     repository,
     environment,
@@ -45,7 +44,21 @@ const extractDeploymentsPage = async ({
     perPage,
   }, { ...context, db: getTenantDb(tenantId) });
 
-  return { pagination };
+  const isYoungerThan = (a: Date | null, b: Date | null, maxAgeMs: number) => {
+    if (!a || !b) return true;
+    return (b.getTime() - a.getTime()) < maxAgeMs;
+  }
+
+  const numberOfDeploymentsYoungerThanMaxAge = deployments.filter(d => isYoungerThan(d._createdAt, d._updatedAt, 10 * 60 * 1000)).length;
+
+  const hasNextPage = (pagination.page < pagination.totalPages) && (numberOfDeploymentsYoungerThanMaxAge === pagination.perPage);
+
+  return {
+    nextPage: hasNextPage ? {
+      page: page + 1,
+      perPage: pagination.perPage,
+    } : null
+  };
 }
 
 const initSourceControl = async (userId: string, sourceControl: 'github' | 'gitlab') => {
@@ -64,7 +77,7 @@ const context: OmitDb<Context<GetDeploymentsSourceControl, GetDeploymentsEntitie
   },
 };
 
-export const commitsSenderHandler = createMessageHandler({
+export const deploymentsSenderHandler = createMessageHandler({
   queueId: 'ExtractQueue',
   kind: MessageKind.Deployment,
   metadataShape: metadataSchema.shape,
@@ -77,9 +90,9 @@ export const commitsSenderHandler = createMessageHandler({
   }).shape,
   handler: async (message) => {
     const { repository, namespace, environment, page, perPage } = message.content;
-    const { userId, sourceControl, tenantId } = message.metadata;
+    const { from, to, userId, sourceControl, tenantId, crawlId } = message.metadata;
 
-    await extractDeploymentsPage({
+    const { nextPage } = await extractDeploymentsPage({
       namespace,
       repository,
       environment,
@@ -90,10 +103,30 @@ export const commitsSenderHandler = createMessageHandler({
       tenantId
     });
 
+    if (!nextPage) return;
+
+    await sender.send({
+      repository,
+      namespace,
+      environment,
+      page: nextPage.page,
+      perPage: nextPage.perPage,
+    }, {
+      version: 1,
+      caller: 'extract-deployments',
+      sourceControl,
+      userId,
+      timestamp: new Date().getTime(),
+      from,
+      to,
+      crawlId,
+      tenantId,
+    });
+
   }
 });
 
-const { sender } = commitsSenderHandler;
+const { sender } = deploymentsSenderHandler;
 
 export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
   const { crawlId, from, to, userId, sourceControl, tenantId } = ev.metadata;
@@ -105,29 +138,27 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
   if (!repository) throw new Error("invalid repo id");
   if (!namespace) throw new Error("Invalid namespace id");
 
-  const { } = await extractDeploymentsPage({
-    namespace,
-    repository,
-    environment: undefined,
-    page: 1,
-    perPage: Number(Config.PER_PAGE),
-    sourceControl,
-    tenantId,
-    userId
-  });
+  const environments = await db.select().from(deploymentEnvironments).where(
+    and(
+      eq(deploymentEnvironments.repositoryExternalId, repository.externalId),
+      eq(deploymentEnvironments.forgeType, repository.forgeType)
+    )
+  ).all();
 
-  await insertEvent(
-    { crawlId, eventNamespace: 'defaultBranchCommit', eventDetail: 'crawlInfo', data: { calls: -1 } }, // Issue: can't determine number of calls beforehand
-    { db, entities: { events } }
-  );
+  if (environments.length == 0) {
+    console.log("No deployment environments defined for repository", `${namespace.name}/${repository.name}`);
+    return;
+  }
 
-  await sender.send({
+  const arrayOfExtractDeploymentsPageMessageContent: Parameters<typeof deploymentsSenderHandler.sender.send>[0][] = environments.map(env => ({
     repository,
     namespace,
-    environment: undefined,
+    environment: env.environment,
     page: 1,
     perPage: Number(Config.PER_PAGE),
-  }, {
+  }))
+
+  await sender.sendAll(arrayOfExtractDeploymentsPageMessageContent, {
     version: 1,
     caller: 'extract-deployments',
     sourceControl,
