@@ -2,7 +2,7 @@ import type { SourceControl } from '..';
 import { Octokit } from '@octokit/rest';
 import parseLinkHeader from "parse-link-header";
 
-import type { NewRepository, NewNamespace, NewMergeRequest, NewMember, NewMergeRequestDiff, Repository, Namespace, MergeRequest, NewMergeRequestCommit, NewMergeRequestNote, NewTimelineEvents, TimelineEventType, NewCicdWorkflow, NewCicdRun, cicdRunResultEnum, cicdRunStatusEnum, NewDeployment } from "@dxta/extract-schema";
+import type { NewRepository, NewNamespace, NewMergeRequest, NewMember, NewMergeRequestDiff, Repository, Namespace, MergeRequest, NewMergeRequestCommit, NewMergeRequestNote, NewTimelineEvents, TimelineEventType, NewCicdWorkflow, NewCicdRun, cicdRunResultEnum, cicdRunStatusEnum, NewDeploymentWithSha } from "@dxta/extract-schema";
 import { marshalSha } from '@dxta/extract-schema';
 import type { CommitData, Pagination, TimePeriod } from '../source-control';
 import type { components } from '@octokit/openapi-types';
@@ -652,7 +652,7 @@ export class GitHubSourceControl implements SourceControl {
 
   }
   
-  async fetchDeployments(repository: Repository, namespace: Namespace, perPage: number, environment?: string, page?: number): Promise<{deployments: NewDeployment[], pagination: Pagination}> {
+  async fetchDeployments(repository: Repository, namespace: Namespace, perPage: number, environment?: string, page?: number): Promise<{deployments: NewDeploymentWithSha[], pagination: Pagination}> {
     page = page || 1;
 
     const response = await this.api.repos.listDeployments({
@@ -667,10 +667,10 @@ export class GitHubSourceControl implements SourceControl {
       externalId: deployment.id,
       repositoryId: repository.id,
       environment: deployment.environment,
-      gitSha: deployment.sha,
+      commitSha: deployment.sha,
       createdAt: new Date(deployment.created_at),
       updatedAt: new Date(deployment.updated_at),
-    } satisfies NewDeployment));
+    } satisfies NewDeploymentWithSha));
 
     const linkHeader = parseLinkHeader(response.headers.link) || { next: { per_page: perPage } };
 
