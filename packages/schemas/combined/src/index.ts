@@ -32,3 +32,4 @@ export { teams as tenantTeams } from '@dxta/tenant-schema';
 export { teamMembers as tenantTeamMembers } from '@dxta/tenant-schema';
 export { tenantConfig } from '@dxta/tenant-schema';
 export { cicdDeployWorkflows as tenantCicdDeployWorkflows } from '@dxta/tenant-schema';
+export { deploymentEnvironments as tenantDeploymentEnvironments } from '@dxta/tenant-schema';
