@@ -45,4 +45,4 @@ export type { CicdWorkflow, NewCicdWorkflow } from './cicd-workflows';
 export type { CicdRun, NewCicdRun } from './cicd-runs';
 export type { Commit, NewCommit } from './repository-commits';
 export type { CommitChild, NewCommitChild } from './repository-commits-children';
-export type { Deployment, NewDeployment } from './deployments';
+export type { Deployment, NewDeployment, NewDeploymentWithSha } from './deployments';

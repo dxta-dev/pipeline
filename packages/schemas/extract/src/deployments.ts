@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { sqliteTable } from './extract-table';
 import { repositories } from './repositories';
 import { Enum } from './enum-column';
+import { repositoryCommits } from './repository-commits';
 
 export const deploymentsStatusEnum = ['unknown', 'pending', 'success', 'failure'] as const;
 
@@ -14,7 +15,7 @@ export const deployments = sqliteTable('deployments', {
   externalId: integer('external_id').notNull(),
   repositoryId: integer('repository_id').references(() => repositories.id).notNull(),
   environment: text('environment').notNull(),
-  gitSha: text('git_sha').notNull(),
+  commitId: integer('commit_id').references(() => repositoryCommits.id).notNull(),
   status: Enum('status', { enum: deploymentsStatusEnum }),
   createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),
   updatedAt: integer('updated_at', { mode: 'timestamp_ms' }).notNull(),
@@ -27,6 +28,8 @@ export const deployments = sqliteTable('deployments', {
 
 export type Deployment = InferSelectModel<typeof deployments>;
 export type NewDeployment = InferInsertModel<typeof deployments>;
+export type NewDeploymentWithSha = Omit<NewDeployment, 'commitId'> & { commitSha: string; }
+
 export const DeploymentSchema = createSelectSchema(deployments, {
   status: z.enum(deploymentsStatusEnum),
   createdAt: z.coerce.date(),
