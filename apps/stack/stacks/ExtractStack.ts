@@ -161,6 +161,12 @@ export function ExtractStack({ stack }: StackContext) {
         bind: [bus, extractQueue],
         handler: "src/extract/extract-cicd-runs.eventHandler",
       }
+    },
+    deployments: {
+      function: {
+        bind: [bus, extractQueue],
+        handler: "src/extract/extract-deployments.eventHandler",
+      }
     }
   });
 
