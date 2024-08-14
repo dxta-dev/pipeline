@@ -10,7 +10,6 @@ export const mergeRequests = sqliteTable('merge_requests', {
   externalId: integer('external_id').notNull(),
   canonId: integer('canon_id').notNull().default(-1),
   forgeType: Enum('forge_type', { enum: ['unknown', 'github', 'gitlab'] }).notNull(),
-  // TODO: tenantId: integer('tenant_id').notNull(),
   title: text('title').notNull(),
   description: text('description').default(''),
   webUrl: text('web_url').notNull(),
