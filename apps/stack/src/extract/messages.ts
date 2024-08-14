@@ -31,6 +31,7 @@ export enum MessageKind {
   TimelineEvent = "timeline-event",
   Workflow = "workflow",
   CicdRuns = "cicd-runs",
-  DefaultBranchCommit = 'default-branch-commit'
+  DefaultBranchCommit = 'default-branch-commit',
+  Deployment = "deployment",
 };
 

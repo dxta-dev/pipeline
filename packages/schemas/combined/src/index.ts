@@ -12,6 +12,7 @@ export { cicdWorkflows as extractCicdWorkflows } from '@dxta/extract-schema';
 export { cicdRuns as extractCicdRuns } from '@dxta/extract-schema';
 export { repositoryCommits as extractCommits } from '@dxta/extract-schema';
 export { repositoryCommitsChildren as extractCommitsChildren } from '@dxta/extract-schema';
+export { deployments as extractDeployments } from '@dxta/extract-schema';
 
 export { forgeUsers as transformForgeUsers } from '@dxta/transform-schema';
 export { mergeRequests as transformMergeRequests } from '@dxta/transform-schema';
@@ -31,3 +32,4 @@ export { teams as tenantTeams } from '@dxta/tenant-schema';
 export { teamMembers as tenantTeamMembers } from '@dxta/tenant-schema';
 export { tenantConfig } from '@dxta/tenant-schema';
 export { cicdDeployWorkflows as tenantCicdDeployWorkflows } from '@dxta/tenant-schema';
+export { deploymentEnvironments as tenantDeploymentEnvironments } from '@dxta/tenant-schema';
