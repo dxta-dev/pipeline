@@ -141,6 +141,12 @@ export function ExtractStack({ stack }: StackContext) {
         handler: "src/extract/extract-merge-requests.eventHandler",
       },
     },
+    deploymentStatus: {
+      function: {
+        bind: [bus, extractQueue],
+        handler: "src/extract/extract-deployment-status.eventHandler",
+      },
+    }
   });
 
   bus.addTargets(stack, "githubRepository", {

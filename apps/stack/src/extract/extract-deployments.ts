@@ -13,26 +13,26 @@ import { EventHandler } from "@stack/config/create-event";
 import { extractRepositoryEvent, isInitialExtractEvent } from "./events";
 import { and, eq } from "drizzle-orm";
 import { deploymentEnvironments } from "@dxta/tenant-schema";
+import { deploymentStatusSenderHandler } from "./extract-deployment-status";
 
 type ExtractDeploymentsPageInput = {
   namespace: Namespace;
   repository: Repository;
   environment?: string;
+  from: Date;
+  to: Date;
   perPage: number;
   page: number;
   userId: string;
   sourceControl: "github" | "gitlab";
   tenantId: number;
+  crawlId: number;
 }
 const extractDeploymentsPage = async ({
-  namespace,
-  repository,
-  environment,
-  perPage,
-  page,
-  userId,
-  sourceControl,
-  tenantId,
+  namespace, repository, environment,
+  perPage, page,
+  from, to,
+  userId, sourceControl, tenantId, crawlId,
 }: ExtractDeploymentsPageInput) => {
   context.integrations.sourceControl = await initSourceControl(userId, sourceControl);
 
@@ -43,6 +43,20 @@ const extractDeploymentsPage = async ({
     page,
     perPage,
   }, { ...context, db: getTenantDb(tenantId) });
+
+  const deploymentsWithUnknownStatus = deployments.filter(d => d.status === null).map(deployment => ({ namespace, repository, deployment }));
+
+  await deploymentStatusSenderHandler.sender.sendAll(deploymentsWithUnknownStatus, {
+    version: 1,
+    caller: 'extract-deployments',
+    sourceControl,
+    userId,
+    timestamp: new Date().getTime(),
+    from,
+    to,
+    crawlId,
+    tenantId,
+  })
 
   return {
     pagination,
