@@ -13,7 +13,7 @@ import { eq, isNull, or } from "drizzle-orm"
 
 export const deploymentStatusSenderHandler = createMessageHandler({
   queueId: 'ExtractQueue',
-  kind: MessageKind.Member,
+  kind: MessageKind.DeploymentStatus,
   metadataShape: metadataSchema.shape,
   contentShape: z.object({
     repository: RepositorySchema,
