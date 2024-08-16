@@ -693,7 +693,7 @@ export class GitHubSourceControl implements SourceControl {
       deployment_id: deployment.externalId,
     });
     
-    const orderedData = response.data.toSorted((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+    const orderedData = response.data.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
 
     const firstSuccessStatus = orderedData.find(x => x.state === 'success');
     const firstFailureStatus = orderedData.find(x => x.state === 'failure' || x.state === 'error');
