@@ -8,7 +8,7 @@ import { repositories } from './repositories';
 import { Enum } from './enum-column';
 import { repositoryCommits } from './repository-commits';
 
-export const deploymentsStatusEnum = ['unknown', 'pending', 'success', 'failure'] as const;
+export const deploymentsStatusEnum = ['unknown', 'pending', 'success', 'failure', 'cancelled'] as const;
 
 export const deployments = sqliteTable('deployments', {
   id: integer('id').primaryKey(),
