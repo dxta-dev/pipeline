@@ -692,14 +692,15 @@ export class GitHubSourceControl implements SourceControl {
       repo: repository.name,
       deployment_id: deployment.externalId,
     });
-    
+
     const orderedData = response.data.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
 
     const firstSuccessStatus = orderedData.find(x => x.state === 'success');
     const firstFailureStatus = orderedData.find(x => x.state === 'failure' || x.state === 'error');
+    const firstInactiveStatus = orderedData.find(x => x.state === 'inactive');
     const finalStatus = orderedData[orderedData.length - 1];
     const lastUpdatedAt = finalStatus ? new Date(finalStatus.updated_at) : deployment.updatedAt;
-    const hasThirtyDaysPassedSinceDeploymentStart = new Date(deployment.createdAt.getTime()+30*24*60*60*1000);
+    const hasThirtyDaysPassedSinceDeploymentStart = new Date(deployment.createdAt.getTime() + 30 * 24 * 60 * 60 * 1000);
 
     const isPending = !finalStatus || finalStatus.state === 'in_progress' || finalStatus.state === 'queued' || finalStatus.state === 'pending';
 
@@ -740,6 +741,16 @@ export class GitHubSourceControl implements SourceControl {
           ...deployment,
           updatedAt: lastUpdatedAt,
           status: 'failure',
+        }
+      }
+    }
+
+    if (firstInactiveStatus) {
+      return {
+        deployment: {
+          ...deployment,
+          updatedAt: lastUpdatedAt,
+          status: 'cancelled',
         }
       }
     }
