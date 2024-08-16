@@ -699,8 +699,19 @@ export class GitHubSourceControl implements SourceControl {
     const firstFailureStatus = orderedData.find(x => x.state === 'failure' || x.state === 'error');
     const finalStatus = orderedData[orderedData.length - 1];
     const lastUpdatedAt = finalStatus ? new Date(finalStatus.updated_at) : deployment.updatedAt;
+    const hasThirtyDaysPassedSinceDeploymentStart = new Date(deployment.createdAt.getTime()+30*24*60*60*1000);
 
     const isPending = !finalStatus || finalStatus.state === 'in_progress' || finalStatus.state === 'queued' || finalStatus.state === 'pending';
+
+    if (!finalStatus && hasThirtyDaysPassedSinceDeploymentStart) {
+      return {
+        deployment: {
+          ...deployment,
+          updatedAt: lastUpdatedAt,
+          status: 'cancelled',
+        }
+      }
+    }
 
     if (isPending) {
       return {
