@@ -79,7 +79,7 @@ logMap.set(MessageKind.DefaultBranchCommit, ['content.repository.id', 'content.n
 
 logMap.set(MessageKind.Deployment, ['content.repository.id', 'content.namespace.id', 'content.environment', 'content.page'])
 
-logMap.set(MessageKind.DeploymentStatus, ['content.repository.id', 'content.namespace.id', 'context.deployment.id'])
+logMap.set(MessageKind.DeploymentStatus, ['content.repository.id', 'content.namespace.id', 'content.deployment.id'])
 
 const crawlNamespaceMap = new Map<string, EventNamespaceType>();
 
