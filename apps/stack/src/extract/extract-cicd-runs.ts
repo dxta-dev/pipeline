@@ -22,37 +22,25 @@ export const runsSenderHandler = createMessageHandler({
     namespace: NamespaceSchema,
     workflowId: z.number(),
     branch: z.string().optional(),
-    page: z.number().optional()
+    page: z.number().optional(),
+    perPage: z.number(),
   }).shape,
   handler: async (message) => {
-    const { userId, sourceControl, from, to, tenantId, crawlId } = message.metadata;
-    const { namespace, repository, workflowId, branch, page } = message.content;
+    const { userId, sourceControl, from, to, tenantId } = message.metadata;
+    const { namespace, repository, workflowId, branch, perPage, page } = message.content;
 
     context.integrations.sourceControl = await initSourceControl(userId, sourceControl);
 
-    const { nextPage } = await getCicdRuns({
+    await getCicdRuns({
       namespace,
       repository,
-      perPage: Number(Config.PER_PAGE),
       timePeriod: { from, to },
       workflowId,
       branch,
-      page
-    }, { db: getTenantDb(tenantId), ...context })
+      perPage,
+      page,
+    }, { db: getTenantDb(tenantId), ...context });
 
-    if (nextPage) {
-      await sender.send({ repository, namespace, workflowId, page: nextPage }, {
-        version: 1,
-        caller: 'extract-cicd-runs.queue',
-        sourceControl,
-        userId,
-        timestamp: new Date().getTime(),
-        from,
-        to,
-        crawlId,
-        tenantId,
-      })
-    }
   }
 });
 
@@ -94,12 +82,31 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
     return;
   }
 
-  const arrayOfExtractRunsPageMessageContent: Parameters<typeof runsSenderHandler.sender.send>[0][] = workflows.map(workflow => ({
-    namespace,
+  context.integrations.sourceControl = await initSourceControl(ev.metadata.userId, ev.metadata.sourceControl);
+
+  const workflowRunsFirstPages = await Promise.all(workflows.map(workflow => getCicdRuns({
     repository,
+    namespace,
+    page: 1,
+    perPage: Number(Config.PER_PAGE),
+    timePeriod: { from: ev.metadata.from, to: ev.metadata.to },
     workflowId: workflow.workflowExternalid,
-    branch: workflow.branch ?? undefined,
-  }));
+    branch: workflow.branch || undefined,
+  }, { db: getTenantDb(ev.metadata.tenantId), ...context }).then(result => ({ workflow, result }))));
+
+  const arrayOfExtractRunsPageMessageContent: Parameters<typeof runsSenderHandler.sender.send>[0][] = [];
+  for (const firstPage of workflowRunsFirstPages) {
+    for (let i = 2; i <= firstPage.result.paginationInfo.totalPages; i++) {
+      arrayOfExtractRunsPageMessageContent.push({
+        namespace,
+        repository,
+        page: i,
+        perPage: firstPage.result.paginationInfo.perPage,
+        workflowId: firstPage.workflow.workflowExternalid,
+        branch: firstPage.workflow.branch || undefined,
+      })
+    }
+  }
 
   await sender.sendAll(arrayOfExtractRunsPageMessageContent, {
     version: 1,

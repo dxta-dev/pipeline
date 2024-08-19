@@ -1,6 +1,6 @@
 import type { CicdRun, Namespace, Repository } from "@dxta/extract-schema";
 import type { ExtractFunction, Entities } from "./config";
-import type { SourceControl, TimePeriod } from "@dxta/source-control";
+import type { Pagination, SourceControl, TimePeriod } from "@dxta/source-control";
 import { sql } from "drizzle-orm";
 
 export type GetCicdRunsInput = {
@@ -15,7 +15,7 @@ export type GetCicdRunsInput = {
 
 export type GetCicdRunsOutput = {
   cicdRuns: CicdRun[];
-  nextPage: number | null;
+  paginationInfo: Pagination;
 };
 
 export type GetCicdRunsSourceControl = Pick<SourceControl, 'fetchCicdWorkflowRuns'>;
@@ -34,9 +34,9 @@ export const getCicdRuns: GetCicdRunsFunction = async (
 
   const { cicdRuns, pagination: paginationInfo } = await integrations.sourceControl.fetchCicdWorkflowRuns(repository, namespace, workflowId, timePeriod, perPage, branch, page);
 
-  if (cicdRuns.length === 0) return {
+  if (cicdRuns.length === 0 && paginationInfo.totalPages === 1) return {
     cicdRuns: [],
-    nextPage: null
+    paginationInfo,
   }
 
   const insertedRuns = await db.transaction(async (tx) => {
@@ -63,16 +63,8 @@ export const getCicdRuns: GetCicdRunsFunction = async (
     ));
   });
 
-  // issue: returns first 1000 results. for bigger time periods need to implement period splitting
-  if (paginationInfo.page < paginationInfo.totalPages) {
-    return {
-      cicdRuns: insertedRuns,
-      nextPage: paginationInfo.page + 1,
-    }
-  };
-
   return {
     cicdRuns: insertedRuns,
-    nextPage: null
+    paginationInfo,
   };
 }
