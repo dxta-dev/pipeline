@@ -125,6 +125,7 @@ function upsertMergeRequest(db: TransformDatabase, mergeRequest: transform.NewMe
         title: mergeRequest.title,
         description: mergeRequest.description,
         webUrl: mergeRequest.webUrl,
+        mergeCommitSha: mergeRequest.mergeCommitSha,        
         _updatedAt: sql`(strftime('%s', 'now'))`,
       }
     })
