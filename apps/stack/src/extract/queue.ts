@@ -74,7 +74,7 @@ logMap.set(MessageKind.CicdRuns, ['content.repository.id', 'content.namespace.id
 
 logMap.set(MessageKind.DefaultBranchCommit, ['content.repository.id', 'content.namespace.id', 'content.page'])
 
-logMap.set(MessageKind.Deployment, ['content.repository.id', 'content.namespace.id', 'environment', 'content.page'])
+logMap.set(MessageKind.Deployment, ['content.repository.id', 'content.namespace.id', 'content.environment', 'content.page'])
 
 const crawlNamespaceMap = new Map<string, EventNamespaceType>();
 

@@ -82,7 +82,7 @@ afterAll(() => {
 describe('get-cicd-runs:', () => {
   describe('getCicdRuns', () => {
     test('should insert cicd workflow runs data in the database', async () => {
-      const { cicdRuns, nextPage } = await getCicdRuns({
+      const { cicdRuns, paginationInfo } = await getCicdRuns({
         namespace: INSERTED_TEST_NAMESPACE,
         repository: INSERTED_TEST_REPO,
         timePeriod: { from: new Date(), to: new Date() },
@@ -91,7 +91,7 @@ describe('get-cicd-runs:', () => {
       }, context);
 
       expect(cicdRuns).toBeDefined();
-      expect(nextPage).toBeNull();
+      expect(paginationInfo).toBeDefined();
       expect(fetchCicdWorkflowRuns).toHaveBeenCalledTimes(1);
 
       const cicdRunRows = await db.select().from(context.entities.cicdRuns).all();
