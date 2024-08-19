@@ -21,6 +21,11 @@ const metadataSchema = z.object({
   tenantId: z.number(),
 });
 
+const FOURTEEN_DAYS_MS = 14 * 24 * 60 * 60 * 1000;
+export const isInitialExtractEvent = ({ metadata }: { metadata: z.infer<typeof metadataSchema> }) => {
+  return (metadata.to.getTime() - metadata.from.getTime()) > FOURTEEN_DAYS_MS;
+}
+
 const extractMergeRequestEventSchema = z.object({
   mergeRequestIds: z.array(MergeRequestSchema.shape.id),
   repositoryId: RepositorySchema.shape.id,
