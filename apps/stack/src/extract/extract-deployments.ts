@@ -128,8 +128,8 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
   if (!isInitialExtractEvent(ev)) return;
 
   const arrayOfExtractDeploymentsPageMessageContent: Parameters<typeof deploymentsSenderHandler.sender.send>[0][] = [];
-  for(const firstPage of deploymentsFirstPages) {
-    for(let i = 2; i <= firstPage.result.pagination.totalPages; i++) {
+  for (const firstPage of deploymentsFirstPages) {
+    for (let i = 2; i <= firstPage.result.pagination.totalPages; i++) {
       arrayOfExtractDeploymentsPageMessageContent.push({
         namespace,
         repository,
