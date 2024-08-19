@@ -82,6 +82,8 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
     return;
   }
 
+  context.integrations.sourceControl = await initSourceControl(ev.metadata.userId, ev.metadata.sourceControl);
+
   const firstPageWorkflows = await Promise.all(workflows.map(workflow => getCicdRuns({
     repository,
     namespace,
