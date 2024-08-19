@@ -528,6 +528,7 @@ async function selectExtractData(db: ExtractDatabase, extractMergeRequestId: num
       webUrl: mergeRequests.webUrl,
       sourceBranch: mergeRequests.sourceBranch,
       targetBranch: mergeRequests.targetBranch,
+      mergeCommitSha: mergeRequests.mergeCommitSha,
     }
   }).from(mergeRequests)
     .where(eq(mergeRequests.id, extractMergeRequestId))
@@ -1023,6 +1024,7 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
     canonId: extractData.mergeRequest.canonId,
     forgeType: extractData.repository.forgeType,
     title: extractData.mergeRequest.title,
+    mergeCommitSha: extractData.mergeRequest.mergedAt ? extractData.mergeRequest.mergeCommitSha : null,
     description: extractData.mergeRequest.description,
     webUrl: extractData.mergeRequest.webUrl,
     sourceBranch: transformSourceBranchId,
