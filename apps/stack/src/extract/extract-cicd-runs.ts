@@ -84,7 +84,7 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
 
   context.integrations.sourceControl = await initSourceControl(ev.metadata.userId, ev.metadata.sourceControl);
 
-  const firstPageWorkflows = await Promise.all(workflows.map(workflow => getCicdRuns({
+  const workflowRunsFirstPages = await Promise.all(workflows.map(workflow => getCicdRuns({
     repository,
     namespace,
     page: 1,
@@ -95,7 +95,7 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
   }, { db: getTenantDb(ev.metadata.tenantId), ...context }).then(result => ({ workflow, result }))));
 
   const arrayOfExtractRunsPageMessageContent: Parameters<typeof runsSenderHandler.sender.send>[0][] = [];
-  for (const firstPage of firstPageWorkflows) {
+  for (const firstPage of workflowRunsFirstPages) {
     for (let i = 2; i <= firstPage.result.paginationInfo.totalPages; i++) {
       arrayOfExtractRunsPageMessageContent.push({
         namespace,
