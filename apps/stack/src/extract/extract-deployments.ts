@@ -45,21 +45,23 @@ const extractDeploymentsPage = async ({
 
   const deploymentsWithUndeterminedStatus = deployments.filter(d => d.status === null).map(deployment => deployment.id);
 
-  await extractDeploymentsEvent.publish({
-    namespaceId: namespace.id,
-    repositoryId: repository.id,
-    deploymentIds: deploymentsWithUndeterminedStatus,
-  }, {
-    version: 1,
-    caller: 'extract-deployments',
-    sourceControl,
-    userId,
-    timestamp: new Date().getTime(),
-    from,
-    to,
-    crawlId,
-    tenantId,
-  });
+  if (deploymentsWithUndeterminedStatus.length !== 0) {
+    await extractDeploymentsEvent.publish({
+      namespaceId: namespace.id,
+      repositoryId: repository.id,
+      deploymentIds: deploymentsWithUndeterminedStatus,
+    }, {
+      version: 1,
+      caller: 'extract-deployments',
+      sourceControl,
+      userId,
+      timestamp: new Date().getTime(),
+      from,
+      to,
+      crawlId,
+      tenantId,
+    });
+  }
 
   return {
     pagination,

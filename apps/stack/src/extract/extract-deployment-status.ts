@@ -58,6 +58,8 @@ export const onExtractRepository = EventHandler(extractRepositoryEvent, async (e
     )
   ).all();
 
+  if (unresolvedDeployments.length === 0) return;
+
   const arrayOfExtractDeploymentStatusMessageContent: Parameters<typeof deploymentStatusSenderHandler.sender.send>[0][] = unresolvedDeployments.map(
     deployment => ({
       namespace,
