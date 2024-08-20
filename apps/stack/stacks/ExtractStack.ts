@@ -69,6 +69,12 @@ export function ExtractStack({ stack }: StackContext) {
           }
         }
       },
+      deployments: {
+        pattern: {
+          source: ["extract"],
+          detailType: ["deployment"],
+        }
+      }
     },
     defaults: {
       retries: 10,
@@ -144,7 +150,7 @@ export function ExtractStack({ stack }: StackContext) {
     deploymentStatus: {
       function: {
         bind: [bus, extractQueue],
-        handler: "src/extract/extract-deployment-status.eventHandler",
+        handler: "src/extract/extract-deployment-status.onExtractRepository",
       },
     }
   });
@@ -202,6 +208,15 @@ export function ExtractStack({ stack }: StackContext) {
       function: {
         bind: [bus, extractQueue, FETCH_TIMELINE_EVENTS_PER_PAGE],
         handler: "src/extract/extract-timeline-events.eventHandler",
+      }
+    }
+  });
+
+  bus.addTargets(stack, 'deployments', {
+    extractDeploymentsStatus: {
+      function: {
+        bind: [bus, extractQueue],
+        handler: "src/extract/extract-deployment-status.onExtractDeployments"
       }
     }
   });
