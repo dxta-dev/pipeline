@@ -1,5 +1,5 @@
 import { EventHandler } from "@stack/config/create-event"
-import { extractRepositoryEvent } from "./events"
+import { extractDeploymentsEvent, extractRepositoryEvent } from "./events"
 import { createMessageHandler } from "@stack/config/create-message"
 import { deployments, DeploymentSchema, namespaces, NamespaceSchema, repositories, RepositorySchema } from "@dxta/extract-schema"
 import { z } from "zod"
@@ -9,7 +9,7 @@ import { MessageKind, metadataSchema } from "./messages"
 import { getClerkUserToken } from "./get-clerk-user-token"
 import { GitHubSourceControl, GitlabSourceControl } from "@dxta/source-control"
 import { getTenantDb, type OmitDb } from "@stack/config/get-tenant-db"
-import { eq, isNull, or } from "drizzle-orm"
+import { eq, inArray, isNull, or } from "drizzle-orm"
 
 export const deploymentStatusSenderHandler = createMessageHandler({
   queueId: 'ExtractQueue',
@@ -24,7 +24,10 @@ export const deploymentStatusSenderHandler = createMessageHandler({
     const { repository, namespace, deployment } = message.content;
     const { tenantId, userId, sourceControl } = message.metadata;
 
-    if (deployment.status !== null && deployment.status !== 'pending') return;
+    if (deployment.status !== null && deployment.status !== 'pending') {
+      console.log("Skipping extract-deployment-status for status:", deployment.status);
+      return;
+    }
 
     context.integrations.sourceControl = await initSourceControl(userId, sourceControl);
     await getDeploymentStatus({
@@ -38,7 +41,7 @@ export const deploymentStatusSenderHandler = createMessageHandler({
 
 const { sender } = deploymentStatusSenderHandler;
 
-export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
+export const onExtractRepository = EventHandler(extractRepositoryEvent, async (ev) => {
   const { crawlId, from, to, userId, sourceControl, tenantId } = ev.metadata;
   const db = getTenantDb(tenantId);
 
@@ -77,6 +80,40 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
 
 }, {
   propertiesToLog: ["properties.repositoryId", "properties.namespaceId"],
+});
+
+export const onExtractDeployments = EventHandler(extractDeploymentsEvent, async (ev) => {
+  const { crawlId, from, to, userId, sourceControl, tenantId } = ev.metadata;
+  const db = getTenantDb(tenantId);
+
+  const repository = await db.select().from(repositories).where(eq(repositories.id, ev.properties.repositoryId)).get();
+  const namespace = await db.select().from(namespaces).where(eq(namespaces.id, ev.properties.namespaceId)).get();
+  const newDeployments = await db.select().from(deployments).where(inArray(deployments.id, ev.properties.deploymentIds)).all();
+
+  if (!repository) throw new Error("invalid repo id");
+  if (!namespace) throw new Error("Invalid namespace id");
+  if (newDeployments.length === 0) throw new Error("Invalid deployment ids");
+
+  const arrayOfExtractDeploymentStatusMessageContent: Parameters<typeof deploymentStatusSenderHandler.sender.send>[0][] = newDeployments.map(
+    deployment => ({
+      namespace,
+      repository,
+      deployment
+    })
+  );
+
+  await sender.sendAll(arrayOfExtractDeploymentStatusMessageContent, {
+    version: 1,
+    caller: 'extract-deployment-status',
+    sourceControl,
+    userId,
+    timestamp: new Date().getTime(),
+    from,
+    to,
+    crawlId,
+    tenantId,
+  });
+
 });
 
 
