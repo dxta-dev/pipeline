@@ -5,14 +5,13 @@ import { ApiHandler, useJsonBody } from "sst/node/api";
 import { MessageKind, metadataSchema } from "./messages";
 import { createMessageHandler } from "@stack/config/create-message";
 import { getTenantDb } from "@stack/config/get-tenant-db";
-import { and, eq, gt, lt } from "drizzle-orm";
-import { timelineSenderHandler } from "./transform-timeline";
 import { timePeriodOf } from "@stack/config/time-period";
+import { transformRepositoryEvent } from "./events";
 
 export const tenantSenderHandler = createMessageHandler({
   queueId: 'TransformQueue',
   kind: MessageKind.Tenant,
-  metadataShape: metadataSchema.omit({ sourceControl: true }).shape,
+  metadataShape: metadataSchema.omit({ sourceControl: true, tenantId: true }).shape,
   contentShape: z.object({
     tenantId: z.number(),
   }).shape,
@@ -20,36 +19,36 @@ export const tenantSenderHandler = createMessageHandler({
 
     const { from, to } = message.metadata;
     const { tenantId } = message.content;
-
     const db = getTenantDb(tenantId);
-    const allMergeRequests = await db.select({
-      mergeRequestId: extract.mergeRequests.id
-    })
-      .from(extract.mergeRequests)
-      .leftJoin(extract.repositories, eq(extract.mergeRequests.repositoryId, extract.repositories.id))
-      .where(and(
-        eq(extract.repositories.forgeType, 'github'), // TODO: implement gitlab; Add forgeType to MRs ?
-        gt(extract.mergeRequests.updatedAt, from),
-        lt(extract.mergeRequests.updatedAt, to)
-      ))
-      .all();
 
-    if (allMergeRequests.length === 0) {
-      console.log("Warning: nothing to transform");
-      return;
+    const tenantRepositories = await db.select({
+      id: extract.repositories.id,
+      externalId: extract.repositories.externalId,
+      sourceControl: extract.repositories.forgeType
+    }).from(extract.repositories).all();
+
+    const promises: Promise<void>[] = [];
+    for (const tenantRepository of tenantRepositories) {
+
+      if (tenantRepository.sourceControl === 'gitlab') {
+        console.log("Warn: Transform for gitlab repos is not yet implemented; external_id =", tenantRepository.externalId);
+        continue;
+      }
+
+      promises.push(transformRepositoryEvent.publish({
+        repositoryExtractId: tenantRepository.id,
+      }, {
+        version: 1,
+        caller: 'transform-tenant:queueHandler',
+        sourceControl: tenantRepository.sourceControl,
+        timestamp: Date.now(),
+        from,
+        to,
+        tenantId,
+      }))
     }
 
-    console.log("Transforming", allMergeRequests.length, "merge requests");
-
-    await timelineSenderHandler.sender.sendAll(allMergeRequests, {
-      version: 1,
-      caller: 'transform-tenant:queueHandler',
-      sourceControl: 'github',
-      timestamp: Date.now(),
-      from,
-      to,
-      tenantId,
-    });
+    await Promise.all(promises);
 
   }
 });
@@ -70,7 +69,6 @@ export const cronHandler = async () => {
     timestamp: Date.now(),
     from,
     to,
-    tenantId: -1,
   });
 }
 

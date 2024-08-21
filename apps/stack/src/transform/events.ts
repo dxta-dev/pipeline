@@ -1,3 +1,5 @@
+import { RepositorySchema } from "@dxta/extract-schema";
+import { createEvent } from "@stack/config/create-event";
 import { z } from "zod";
 
 export const metadataSchema = z.object({
@@ -9,3 +11,17 @@ export const metadataSchema = z.object({
   to: z.coerce.date(),
   tenantId: z.number(),
 });
+
+const transformRepositoryEventSchema = z.object({
+  repositoryExtractId: RepositorySchema.shape.id,
+})
+
+export type transformRepositoryEventMessage = z.infer<typeof transformRepositoryEventSchema>;
+
+export const transformRepositoryEvent = createEvent({
+  bus: "TransformBus",
+  source: 'transform',
+  type: 'repository',
+  propertiesShape: transformRepositoryEventSchema.shape,
+  metadataShape: metadataSchema.shape,
+})
