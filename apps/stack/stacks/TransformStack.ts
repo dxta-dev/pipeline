@@ -4,6 +4,7 @@ import {
   Api,
   Queue,
   Cron,
+  EventBus,
 } from "sst/constructs";
 import { ExtractStack } from "./ExtractStack";
 import { z } from "zod";
@@ -22,6 +23,10 @@ export function TransformStack({ stack }: StackContext) {
     TENANT_DATABASE_AUTH_TOKEN,
     
   } = use(ExtractStack);
+
+  const _transformBus = new EventBus(stack, "TransformBus", {
+
+  })
 
   const transformQueue = new Queue(stack, "TransformQueue");
   transformQueue.addConsumer(stack, {

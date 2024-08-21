@@ -123,6 +123,15 @@ declare module "sst/node/api" {
   }
 }
 
+import "sst/node/event-bus";
+declare module "sst/node/event-bus" {
+  export interface EventBusResources {
+    "TransformBus": {
+      eventBusName: string;
+    }
+  }
+}
+
 import "sst/node/queue";
 declare module "sst/node/queue" {
   export interface QueueResources {
