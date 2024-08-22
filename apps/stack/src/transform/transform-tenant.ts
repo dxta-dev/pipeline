@@ -11,7 +11,7 @@ import { transformRepositoryEvent } from "./events";
 export const tenantSenderHandler = createMessageHandler({
   queueId: 'TransformQueue',
   kind: MessageKind.Tenant,
-  metadataShape: metadataSchema.omit({ sourceControl: true, tenantId: true }).shape,
+  metadataShape: metadataSchema.omit({ sourceControl: true }).shape,
   contentShape: z.object({
     tenantId: z.number(),
   }).shape,
@@ -69,6 +69,7 @@ export const cronHandler = async () => {
     timestamp: Date.now(),
     from,
     to,
+    tenantId: -1,
   });
 }
 
@@ -129,6 +130,7 @@ export const apiHandler = ApiHandler(async (ev) => {
       timestamp: Date.now(),
       from,
       to,
+      tenantId: -1,
     });
   } catch (error) {
     return {
