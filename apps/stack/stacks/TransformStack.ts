@@ -21,12 +21,28 @@ export function TransformStack({ stack }: StackContext) {
     SUPER_DATABASE_AUTH_TOKEN,
     SUPER_DATABASE_URL,
     TENANT_DATABASE_AUTH_TOKEN,
-    
   } = use(ExtractStack);
 
-  const _transformBus = new EventBus(stack, "TransformBus", {
-
-  })
+  const transformBus = new EventBus(stack, "TransformBus", {
+    rules: {
+      repository: {
+        pattern: {
+          source: ["transform"],
+          detailType: ["repository"],
+        }
+      }
+    },
+    defaults: {
+      retries: 10,
+      function: {
+        bind: [
+          SUPER_DATABASE_AUTH_TOKEN,
+          SUPER_DATABASE_URL,
+          TENANT_DATABASE_AUTH_TOKEN,      
+        ]
+      },
+    }
+  });
 
   const transformQueue = new Queue(stack, "TransformQueue");
   transformQueue.addConsumer(stack, {
@@ -39,6 +55,7 @@ export function TransformStack({ stack }: StackContext) {
     function: {
       bind: [
         transformQueue,
+        transformBus,
         SUPER_DATABASE_AUTH_TOKEN,
         SUPER_DATABASE_URL,
         TENANT_DATABASE_AUTH_TOKEN,
@@ -48,12 +65,22 @@ export function TransformStack({ stack }: StackContext) {
 
   });
 
+  transformBus.addTargets(stack, "repository", {
+    transformTimelines: {
+      function: {
+        bind: [transformBus, transformQueue],
+        handler: "src/transform/transform-timeline.eventHandler",
+      }
+    }
+  });
+
   const api = new Api(stack, "TransformApi", {
     defaults: {
       authorizer: "JwtAuthorizer",
       function: {
         bind: [
           transformQueue,
+          transformBus,
           SUPER_DATABASE_AUTH_TOKEN,
           SUPER_DATABASE_URL,
         ],
@@ -82,6 +109,7 @@ export function TransformStack({ stack }: StackContext) {
           handler: "src/transform/transform-tenant.cronHandler",
           bind: [
             transformQueue,
+            transformBus,
             SUPER_DATABASE_AUTH_TOKEN,
             SUPER_DATABASE_URL,
           ],
