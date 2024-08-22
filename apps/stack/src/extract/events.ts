@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { createEvent } from "@stack/config/create-event";
 import { MergeRequestSchema } from "@dxta/extract-schema/src/merge-requests";
-import { MemberSchema, NamespaceSchema, RepositorySchema } from "@dxta/extract-schema";
+import { DeploymentSchema, MemberSchema, NamespaceSchema, RepositorySchema } from "@dxta/extract-schema";
 
 const extractRepositoryEventSchema = z.object({
   repositoryId: z.number(),
@@ -69,3 +69,20 @@ export const extractMemberInfoEvent = createEvent({
   },
   metadataShape: metadataSchema.shape
 })
+
+const extractDeploymentsEventSchema = z.object({
+  deploymentIds: z.array(DeploymentSchema.shape.id),
+  repositoryId: RepositorySchema.shape.id,
+  namespaceId: NamespaceSchema.shape.id
+});
+
+export type extractDeploymentsEventMessage = z.infer<typeof extractMergeRequestEventSchema>;
+
+export const extractDeploymentsEvent = createEvent({
+  source: "extract",
+  type: "deployment",
+  propertiesShape: extractDeploymentsEventSchema.shape,
+  bus: 'ExtractBus',
+  metadataShape: metadataSchema.shape,
+});
+
