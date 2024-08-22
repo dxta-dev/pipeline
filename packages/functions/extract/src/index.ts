@@ -12,3 +12,4 @@ export * from "./get-cicd-workflows";
 export * from "./get-cicd-runs";
 export * from "./get-commits";
 export * from "./get-deployments";
+export * from "./get-deployment-status";

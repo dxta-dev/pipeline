@@ -33,5 +33,6 @@ export enum MessageKind {
   CicdRuns = "cicd-runs",
   DefaultBranchCommit = 'default-branch-commit',
   Deployment = "deployment",
+  DeploymentStatus = "deployment-status",
 };
 

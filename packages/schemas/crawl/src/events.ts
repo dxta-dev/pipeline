@@ -27,7 +27,8 @@ const eventNamespaces = [
   'memberInfo',
   'workflow',
   'defaultBranchCommit',
-  'deployment'
+  'deployment',
+  'deployment-status'
 ] as const;
 
 const [namespaceType, ...nammespaceTypeRest] = eventNamespaces;

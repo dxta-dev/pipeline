@@ -10,7 +10,7 @@ import { Config } from "sst/node/config";
 import { getClerkUserToken } from "./get-clerk-user-token";
 import { GitHubSourceControl, GitlabSourceControl } from "@dxta/source-control";
 import { EventHandler } from "@stack/config/create-event";
-import { extractRepositoryEvent, isInitialExtractEvent } from "./events";
+import { extractDeploymentsEvent, extractRepositoryEvent, isInitialExtractEvent } from "./events";
 import { and, eq } from "drizzle-orm";
 import { deploymentEnvironments } from "@dxta/tenant-schema";
 
@@ -18,21 +18,20 @@ type ExtractDeploymentsPageInput = {
   namespace: Namespace;
   repository: Repository;
   environment?: string;
+  from: Date;
+  to: Date;
   perPage: number;
   page: number;
   userId: string;
   sourceControl: "github" | "gitlab";
   tenantId: number;
+  crawlId: number;
 }
 const extractDeploymentsPage = async ({
-  namespace,
-  repository,
-  environment,
-  perPage,
-  page,
-  userId,
-  sourceControl,
-  tenantId,
+  namespace, repository, environment,
+  perPage, page,
+  from, to,
+  userId, sourceControl, tenantId, crawlId,
 }: ExtractDeploymentsPageInput) => {
   context.integrations.sourceControl = await initSourceControl(userId, sourceControl);
 
@@ -43,6 +42,26 @@ const extractDeploymentsPage = async ({
     page,
     perPage,
   }, { ...context, db: getTenantDb(tenantId) });
+
+  const deploymentsWithUndeterminedStatus = deployments.filter(d => d.status === null).map(deployment => deployment.id);
+
+  if (deploymentsWithUndeterminedStatus.length !== 0) {
+    await extractDeploymentsEvent.publish({
+      namespaceId: namespace.id,
+      repositoryId: repository.id,
+      deploymentIds: deploymentsWithUndeterminedStatus,
+    }, {
+      version: 1,
+      caller: 'extract-deployments',
+      sourceControl,
+      userId,
+      timestamp: new Date().getTime(),
+      from,
+      to,
+      crawlId,
+      tenantId,
+    });
+  }
 
   return {
     pagination,
@@ -79,17 +98,13 @@ export const deploymentsSenderHandler = createMessageHandler({
   }).shape,
   handler: async (message) => {
     const { repository, namespace, environment, page, perPage } = message.content;
-    const { userId, sourceControl, tenantId } = message.metadata;
+    const { from, to, userId, sourceControl, tenantId, crawlId } = message.metadata;
 
     await extractDeploymentsPage({
-      namespace,
-      repository,
-      environment,
-      perPage,
-      page,
-      userId,
-      sourceControl,
-      tenantId
+      namespace, repository, environment,
+      perPage, page,
+      from, to,
+      userId, sourceControl, tenantId, crawlId
     });
 
   }
@@ -122,7 +137,8 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
   const deploymentsFirstPages = await Promise.all(environments.map(environment => extractDeploymentsPage({
     namespace, repository, environment: environment.environment,
     perPage: Number(Config.PER_PAGE), page: 1,
-    userId, sourceControl, tenantId
+    from, to,
+    userId, sourceControl, tenantId, crawlId
   }).then(result => ({ result, deploymentEnvironment: environment }))));
 
   if (!isInitialExtractEvent(ev)) return;
