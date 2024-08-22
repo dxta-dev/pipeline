@@ -72,7 +72,6 @@ export const cronHandler = async () => {
   });
 }
 
-
 const apiContextSchema = z.object({
   authorizer: z.object({
     jwt: z.object({
@@ -115,6 +114,7 @@ export const apiHandler = ApiHandler(async (ev) => {
 
   const tenants = getTenants();
   const tenant = tenants.find(tenant => tenant.id === tenantId);
+
   if (!tenant) return {
     statusCode: 404,
     message: JSON.stringify({ error: "Tenant not found" })
@@ -129,7 +129,6 @@ export const apiHandler = ApiHandler(async (ev) => {
       timestamp: Date.now(),
       from,
       to,
-      tenantId: -1,
     });
   } catch (error) {
     return {
@@ -140,6 +139,6 @@ export const apiHandler = ApiHandler(async (ev) => {
 
   return {
     statusCode: 200,
-    body: JSON.stringify({ message: `Transforming tenant "${tenant.name}" merge requests in period (${from.toISOString()}...${to.toISOString()})` }),
+    body: JSON.stringify({ message: `Transforming tenant "${tenant.name}" in period (${from.toISOString()}...${to.toISOString()})` }),
   };
 });
