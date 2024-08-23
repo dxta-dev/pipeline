@@ -10,6 +10,7 @@ export const namespaces = sqliteTable('namespaces', {
   id: integer('id').primaryKey(),
   externalId: integer('external_id').notNull(),
   forgeType: Enum('forge_type', { enum: ['github', 'gitlab'] }).notNull(),
+  namespaceType: Enum('namespace_type', { enum: ['organization', 'personal'] }).notNull().default('organization'),
   name: text('name').notNull(),
   _createdAt: integer('__created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
   _updatedAt: integer('__updated_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
