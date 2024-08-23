@@ -8,8 +8,6 @@ export { repositoriesToMembers as extractRepositoriesToMembers } from '@dxta/ext
 export { mergeRequestNotes as extractMergeRequestNotes } from '@dxta/extract-schema';
 export { gitIdentities as extractGitIdentities } from '@dxta/extract-schema';
 export { timelineEvents as extractTimelineEvents } from '@dxta/extract-schema';
-export { cicdWorkflows as extractCicdWorkflows } from '@dxta/extract-schema';
-export { cicdRuns as extractCicdRuns } from '@dxta/extract-schema';
 export { repositoryCommits as extractCommits } from '@dxta/extract-schema';
 export { repositoryCommitsChildren as extractCommitsChildren } from '@dxta/extract-schema';
 export { deployments as extractDeployments } from '@dxta/extract-schema';

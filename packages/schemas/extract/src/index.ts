@@ -15,9 +15,7 @@ export {
   ReviewedEventSchema,
   UnassignedEventSchema,
 } from './timeline-events';
-export { cicdWorkflows, CicdWorkflowSchema, NewCicdWorkflowSchema } from './cicd-workflows';
-export { cicdRuns, CicdRunSchema, NewCicdRunSchema, cicdRunStatusEnum, cicdRunResultEnum } from './cicd-runs';
-export { repositoryCommits, CommitSchema, NewCommitSchema, marshalSha, unmarshalSha } from './repository-commits';
+export { repositoryCommits, CommitSchema, NewCommitSchema } from './repository-commits';
 export { repositoryCommitsChildren, CommitChildSchema, NewCommitChildSchema } from './repository-commits-children';
 export { deployments, deploymentsStatusEnum, DeploymentSchema, NewDeploymentSchema } from './deployments';
 
@@ -41,8 +39,6 @@ export type {
   UnassignedEvent,
   TimelineEventType,
 } from './timeline-events';
-export type { CicdWorkflow, NewCicdWorkflow } from './cicd-workflows';
-export type { CicdRun, NewCicdRun } from './cicd-runs';
 export type { Commit, NewCommit } from './repository-commits';
 export type { CommitChild, NewCommitChild } from './repository-commits-children';
 export type { Deployment, NewDeployment, NewDeploymentWithSha } from './deployments';
