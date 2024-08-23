@@ -2,8 +2,7 @@ import type { SourceControl } from '..';
 import { Octokit } from '@octokit/rest';
 import parseLinkHeader from "parse-link-header";
 
-import type { NewRepository, NewNamespace, NewMergeRequest, NewMember, NewMergeRequestDiff, Repository, Namespace, MergeRequest, NewMergeRequestCommit, NewMergeRequestNote, NewTimelineEvents, TimelineEventType, NewCicdWorkflow, NewCicdRun, cicdRunResultEnum, cicdRunStatusEnum, NewDeploymentWithSha, Deployment } from "@dxta/extract-schema";
-import { marshalSha } from '@dxta/extract-schema';
+import type { NewRepository, NewNamespace, NewMember, NewMergeRequestDiff, Repository, Namespace, MergeRequest, NewMergeRequestCommit, NewMergeRequestNote, NewTimelineEvents, TimelineEventType, NewCicdWorkflow, NewCicdRun, cicdRunResultEnum, cicdRunStatusEnum, NewDeploymentWithSha, Deployment, NewMergeRequestWithMergeCommitSha } from "@dxta/extract-schema";
 import type { CommitData, Pagination, TimePeriod } from '../source-control';
 import type { components } from '@octokit/openapi-types';
 import { TimelineEventTypes } from '../../../../../packages/schemas/extract/src/timeline-events';
@@ -245,7 +244,7 @@ export class GitHubSourceControl implements SourceControl {
   }
 
 
-  async fetchMergeRequests(externalRepositoryId: number, namespaceName: string, repositoryName: string, repositoryId: number, perPage: number, creationPeriod?: TimePeriod, page?: number, totalPages?: number): Promise<{ mergeRequests: NewMergeRequest[]; pagination: Pagination; }> {
+  async fetchMergeRequests(externalRepositoryId: number, namespaceName: string, repositoryName: string, repositoryId: number, perPage: number, creationPeriod?: TimePeriod, page?: number, totalPages?: number): Promise<{ mergeRequests: NewMergeRequestWithMergeCommitSha[]; pagination: Pagination; }> {
     page = page || 1;
     const serchPRs = async (namespaceName: string, repositoryName: string, page: number, perPage: number, from: Date, to: Date | 'today') => {
       let updated;
@@ -342,8 +341,8 @@ export class GitHubSourceControl implements SourceControl {
           state: mergeRequest.state,
           targetBranch: mergeRequest.base.ref,
           sourceBranch: mergeRequest.head.ref,
-          mergeCommitSha: mergeRequest.merge_commit_sha,
-        } satisfies NewMergeRequest)),
+          mergeCommitSha: mergeRequest.merged_at ? mergeRequest.merge_commit_sha : null,
+        } satisfies NewMergeRequestWithMergeCommitSha)),
       pagination
     }
   }
@@ -564,7 +563,7 @@ export class GitHubSourceControl implements SourceControl {
         authoredAt: data.commit.author?.date ? new Date(data.commit.author.date) : undefined,
         committedAt: data.commit.committer?.date ? new Date(data.commit.committer.date) : undefined,
         repositoryId: repository.id,
-        ...marshalSha(data.sha),
+        sha: data.sha,
       },
       id: data.sha,
       parents: data.parents.map(parent => parent.sha),
