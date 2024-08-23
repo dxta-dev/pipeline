@@ -147,12 +147,12 @@ export function ExtractStack({ stack }: StackContext) {
         handler: "src/extract/extract-merge-requests.eventHandler",
       },
     },
-    deploymentStatus: {
-      function: {
-        bind: [bus, extractQueue],
-        handler: "src/extract/extract-deployment-status.onExtractRepository",
-      },
-    }
+    // deploymentStatus: {
+    //   function: {
+    //     bind: [bus, extractQueue],
+    //     handler: "src/extract/extract-deployment-status.onExtractRepository",
+    //   },
+    // }
   });
 
   bus.addTargets(stack, "githubRepository", {
@@ -212,14 +212,14 @@ export function ExtractStack({ stack }: StackContext) {
     }
   });
 
-  bus.addTargets(stack, 'deployments', {
-    extractDeploymentsStatus: {
-      function: {
-        bind: [bus, extractQueue],
-        handler: "src/extract/extract-deployment-status.onExtractDeployments"
-      }
-    }
-  });
+  // bus.addTargets(stack, 'deployments', {
+  //   extractDeploymentsStatus: {
+  //     function: {
+  //       bind: [bus, extractQueue],
+  //       handler: "src/extract/extract-deployment-status.onExtractDeployments"
+  //     }
+  //   }
+  // });
 
   const api = new Api(stack, "ExtractApi", {
     defaults: {
