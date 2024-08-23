@@ -7,12 +7,12 @@ import { sqliteTable } from './extract-table';
 import { repositoryCommits } from './repository-commits';
 
 export const repositoryCommitsChildren = sqliteTable('repository_commits_children', {
-  commit: integer('commit').references(() => repositoryCommits.id).notNull(),
-  childOf: integer('parent').references(() => repositoryCommits.id).notNull(),
+  commitId: integer('commit_id').references(() => repositoryCommits.id).notNull(),
+  parentId: integer('parent_id').references(() => repositoryCommits.id).notNull(),
   _createdAt: integer('__created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
   _updatedAt: integer('__updated_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
 }, (commitsChildren) => ({
-  pk: primaryKey({ columns: [commitsChildren.commit, commitsChildren.childOf] }),
+  pk: primaryKey({ columns: [commitsChildren.commitId, commitsChildren.parentId] }),
 }));
 
 export type CommitChild = InferSelectModel<typeof repositoryCommitsChildren>;
