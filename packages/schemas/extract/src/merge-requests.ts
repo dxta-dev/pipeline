@@ -5,6 +5,8 @@ import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 import { repositories } from "./repositories";
 import { sqliteTable } from './extract-table';
+import { repositoryShas } from './repository-shas';
+
 
 export const mergeRequests = sqliteTable(
   "merge_requests",
@@ -14,6 +16,9 @@ export const mergeRequests = sqliteTable(
     /* Gitlab -> iid, GitHub -> number */
     canonId: integer("canon_id").notNull(),
     repositoryId: integer("repository_id").references(() => repositories.id).notNull(),
+
+    mergeCommitShaId: integer('repository_sha_id').references(() => repositoryShas.id).notNull(),
+
     title: text("title").notNull(),
     description: text("description").default(''),
     webUrl: text("web_url").notNull(),
@@ -23,11 +28,10 @@ export const mergeRequests = sqliteTable(
     mergerExternalId: integer('merger_external_id'),
     closedAt: integer('closed_at', { mode: 'timestamp_ms' }),
     closerExternalId: integer('closer_external_id'),
-    authorExternalId: integer('author_external_id'),        
+    authorExternalId: integer('author_external_id'),
     state: text('state'),
     targetBranch: text('target_branch'),
     sourceBranch: text('source_branch'),
-    mergeCommitSha: text('merge_commit_sha'),
     _createdAt: integer('__created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
     _updatedAt: integer('__updated_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
   },
