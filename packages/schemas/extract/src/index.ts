@@ -17,6 +17,7 @@ export {
 } from './timeline-events';
 export { repositoryCommits, CommitSchema, NewCommitSchema } from './repository-commits';
 export { repositoryCommitsChildren, CommitChildSchema, NewCommitChildSchema } from './repository-commits-children';
+export { repositoryShas } from './repository-shas';
 export { deployments, deploymentsStatusEnum, DeploymentSchema, NewDeploymentSchema } from './deployments';
 
 export type { Repository, NewRepository } from './repositories';
@@ -39,6 +40,7 @@ export type {
   UnassignedEvent,
   TimelineEventType,
 } from './timeline-events';
+export type { Sha, NewSha } from './repository-shas';
 export type { Commit, NewCommit } from './repository-commits';
 export type { CommitChild, NewCommitChild } from './repository-commits-children';
 export type { Deployment, NewDeployment, NewDeploymentWithSha } from './deployments';

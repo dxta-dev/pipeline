@@ -1,5 +1,4 @@
-import type { NewCommit, Commit, Namespace, Repository, NewCommitChild } from "@dxta/extract-schema";
-import { marshalSha, unmarshalSha } from "@dxta/extract-schema";
+import { type NewCommit, type Commit, type Namespace, type Repository, type NewCommitChild, type Sha } from "@dxta/extract-schema";
 import type { ExtractFunction, Entities } from "./config";
 import type { Pagination, SourceControl, TimePeriod } from "@dxta/source-control";
 import { sql } from "drizzle-orm";
@@ -19,7 +18,7 @@ export type GetCommitsOutput = {
 }
 
 export type GetCommitsSourceControl = Pick<SourceControl, 'fetchCommits'>;
-export type GetCommitsEntities = Pick<Entities, 'commits' | 'commitsChildren'>;
+export type GetCommitsEntities = Pick<Entities, 'commits' | 'commitsChildren' | 'repositoryShas'>;
 
 export type GetCommitsFunction = ExtractFunction<GetCommitsInput, GetCommitsOutput, GetCommitsSourceControl, GetCommitsEntities>;
 
@@ -43,72 +42,68 @@ export const getCommits: GetCommitsFunction = async (
   const uniqueParentCommitSet = new Set(commitData.map(x => x.parents).flat());
   const parentPartialCommitIds = Array.from(uniqueParentCommitSet.values()).filter(x => !firstLevelCommitSet.has(x));
 
-  const partialCommits = parentPartialCommitIds.map(x => ({
-    repositoryId: repository.id,
-    ...marshalSha(x),
-  }) satisfies NewCommit);
+  const uniqueCommitShas = Array.from(
+    new Set([
+      ...commitData.map(x => [x.id, ...x.parents]).flat(),
+    ]).values()
+  );
 
-  const insertedCommits = await db.transaction(async (tx) => {
-    return Promise.all([
-      ...commitData.map(data =>
-        tx.insert(entities.commits).values(data.commit)
+  const insertedShas = await db.transaction(async (tx) => {
+    return Promise.all(
+      uniqueCommitShas.map(commitSha =>
+        tx.insert(entities.repositoryShas).values({ repositoryId: repository.id, sha: commitSha })
           .onConflictDoUpdate({
-            target: [
-              entities.commits.repositoryId,
-              entities.commits.sha0,
-              entities.commits.sha1,
-              entities.commits.sha2,
-              entities.commits.sha3,
-              entities.commits.sha4,
-            ],
-            set: {
-              authoredAt: data.commit.authoredAt,
-              committedAt: data.commit.committedAt,
-              _updatedAt: sql`(strftime('%s', 'now'))`,
-            }
+            target: [entities.repositoryShas.repositoryId, entities.repositoryShas.sha],
+            set: { _updatedAt: sql`(strftime('%s', 'now'))` },
           })
           .returning()
           .get()
-      ),
-      ...partialCommits.map(commit =>
-        tx.insert(entities.commits).values(commit)
-          .onConflictDoUpdate({
-            target: [
-              entities.commits.repositoryId,
-              entities.commits.sha0,
-              entities.commits.sha1,
-              entities.commits.sha2,
-              entities.commits.sha3,
-              entities.commits.sha4,
-            ],
-            set: {
-              _updatedAt: sql`(strftime('%s', 'now'))`,
-            }
-          })
-          .returning()
-          .get()
-      ),
-    ])
+      )
+    );
   });
 
-  const commitShaIdMap = insertedCommits.reduce((map, commit) => map.set(unmarshalSha(commit), commit.id), new Map<string, Commit['id']>());
+  const shaIdMap = insertedShas.reduce((map, sha) => map.set(sha.sha, sha.id), new Map<string, Sha['id']>());
+
+  const newCommits: NewCommit[] = [
+    ...commitData.map(x => ({
+      repositoryId: repository.id,
+      repositoryShaId: shaIdMap.get(x.id) as number,
+      authoredAt: x.commit.authoredAt,
+      committedAt: x.commit.committedAt,
+    } satisfies NewCommit)),
+    ...parentPartialCommitIds.map(sha => ({
+      repositoryId: repository.id,
+      repositoryShaId: shaIdMap.get(sha) as number,
+    } satisfies NewCommit))
+  ];
+
+  const insertedCommits = await db.transaction(async (tx) => {
+    return Promise.all(
+      newCommits.map(commit =>
+        tx.insert(entities.commits).values(commit).onConflictDoUpdate({
+          target: [entities.commits.repositoryShaId],
+          set: {
+            authoredAt: commit.authoredAt,
+            committedAt: commit.committedAt,
+            _updatedAt: sql`(strftime('%s', 'now'))`,
+          }
+        })
+          .returning()
+          .get()
+      )
+    );
+  });
+
+  const shaIdToCommitIdMap = insertedCommits.reduce((map, commit) => map.set(commit.repositoryShaId, commit.id), new Map<Commit['repositoryShaId'], Commit['id']>());
 
   const commitChildren: NewCommitChild[] = [];
   for (const data of commitData) {
     for (const parent of data.parents) {
-      const commitId = commitShaIdMap.get(data.id);
-      const parentId = commitShaIdMap.get(parent);
-      if (!commitId) {
-        console.log(new Error(`Possible failed insertion of commit with sha ${data.id}`));
-        continue;
-      }
-      if (!parentId) {
-        console.log(new Error(`Possible failed insertion of commit with sha: ${parent} which is the parent of ${data.id}`));
-        continue;
-      }
+      const commitId = shaIdToCommitIdMap.get(shaIdMap.get(data.id) as number) as number;
+      const parentId = shaIdToCommitIdMap.get(shaIdMap.get(parent) as number) as number;
       commitChildren.push({
-        commit: commitId,
-        childOf: parentId
+        commitId,
+        parentId
       });
     }
   };

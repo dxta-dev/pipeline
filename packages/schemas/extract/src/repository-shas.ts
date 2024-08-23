@@ -1,3 +1,4 @@
+import type { InferSelectModel, InferInsertModel } from 'drizzle-orm';
 import { sql } from "drizzle-orm";
 import { integer, uniqueIndex, text } from "drizzle-orm/sqlite-core";
 import { repositories } from "./repositories";
@@ -19,3 +20,5 @@ export const repositoryShas = sqliteTable(
     ),
   }),
 );
+export type Sha = InferSelectModel<typeof repositoryShas>;
+export type NewSha = InferInsertModel<typeof repositoryShas>;

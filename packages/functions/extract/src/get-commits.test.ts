@@ -5,7 +5,7 @@ import { createClient } from '@libsql/client';
 import { describe, expect, test } from '@jest/globals';
 import { getCommits } from './get-commits';
 
-import { repositories, namespaces, repositoryCommits as commits, repositoryCommitsChildren as commitsChildren, marshalSha } from '@dxta/extract-schema';
+import { repositories, namespaces, repositoryCommits as commits, repositoryCommitsChildren as commitsChildren, repositoryShas } from '@dxta/extract-schema';
 import type { NewNamespace, Namespace, NewRepository, Repository } from '@dxta/extract-schema';
 import type { Context } from './config';
 import type { GetCommitsSourceControl, GetCommitsEntities } from './get-commits';
@@ -39,19 +39,13 @@ beforeAll(async () => {
       case 1000:
         return Promise.resolve({
           commits: [
-            {
-              commit: {
-                repositoryId: repository.id,
-                ...marshalSha("795ff655bb9ff2cbb2a91ac2cff93d2dbcd7b431"),
-              },
+            {              
+              commit: {},
               id: "795ff655bb9ff2cbb2a91ac2cff93d2dbcd7b431",
               parents: ["0a5c4d39f30d0df02ec71b45824a6b3ca0d772de"],
             },
             {
-              commit: {
-                repositoryId: repository.id,
-                ...marshalSha("0a5c4d39f30d0df02ec71b45824a6b3ca0d772de")
-              },
+              commit: {},
               id: "0a5c4d39f30d0df02ec71b45824a6b3ca0d772de",
               parents: ["dccbf499443e34ab0c461be770470aaebfe5536e"],
             }
@@ -68,7 +62,7 @@ beforeAll(async () => {
   });
 
   context = {
-    entities: { commits, commitsChildren },
+    entities: { commits, commitsChildren, repositoryShas },
     db,
     integrations: {
       sourceControl: {
@@ -103,7 +97,7 @@ describe('get-commits:', () => {
       expect(commitRows.length).toEqual(commitsChildrenRows.length + 1); // + 1 because last commit parent isn't caught with the fetch (hypothetical case)
 
       for (const commitRow of commitRows) {
-        const rowMatchedCommit = commits.find((commit) => commit.sha0 === commitRow.sha0);
+        const rowMatchedCommit = commits.find((commit) => commit.repositoryShaId === commitRow.repositoryShaId);
         expect(rowMatchedCommit).toBeDefined();
         if (!rowMatchedCommit) return;
         expect(rowMatchedCommit.id).toEqual(commitRow.id);

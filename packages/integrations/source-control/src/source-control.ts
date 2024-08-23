@@ -13,7 +13,7 @@ export type TimePeriod = {
 }
 
 export type CommitData = {
-  commit: NewCommit,
+  commit: Omit<NewCommit, 'repositoryId' | 'repositoryShaId'>,
   id: string,
   parents: string[]
 }
