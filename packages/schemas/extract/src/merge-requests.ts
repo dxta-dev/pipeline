@@ -5,6 +5,7 @@ import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 import { repositories } from "./repositories";
 import { sqliteTable } from './extract-table';
+import { repositoryCommits } from './repository-commits';
 
 export const mergeRequests = sqliteTable(
   "merge_requests",
@@ -23,11 +24,11 @@ export const mergeRequests = sqliteTable(
     mergerExternalId: integer('merger_external_id'),
     closedAt: integer('closed_at', { mode: 'timestamp_ms' }),
     closerExternalId: integer('closer_external_id'),
-    authorExternalId: integer('author_external_id'),        
+    authorExternalId: integer('author_external_id'),
     state: text('state'),
     targetBranch: text('target_branch'),
     sourceBranch: text('source_branch'),
-    mergeCommitSha: text('merge_commit_sha'),
+    mergeCommit: integer('merge_commit').references(() => repositoryCommits.id),
     _createdAt: integer('__created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
     _updatedAt: integer('__updated_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
   },
@@ -41,6 +42,7 @@ export const mergeRequests = sqliteTable(
 
 export type MergeRequest = InferSelectModel<typeof mergeRequests>;
 export type NewMergeRequest = InferInsertModel<typeof mergeRequests>;
+export type NewMergeRequestWithMergeCommitSha = Omit<NewMergeRequest, 'mergeCommit'> & { mergeCommitSha: string | null; };
 export const MergeRequestSchema = createSelectSchema(mergeRequests, {
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),

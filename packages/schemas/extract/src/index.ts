@@ -17,13 +17,13 @@ export {
 } from './timeline-events';
 export { cicdWorkflows, CicdWorkflowSchema, NewCicdWorkflowSchema } from './cicd-workflows';
 export { cicdRuns, CicdRunSchema, NewCicdRunSchema, cicdRunStatusEnum, cicdRunResultEnum } from './cicd-runs';
-export { repositoryCommits, CommitSchema, NewCommitSchema, marshalSha, unmarshalSha } from './repository-commits';
+export { repositoryCommits, CommitSchema, NewCommitSchema } from './repository-commits';
 export { repositoryCommitsChildren, CommitChildSchema, NewCommitChildSchema } from './repository-commits-children';
 export { deployments, deploymentsStatusEnum, DeploymentSchema, NewDeploymentSchema } from './deployments';
 
 export type { Repository, NewRepository } from './repositories';
 export type { Namespace, NewNamespace } from './namespaces';
-export type { MergeRequest, NewMergeRequest } from './merge-requests';
+export type { MergeRequest, NewMergeRequest, NewMergeRequestWithMergeCommitSha } from './merge-requests';
 export type { MergeRequestDiff, NewMergeRequestDiff } from './merge-request-diffs';
 export type { MergeRequestCommit, NewMergeRequestCommit } from './merge-request-commits';
 export type { Member, NewMember } from './members';
