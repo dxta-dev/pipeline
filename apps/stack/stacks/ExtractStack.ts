@@ -156,12 +156,12 @@ export function ExtractStack({ stack }: StackContext) {
   });
 
   bus.addTargets(stack, "githubRepository", {
-    defaultBranchCommits: {
-      function: {
-        bind: [bus, extractQueue],
-        handler: "src/extract/extract-default-branch-commits.eventHandler",
-      }
-    },
+    // defaultBranchCommits: {
+    //   function: {
+    //     bind: [bus, extractQueue],
+    //     handler: "src/extract/extract-default-branch-commits.eventHandler",
+    //   }
+    // },
     workflows: {
       function: {
         bind: [bus, extractQueue],
@@ -174,12 +174,12 @@ export function ExtractStack({ stack }: StackContext) {
         handler: "src/extract/extract-cicd-runs.eventHandler",
       }
     },
-    deployments: {
-      function: {
-        bind: [bus, extractQueue],
-        handler: "src/extract/extract-deployments.eventHandler",
-      }
-    }
+    // deployments: {
+    //   function: {
+    //     bind: [bus, extractQueue],
+    //     handler: "src/extract/extract-deployments.eventHandler",
+    //   }
+    // }
   });
 
   bus.addTargets(stack, "mergeRequests", {
