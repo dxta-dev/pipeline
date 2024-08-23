@@ -576,38 +576,6 @@ export class GitHubSourceControl implements SourceControl {
     }
   }
 
-
-  async fetchCicdWorkflows(repository: Repository, namespace: Namespace, perPage: number, page?: number): Promise<{ cicdWorkflows: NewCicdWorkflow[], pagination: Pagination }> {
-    page = page || 1;
-    const response = await this.api.actions.listRepoWorkflows({
-      repo: repository.name,
-      owner: namespace.name,
-      page: page,
-      per_page: perPage
-    });
-
-    const cicdWorkflows = response.data.workflows.map(workflow => ({
-      externalId: workflow.id,
-      name: workflow.name,
-      repositoryId: repository.id,
-      runner: "github_actions",
-      sourcePath: workflow.path,
-    } satisfies NewCicdWorkflow));
-
-    const linkHeader = parseLinkHeader(response.headers.link) || { next: { per_page: perPage } };
-
-    const pagination = {
-      page,
-      perPage: ('next' in linkHeader) ? Number(linkHeader.next?.per_page) : Number(linkHeader.prev?.per_page),
-      totalPages: (!('last' in linkHeader)) ? page : Number(linkHeader.last?.page)
-    } satisfies Pagination;
-
-    return {
-      cicdWorkflows,
-      pagination,
-    }
-  }
-
   async fetchCicdWorkflowRuns(repository: Repository, namespace: Namespace, workflowId: number, timePeriod: TimePeriod, perPage: number, branch?: string, page?: number): Promise<{ cicdRuns: NewCicdRun[], pagination: Pagination }> {
     page = page || 1;
 

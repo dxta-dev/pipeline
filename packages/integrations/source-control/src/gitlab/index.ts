@@ -217,10 +217,6 @@ export class GitlabSourceControl implements SourceControl {
   fetchCommits(_repository: Repository, _namespace: Namespace, _perPage: number, _ref?: string, _period?: TimePeriod, _page?: number): Promise<{commits: CommitData[], pagination: Pagination}> {
     throw new Error("Method not implemented.");
   }
-
-  fetchCicdWorkflows(_repository: Repository, _namespace: Namespace, _perPage: number, _page?: number): Promise<{ cicdWorkflows: NewCicdWorkflow[], pagination: Pagination }> {
-    throw new Error("Method not implemented.");
-  }
   
   fetchCicdWorkflowRuns(_repository: Repository, _namespace: Namespace, _workflowId: number, _timePeriod: TimePeriod, _perPage: number, _branch?:string, _page?: number): Promise<{ cicdRuns: NewCicdRun[], pagination: Pagination }> {
     throw new Error("Method not implemented.");
