@@ -39,7 +39,7 @@ export const deployments = sqliteTable('deployments', {
 
 export type Deployment = InferSelectModel<typeof deployments>;
 export type NewDeployment = InferInsertModel<typeof deployments>;
-export type NewDeploymentWithSha = Omit<NewDeployment, 'commitId'> & { commitSha: string; }
+export type NewDeploymentWithSha = Omit<NewDeployment, 'repositoryShaId'> & { commitSha: string; }
 
 export const DeploymentSchema = createSelectSchema(deployments, {
   status: z.enum(deploymentsStatusEnum),

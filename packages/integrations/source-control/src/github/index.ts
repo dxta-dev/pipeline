@@ -2,8 +2,7 @@ import type { SourceControl } from '..';
 import { Octokit } from '@octokit/rest';
 import parseLinkHeader from "parse-link-header";
 
-import type { NewRepository, NewNamespace, NewMergeRequest, NewMember, NewMergeRequestDiff, Repository, Namespace, MergeRequest, NewMergeRequestCommit, NewMergeRequestNote, NewTimelineEvents, TimelineEventType, NewCicdWorkflow, NewCicdRun, cicdRunResultEnum, cicdRunStatusEnum, NewDeploymentWithSha, Deployment } from "@dxta/extract-schema";
-import { marshalSha } from '@dxta/extract-schema';
+import type { NewRepository, NewNamespace, NewMergeRequest, NewMember, NewMergeRequestDiff, Repository, Namespace, MergeRequest, NewMergeRequestCommit, NewMergeRequestNote, NewTimelineEvents, TimelineEventType, NewDeploymentWithSha, Deployment, deploymentsStatusEnum } from "@dxta/extract-schema";
 import type { CommitData, Pagination, TimePeriod } from '../source-control';
 import type { components } from '@octokit/openapi-types';
 import { TimelineEventTypes } from '../../../../../packages/schemas/extract/src/timeline-events';
@@ -54,44 +53,46 @@ const FILE_STATUS_FLAGS_MAPPING: Record<
   }
 }
 
-function mapWorkflowRunStatus(v: string | null): typeof cicdRunStatusEnum[number] | null {
-  if (typeof v !== 'string') return v;
-  switch (v) {
+function mapWorkflowRunStatus(status: string | null, conclusion: string | null): typeof deploymentsStatusEnum[number] | null {
+  if (typeof status !== 'string') return status;
+
+  const conclusionState = mapWorkflowRunConclusion(conclusion);
+  switch (status) {
     case 'completed':
-      return 'completed';
+      return conclusionState;
     case 'action_required':
     case 'in_progress':
-      return 'in_progress';
+      return 'pending';
     case 'cancelled':
-      return 'cancelled';
+      return 'failure';
     case 'failure':
       console.log(new Error("GithubSourceControl@mapWorkflowRunStatus error: Unexpected status 'failure'"));
-      return 'completed';
+      return 'failure';
     case 'neutral':
       console.log(new Error("GithubSourceControl@mapWorkflowRunStatus error: Unexpected status 'neutral'"));
       return 'unknown';
     case 'skipped':
-      return 'skipped';
+      return 'failure';
     case 'stale':
       console.log(new Error("GithubSourceControl@mapWorkflowRunStatus warn: Unexpected status 'stale'"));
       return 'unknown';
     case 'success':
       console.log(new Error("GithubSourceControl@mapWorkflowRunStatus error: Unexpected status 'success'"));
-      return 'completed';
+      return 'success';
     case 'timed_out':
-      return 'timed_out';
+      return 'failure';
     case 'queued':
     case 'request':
     case 'waiting':
     case 'pending':
-      return 'not_started'
+      return 'pending';
     default:
-      console.log(new Error(`GithubSourceControl@mapWorkflowRunStatus error: Really unexpected status '${v}'`));
+      console.log(new Error(`GithubSourceControl@mapWorkflowRunStatus error: Really unexpected status '${status}'`));
       return 'unknown';
   }
 }
 
-function mapWorkflowRunConclusion(v: string | null): typeof cicdRunResultEnum[number] | null {
+function mapWorkflowRunConclusion(v: string | null): typeof deploymentsStatusEnum[number] | null {
   if (typeof v !== 'string') return v;
 
   switch (v) {
@@ -563,8 +564,6 @@ export class GitHubSourceControl implements SourceControl {
       commit: {
         authoredAt: data.commit.author?.date ? new Date(data.commit.author.date) : undefined,
         committedAt: data.commit.committer?.date ? new Date(data.commit.committer.date) : undefined,
-        repositoryId: repository.id,
-        ...marshalSha(data.sha),
       },
       id: data.sha,
       parents: data.parents.map(parent => parent.sha),
@@ -576,7 +575,7 @@ export class GitHubSourceControl implements SourceControl {
     }
   }
 
-  async fetchCicdWorkflowRuns(repository: Repository, namespace: Namespace, workflowId: number, timePeriod: TimePeriod, perPage: number, branch?: string, page?: number): Promise<{ cicdRuns: NewCicdRun[], pagination: Pagination }> {
+  async fetchWorkflowDeployments(repository: Repository, namespace: Namespace, workflowId: number, timePeriod: TimePeriod, perPage: number, branch?: string, page?: number): Promise<{ deployments: NewDeploymentWithSha[], pagination: Pagination }> {
     page = page || 1;
 
     const response = await this.api.actions.listWorkflowRuns({
@@ -591,19 +590,15 @@ export class GitHubSourceControl implements SourceControl {
 
     const cicdRuns = response.data.workflow_runs.map(run => ({
       externalId: run.id,
-      gitBranch: run.head_branch || "",
-      gitSha: run.head_sha,
-      repositoryId: repository.id,
-      runAttempt: run.run_attempt || -1,
-      status: mapWorkflowRunStatus(run.status),
-      result: mapWorkflowRunConclusion(run.conclusion),
-      workflowExternalId: run.workflow_id,
-      workflowRunner: "github_actions",
+      deploymentType: 'github-workflow-deployment',
+      commitSha: run.head_sha,
+      gitBranch: branch,
       createdAt: new Date(run.created_at),
       updatedAt: new Date(run.updated_at),
-      detailsUrl: run.html_url,
-      runStartedAt: run.run_started_at ? new Date(run.run_started_at) : undefined,
-    } satisfies NewCicdRun))
+      repositoryId: repository.id,
+      status: mapWorkflowRunStatus(run.status, run.conclusion),
+      deployedAt: mapWorkflowRunStatus(run.status, run.conclusion) === 'success' ? new Date(run.updated_at) : null,
+    } satisfies NewDeploymentWithSha))
 
     const linkHeader = parseLinkHeader(response.headers.link) || { next: { per_page: perPage } };
 
@@ -614,7 +609,7 @@ export class GitHubSourceControl implements SourceControl {
     } satisfies Pagination;
 
     return {
-      cicdRuns,
+      deployments: cicdRuns,
       pagination,
     }
 
@@ -638,6 +633,7 @@ export class GitHubSourceControl implements SourceControl {
       commitSha: deployment.sha,
       createdAt: new Date(deployment.created_at),
       updatedAt: new Date(deployment.updated_at),
+      deploymentType: 'github-deployment',      
     } satisfies NewDeploymentWithSha));
 
     const linkHeader = parseLinkHeader(response.headers.link) || { next: { per_page: perPage } };
@@ -677,7 +673,7 @@ export class GitHubSourceControl implements SourceControl {
         deployment: {
           ...deployment,
           updatedAt: lastUpdatedAt,
-          status: 'cancelled',
+          status: 'failure',
         }
       }
     }
@@ -718,7 +714,7 @@ export class GitHubSourceControl implements SourceControl {
         deployment: {
           ...deployment,
           updatedAt: lastUpdatedAt,
-          status: 'cancelled',
+          status: 'failure',
         }
       }
     }

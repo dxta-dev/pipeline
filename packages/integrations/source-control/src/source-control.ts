@@ -1,4 +1,4 @@
-import type { NewRepository, NewNamespace, NewMergeRequest, NewMember, NewMergeRequestDiff, NewMergeRequestCommit, NewMergeRequestNote, NewTimelineEvents, NewCicdRun, NewCommit, NewDeploymentWithSha, Deployment } from "@dxta/extract-schema";
+import type { NewRepository, NewNamespace, NewMergeRequest, NewMember, NewMergeRequestDiff, NewMergeRequestCommit, NewMergeRequestNote, NewTimelineEvents, NewCommit, NewDeploymentWithSha, Deployment } from "@dxta/extract-schema";
 import type { Repository, Namespace, MergeRequest } from "@dxta/extract-schema";
 
 export type Pagination = {
@@ -32,5 +32,5 @@ export interface SourceControl {
   fetchDeployments(repository: Repository, namespace: Namespace, perPage: number, environment?: string, page?: number): Promise<{ deployments: NewDeploymentWithSha[], pagination: Pagination }>;
   fetchDeployment(repository: Repository, namespace: Namespace, deployment: Deployment): Promise<{ deployment: Deployment }>;
 
-  fetchCicdWorkflowRuns(repository: Repository, namespace: Namespace, workflowId: number, timePeriod: TimePeriod, perPage: number, branch?: string, page?: number): Promise<{ cicdRuns: NewCicdRun[], pagination: Pagination }>;
+  fetchWorkflowDeployments(repository: Repository, namespace: Namespace, workflowId: number, timePeriod: TimePeriod, perPage: number, branch?: string, page?: number): Promise<{ deployments: NewDeploymentWithSha[], pagination: Pagination }>;
 }
