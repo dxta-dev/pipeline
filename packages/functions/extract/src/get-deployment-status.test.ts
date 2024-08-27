@@ -6,8 +6,8 @@ import { createClient } from '@libsql/client';
 import { describe, expect, test } from '@jest/globals';
 import { getDeploymentStatus } from './get-deployment-status';
 
-import { deployments, namespaces, repositories, repositoryCommits, marshalSha } from '@dxta/extract-schema';
-import type { NewRepository, NewNamespace, Repository, Namespace, NewDeployment, NewCommit, Deployment } from '@dxta/extract-schema';
+import { deployments, namespaces, repositories, repositoryShas } from '@dxta/extract-schema';
+import type { NewRepository, NewNamespace, Repository, Namespace, NewDeployment, Deployment, NewSha } from '@dxta/extract-schema';
 import type { Context } from './config';
 import type { GetDeploymentStatusSourceControl, GetDeploymentStatusEntities } from './get-deployment-status';
 import type { SourceControl } from '@dxta/source-control';
@@ -21,8 +21,8 @@ let fetchDeployment: SourceControl['fetchDeployment'];
 
 const TEST_NAMESPACE = { id: 1, externalId: 2000, name: 'TEST_NAMESPACE_NAME', forgeType: 'github' } satisfies NewNamespace;
 const TEST_REPO = { id: 1, externalId: 1000, name: 'TEST_REPO_NAME', forgeType: 'github', namespaceId: 1 } satisfies NewRepository;
-const TEST_COMMIT = { ...marshalSha('c53c25ce41533ec23573c80288461e83d595d21c'), repositoryId: 1 } satisfies NewCommit;
-const TEST_DEPLOYMENT = { id: 1, externalId: 1000, commitId: 1, createdAt: new Date(), environment: 'test', repositoryId: 1, updatedAt: new Date() } satisfies NewDeployment;
+const TEST_SHA = { sha: 'c53c25ce41533ec23573c80288461e83d595d21c', repositoryId: 1 } satisfies NewSha;
+const TEST_DEPLOYMENT = { id: 1, externalId: 1000, repositoryShaId: 1, deploymentType: 'github-deployment', createdAt: new Date(), environment: 'test', repositoryId: 1, updatedAt: new Date() } satisfies NewDeployment;
 const TEST_DEPLOYMENT_UPDATE = { status: 'success', deployedAt: new Date() } satisfies Partial<Deployment>;
 let INSERTED_TEST_REPO: Repository;
 let INSERTED_TEST_NAMESPACE: Namespace;
@@ -39,7 +39,7 @@ beforeAll(async () => {
   await migrate(db, { migrationsFolder: "../../../migrations/combined" });
   INSERTED_TEST_NAMESPACE = await db.insert(namespaces).values(TEST_NAMESPACE).returning().get();
   INSERTED_TEST_REPO = await db.insert(repositories).values(TEST_REPO).returning().get();
-  await db.insert(repositoryCommits).values(TEST_COMMIT).run();
+  await db.insert(repositoryShas).values(TEST_SHA).run();
   INSERTED_TEST_DEPLOYMENT = await db.insert(deployments).values(TEST_DEPLOYMENT).returning().get();
 
   fetchDeployment = jest.fn((_repository, _namespace, deployment: Deployment) => {
