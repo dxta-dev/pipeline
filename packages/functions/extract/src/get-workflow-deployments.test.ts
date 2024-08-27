@@ -5,9 +5,9 @@ import { createClient } from '@libsql/client';
 
 
 import { describe, expect, test } from '@jest/globals';
-import { getCicdRuns } from './get-cicd-runs';
+import { getWorkflowDeployments } from './get-workflow-deployments';
 
-import { repositories, namespaces, cicdRuns, } from '@dxta/extract-schema';
+import { repositories, namespaces, deployments } from '@dxta/extract-schema';
 import type { NewNamespace, Namespace, NewRepository, Repository } from '@dxta/extract-schema';
 import type { Context } from './config';
 import type { GetCicdRunsSourceControl, GetCicdRunsEntities } from './get-cicd-runs';
@@ -17,7 +17,7 @@ import fs from 'fs';
 let sqlite: ReturnType<typeof createClient>;
 let db: ReturnType<typeof drizzle>;
 let context: Context<GetCicdRunsSourceControl, GetCicdRunsEntities>;
-let fetchCicdWorkflowRuns: SourceControl['fetchCicdWorkflowRuns'];
+let fetchCicdWorkflowDeployments: SourceControl['fetchWorkflowDeployments'];
 
 const TEST_NAMESPACE = { id: 1, externalId: 2000, name: 'TEST_NAMESPACE_NAME', forgeType: 'github' } satisfies NewNamespace;
 const TEST_REPO = { id: 1, externalId: 1000, name: 'TEST_REPO_NAME', forgeType: 'github', namespaceId: 1 } satisfies NewRepository;
@@ -36,7 +36,7 @@ beforeAll(async () => {
   INSERTED_TEST_NAMESPACE = await db.insert(namespaces).values(TEST_NAMESPACE).returning().get();
   INSERTED_TEST_REPO = await db.insert(repositories).values(TEST_REPO).returning().get();
 
-  fetchCicdWorkflowRuns = jest.fn((repository, _namespace, workflowId, _timePeriod, perPage: number, _branch?: string, page?: number) => {
+  fetchCicdWorkflowDeployments = jest.fn((repository, _namespace, workflowId, _timePeriod, perPage: number, _branch?: string, page?: number) => {
     switch (repository.externalId) {
       case 1000:
         return Promise.resolve({
@@ -67,7 +67,7 @@ beforeAll(async () => {
     db,
     integrations: {
       sourceControl: {
-        fetchCicdWorkflowRuns,
+        fetchCicdWorkflowRuns: fetchCicdWorkflowDeployments,
       }
     }
   };
@@ -92,7 +92,7 @@ describe('get-cicd-runs:', () => {
 
       expect(cicdRuns).toBeDefined();
       expect(paginationInfo).toBeDefined();
-      expect(fetchCicdWorkflowRuns).toHaveBeenCalledTimes(1);
+      expect(fetchCicdWorkflowDeployments).toHaveBeenCalledTimes(1);
 
       const cicdRunRows = await db.select().from(context.entities.cicdRuns).all();
       expect(cicdRunRows.length).toEqual(cicdRuns.length);
