@@ -24,7 +24,7 @@ const TEST_REPO = { id: 1, externalId: 1000, name: 'TEST_REPO_NAME', forgeType: 
 let INSERTED_TEST_REPO: Repository;
 let INSERTED_TEST_NAMESPACE: Namespace;
 
-const dbname = "get-cicd-runs";
+const dbname = "get-workflow-deployments";
 
 beforeAll(async () => {
   sqlite = createClient({
@@ -81,7 +81,7 @@ afterAll(() => {
 
 describe('get-workflow-deployments:', () => {
   describe('getWorkflowDeployments', () => {
-    test('should insert cicd workflow runs data in the database', async () => {
+    test('should insert workflow deployment data in the database', async () => {
       const { deployments, paginationInfo } = await getWorkflowDeployments({
         namespace: INSERTED_TEST_NAMESPACE,
         repository: INSERTED_TEST_REPO,
