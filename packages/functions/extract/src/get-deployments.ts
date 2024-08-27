@@ -73,6 +73,7 @@ export const getDeployments: GetDeploymentsFunction = async (
           target: [
             entities.deployments.externalId,
             entities.deployments.repositoryId,
+            entities.deployments.deploymentType,
           ],
           set: {
             updatedAt: deployment.updatedAt,

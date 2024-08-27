@@ -79,8 +79,8 @@ afterAll(() => {
   fs.unlinkSync(dbname);
 });
 
-describe('get-cicd-runs:', () => {
-  describe('getCicdRuns', () => {
+describe('get-workflow-deployments:', () => {
+  describe('getWorkflowDeployments', () => {
     test('should insert cicd workflow runs data in the database', async () => {
       const { deployments, paginationInfo } = await getWorkflowDeployments({
         namespace: INSERTED_TEST_NAMESPACE,
