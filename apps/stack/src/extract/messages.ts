@@ -29,7 +29,6 @@ export enum MessageKind {
   MergeRequestCommit = "merge-request-commit",
   MergeRequestNote = "merge-request-note",
   TimelineEvent = "timeline-event",
-  Workflow = "workflow",
   CicdRuns = "cicd-runs",
   DefaultBranchCommit = 'default-branch-commit',
   Deployment = "deployment",

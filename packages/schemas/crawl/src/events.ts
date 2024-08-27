@@ -25,7 +25,6 @@ const eventNamespaces = [
   'mergeRequestNote',
   'member',
   'memberInfo',
-  'workflow',
   'defaultBranchCommit',
   'deployment',
   'deployment-status'

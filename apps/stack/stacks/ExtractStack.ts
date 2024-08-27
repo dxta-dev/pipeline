@@ -162,12 +162,6 @@ export function ExtractStack({ stack }: StackContext) {
         handler: "src/extract/extract-default-branch-commits.eventHandler",
       }
     },
-    workflows: {
-      function: {
-        bind: [bus, extractQueue],
-        handler: "src/extract/extract-cicd-workflows.eventHandler",
-      }
-    },
     cicdRuns: {
       function: {
         bind: [bus, extractQueue],

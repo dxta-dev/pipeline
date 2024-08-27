@@ -11,7 +11,6 @@ import { mergeRequestNoteSenderHandler } from "./extract-merge-request-notes";
 import { memberSenderHandler } from "./extract-members";
 import { namespaceMemberSenderHandler } from "./extract-namespace-members";
 import { timelineEventsSenderHandler } from "./extract-timeline-events";
-import { workflowsSenderHandler } from "./extract-cicd-workflows";
 import { runsSenderHandler } from "./extract-cicd-runs";
 import { commitsSenderHandler } from "./extract-default-branch-commits";
 import { deploymentsSenderHandler } from "./extract-deployments";
@@ -38,8 +37,6 @@ messageHandlers.set(MessageKind.NamespaceMember, namespaceMemberSenderHandler);
 messageHandlers.set(MessageKind.MemberInfo, memberInfoSenderHandler);
 
 messageHandlers.set(MessageKind.TimelineEvent, timelineEventsSenderHandler);
-
-messageHandlers.set(MessageKind.Workflow, workflowsSenderHandler);
 
 messageHandlers.set(MessageKind.CicdRuns, runsSenderHandler);
 
@@ -71,8 +68,6 @@ logMap.set(MessageKind.MemberInfo, ['content.memberId']);
 
 logMap.set(MessageKind.TimelineEvent, ['content.repositoryId', 'content.namespaceId', 'content.mergeRequestId']);
 
-logMap.set(MessageKind.Workflow, ['content.repository.id', 'content.namespace.id', 'content.pagination']);
-
 logMap.set(MessageKind.CicdRuns, ['content.repository.id', 'content.namespace.id', 'content.workflowId', 'content.page'])
 
 logMap.set(MessageKind.DefaultBranchCommit, ['content.repository.id', 'content.namespace.id', 'content.page'])
@@ -96,8 +91,6 @@ crawlNamespaceMap.set(MessageKind.Member, "member");
 crawlNamespaceMap.set(MessageKind.NamespaceMember, "member");
 
 crawlNamespaceMap.set(MessageKind.MemberInfo, "memberInfo");
-
-crawlNamespaceMap.set(MessageKind.Workflow, "workflow");
 
 crawlNamespaceMap.set(MessageKind.MergeRequestCommit, "defaultBranchCommit");
 
