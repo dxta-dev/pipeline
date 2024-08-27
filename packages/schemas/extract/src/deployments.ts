@@ -44,6 +44,7 @@ export type DeploymentType = typeof deploymentTypeEnum[number];
 
 export const DeploymentSchema = createSelectSchema(deployments, {
   status: z.enum(deploymentsStatusEnum),
+  deploymentType: z.enum(deploymentTypeEnum),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
   deployedAt: z.coerce.date(),
@@ -52,6 +53,7 @@ export const DeploymentSchema = createSelectSchema(deployments, {
 });
 export const NewDeploymentSchema = createInsertSchema(deployments, {
   status: z.enum(deploymentsStatusEnum),
+  deploymentType: z.enum(deploymentTypeEnum),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
   deployedAt: z.coerce.date(),
