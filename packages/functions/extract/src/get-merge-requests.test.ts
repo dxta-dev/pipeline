@@ -6,7 +6,7 @@ import { createClient } from '@libsql/client';
 import { describe, expect, test } from '@jest/globals';
 import { getMergeRequests } from './get-merge-requests';
 
-import { type NewMergeRequest, mergeRequests, type NewRepository, repositories, type NewNamespace, namespaces } from '@dxta/extract-schema';
+import { type NewMergeRequestWithSha, mergeRequests, type NewRepository, repositories, type NewNamespace, namespaces, repositoryShas } from '@dxta/extract-schema';
 import type { Context } from './config';
 import type { GetMergeRequestsSourceControl, GetMergeRequestsEntities } from './get-merge-requests';
 import type { SourceControl, TimePeriod } from '@dxta/source-control';
@@ -58,7 +58,7 @@ beforeAll(async () => {
       state: 'open',
       title: 'Merge Request 2001',
       webUrl: 'https://gitlab.com/acme/merge-requests/2001',
-    }] satisfies NewMergeRequest[];
+    }] satisfies NewMergeRequestWithSha[];
 
     let filteredArray = [];
     
@@ -103,7 +103,7 @@ beforeAll(async () => {
   });
 
   context = {
-    entities: { mergeRequests },
+    entities: { mergeRequests, repositoryShas },
     integrations: {
       sourceControl: {
         fetchMergeRequests,

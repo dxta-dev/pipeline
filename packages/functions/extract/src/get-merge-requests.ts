@@ -43,7 +43,7 @@ export const getMergeRequests: GetMergeRequestsFunction = async (
   const { mergeRequests, pagination } = await integrations.sourceControl.fetchMergeRequests(externalRepositoryId, namespaceName, repositoryName, repositoryId, perPage, timePeriod, page, totalPages);
 
   const insertedShas = await db.transaction(async (tx) => {
-    return Promise.all(mergeRequests.map(mergeRequest => mergeRequest.mergeCommitSha).filter(sha => sha !== null).map(sha =>
+    return Promise.all(mergeRequests.map(mergeRequest => mergeRequest.mergeCommitSha).filter(sha => sha != undefined).map(sha =>
       tx.insert(entities.repositoryShas).values({ repositoryId: repositoryId, sha })
         .onConflictDoUpdate({
           target: [entities.repositoryShas.repositoryId, entities.repositoryShas.sha],

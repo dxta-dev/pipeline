@@ -45,7 +45,7 @@ export const mergeRequests = sqliteTable(
 
 export type MergeRequest = InferSelectModel<typeof mergeRequests>;
 export type NewMergeRequest = InferInsertModel<typeof mergeRequests>;
-export type NewMergeRequestWithSha = Omit<NewMergeRequest, 'mergeCommitShaId'> & { mergeCommitSha: string | null; };
+export type NewMergeRequestWithSha = Omit<NewMergeRequest, 'mergeCommitShaId'> & { mergeCommitSha?: string | null; };
 export const MergeRequestSchema = createSelectSchema(mergeRequests, {
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
