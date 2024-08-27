@@ -513,7 +513,7 @@ export type MergeRequestNoteData = {
 }
 
 async function selectExtractData(db: ExtractDatabase, extractMergeRequestId: number) {
-  const { mergeRequests, mergeRequestDiffs, mergeRequestNotes, timelineEvents, repositories, namespaces, mergeRequestCommits } = extract;
+  const { mergeRequests, mergeRequestDiffs, mergeRequestNotes, timelineEvents, repositories, namespaces, mergeRequestCommits, repositoryShas } = extract;
   const mergeRequestData = await db.select({
     mergeRequest: {
       openedAt: mergeRequests.createdAt,
@@ -529,10 +529,11 @@ async function selectExtractData(db: ExtractDatabase, extractMergeRequestId: num
       webUrl: mergeRequests.webUrl,
       sourceBranch: mergeRequests.sourceBranch,
       targetBranch: mergeRequests.targetBranch,
-      mergeCommitSha: mergeRequests.mergeCommitSha,
+      mergeCommitSha: repositoryShas.sha,
     }
   }).from(mergeRequests)
     .where(eq(mergeRequests.id, extractMergeRequestId))
+    .leftJoin(repositoryShas, eq(repositoryShas.id, mergeRequests.mergeCommitShaId))
     .get();
 
   const repositoryData = await db.select({
