@@ -6,7 +6,7 @@ import { createClient } from '@libsql/client';
 import { describe, expect, test } from '@jest/globals';
 import { getDeployments } from './get-deployments';
 
-import { deployments, namespaces, repositories, repositoryCommits } from '@dxta/extract-schema';
+import { deployments, namespaces, repositories, repositoryShas } from '@dxta/extract-schema';
 import type { NewRepository, NewNamespace, Repository, Namespace } from '@dxta/extract-schema';
 import type { Context } from './config';
 import type { GetDeploymentsSourceControl, GetDeploymentsEntities } from './get-deployments';
@@ -42,6 +42,7 @@ beforeAll(async () => {
           deployments: [
             {
               externalId: 1000,              
+              deploymentType: 'github-deployment',
               environment: 'prod',
               commitSha: 'a0a22a47f37cc87df7627bf0db7737d1fc7f9ff6',
               createdAt: new Date(),
@@ -61,7 +62,7 @@ beforeAll(async () => {
   });
 
   context = {
-    entities: { deployments, commits: repositoryCommits },
+    entities: { deployments, repositoryShas },
     db,
     integrations: {
       sourceControl: {
