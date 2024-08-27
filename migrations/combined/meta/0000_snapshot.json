@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "5486d1de-b91c-4ff9-80fa-cbb0481ad6e8",
+  "id": "f4be21a9-2ac2-45d5-b4c3-8b48123605dd",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "crawl_events": {
@@ -118,6 +118,20 @@
           "notNull": true,
           "autoincrement": false
         },
+        "since": {
+          "name": "since",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "until": {
+          "name": "until",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "__created_at": {
           "name": "__created_at",
           "type": "integer",
@@ -137,6 +151,314 @@
       },
       "indexes": {},
       "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "extract_repository_commits": {
+      "name": "extract_repository_commits",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "repository_id": {
+          "name": "repository_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "repository_sha_id": {
+          "name": "repository_sha_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "committed_at": {
+          "name": "committed_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "authored_at": {
+          "name": "authored_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "__created_at": {
+          "name": "__created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        },
+        "__updated_at": {
+          "name": "__updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        }
+      },
+      "indexes": {
+        "repository_commits_repository_sha_id_idx": {
+          "name": "repository_commits_repository_sha_id_idx",
+          "columns": [
+            "repository_sha_id"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "extract_repository_commits_repository_id_extract_repositories_id_fk": {
+          "name": "extract_repository_commits_repository_id_extract_repositories_id_fk",
+          "tableFrom": "extract_repository_commits",
+          "tableTo": "extract_repositories",
+          "columnsFrom": [
+            "repository_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "extract_repository_commits_repository_sha_id_extract_repository_shas_id_fk": {
+          "name": "extract_repository_commits_repository_sha_id_extract_repository_shas_id_fk",
+          "tableFrom": "extract_repository_commits",
+          "tableTo": "extract_repository_shas",
+          "columnsFrom": [
+            "repository_sha_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "extract_repository_commits_children": {
+      "name": "extract_repository_commits_children",
+      "columns": {
+        "commit_id": {
+          "name": "commit_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "parent_id": {
+          "name": "parent_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "__created_at": {
+          "name": "__created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        },
+        "__updated_at": {
+          "name": "__updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "extract_repository_commits_children_commit_id_extract_repository_commits_id_fk": {
+          "name": "extract_repository_commits_children_commit_id_extract_repository_commits_id_fk",
+          "tableFrom": "extract_repository_commits_children",
+          "tableTo": "extract_repository_commits",
+          "columnsFrom": [
+            "commit_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "extract_repository_commits_children_parent_id_extract_repository_commits_id_fk": {
+          "name": "extract_repository_commits_children_parent_id_extract_repository_commits_id_fk",
+          "tableFrom": "extract_repository_commits_children",
+          "tableTo": "extract_repository_commits",
+          "columnsFrom": [
+            "parent_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "extract_repository_commits_children_commit_id_parent_id_pk": {
+          "columns": [
+            "commit_id",
+            "parent_id"
+          ],
+          "name": "extract_repository_commits_children_commit_id_parent_id_pk"
+        }
+      },
+      "uniqueConstraints": {}
+    },
+    "extract_deployments": {
+      "name": "extract_deployments",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "external_id": {
+          "name": "external_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "deployment_type": {
+          "name": "deployment_type",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "repository_id": {
+          "name": "repository_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "repository_sha_id": {
+          "name": "repository_sha_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "environment": {
+          "name": "environment",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "git_branch": {
+          "name": "git_branch",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "deployed_at": {
+          "name": "deployed_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "__created_at": {
+          "name": "__created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        },
+        "__updated_at": {
+          "name": "__updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        }
+      },
+      "indexes": {
+        "deployments_external_id_idx": {
+          "name": "deployments_external_id_idx",
+          "columns": [
+            "external_id",
+            "repository_id",
+            "deployment_type"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "extract_deployments_repository_id_extract_repositories_id_fk": {
+          "name": "extract_deployments_repository_id_extract_repositories_id_fk",
+          "tableFrom": "extract_deployments",
+          "tableTo": "extract_repositories",
+          "columnsFrom": [
+            "repository_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "extract_deployments_repository_sha_id_extract_repository_shas_id_fk": {
+          "name": "extract_deployments_repository_sha_id_extract_repository_shas_id_fk",
+          "tableFrom": "extract_deployments",
+          "tableTo": "extract_repository_shas",
+          "columnsFrom": [
+            "repository_sha_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
@@ -262,6 +584,22 @@
           "notNull": false,
           "autoincrement": false
         },
+        "profile_url": {
+          "name": "profile_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "''"
+        },
+        "avatar_url": {
+          "name": "avatar_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "''"
+        },
         "extracted_source": {
           "name": "extracted_source",
           "type": "integer",
@@ -284,6 +622,13 @@
           "notNull": false,
           "autoincrement": false,
           "default": "(strftime('%s', 'now'))"
+        },
+        "__extracted_at": {
+          "name": "__extracted_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
         }
       },
       "indexes": {
@@ -373,6 +718,20 @@
           "notNull": true,
           "autoincrement": false
         },
+        "author_external_id": {
+          "name": "author_external_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "author_username": {
+          "name": "author_username",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "committer_name": {
           "name": "committer_name",
           "type": "text",
@@ -382,6 +741,27 @@
         },
         "committer_email": {
           "name": "committer_email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "committer_external_id": {
+          "name": "committer_external_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "committer_username": {
+          "name": "committer_username",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "html_url": {
+          "name": "html_url",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
@@ -616,6 +996,13 @@
           "notNull": true,
           "autoincrement": false
         },
+        "html_url": {
+          "name": "html_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "__created_at": {
           "name": "__created_at",
           "type": "integer",
@@ -692,12 +1079,27 @@
           "notNull": true,
           "autoincrement": false
         },
+        "repository_sha_id": {
+          "name": "repository_sha_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "title": {
           "name": "title",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "''"
         },
         "web_url": {
           "name": "web_url",
@@ -816,6 +1218,19 @@
           ],
           "onDelete": "no action",
           "onUpdate": "no action"
+        },
+        "extract_merge_requests_repository_sha_id_extract_repository_shas_id_fk": {
+          "name": "extract_merge_requests_repository_sha_id_extract_repository_shas_id_fk",
+          "tableFrom": "extract_merge_requests",
+          "tableTo": "extract_repository_shas",
+          "columnsFrom": [
+            "repository_sha_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -844,6 +1259,14 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
+        },
+        "namespace_type": {
+          "name": "namespace_type",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "0"
         },
         "name": {
           "name": "name",
@@ -919,6 +1342,13 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true,
+          "autoincrement": false
+        },
+        "default_branch": {
+          "name": "default_branch",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
           "autoincrement": false
         },
         "__created_at": {
@@ -1040,6 +1470,75 @@
       },
       "uniqueConstraints": {}
     },
+    "extract_repository_shas": {
+      "name": "extract_repository_shas",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "sha": {
+          "name": "sha",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "repository_id": {
+          "name": "repository_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "__created_at": {
+          "name": "__created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        },
+        "__updated_at": {
+          "name": "__updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        }
+      },
+      "indexes": {
+        "repository_shas_repository_id_sha_idx": {
+          "name": "repository_shas_repository_id_sha_idx",
+          "columns": [
+            "repository_id",
+            "sha"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "extract_repository_shas_repository_id_extract_repositories_id_fk": {
+          "name": "extract_repository_shas_repository_id_extract_repositories_id_fk",
+          "tableFrom": "extract_repository_shas",
+          "tableTo": "extract_repositories",
+          "columnsFrom": [
+            "repository_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
     "extract_timeline_events": {
       "name": "extract_timeline_events",
       "columns": {
@@ -1106,6 +1605,13 @@
           "notNull": false,
           "autoincrement": false
         },
+        "html_url": {
+          "name": "html_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "__created_at": {
           "name": "__created_at",
           "type": "integer",
@@ -1149,6 +1655,321 @@
           "onUpdate": "no action"
         }
       },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "tenant_cicd_deploy_workflows": {
+      "name": "tenant_cicd_deploy_workflows",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "workflow_external_id": {
+          "name": "workflow_external_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "repository_external_id": {
+          "name": "repository_external_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "forge_type": {
+          "name": "forge_type",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "branch": {
+          "name": "branch",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "__created_at": {
+          "name": "__created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        },
+        "__updated_at": {
+          "name": "__updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "tenant_config": {
+      "name": "tenant_config",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "hq_timezone": {
+          "name": "hq_timezone",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "__created_at": {
+          "name": "__created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        },
+        "__updated_at": {
+          "name": "__updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        }
+      },
+      "indexes": {
+        "tenant_config_unique_idx": {
+          "name": "tenant_config_unique_idx",
+          "columns": [
+            "hq_timezone"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "tenant_deployment_environments": {
+      "name": "tenant_deployment_environments",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "repository_external_id": {
+          "name": "repository_external_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "forge_type": {
+          "name": "forge_type",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "environment": {
+          "name": "environment",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "__created_at": {
+          "name": "__created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        },
+        "__updated_at": {
+          "name": "__updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "tenant_team_members": {
+      "name": "tenant_team_members",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "team": {
+          "name": "team",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "member": {
+          "name": "member",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "__created_at": {
+          "name": "__created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        },
+        "__updated_at": {
+          "name": "__updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        }
+      },
+      "indexes": {
+        "team_members_unique_idx": {
+          "name": "team_members_unique_idx",
+          "columns": [
+            "team",
+            "member"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "tenant_team_members_team_tenant_teams_id_fk": {
+          "name": "tenant_team_members_team_tenant_teams_id_fk",
+          "tableFrom": "tenant_team_members",
+          "tableTo": "tenant_teams",
+          "columnsFrom": [
+            "team"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "tenant_teams": {
+      "name": "tenant_teams",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "__created_at": {
+          "name": "__created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        },
+        "__updated_at": {
+          "name": "__updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "transform_branches": {
+      "name": "transform_branches",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "__created_at": {
+          "name": "__created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        },
+        "__updated_at": {
+          "name": "__updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        }
+      },
+      "indexes": {
+        "branches_name_idx": {
+          "name": "branches_name_idx",
+          "columns": [
+            "name"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
@@ -1217,6 +2038,13 @@
             "year"
           ],
           "isUnique": true
+        },
+        "dates_week_idx": {
+          "name": "dates_week_idx",
+          "columns": [
+            "week"
+          ],
+          "isUnique": false
         }
       },
       "foreignKeys": {},
@@ -1253,6 +2081,22 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
+        },
+        "profile_url": {
+          "name": "profile_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "''"
+        },
+        "avatar_url": {
+          "name": "avatar_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "''"
         },
         "bot": {
           "name": "bot",
@@ -1517,6 +2361,14 @@
           "notNull": true,
           "autoincrement": false
         },
+        "html_url": {
+          "name": "html_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "''"
+        },
         "timestamp": {
           "name": "timestamp",
           "type": "integer",
@@ -1555,7 +2407,29 @@
           "default": "(strftime('%s', 'now'))"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "merge_request_events_occured_on_idx": {
+          "name": "merge_request_events_occured_on_idx",
+          "columns": [
+            "occured_on"
+          ],
+          "isUnique": false
+        },
+        "merge_request_events_merge_request_idx": {
+          "name": "merge_request_events_merge_request_idx",
+          "columns": [
+            "merge_request"
+          ],
+          "isUnique": false
+        },
+        "merge_request_events_commited_at_idx": {
+          "name": "merge_request_events_commited_at_idx",
+          "columns": [
+            "commited_at"
+          ],
+          "isUnique": false
+        }
+      },
       "foreignKeys": {
         "transform_merge_request_events_actor_transform_forge_users_id_fk": {
           "name": "transform_merge_request_events_actor_transform_forge_users_id_fk",
@@ -1684,6 +2558,22 @@
           "notNull": true,
           "autoincrement": false
         },
+        "code_addition": {
+          "name": "code_addition",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "code_deletion": {
+          "name": "code_deletion",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
         "coding_duration": {
           "name": "coding_duration",
           "type": "integer",
@@ -1764,7 +2654,36 @@
           "default": "(strftime('%s', 'now'))"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "merge_request_metrics_users_junk_idx": {
+          "name": "merge_request_metrics_users_junk_idx",
+          "columns": [
+            "users_junk"
+          ],
+          "isUnique": false
+        },
+        "merge_request_metrics_dates_junk_idx": {
+          "name": "merge_request_metrics_dates_junk_idx",
+          "columns": [
+            "dates_junk"
+          ],
+          "isUnique": false
+        },
+        "merge_request_metrics_repository_idx": {
+          "name": "merge_request_metrics_repository_idx",
+          "columns": [
+            "repository"
+          ],
+          "isUnique": false
+        },
+        "merge_request_metrics_merge_request_idx": {
+          "name": "merge_request_metrics_merge_request_idx",
+          "columns": [
+            "merge_request"
+          ],
+          "isUnique": false
+        }
+      },
       "foreignKeys": {
         "transform_merge_request_metrics_users_junk_transform_merge_request_fact_users_junk_id_fk": {
           "name": "transform_merge_request_metrics_users_junk_transform_merge_request_fact_users_junk_id_fk",
@@ -2512,6 +3431,14 @@
           "notNull": true,
           "autoincrement": false
         },
+        "canon_id": {
+          "name": "canon_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": -1
+        },
         "forge_type": {
           "name": "forge_type",
           "type": "integer",
@@ -2526,12 +3453,43 @@
           "notNull": true,
           "autoincrement": false
         },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "''"
+        },
         "web_url": {
           "name": "web_url",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
+        },
+        "merge_commit_sha": {
+          "name": "merge_commit_sha",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "target_branch": {
+          "name": "target_branch",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1
+        },
+        "source_branch": {
+          "name": "source_branch",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1
         },
         "__created_at": {
           "name": "__created_at",
@@ -2560,7 +3518,34 @@
           "isUnique": true
         }
       },
-      "foreignKeys": {},
+      "foreignKeys": {
+        "transform_merge_requests_target_branch_transform_branches_id_fk": {
+          "name": "transform_merge_requests_target_branch_transform_branches_id_fk",
+          "tableFrom": "transform_merge_requests",
+          "tableTo": "transform_branches",
+          "columnsFrom": [
+            "target_branch"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "transform_merge_requests_source_branch_transform_branches_id_fk": {
+          "name": "transform_merge_requests_source_branch_transform_branches_id_fk",
+          "tableFrom": "transform_merge_requests",
+          "tableTo": "transform_branches",
+          "columnsFrom": [
+            "source_branch"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
@@ -2602,6 +3587,14 @@
           "notNull": true,
           "autoincrement": false
         },
+        "branch_id": {
+          "name": "branch_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1
+        },
         "__created_at": {
           "name": "__created_at",
           "type": "integer",
@@ -2619,7 +3612,19 @@
           "default": "(strftime('%s', 'now'))"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "null_rows_unique_values_idx": {
+          "name": "null_rows_unique_values_idx",
+          "columns": [
+            "dates_id",
+            "users_id",
+            "merge_requests_id",
+            "repository_id",
+            "branch_id"
+          ],
+          "isUnique": true
+        }
+      },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
@@ -2654,6 +3659,14 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
+        },
+        "namespace_name": {
+          "name": "namespace_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "''"
         },
         "__created_at": {
           "name": "__created_at",

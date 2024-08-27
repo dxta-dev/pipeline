@@ -1,1 +1,0 @@
-ALTER TABLE extract_namespaces ADD `namespace_type` integer DEFAULT 0 NOT NULL;

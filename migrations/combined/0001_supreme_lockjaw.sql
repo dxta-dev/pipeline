@@ -1,1 +1,0 @@
-ALTER TABLE extract_members ADD `__extracted_at` integer;
