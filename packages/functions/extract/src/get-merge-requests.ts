@@ -44,7 +44,7 @@ export const getMergeRequests: GetMergeRequestsFunction = async (
 
   const insertedShas = await db.transaction(async (tx) => {
     return Promise.all(mergeRequests.map(mergeRequest => mergeRequest.mergeCommitSha).filter(sha => sha != undefined).map(sha =>
-      tx.insert(entities.repositoryShas).values({ repositoryId: repositoryId, sha })
+      tx.insert(entities.repositoryShas).values({ repositoryId: repositoryId, sha: sha as string })
         .onConflictDoUpdate({
           target: [entities.repositoryShas.repositoryId, entities.repositoryShas.sha],
           set: { _updatedAt: sql`(strftime('%s', 'now'))` },
@@ -61,7 +61,7 @@ export const getMergeRequests: GetMergeRequestsFunction = async (
       tx.insert(entities.mergeRequests).values({
         externalId: mergeRequest.externalId,
         canonId: mergeRequest.canonId,
-        repositoryId,
+        repositoryId: mergeRequest.repositoryId,
         mergeCommitShaId: mergeRequest.mergeCommitSha ? shaIdMap.get(mergeRequest.mergeCommitSha) as number : null,
         title: mergeRequest.title,
         description: mergeRequest.description,
@@ -93,7 +93,7 @@ export const getMergeRequests: GetMergeRequestsFunction = async (
             state: mergeRequest.state,
             targetBranch: mergeRequest.targetBranch,
             sourceBranch: mergeRequest.sourceBranch,
-
+            mergeCommitShaId: mergeRequest.mergeCommitSha ? shaIdMap.get(mergeRequest.mergeCommitSha) as number : null,
             _updatedAt: sql`(strftime('%s', 'now'))`,
 
           },
