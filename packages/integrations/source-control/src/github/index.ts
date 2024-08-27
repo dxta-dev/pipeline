@@ -60,11 +60,8 @@ function mapWorkflowRunStatus(status: string | null, conclusion: string | null):
   switch (status) {
     case 'completed':
       return conclusionState;
-    case 'action_required':
     case 'in_progress':
       return 'pending';
-    case 'cancelled':
-      return 'failure';
     case 'failure':
       console.log(new Error("GithubSourceControl@mapWorkflowRunStatus error: Unexpected status 'failure'"));
       return 'failure';
@@ -99,6 +96,12 @@ function mapWorkflowRunConclusion(v: string | null): typeof deploymentsStatusEnu
     case 'success':
       return 'success';
     case 'failure':
+      return 'failure';
+    case 'action_required':
+      return 'pending';
+    case 'startup_failure':
+      return 'failure';
+    case 'cancelled':
       return 'failure';
     default:
       console.log(new Error(`GithubSourceControl@mapWorkflowRunConclusion error:`))
