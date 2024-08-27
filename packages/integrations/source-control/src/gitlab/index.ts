@@ -222,6 +222,10 @@ export class GitlabSourceControl implements SourceControl {
     throw new Error("Method not implemented.");
   }
 
+  fetchWorkflowDeployment(_repository: Repository, _namespace: Namespace, _deployment: Deployment): Promise<{ deployment: Deployment }> {
+    throw new Error("Method not implemented");
+  }
+
   fetchDeployments(_repository: Repository, _namespace: Namespace, _perPage: number, _environment?: string, _page?: number): Promise<{ deployments: NewDeploymentWithSha[]; pagination: Pagination; }> {
     // See: https://docs.gitlab.com/ee/api/deployments.html
     throw new Error("Method not implemented");

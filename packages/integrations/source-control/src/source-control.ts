@@ -33,4 +33,5 @@ export interface SourceControl {
   fetchDeployment(repository: Repository, namespace: Namespace, deployment: Deployment): Promise<{ deployment: Deployment }>;
 
   fetchWorkflowDeployments(repository: Repository, namespace: Namespace, workflowId: number, timePeriod: TimePeriod, perPage: number, branch?: string, page?: number): Promise<{ deployments: NewDeploymentWithSha[], pagination: Pagination }>;
+  fetchWorkflowDeployment(repository: Repository, namespace: Namespace, deployment: Deployment): Promise<{ deployment: Deployment }>;
 }

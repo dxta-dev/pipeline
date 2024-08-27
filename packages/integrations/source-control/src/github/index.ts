@@ -578,6 +578,26 @@ export class GitHubSourceControl implements SourceControl {
     }
   }
 
+  async fetchWorkflowDeployment(repository: Repository, namespace: Namespace, deployment: Deployment): Promise<{ deployment: Deployment }> {
+    const response = await this.api.actions.getWorkflowRun({
+      repo: repository.name,
+      owner: namespace.name,
+      run_id: deployment.externalId,      
+    });
+    const run = response.data;
+
+    const runStatus = mapWorkflowRunStatus(run.status, run.conclusion);
+
+    return {
+      deployment: {
+        ...deployment,        
+        status: runStatus,
+        deployedAt: runStatus ? new Date(run.updated_at) : null,
+        updatedAt: new Date(run.updated_at),
+      }
+    }
+  }
+
   async fetchWorkflowDeployments(repository: Repository, namespace: Namespace, workflowId: number, timePeriod: TimePeriod, perPage: number, branch?: string, page?: number): Promise<{ deployments: NewDeploymentWithSha[], pagination: Pagination }> {
     page = page || 1;
 
@@ -667,7 +687,7 @@ export class GitHubSourceControl implements SourceControl {
     const firstInactiveStatus = orderedData.find(x => x.state === 'inactive');
     const finalStatus = orderedData[orderedData.length - 1];
     const lastUpdatedAt = finalStatus ? new Date(finalStatus.updated_at) : deployment.updatedAt;
-    const hasThirtyDaysPassedSinceDeploymentStart = new Date(deployment.createdAt.getTime() + 30 * 24 * 60 * 60 * 1000);
+    const hasThirtyDaysPassedSinceDeploymentStart = (deployment.createdAt.getTime() + 30 * 24 * 60 * 60 * 1000) > lastUpdatedAt.getTime();
 
     const isPending = !finalStatus || finalStatus.state === 'in_progress' || finalStatus.state === 'queued' || finalStatus.state === 'pending';
 
