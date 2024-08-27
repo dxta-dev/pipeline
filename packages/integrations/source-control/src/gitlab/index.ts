@@ -1,6 +1,6 @@
 import type { SourceControl, Pagination, TimePeriod, CommitData } from "../source-control";
 import type { Gitlab as GitlabType, ShowExpanded, Sudo, MergeRequestDiffSchema, OffsetPagination } from '@gitbeaker/core';
-import type { NewRepository, NewNamespace, NewMergeRequest, NewMember, NewMergeRequestDiff, Repository, Namespace, MergeRequest, NewMergeRequestCommit, NewMergeRequestNote, NewTimelineEvents, NewDeploymentWithSha, Deployment } from "@dxta/extract-schema";
+import type { NewRepository, NewNamespace, NewMergeRequestWithSha, NewMember, NewMergeRequestDiff, Repository, Namespace, MergeRequest, NewMergeRequestCommit, NewMergeRequestNote, NewTimelineEvents, NewDeploymentWithSha, Deployment } from "@dxta/extract-schema";
 import { Gitlab } from '@gitbeaker/rest';
 
 export class GitlabSourceControl implements SourceControl {
@@ -98,7 +98,7 @@ export class GitlabSourceControl implements SourceControl {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async fetchMergeRequests(externalRepositoryId: number, namespaceName = '', repositoryName = '', repositoryId: number, perPage: number, creationPeriod?: TimePeriod, page?: number): Promise<{ mergeRequests: NewMergeRequest[], pagination: Pagination }> {
+  async fetchMergeRequests(externalRepositoryId: number, namespaceName = '', repositoryName = '', repositoryId: number, perPage: number, creationPeriod?: TimePeriod, page?: number): Promise<{ mergeRequests: NewMergeRequestWithSha[], pagination: Pagination }> {
     const { data, paginationInfo } = await this.api.MergeRequests.all({
       projectId: externalRepositoryId,
       page: page || 1,
@@ -126,7 +126,7 @@ export class GitlabSourceControl implements SourceControl {
         targetBranch: mr.target_branch,
         sourceBranch: mr.source_branch,
         mergeCommitSha: mr.merge_commit_sha,
-      } satisfies NewMergeRequest)),
+      } satisfies NewMergeRequestWithSha)),
       pagination: {
         page: paginationInfo.current,
         perPage: paginationInfo.perPage,

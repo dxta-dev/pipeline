@@ -22,7 +22,7 @@ export { deployments, deploymentsStatusEnum, DeploymentSchema, NewDeploymentSche
 
 export type { Repository, NewRepository } from './repositories';
 export type { Namespace, NewNamespace } from './namespaces';
-export type { MergeRequest, NewMergeRequest } from './merge-requests';
+export type { MergeRequest, NewMergeRequest, NewMergeRequestWithSha } from './merge-requests';
 export type { MergeRequestDiff, NewMergeRequestDiff } from './merge-request-diffs';
 export type { MergeRequestCommit, NewMergeRequestCommit } from './merge-request-commits';
 export type { Member, NewMember } from './members';

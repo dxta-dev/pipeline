@@ -17,7 +17,7 @@ export const mergeRequests = sqliteTable(
     canonId: integer("canon_id").notNull(),
     repositoryId: integer("repository_id").references(() => repositories.id).notNull(),
 
-    mergeCommitShaId: integer('repository_sha_id').references(() => repositoryShas.id).notNull(),
+    mergeCommitShaId: integer('repository_sha_id').references(() => repositoryShas.id),
 
     title: text("title").notNull(),
     description: text("description").default(''),
@@ -45,6 +45,7 @@ export const mergeRequests = sqliteTable(
 
 export type MergeRequest = InferSelectModel<typeof mergeRequests>;
 export type NewMergeRequest = InferInsertModel<typeof mergeRequests>;
+export type NewMergeRequestWithSha = Omit<NewMergeRequest, 'mergeCommitShaId'> & { mergeCommitSha: string | null; };
 export const MergeRequestSchema = createSelectSchema(mergeRequests, {
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),

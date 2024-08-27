@@ -2,7 +2,7 @@ import type { SourceControl } from '..';
 import { Octokit } from '@octokit/rest';
 import parseLinkHeader from "parse-link-header";
 
-import type { NewRepository, NewNamespace, NewMergeRequest, NewMember, NewMergeRequestDiff, Repository, Namespace, MergeRequest, NewMergeRequestCommit, NewMergeRequestNote, NewTimelineEvents, TimelineEventType, NewDeploymentWithSha, Deployment, deploymentsStatusEnum } from "@dxta/extract-schema";
+import type { NewRepository, NewNamespace, NewMergeRequestWithSha, NewMember, NewMergeRequestDiff, Repository, Namespace, MergeRequest, NewMergeRequestCommit, NewMergeRequestNote, NewTimelineEvents, TimelineEventType, NewDeploymentWithSha, Deployment, deploymentsStatusEnum } from "@dxta/extract-schema";
 import type { CommitData, Pagination, TimePeriod } from '../source-control';
 import type { components } from '@octokit/openapi-types';
 import { TimelineEventTypes } from '../../../../../packages/schemas/extract/src/timeline-events';
@@ -249,7 +249,7 @@ export class GitHubSourceControl implements SourceControl {
   }
 
 
-  async fetchMergeRequests(externalRepositoryId: number, namespaceName: string, repositoryName: string, repositoryId: number, perPage: number, creationPeriod?: TimePeriod, page?: number, totalPages?: number): Promise<{ mergeRequests: NewMergeRequest[]; pagination: Pagination; }> {
+  async fetchMergeRequests(externalRepositoryId: number, namespaceName: string, repositoryName: string, repositoryId: number, perPage: number, creationPeriod?: TimePeriod, page?: number, totalPages?: number): Promise<{ mergeRequests: NewMergeRequestWithSha[]; pagination: Pagination; }> {
     page = page || 1;
     const serchPRs = async (namespaceName: string, repositoryName: string, page: number, perPage: number, from: Date, to: Date | 'today') => {
       let updated;
@@ -347,7 +347,7 @@ export class GitHubSourceControl implements SourceControl {
           targetBranch: mergeRequest.base.ref,
           sourceBranch: mergeRequest.head.ref,
           mergeCommitSha: mergeRequest.merge_commit_sha,
-        } satisfies NewMergeRequest)),
+        } satisfies NewMergeRequestWithSha)),
       pagination
     }
   }
