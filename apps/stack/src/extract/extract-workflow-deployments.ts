@@ -1,11 +1,11 @@
 import { createMessageHandler } from "@stack/config/create-message";
 import { MessageKind, metadataSchema } from "./messages";
-import { NamespaceSchema, RepositorySchema, cicdRuns, repositories, namespaces } from "@dxta/extract-schema";
+import { NamespaceSchema, RepositorySchema, repositories, namespaces, repositoryShas, deployments } from "@dxta/extract-schema";
 import { cicdDeployWorkflows } from '@dxta/tenant-schema';
 import { z } from "zod";
 import { type OmitDb, getTenantDb } from "@stack/config/get-tenant-db";
-import type { Context, GetCicdRunsEntities, GetCicdRunsSourceControl } from "@dxta/extract-functions";
-import { getCicdRuns } from '@dxta/extract-functions';
+import type { Context, GetWorkflowDeploymentsEntities, GetWorkflowDeploymentsSourceControl } from "@dxta/extract-functions";
+import { getWorkflowDeployments } from '@dxta/extract-functions';
 import { GitHubSourceControl, GitlabSourceControl } from "@dxta/source-control";
 import { getClerkUserToken } from "./get-clerk-user-token";
 import { EventHandler } from "@stack/config/create-event";
@@ -13,9 +13,9 @@ import { extractRepositoryEvent } from "./events";
 import { and, eq } from "drizzle-orm";
 import { Config } from "sst/node/config";
 
-export const runsSenderHandler = createMessageHandler({
+export const workflowDeploymentsSenderHandler = createMessageHandler({
   queueId: 'ExtractQueue',
-  kind: MessageKind.CicdRuns,
+  kind: MessageKind.WorkflowDeployments,
   metadataShape: metadataSchema.shape,
   contentShape: z.object({
     repository: RepositorySchema,
@@ -31,7 +31,7 @@ export const runsSenderHandler = createMessageHandler({
 
     context.integrations.sourceControl = await initSourceControl(userId, sourceControl);
 
-    await getCicdRuns({
+    await getWorkflowDeployments({
       namespace,
       repository,
       timePeriod: { from, to },
@@ -44,7 +44,7 @@ export const runsSenderHandler = createMessageHandler({
   }
 });
 
-const { sender } = runsSenderHandler;
+const { sender } = workflowDeploymentsSenderHandler;
 
 const initSourceControl = async (userId: string, sourceControl: 'github' | 'gitlab') => {
   const accessToken = await getClerkUserToken(userId, `oauth_${sourceControl}`);
@@ -53,9 +53,10 @@ const initSourceControl = async (userId: string, sourceControl: 'github' | 'gitl
   return null;
 }
 
-const context: OmitDb<Context<GetCicdRunsSourceControl, GetCicdRunsEntities>> = {
+const context: OmitDb<Context<GetWorkflowDeploymentsSourceControl, GetWorkflowDeploymentsEntities>> = {
   entities: {
-    cicdRuns,
+    deployments,
+    repositoryShas
   },
   integrations: {
     sourceControl: null,
@@ -84,7 +85,7 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
 
   context.integrations.sourceControl = await initSourceControl(ev.metadata.userId, ev.metadata.sourceControl);
 
-  const workflowRunsFirstPages = await Promise.all(workflows.map(workflow => getCicdRuns({
+  const workflowDeploymentsFirstPages = await Promise.all(workflows.map(workflow => getWorkflowDeployments({
     repository,
     namespace,
     page: 1,
@@ -94,10 +95,10 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
     branch: workflow.branch || undefined,
   }, { db: getTenantDb(ev.metadata.tenantId), ...context }).then(result => ({ workflow, result }))));
 
-  const arrayOfExtractRunsPageMessageContent: Parameters<typeof runsSenderHandler.sender.send>[0][] = [];
-  for (const firstPage of workflowRunsFirstPages) {
+  const arrayOfExtractDeploymentsPageMessageContent: Parameters<typeof workflowDeploymentsSenderHandler.sender.send>[0][] = [];
+  for (const firstPage of workflowDeploymentsFirstPages) {
     for (let i = 2; i <= firstPage.result.paginationInfo.totalPages; i++) {
-      arrayOfExtractRunsPageMessageContent.push({
+      arrayOfExtractDeploymentsPageMessageContent.push({
         namespace,
         repository,
         page: i,
@@ -108,7 +109,7 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
     }
   }
 
-  await sender.sendAll(arrayOfExtractRunsPageMessageContent, {
+  await sender.sendAll(arrayOfExtractDeploymentsPageMessageContent, {
     version: 1,
     caller: 'extract-cicd-runs.eventHandler',
     sourceControl: ev.metadata.sourceControl,

@@ -162,10 +162,10 @@ export function ExtractStack({ stack }: StackContext) {
         handler: "src/extract/extract-default-branch-commits.eventHandler",
       }
     },
-    cicdRuns: {
+    workflowDeployments: {
       function: {
         bind: [bus, extractQueue],
-        handler: "src/extract/extract-cicd-runs.eventHandler",
+        handler: "src/extract/extract-workflow-deployments.eventHandler",
       }
     },
     deployments: {
