@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "f4be21a9-2ac2-45d5-b4c3-8b48123605dd",
+  "id": "77eca2f9-789e-469a-b5e3-eefc25b5b99f",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "crawl_events": {
@@ -247,80 +247,6 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
-    },
-    "extract_repository_commits_children": {
-      "name": "extract_repository_commits_children",
-      "columns": {
-        "commit_id": {
-          "name": "commit_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "parent_id": {
-          "name": "parent_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "__created_at": {
-          "name": "__created_at",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "default": "(strftime('%s', 'now'))"
-        },
-        "__updated_at": {
-          "name": "__updated_at",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "default": "(strftime('%s', 'now'))"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "extract_repository_commits_children_commit_id_extract_repository_commits_id_fk": {
-          "name": "extract_repository_commits_children_commit_id_extract_repository_commits_id_fk",
-          "tableFrom": "extract_repository_commits_children",
-          "tableTo": "extract_repository_commits",
-          "columnsFrom": [
-            "commit_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "extract_repository_commits_children_parent_id_extract_repository_commits_id_fk": {
-          "name": "extract_repository_commits_children_parent_id_extract_repository_commits_id_fk",
-          "tableFrom": "extract_repository_commits_children",
-          "tableTo": "extract_repository_commits",
-          "columnsFrom": [
-            "parent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {
-        "extract_repository_commits_children_commit_id_parent_id_pk": {
-          "columns": [
-            "commit_id",
-            "parent_id"
-          ],
-          "name": "extract_repository_commits_children_commit_id_parent_id_pk"
-        }
-      },
       "uniqueConstraints": {}
     },
     "extract_deployments": {
@@ -1466,6 +1392,80 @@
             "repository_id"
           ],
           "name": "extract_repositories_to_members_repository_id_member_id_pk"
+        }
+      },
+      "uniqueConstraints": {}
+    },
+    "extract_repository_sha_trees": {
+      "name": "extract_repository_sha_trees",
+      "columns": {
+        "sha_id": {
+          "name": "sha_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "parent_id": {
+          "name": "parent_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "__created_at": {
+          "name": "__created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        },
+        "__updated_at": {
+          "name": "__updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "extract_repository_sha_trees_sha_id_extract_repository_shas_id_fk": {
+          "name": "extract_repository_sha_trees_sha_id_extract_repository_shas_id_fk",
+          "tableFrom": "extract_repository_sha_trees",
+          "tableTo": "extract_repository_shas",
+          "columnsFrom": [
+            "sha_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "extract_repository_sha_trees_parent_id_extract_repository_shas_id_fk": {
+          "name": "extract_repository_sha_trees_parent_id_extract_repository_shas_id_fk",
+          "tableFrom": "extract_repository_sha_trees",
+          "tableTo": "extract_repository_shas",
+          "columnsFrom": [
+            "parent_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "extract_repository_sha_trees_sha_id_parent_id_pk": {
+          "columns": [
+            "parent_id",
+            "sha_id"
+          ],
+          "name": "extract_repository_sha_trees_sha_id_parent_id_pk"
         }
       },
       "uniqueConstraints": {}

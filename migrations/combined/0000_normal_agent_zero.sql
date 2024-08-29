@@ -33,16 +33,6 @@ CREATE TABLE `extract_repository_commits` (
 	FOREIGN KEY (`repository_sha_id`) REFERENCES `extract_repository_shas`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
-CREATE TABLE `extract_repository_commits_children` (
-	`commit_id` integer NOT NULL,
-	`parent_id` integer NOT NULL,
-	`__created_at` integer DEFAULT (strftime('%s', 'now')),
-	`__updated_at` integer DEFAULT (strftime('%s', 'now')),
-	PRIMARY KEY(`commit_id`, `parent_id`),
-	FOREIGN KEY (`commit_id`) REFERENCES `extract_repository_commits`(`id`) ON UPDATE no action ON DELETE no action,
-	FOREIGN KEY (`parent_id`) REFERENCES `extract_repository_commits`(`id`) ON UPDATE no action ON DELETE no action
-);
---> statement-breakpoint
 CREATE TABLE `extract_deployments` (
 	`id` integer PRIMARY KEY NOT NULL,
 	`external_id` integer NOT NULL,
@@ -196,6 +186,16 @@ CREATE TABLE `extract_repositories_to_members` (
 	PRIMARY KEY(`member_id`, `repository_id`),
 	FOREIGN KEY (`repository_id`) REFERENCES `extract_repositories`(`id`) ON UPDATE no action ON DELETE no action,
 	FOREIGN KEY (`member_id`) REFERENCES `extract_members`(`id`) ON UPDATE no action ON DELETE no action
+);
+--> statement-breakpoint
+CREATE TABLE `extract_repository_sha_trees` (
+	`sha_id` integer NOT NULL,
+	`parent_id` integer NOT NULL,
+	`__created_at` integer DEFAULT (strftime('%s', 'now')),
+	`__updated_at` integer DEFAULT (strftime('%s', 'now')),
+	PRIMARY KEY(`parent_id`, `sha_id`),
+	FOREIGN KEY (`sha_id`) REFERENCES `extract_repository_shas`(`id`) ON UPDATE no action ON DELETE no action,
+	FOREIGN KEY (`parent_id`) REFERENCES `extract_repository_shas`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
 CREATE TABLE `extract_repository_shas` (
