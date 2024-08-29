@@ -124,6 +124,10 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
   if (!repository) throw new Error("invalid repo id");
   if (!namespace) throw new Error("Invalid namespace id");
 
+  if (namespace.namespaceType === 'personal') {
+    return;
+  }
+
   const { pagination } = await extractNamespaceMembersPage({
     namespace: namespace,
     repositoryId: ev.properties.repositoryId,
