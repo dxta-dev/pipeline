@@ -16,7 +16,7 @@ export {
   UnassignedEventSchema,
 } from './timeline-events';
 export { repositoryCommits, CommitSchema, NewCommitSchema } from './repository-commits';
-export { repositoryCommitsChildren, CommitChildSchema, NewCommitChildSchema } from './repository-commits-children';
+export { repositoryShaTrees, ShaTreeNodeSchema } from './repository-sha-trees';
 export { repositoryShas } from './repository-shas';
 export { deployments, deploymentsStatusEnum, deploymentTypeEnum, DeploymentSchema, NewDeploymentSchema } from './deployments';
 
@@ -42,5 +42,5 @@ export type {
 } from './timeline-events';
 export type { Sha, NewSha } from './repository-shas';
 export type { Commit, NewCommit } from './repository-commits';
-export type { CommitChild, NewCommitChild } from './repository-commits-children';
+export type { ShaTreeNode } from './repository-sha-trees';
 export type { Deployment, NewDeployment, NewDeploymentWithSha, DeploymentType } from './deployments';
