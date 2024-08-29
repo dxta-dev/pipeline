@@ -173,6 +173,12 @@ export function ExtractStack({ stack }: StackContext) {
         bind: [bus, extractQueue],
         handler: "src/extract/extract-deployments.eventHandler",
       }
+    },
+    workflowDeploymentStatus: {
+      function: {
+        bind: [bus, extractQueue],
+        handler: "src/extract/extract-workflow-deployment-status.eventHandler",
+      },
     }
   });
 

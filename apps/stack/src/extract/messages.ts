@@ -33,5 +33,6 @@ export enum MessageKind {
   DefaultBranchCommit = 'default-branch-commit',
   Deployment = "deployment",
   DeploymentStatus = "deployment-status",
+  WorkflowDeploymentStatus = "workflow-deployment-status",
 };
 

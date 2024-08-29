@@ -15,6 +15,7 @@ import { workflowDeploymentsSenderHandler } from "./extract-workflow-deployments
 import { commitsSenderHandler } from "./extract-default-branch-commits";
 import { deploymentsSenderHandler } from "./extract-deployments";
 import { deploymentStatusSenderHandler } from "./extract-deployment-status";
+import { workflowDeploymentStatusSenderHandler } from "./extract-workflow-deployment-status";
 
 const messageHandlers = new Map<string, unknown>();
 
@@ -46,6 +47,8 @@ messageHandlers.set(MessageKind.Deployment, deploymentsSenderHandler);
 
 messageHandlers.set(MessageKind.DeploymentStatus, deploymentStatusSenderHandler);
 
+messageHandlers.set(MessageKind.WorkflowDeploymentStatus, workflowDeploymentStatusSenderHandler);
+
 const logMap = new Map<string, string[]>();
 
 logMap.set(MessageKind.Tenant, ['content.tenantId']);
@@ -75,6 +78,8 @@ logMap.set(MessageKind.DefaultBranchCommit, ['content.repository.id', 'content.n
 logMap.set(MessageKind.Deployment, ['content.repository.id', 'content.namespace.id', 'content.environment', 'content.page'])
 
 logMap.set(MessageKind.DeploymentStatus, ['content.repository.id', 'content.namespace.id', 'content.deployment.id'])
+
+logMap.set(MessageKind.WorkflowDeploymentStatus, ['content.repository.id', 'content.namespace.id', 'content.deployment.id'])
 
 const crawlNamespaceMap = new Map<string, EventNamespaceType>();
 
