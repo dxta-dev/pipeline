@@ -1,5 +1,5 @@
 import type { LibSQLDatabase } from 'drizzle-orm/libsql';
-import type { repositories, namespaces, gitIdentities, mergeRequests, members, repositoriesToMembers, mergeRequestDiffs, mergeRequestCommits, mergeRequestNotes, timelineEvents, repositoryCommits, repositoryCommitsChildren, deployments, repositoryShas } from '@dxta/extract-schema';
+import type { repositories, namespaces, gitIdentities, mergeRequests, members, repositoriesToMembers, mergeRequestDiffs, mergeRequestCommits, mergeRequestNotes, timelineEvents, repositoryCommits, repositoryShaTrees, deployments, repositoryShas } from '@dxta/extract-schema';
 import type { SourceControl } from '@dxta/source-control';
 
 export type Database = LibSQLDatabase<Record<string, unknown>>;
@@ -16,7 +16,7 @@ export type Entities = {
   timelineEvents: typeof timelineEvents;
   gitIdentities: typeof gitIdentities;
   commits: typeof repositoryCommits;
-  commitsChildren: typeof repositoryCommitsChildren;
+  repositoryShaTrees: typeof repositoryShaTrees;
   deployments: typeof deployments;
   repositoryShas: typeof repositoryShas;
 };

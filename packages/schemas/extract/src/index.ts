@@ -42,5 +42,5 @@ export type {
 } from './timeline-events';
 export type { Sha, NewSha } from './repository-shas';
 export type { Commit, NewCommit } from './repository-commits';
-export type { ShaTreeNode } from './repository-sha-trees';
+export type { ShaTreeNode, NewShaTreeNode } from './repository-sha-trees';
 export type { Deployment, NewDeployment, NewDeploymentWithSha, DeploymentType } from './deployments';

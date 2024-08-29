@@ -1,4 +1,4 @@
-import type { InferSelectModel } from 'drizzle-orm';
+import type { InferInsertModel, InferSelectModel } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
 import { integer, primaryKey } from 'drizzle-orm/sqlite-core';
 import { createSelectSchema } from 'drizzle-zod';
@@ -16,6 +16,8 @@ export const repositoryShaTrees = sqliteTable('repository_sha_trees', {
 }));
 
 export type ShaTreeNode = InferSelectModel<typeof repositoryShaTrees>;
+export type NewShaTreeNode = InferInsertModel<typeof repositoryShaTrees>;
+
 export const ShaTreeNodeSchema = createSelectSchema(repositoryShaTrees, {
   _createdAt: z.coerce.date(),
   _updatedAt: z.coerce.date(),

@@ -1,4 +1,4 @@
-import { type NewCommit, type Commit, type Namespace, type Repository, type NewCommitChild, type Sha } from "@dxta/extract-schema";
+import type { NewCommit, Commit, Namespace, Repository, Sha, NewShaTreeNode } from "@dxta/extract-schema";
 import type { ExtractFunction, Entities } from "./config";
 import type { Pagination, SourceControl, TimePeriod } from "@dxta/source-control";
 import { sql } from "drizzle-orm";
@@ -18,7 +18,7 @@ export type GetCommitsOutput = {
 }
 
 export type GetCommitsSourceControl = Pick<SourceControl, 'fetchCommits'>;
-export type GetCommitsEntities = Pick<Entities, 'commits' | 'commitsChildren' | 'repositoryShas'>;
+export type GetCommitsEntities = Pick<Entities, 'commits' | 'repositoryShaTrees' | 'repositoryShas'>;
 
 export type GetCommitsFunction = ExtractFunction<GetCommitsInput, GetCommitsOutput, GetCommitsSourceControl, GetCommitsEntities>;
 
@@ -37,10 +37,6 @@ export const getCommits: GetCommitsFunction = async (
     commits: [],
     paginationInfo: pagination
   }
-
-  const firstLevelCommitSet = new Set(commitData.map(x => x.id));
-  const uniqueParentCommitSet = new Set(commitData.map(x => x.parents).flat());
-  const parentPartialCommitIds = Array.from(uniqueParentCommitSet.values()).filter(x => !firstLevelCommitSet.has(x));
 
   const uniqueCommitShas = Array.from(
     new Set([
@@ -64,18 +60,19 @@ export const getCommits: GetCommitsFunction = async (
 
   const shaIdMap = insertedShas.reduce((map, sha) => map.set(sha.sha, sha.id), new Map<string, Sha['id']>());
 
-  const newCommits: NewCommit[] = [
-    ...commitData.map(x => ({
-      repositoryId: repository.id,
-      repositoryShaId: shaIdMap.get(x.id) as number,
-      authoredAt: x.commit.authoredAt,
-      committedAt: x.commit.committedAt,
-    } satisfies NewCommit)),
-    ...parentPartialCommitIds.map(sha => ({
-      repositoryId: repository.id,
-      repositoryShaId: shaIdMap.get(sha) as number,
-    } satisfies NewCommit))
-  ];
+  const shaTreeNodeList = commitData.map(data => data.parents.map(parent => ({
+    parentId: shaIdMap.get(parent) as number,
+    shaId: shaIdMap.get(data.id) as number,
+  } satisfies NewShaTreeNode))).flat();
+
+  await db.insert(entities.repositoryShaTrees).values(shaTreeNodeList).onConflictDoNothing().run();
+
+  const newCommits: NewCommit[] = commitData.map(x => ({
+    repositoryId: repository.id,
+    repositoryShaId: shaIdMap.get(x.id) as number,
+    authoredAt: x.commit.authoredAt,
+    committedAt: x.commit.committedAt,
+  } satisfies NewCommit));
 
   const insertedCommits = await db.transaction(async (tx) => {
     return Promise.all(
@@ -93,22 +90,6 @@ export const getCommits: GetCommitsFunction = async (
       )
     );
   });
-
-  const shaIdToCommitIdMap = insertedCommits.reduce((map, commit) => map.set(commit.repositoryShaId, commit.id), new Map<Commit['repositoryShaId'], Commit['id']>());
-
-  const commitChildren: NewCommitChild[] = [];
-  for (const data of commitData) {
-    for (const parent of data.parents) {
-      const commitId = shaIdToCommitIdMap.get(shaIdMap.get(data.id) as number) as number;
-      const parentId = shaIdToCommitIdMap.get(shaIdMap.get(parent) as number) as number;
-      commitChildren.push({
-        commitId,
-        parentId
-      });
-    }
-  };
-
-  await db.insert(entities.commitsChildren).values(commitChildren).onConflictDoNothing().run();
 
   return {
     commits: insertedCommits,

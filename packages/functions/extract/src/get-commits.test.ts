@@ -5,7 +5,7 @@ import { createClient } from '@libsql/client';
 import { describe, expect, test } from '@jest/globals';
 import { getCommits } from './get-commits';
 
-import { repositories, namespaces, repositoryCommits as commits, repositoryCommitsChildren as commitsChildren, repositoryShas } from '@dxta/extract-schema';
+import { repositories, namespaces, repositoryCommits as commits, repositoryShaTrees, repositoryShas } from '@dxta/extract-schema';
 import type { NewNamespace, Namespace, NewRepository, Repository } from '@dxta/extract-schema';
 import type { Context } from './config';
 import type { GetCommitsSourceControl, GetCommitsEntities } from './get-commits';
@@ -62,7 +62,7 @@ beforeAll(async () => {
   });
 
   context = {
-    entities: { commits, commitsChildren, repositoryShas },
+    entities: { commits, repositoryShaTrees, repositoryShas },
     db,
     integrations: {
       sourceControl: {
@@ -92,9 +92,9 @@ describe('get-commits:', () => {
       expect(fetchCommits).toHaveBeenCalledTimes(1);
 
       const commitRows = await db.select().from(context.entities.commits).all();
-      const commitsChildrenRows = await db.select().from(context.entities.commitsChildren).all();
+      const shaTreesRows = await db.select().from(context.entities.repositoryShaTrees).all();
       expect(commitRows.length).toEqual(commits.length);
-      expect(commitRows.length).toEqual(commitsChildrenRows.length + 1); // + 1 because last commit parent isn't caught with the fetch (hypothetical case)
+      expect(commitRows.length).toEqual(shaTreesRows.length + 1); // + 1 because last commit parent isn't caught with the fetch (hypothetical case)
 
       for (const commitRow of commitRows) {
         const rowMatchedCommit = commits.find((commit) => commit.repositoryShaId === commitRow.repositoryShaId);
