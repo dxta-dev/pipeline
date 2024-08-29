@@ -9,7 +9,7 @@ import { MessageKind, metadataSchema } from "./messages"
 import { getClerkUserToken } from "./get-clerk-user-token"
 import { GitHubSourceControl, GitlabSourceControl } from "@dxta/source-control"
 import { getTenantDb, type OmitDb } from "@stack/config/get-tenant-db"
-import { eq, inArray, isNull, or } from "drizzle-orm"
+import { and, eq, inArray, isNull, or } from "drizzle-orm"
 
 export const deploymentStatusSenderHandler = createMessageHandler({
   queueId: 'ExtractQueue',
@@ -52,9 +52,12 @@ export const onExtractRepository = EventHandler(extractRepositoryEvent, async (e
   if (!namespace) throw new Error("Invalid namespace id");
 
   const unresolvedDeployments = await db.select().from(deployments).where(
-    or(
-      eq(deployments.status, "pending"),
-      isNull(deployments.status)
+    and(
+      eq(deployments.deploymentType, 'github-deployment'),
+      or(
+        eq(deployments.status, "pending"),
+        isNull(deployments.status)
+      ),
     )
   ).all();
 
