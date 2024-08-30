@@ -1330,6 +1330,7 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
           lastUpdatedAt: lastUpdatedAtId,
           startedPickupAt: startedPickupAtId,
           startedReviewAt: startedReviewAtId,
+          deployedAt: nullDateId, // TODO: transform-deployment
         }).run();
 
         await updateUserJunk(tx, {
@@ -1347,8 +1348,10 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
           codingDuration: timeline.codingDuration,
           pickupDuration: timeline.pickupDuration,
           reviewDuration: timeline.reviewDuration,
+          deployDuration: 0, // TODO: transform-deployments
           handover: timeline.handover,
           reviewDepth: timeline.reviewDepth,
+          deployed: false, // TODO: transform-deployments
           merged,
           closed,
           approved: timeline.approved,
@@ -1367,6 +1370,7 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
           lastUpdatedAt: lastUpdatedAtId,
           startedPickupAt: startedPickupAtId,
           startedReviewAt: startedReviewAtId,
+          deployedAt: nullDateId, // TODO: transform-deployments
         }).get();
 
         const { id: userJunkId } = await insertUserJunk(tx, usersJunk).get();
@@ -1378,8 +1382,10 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
           codingDuration: timeline.codingDuration,
           pickupDuration: timeline.pickupDuration,
           reviewDuration: timeline.reviewDuration,
+          deployDuration: 0, // TODO: transform-deployments
           handover: timeline.handover,
           reviewDepth: timeline.reviewDepth,
+          deployed: false, // TODO: transform-deployments
           merged,
           closed,
           approved: timeline.approved,
