@@ -296,6 +296,7 @@ CREATE TABLE `transform_forge_users` (
 --> statement-breakpoint
 CREATE TABLE `transform_merge_request_fact_dates_junk` (
 	`id` integer PRIMARY KEY NOT NULL,
+	`deployed_at` integer NOT NULL,
 	`merged_at` integer NOT NULL,
 	`opened_at` integer NOT NULL,
 	`closed_at` integer NOT NULL,
@@ -305,6 +306,7 @@ CREATE TABLE `transform_merge_request_fact_dates_junk` (
 	`started_review_at` integer NOT NULL,
 	`__created_at` integer DEFAULT (strftime('%s', 'now')),
 	`__updated_at` integer DEFAULT (strftime('%s', 'now')),
+	FOREIGN KEY (`deployed_at`) REFERENCES `transform_dates`(`id`) ON UPDATE no action ON DELETE no action,
 	FOREIGN KEY (`merged_at`) REFERENCES `transform_dates`(`id`) ON UPDATE no action ON DELETE no action,
 	FOREIGN KEY (`opened_at`) REFERENCES `transform_dates`(`id`) ON UPDATE no action ON DELETE no action,
 	FOREIGN KEY (`closed_at`) REFERENCES `transform_dates`(`id`) ON UPDATE no action ON DELETE no action,
@@ -348,8 +350,10 @@ CREATE TABLE `transform_merge_request_metrics` (
 	`coding_duration` integer NOT NULL,
 	`review_start_delay` integer NOT NULL,
 	`review_duration` integer NOT NULL,
+	`deploy_duration` integer NOT NULL,
 	`handover` integer NOT NULL,
 	`review_depth` integer NOT NULL,
+	`deployed` integer NOT NULL,
 	`merged` integer NOT NULL,
 	`closed` integer NOT NULL,
 	`approved` integer NOT NULL,

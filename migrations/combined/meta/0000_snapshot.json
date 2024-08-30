@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "77eca2f9-789e-469a-b5e3-eefc25b5b99f",
+  "id": "fae96bda-469b-4df3-954f-bf5c93ef1c04",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "crawl_events": {
@@ -2146,6 +2146,13 @@
           "notNull": true,
           "autoincrement": false
         },
+        "deployed_at": {
+          "name": "deployed_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
         "merged_at": {
           "name": "merged_at",
           "type": "integer",
@@ -2214,6 +2221,19 @@
       },
       "indexes": {},
       "foreignKeys": {
+        "transform_merge_request_fact_dates_junk_deployed_at_transform_dates_id_fk": {
+          "name": "transform_merge_request_fact_dates_junk_deployed_at_transform_dates_id_fk",
+          "tableFrom": "transform_merge_request_fact_dates_junk",
+          "tableTo": "transform_dates",
+          "columnsFrom": [
+            "deployed_at"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
         "transform_merge_request_fact_dates_junk_merged_at_transform_dates_id_fk": {
           "name": "transform_merge_request_fact_dates_junk_merged_at_transform_dates_id_fk",
           "tableFrom": "transform_merge_request_fact_dates_junk",
@@ -2595,6 +2615,13 @@
           "notNull": true,
           "autoincrement": false
         },
+        "deploy_duration": {
+          "name": "deploy_duration",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
         "handover": {
           "name": "handover",
           "type": "integer",
@@ -2604,6 +2631,13 @@
         },
         "review_depth": {
           "name": "review_depth",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "deployed": {
+          "name": "deployed",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
