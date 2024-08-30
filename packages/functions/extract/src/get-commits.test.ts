@@ -93,8 +93,11 @@ describe('get-commits:', () => {
 
       const commitRows = await db.select().from(context.entities.commits).all();
       const shaTreesRows = await db.select().from(context.entities.repositoryShaTrees).all();
+      const shaRows = await db.select().from(context.entities.repositoryShas).all();
+      
       expect(commitRows.length).toEqual(commits.length);
-      expect(commitRows.length).toEqual(shaTreesRows.length + 1); // + 1 because last commit parent isn't caught with the fetch (hypothetical case)
+      expect(commitRows.length).toEqual(shaTreesRows.length);
+      expect(commitRows.length).toEqual(shaRows.length - 1); // - 1 because last commit parent isn't caught with the fetch (hypothetical case)
 
       for (const commitRow of commitRows) {
         const rowMatchedCommit = commits.find((commit) => commit.repositoryShaId === commitRow.repositoryShaId);
