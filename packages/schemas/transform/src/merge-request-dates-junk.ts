@@ -7,6 +7,7 @@ import { sqliteTable } from './transform-table';
 export const mergeRequestDatesJunk = sqliteTable('merge_request_fact_dates_junk', {
   id: integer('id').primaryKey(),
   
+  deployedAt: integer('deployed_at').notNull().references(() => dates.id),
   mergedAt: integer('merged_at').notNull().references(() => dates.id),
   openedAt: integer('opened_at').notNull().references(() => dates.id),
   closedAt: integer('closed_at').notNull().references(() => dates.id),
