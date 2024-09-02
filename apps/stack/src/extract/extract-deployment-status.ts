@@ -54,7 +54,7 @@ export const onExtractRepository = EventHandler(extractRepositoryEvent, async (e
   const unresolvedDeployments = await db.select().from(deployments).where(
     and(
       eq(deployments.deploymentType, 'github-deployment'),
-      eq(repositories.id, repository.id),
+      eq(deployments.repositoryId, repository.id),
       or(
         eq(deployments.status, "pending"),
         isNull(deployments.status)
