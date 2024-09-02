@@ -11,11 +11,11 @@ import { mergeRequestNoteSenderHandler } from "./extract-merge-request-notes";
 import { memberSenderHandler } from "./extract-members";
 import { namespaceMemberSenderHandler } from "./extract-namespace-members";
 import { timelineEventsSenderHandler } from "./extract-timeline-events";
-import { workflowsSenderHandler } from "./extract-cicd-workflows";
-import { runsSenderHandler } from "./extract-cicd-runs";
+import { workflowDeploymentsSenderHandler } from "./extract-workflow-deployments";
 import { commitsSenderHandler } from "./extract-default-branch-commits";
 import { deploymentsSenderHandler } from "./extract-deployments";
 import { deploymentStatusSenderHandler } from "./extract-deployment-status";
+import { workflowDeploymentStatusSenderHandler } from "./extract-workflow-deployment-status";
 
 const messageHandlers = new Map<string, unknown>();
 
@@ -39,15 +39,15 @@ messageHandlers.set(MessageKind.MemberInfo, memberInfoSenderHandler);
 
 messageHandlers.set(MessageKind.TimelineEvent, timelineEventsSenderHandler);
 
-messageHandlers.set(MessageKind.Workflow, workflowsSenderHandler);
-
-messageHandlers.set(MessageKind.CicdRuns, runsSenderHandler);
+messageHandlers.set(MessageKind.WorkflowDeployments, workflowDeploymentsSenderHandler);
 
 messageHandlers.set(MessageKind.DefaultBranchCommit, commitsSenderHandler);
 
 messageHandlers.set(MessageKind.Deployment, deploymentsSenderHandler);
 
 messageHandlers.set(MessageKind.DeploymentStatus, deploymentStatusSenderHandler);
+
+messageHandlers.set(MessageKind.WorkflowDeploymentStatus, workflowDeploymentStatusSenderHandler);
 
 const logMap = new Map<string, string[]>();
 
@@ -71,15 +71,15 @@ logMap.set(MessageKind.MemberInfo, ['content.memberId']);
 
 logMap.set(MessageKind.TimelineEvent, ['content.repositoryId', 'content.namespaceId', 'content.mergeRequestId']);
 
-logMap.set(MessageKind.Workflow, ['content.repository.id', 'content.namespace.id', 'content.pagination']);
-
-logMap.set(MessageKind.CicdRuns, ['content.repository.id', 'content.namespace.id', 'content.workflowId', 'content.page'])
+logMap.set(MessageKind.WorkflowDeployments, ['content.repository.id', 'content.namespace.id', 'content.workflowId', 'content.page'])
 
 logMap.set(MessageKind.DefaultBranchCommit, ['content.repository.id', 'content.namespace.id', 'content.page'])
 
 logMap.set(MessageKind.Deployment, ['content.repository.id', 'content.namespace.id', 'content.environment', 'content.page'])
 
 logMap.set(MessageKind.DeploymentStatus, ['content.repository.id', 'content.namespace.id', 'content.deployment.id'])
+
+logMap.set(MessageKind.WorkflowDeploymentStatus, ['content.repository.id', 'content.namespace.id', 'content.deployment.id'])
 
 const crawlNamespaceMap = new Map<string, EventNamespaceType>();
 
@@ -96,8 +96,6 @@ crawlNamespaceMap.set(MessageKind.Member, "member");
 crawlNamespaceMap.set(MessageKind.NamespaceMember, "member");
 
 crawlNamespaceMap.set(MessageKind.MemberInfo, "memberInfo");
-
-crawlNamespaceMap.set(MessageKind.Workflow, "workflow");
 
 crawlNamespaceMap.set(MessageKind.MergeRequestCommit, "defaultBranchCommit");
 

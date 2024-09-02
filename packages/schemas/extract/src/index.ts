@@ -15,15 +15,14 @@ export {
   ReviewedEventSchema,
   UnassignedEventSchema,
 } from './timeline-events';
-export { cicdWorkflows, CicdWorkflowSchema, NewCicdWorkflowSchema } from './cicd-workflows';
-export { cicdRuns, CicdRunSchema, NewCicdRunSchema, cicdRunStatusEnum, cicdRunResultEnum } from './cicd-runs';
-export { repositoryCommits, CommitSchema, NewCommitSchema, marshalSha, unmarshalSha } from './repository-commits';
-export { repositoryCommitsChildren, CommitChildSchema, NewCommitChildSchema } from './repository-commits-children';
-export { deployments, deploymentsStatusEnum, DeploymentSchema, NewDeploymentSchema } from './deployments';
+export { repositoryCommits, CommitSchema, NewCommitSchema } from './repository-commits';
+export { repositoryShaTrees, ShaTreeNodeSchema } from './repository-sha-trees';
+export { repositoryShas } from './repository-shas';
+export { deployments, deploymentsStatusEnum, deploymentTypeEnum, DeploymentSchema, NewDeploymentSchema } from './deployments';
 
 export type { Repository, NewRepository } from './repositories';
 export type { Namespace, NewNamespace } from './namespaces';
-export type { MergeRequest, NewMergeRequest } from './merge-requests';
+export type { MergeRequest, NewMergeRequest, NewMergeRequestWithSha } from './merge-requests';
 export type { MergeRequestDiff, NewMergeRequestDiff } from './merge-request-diffs';
 export type { MergeRequestCommit, NewMergeRequestCommit } from './merge-request-commits';
 export type { Member, NewMember } from './members';
@@ -41,8 +40,7 @@ export type {
   UnassignedEvent,
   TimelineEventType,
 } from './timeline-events';
-export type { CicdWorkflow, NewCicdWorkflow } from './cicd-workflows';
-export type { CicdRun, NewCicdRun } from './cicd-runs';
+export type { Sha, NewSha } from './repository-shas';
 export type { Commit, NewCommit } from './repository-commits';
-export type { CommitChild, NewCommitChild } from './repository-commits-children';
-export type { Deployment, NewDeployment, NewDeploymentWithSha } from './deployments';
+export type { ShaTreeNode, NewShaTreeNode } from './repository-sha-trees';
+export type { Deployment, NewDeployment, NewDeploymentWithSha, DeploymentType } from './deployments';

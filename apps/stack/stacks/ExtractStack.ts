@@ -162,16 +162,10 @@ export function ExtractStack({ stack }: StackContext) {
         handler: "src/extract/extract-default-branch-commits.eventHandler",
       }
     },
-    workflows: {
+    workflowDeployments: {
       function: {
         bind: [bus, extractQueue],
-        handler: "src/extract/extract-cicd-workflows.eventHandler",
-      }
-    },
-    cicdRuns: {
-      function: {
-        bind: [bus, extractQueue],
-        handler: "src/extract/extract-cicd-runs.eventHandler",
+        handler: "src/extract/extract-workflow-deployments.eventHandler",
       }
     },
     deployments: {
@@ -179,6 +173,12 @@ export function ExtractStack({ stack }: StackContext) {
         bind: [bus, extractQueue],
         handler: "src/extract/extract-deployments.eventHandler",
       }
+    },
+    workflowDeploymentStatus: {
+      function: {
+        bind: [bus, extractQueue],
+        handler: "src/extract/extract-workflow-deployment-status.eventHandler",
+      },
     }
   });
 

@@ -1,6 +1,6 @@
 import type { SourceControl, Pagination, TimePeriod, CommitData } from "../source-control";
 import type { Gitlab as GitlabType, ShowExpanded, Sudo, MergeRequestDiffSchema, OffsetPagination } from '@gitbeaker/core';
-import type { NewRepository, NewNamespace, NewMergeRequest, NewMember, NewMergeRequestDiff, Repository, Namespace, MergeRequest, NewMergeRequestCommit, NewMergeRequestNote, NewTimelineEvents, NewCicdWorkflow, NewCicdRun, NewDeploymentWithSha, Deployment } from "@dxta/extract-schema";
+import type { NewRepository, NewNamespace, NewMergeRequestWithSha, NewMember, NewMergeRequestDiff, Repository, Namespace, MergeRequest, NewMergeRequestCommit, NewMergeRequestNote, NewTimelineEvents, NewDeploymentWithSha, Deployment } from "@dxta/extract-schema";
 import { Gitlab } from '@gitbeaker/rest';
 
 export class GitlabSourceControl implements SourceControl {
@@ -98,7 +98,7 @@ export class GitlabSourceControl implements SourceControl {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async fetchMergeRequests(externalRepositoryId: number, namespaceName = '', repositoryName = '', repositoryId: number, perPage: number, creationPeriod?: TimePeriod, page?: number): Promise<{ mergeRequests: NewMergeRequest[], pagination: Pagination }> {
+  async fetchMergeRequests(externalRepositoryId: number, namespaceName = '', repositoryName = '', repositoryId: number, perPage: number, creationPeriod?: TimePeriod, page?: number): Promise<{ mergeRequests: NewMergeRequestWithSha[], pagination: Pagination }> {
     const { data, paginationInfo } = await this.api.MergeRequests.all({
       projectId: externalRepositoryId,
       page: page || 1,
@@ -126,7 +126,7 @@ export class GitlabSourceControl implements SourceControl {
         targetBranch: mr.target_branch,
         sourceBranch: mr.source_branch,
         mergeCommitSha: mr.merge_commit_sha,
-      } satisfies NewMergeRequest)),
+      } satisfies NewMergeRequestWithSha)),
       pagination: {
         page: paginationInfo.current,
         perPage: paginationInfo.perPage,
@@ -217,13 +217,13 @@ export class GitlabSourceControl implements SourceControl {
   fetchCommits(_repository: Repository, _namespace: Namespace, _perPage: number, _ref?: string, _period?: TimePeriod, _page?: number): Promise<{commits: CommitData[], pagination: Pagination}> {
     throw new Error("Method not implemented.");
   }
-
-  fetchCicdWorkflows(_repository: Repository, _namespace: Namespace, _perPage: number, _page?: number): Promise<{ cicdWorkflows: NewCicdWorkflow[], pagination: Pagination }> {
+  
+  fetchWorkflowDeployments(_repository: Repository, _namespace: Namespace, _workflowId: number, _timePeriod: TimePeriod, _perPage: number, _branch?:string, _page?: number): Promise<{ deployments: NewDeploymentWithSha[], pagination: Pagination }> {
     throw new Error("Method not implemented.");
   }
-  
-  fetchCicdWorkflowRuns(_repository: Repository, _namespace: Namespace, _workflowId: number, _timePeriod: TimePeriod, _perPage: number, _branch?:string, _page?: number): Promise<{ cicdRuns: NewCicdRun[], pagination: Pagination }> {
-    throw new Error("Method not implemented.");
+
+  fetchWorkflowDeployment(_repository: Repository, _namespace: Namespace, _deployment: Deployment): Promise<{ deployment: Deployment }> {
+    throw new Error("Method not implemented");
   }
 
   fetchDeployments(_repository: Repository, _namespace: Namespace, _perPage: number, _environment?: string, _page?: number): Promise<{ deployments: NewDeploymentWithSha[]; pagination: Pagination; }> {

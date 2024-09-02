@@ -1,1 +1,0 @@
-CREATE INDEX `merge_request_events_commited_at_idx` ON `transform_merge_request_events` (`commited_at`);

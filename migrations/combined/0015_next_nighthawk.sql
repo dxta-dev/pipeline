@@ -1,1 +1,0 @@
-CREATE UNIQUE INDEX `null_rows_unique_values_idx` ON `transform_null_rows` (`dates_id`,`users_id`,`merge_requests_id`,`repository_id`,`branch_id`);

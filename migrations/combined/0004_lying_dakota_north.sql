@@ -1,2 +1,0 @@
-ALTER TABLE transform_merge_request_metrics ADD `code_addition` integer DEFAULT -1 NOT NULL;--> statement-breakpoint
-ALTER TABLE transform_merge_request_metrics ADD `code_deletion` integer DEFAULT -1 NOT NULL;

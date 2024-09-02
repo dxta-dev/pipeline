@@ -1,42 +1,42 @@
 import type { Deployment, Namespace, Repository, Sha } from "@dxta/extract-schema";
 import type { ExtractFunction, Entities } from "./config";
-import type { Pagination, SourceControl } from "@dxta/source-control";
+import type { Pagination, SourceControl, TimePeriod } from "@dxta/source-control";
 import { sql } from "drizzle-orm";
 
-export type GetDeploymentsInput = {
-  repository: Repository;
+export type GetWorkflowDeploymentsInput = {
   namespace: Namespace;
-  environment?: string;
+  repository: Repository;
+  workflowId: number;
+  timePeriod: TimePeriod;
+  branch?: string;
   page?: number;
   perPage: number;
 };
 
-export type GetDeploymentsOutput = {
+export type GetWorkflowDeploymentsOutput = {
   deployments: Deployment[];
   paginationInfo: Pagination;
 };
 
-export type GetDeploymentsSourceControl = Pick<SourceControl, "fetchDeployments">;
-export type GetDeploymentsEntities = Pick<Entities, "deployments" | "repositoryShas">;
+export type GetWorkflowDeploymentsSourceControl = Pick<SourceControl, 'fetchWorkflowDeployments'>;
+export type GetWorkflowDeploymentsEntities = Pick<Entities, 'deployments' | 'repositoryShas'>;
 
-export type GetDeploymentsFunction = ExtractFunction<GetDeploymentsInput, GetDeploymentsOutput, GetDeploymentsSourceControl, GetDeploymentsEntities>;
+export type GetWorkflowDeploymentsFunction = ExtractFunction<GetWorkflowDeploymentsInput, GetWorkflowDeploymentsOutput, GetWorkflowDeploymentsSourceControl, GetWorkflowDeploymentsEntities>;
 
-export const getDeployments: GetDeploymentsFunction = async (
-  { repository, namespace, environment, perPage, page },
-  { integrations, db, entities }
+export const getWorkflowDeployments: GetWorkflowDeploymentsFunction = async (
+  { namespace, repository, workflowId, perPage, page, timePeriod, branch },
+  { db, entities, integrations }
 ) => {
 
   if (!integrations.sourceControl) {
     throw new Error("Source control integration not configured");
   }
 
-  const { deployments, pagination } = await integrations.sourceControl.fetchDeployments(repository, namespace, perPage, environment, page);
+  const { deployments, pagination: paginationInfo } = await integrations.sourceControl.fetchWorkflowDeployments(repository, namespace, workflowId, timePeriod, perPage, branch, page);
 
-  if (deployments.length === 0 && pagination.totalPages === 1) {
-    return {
-      deployments: [],
-      paginationInfo: pagination
-    }
+  if (deployments.length === 0 && paginationInfo.totalPages === 1) return {
+    deployments: [],
+    paginationInfo,
   }
 
   const insertedShas = await db.transaction(async (tx) => {
@@ -65,7 +65,7 @@ export const getDeployments: GetDeploymentsFunction = async (
         repositoryShaId: shaIdMap.get(deployment.commitSha) as number,
         deploymentType: deployment.deploymentType,
         gitBranch: deployment.gitBranch,
-        createdAt: deployment.createdAt,
+        createdAt: deployment.createdAt,        
         updatedAt: deployment.updatedAt,
         deployedAt: deployment.deployedAt,
       })
@@ -89,6 +89,6 @@ export const getDeployments: GetDeploymentsFunction = async (
 
   return {
     deployments: insertedDeployments,
-    paginationInfo: pagination
+    paginationInfo,
   };
-};
+}

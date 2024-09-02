@@ -1,4 +1,4 @@
-import type { MergeRequest } from "@dxta/extract-schema";
+import type { MergeRequest, Sha } from "@dxta/extract-schema";
 import type { ExtractFunction, Entities } from "./config";
 import type { Pagination, SourceControl, TimePeriod } from "@dxta/source-control";
 import { sql } from "drizzle-orm";
@@ -20,14 +20,14 @@ export type GetMergeRequestsOutput = {
 };
 
 export type GetMergeRequestsSourceControl = Pick<SourceControl, "fetchMergeRequests">;
-export type GetMergeRequestsEntities = Pick<Entities, "mergeRequests">;
+export type GetMergeRequestsEntities = Pick<Entities, "mergeRequests" | "repositoryShas">;
 
 export type GetMergeRequestsFunction = ExtractFunction<GetMergeRequestsInput, GetMergeRequestsOutput, GetMergeRequestsSourceControl, GetMergeRequestsEntities>;
 
 
 export const wasMergeRequestUpdatedInTimePeriod = (mergeRequest: MergeRequest, timePeriod: TimePeriod) => {
   const timestamp = mergeRequest.updatedAt || mergeRequest.createdAt; // TODO: why is updatedAt nullable ? Add note in table
-  
+
   return timestamp.getTime() < timePeriod.to.getTime() && timestamp.getTime() >= timePeriod.from.getTime();
 }
 
@@ -41,9 +41,42 @@ export const getMergeRequests: GetMergeRequestsFunction = async (
   }
 
   const { mergeRequests, pagination } = await integrations.sourceControl.fetchMergeRequests(externalRepositoryId, namespaceName, repositoryName, repositoryId, perPage, timePeriod, page, totalPages);
+
+  const insertedShas = await db.transaction(async (tx) => {
+    return Promise.all(mergeRequests.map(mergeRequest => mergeRequest.mergeCommitSha).filter(sha => sha != undefined).map(sha =>
+      tx.insert(entities.repositoryShas).values({ repositoryId: repositoryId, sha: sha as string })
+        .onConflictDoUpdate({
+          target: [entities.repositoryShas.repositoryId, entities.repositoryShas.sha],
+          set: { _updatedAt: sql`(strftime('%s', 'now'))` },
+        })
+        .returning()
+        .get()
+    ));
+  });
+
+  const shaIdMap = insertedShas.reduce((map, sha) => map.set(sha.sha, sha.id), new Map<string, Sha['id']>());
+
   const insertedMergeRequests = await db.transaction(async (tx) => {
     return Promise.all(mergeRequests.map(mergeRequest =>
-      tx.insert(entities.mergeRequests).values(mergeRequest)
+      tx.insert(entities.mergeRequests).values({
+        externalId: mergeRequest.externalId,
+        canonId: mergeRequest.canonId,
+        repositoryId: mergeRequest.repositoryId,
+        mergeCommitShaId: mergeRequest.mergeCommitSha ? shaIdMap.get(mergeRequest.mergeCommitSha) as number : null,
+        title: mergeRequest.title,
+        description: mergeRequest.description,
+        webUrl: mergeRequest.webUrl,
+        createdAt: mergeRequest.createdAt,
+        updatedAt: mergeRequest.updatedAt,
+        mergedAt: mergeRequest.mergedAt,
+        mergerExternalId: mergeRequest.mergerExternalId,
+        closedAt: mergeRequest.closedAt,
+        closerExternalId: mergeRequest.closerExternalId,
+        authorExternalId: mergeRequest.authorExternalId,
+        state: mergeRequest.state,
+        targetBranch: mergeRequest.targetBranch,
+        sourceBranch: mergeRequest.sourceBranch,
+      })
         .onConflictDoUpdate({
           target: [
             entities.mergeRequests.externalId,
@@ -60,7 +93,7 @@ export const getMergeRequests: GetMergeRequestsFunction = async (
             state: mergeRequest.state,
             targetBranch: mergeRequest.targetBranch,
             sourceBranch: mergeRequest.sourceBranch,
-            mergeCommitSha: mergeRequest.mergeCommitSha,
+            mergeCommitShaId: mergeRequest.mergeCommitSha ? shaIdMap.get(mergeRequest.mergeCommitSha) as number : null,
             _updatedAt: sql`(strftime('%s', 'now'))`,
 
           },

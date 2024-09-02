@@ -1,1 +1,0 @@
-ALTER TABLE extract_repositories ADD `default_branch` text;

@@ -5,26 +5,26 @@ import { createClient } from '@libsql/client';
 
 
 import { describe, expect, test } from '@jest/globals';
-import { getCicdRuns } from './get-cicd-runs';
+import { getWorkflowDeployments } from './get-workflow-deployments';
 
-import { repositories, namespaces, cicdRuns, } from '@dxta/extract-schema';
+import { repositories, namespaces, deployments, repositoryShas } from '@dxta/extract-schema';
 import type { NewNamespace, Namespace, NewRepository, Repository } from '@dxta/extract-schema';
 import type { Context } from './config';
-import type { GetCicdRunsSourceControl, GetCicdRunsEntities } from './get-cicd-runs';
+import type { GetWorkflowDeploymentsSourceControl, GetWorkflowDeploymentsEntities } from './get-workflow-deployments';
 import type { SourceControl } from '@dxta/source-control';
 import fs from 'fs';
 
 let sqlite: ReturnType<typeof createClient>;
 let db: ReturnType<typeof drizzle>;
-let context: Context<GetCicdRunsSourceControl, GetCicdRunsEntities>;
-let fetchCicdWorkflowRuns: SourceControl['fetchCicdWorkflowRuns'];
+let context: Context<GetWorkflowDeploymentsSourceControl, GetWorkflowDeploymentsEntities>;
+let fetchWorkflowDeployments: SourceControl['fetchWorkflowDeployments'];
 
 const TEST_NAMESPACE = { id: 1, externalId: 2000, name: 'TEST_NAMESPACE_NAME', forgeType: 'github' } satisfies NewNamespace;
 const TEST_REPO = { id: 1, externalId: 1000, name: 'TEST_REPO_NAME', forgeType: 'github', namespaceId: 1 } satisfies NewRepository;
 let INSERTED_TEST_REPO: Repository;
 let INSERTED_TEST_NAMESPACE: Namespace;
 
-const dbname = "get-cicd-runs";
+const dbname = "get-workflow-deployments";
 
 beforeAll(async () => {
   sqlite = createClient({
@@ -36,19 +36,19 @@ beforeAll(async () => {
   INSERTED_TEST_NAMESPACE = await db.insert(namespaces).values(TEST_NAMESPACE).returning().get();
   INSERTED_TEST_REPO = await db.insert(repositories).values(TEST_REPO).returning().get();
 
-  fetchCicdWorkflowRuns = jest.fn((repository, _namespace, workflowId, _timePeriod, perPage: number, _branch?: string, page?: number) => {
+  fetchWorkflowDeployments = jest.fn((repository, _namespace, workflowId, _timePeriod, perPage: number, _branch?: string, page?: number) => {
     switch (repository.externalId) {
       case 1000:
         return Promise.resolve({
-          cicdRuns: [
+          deployments: [
             {
               externalId: 1000,
+              deploymentType: 'github-workflow-deployment',
               repositoryId: INSERTED_TEST_REPO.id,
-              workflowExternalId: workflowId,
-              workflowRunner: "github_actions",
-              gitBranch: "main", gitSha: "f".repeat(40),
+              commitSha: "f".repeat(40),            
+              gitBranch: "main", 
               runAttempt: 1, createdAt: new Date(), updatedAt: new Date(), runStartedAt: new Date(),
-              status: "completed", result: "success", detailsUrl: "http://localhost/",
+              status: "success", deployedAt: new Date()
             }
           ],
           pagination: {
@@ -56,18 +56,18 @@ beforeAll(async () => {
             perPage,
             totalPages: 1,
           }
-        }) satisfies ReturnType<SourceControl['fetchCicdWorkflowRuns']>;
+        }) satisfies ReturnType<SourceControl['fetchWorkflowDeployments']>;
       default:
         return Promise.reject(new Error("Are you mocking me?"))
     }
   });
 
   context = {
-    entities: { cicdRuns },
+    entities: { deployments, repositoryShas },
     db,
     integrations: {
       sourceControl: {
-        fetchCicdWorkflowRuns,
+        fetchWorkflowDeployments,
       }
     }
   };
@@ -79,10 +79,10 @@ afterAll(() => {
   fs.unlinkSync(dbname);
 });
 
-describe('get-cicd-runs:', () => {
-  describe('getCicdRuns', () => {
-    test('should insert cicd workflow runs data in the database', async () => {
-      const { cicdRuns, paginationInfo } = await getCicdRuns({
+describe('get-workflow-deployments:', () => {
+  describe('getWorkflowDeployments', () => {
+    test('should insert workflow deployment data in the database', async () => {
+      const { deployments, paginationInfo } = await getWorkflowDeployments({
         namespace: INSERTED_TEST_NAMESPACE,
         repository: INSERTED_TEST_REPO,
         timePeriod: { from: new Date(), to: new Date() },
@@ -90,18 +90,18 @@ describe('get-cicd-runs:', () => {
         perPage: 1000,
       }, context);
 
-      expect(cicdRuns).toBeDefined();
+      expect(deployments).toBeDefined();
       expect(paginationInfo).toBeDefined();
-      expect(fetchCicdWorkflowRuns).toHaveBeenCalledTimes(1);
+      expect(fetchWorkflowDeployments).toHaveBeenCalledTimes(1);
 
-      const cicdRunRows = await db.select().from(context.entities.cicdRuns).all();
-      expect(cicdRunRows.length).toEqual(cicdRuns.length);
+      const workflowDeploymentRows = await db.select().from(context.entities.deployments).all();
+      expect(workflowDeploymentRows.length).toEqual(deployments.length);
 
-      for (const cicdRunRow of cicdRunRows) {
-        const rowMatchedCicdRun = cicdRunRows.find((ci) => ci.externalId === cicdRunRow.externalId);
-        expect(rowMatchedCicdRun).toBeDefined();
-        if (!rowMatchedCicdRun) return;
-        expect(rowMatchedCicdRun.id).toEqual(cicdRunRow.id);
+      for (const workflowDeploymentRow of workflowDeploymentRows) {
+        const rowMatchedWorkflowDeployment = workflowDeploymentRows.find((ci) => ci.externalId === workflowDeploymentRow.externalId);
+        expect(rowMatchedWorkflowDeployment).toBeDefined();
+        if (!rowMatchedWorkflowDeployment) return;
+        expect(rowMatchedWorkflowDeployment.id).toEqual(workflowDeploymentRow.id);
       }
     });
   });

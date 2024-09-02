@@ -1,19 +1,19 @@
 import { EventHandler } from "@stack/config/create-event"
-import { extractDeploymentsEvent, extractRepositoryEvent } from "./events"
+import { extractRepositoryEvent } from "./events"
 import { createMessageHandler } from "@stack/config/create-message"
 import { deployments, DeploymentSchema, namespaces, NamespaceSchema, repositories, RepositorySchema } from "@dxta/extract-schema"
 import { z } from "zod"
-import type { Context, GetDeploymentStatusEntities, GetDeploymentStatusSourceControl } from "@dxta/extract-functions"
-import { getDeploymentStatus } from "@dxta/extract-functions";
+import type { Context, GetWorkflowDeploymentStatusEntities, GetWorkflowDeploymentStatusSourceControl } from "@dxta/extract-functions"
+import { getWorkflowDeploymentStatus } from "@dxta/extract-functions";
 import { MessageKind, metadataSchema } from "./messages"
 import { getClerkUserToken } from "./get-clerk-user-token"
 import { GitHubSourceControl, GitlabSourceControl } from "@dxta/source-control"
 import { getTenantDb, type OmitDb } from "@stack/config/get-tenant-db"
-import { and, eq, inArray, isNull, or } from "drizzle-orm"
+import { and, eq, isNull, or } from "drizzle-orm"
 
-export const deploymentStatusSenderHandler = createMessageHandler({
+export const workflowDeploymentStatusSenderHandler = createMessageHandler({
   queueId: 'ExtractQueue',
-  kind: MessageKind.DeploymentStatus,
+  kind: MessageKind.WorkflowDeploymentStatus,
   metadataShape: metadataSchema.shape,
   contentShape: z.object({
     repository: RepositorySchema,
@@ -25,12 +25,12 @@ export const deploymentStatusSenderHandler = createMessageHandler({
     const { tenantId, userId, sourceControl } = message.metadata;
 
     if (deployment.status !== null && deployment.status !== 'pending') {
-      console.log("Skipping extract-deployment-status for status:", deployment.status);
+      console.log("Skipping extract-workflow-deployment-status for status:", deployment.status);
       return;
     }
 
     context.integrations.sourceControl = await initSourceControl(userId, sourceControl);
-    await getDeploymentStatus({
+    await getWorkflowDeploymentStatus({
       namespace,
       repository,
       deployment
@@ -39,9 +39,9 @@ export const deploymentStatusSenderHandler = createMessageHandler({
   }
 });
 
-const { sender } = deploymentStatusSenderHandler;
+const { sender } = workflowDeploymentStatusSenderHandler;
 
-export const onExtractRepository = EventHandler(extractRepositoryEvent, async (ev) => {
+export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
   const { crawlId, from, to, userId, sourceControl, tenantId } = ev.metadata;
   const db = getTenantDb(tenantId);
 
@@ -53,7 +53,7 @@ export const onExtractRepository = EventHandler(extractRepositoryEvent, async (e
 
   const unresolvedDeployments = await db.select().from(deployments).where(
     and(
-      eq(deployments.deploymentType, 'github-deployment'),
+      eq(deployments.deploymentType, 'github-workflow-deployment'),
       or(
         eq(deployments.status, "pending"),
         isNull(deployments.status)
@@ -63,7 +63,7 @@ export const onExtractRepository = EventHandler(extractRepositoryEvent, async (e
 
   if (unresolvedDeployments.length === 0) return;
 
-  const arrayOfExtractDeploymentStatusMessageContent: Parameters<typeof deploymentStatusSenderHandler.sender.send>[0][] = unresolvedDeployments.map(
+  const arrayOfExtractDeploymentStatusMessageContent: Parameters<typeof workflowDeploymentStatusSenderHandler.sender.send>[0][] = unresolvedDeployments.map(
     deployment => ({
       namespace,
       repository,
@@ -87,41 +87,6 @@ export const onExtractRepository = EventHandler(extractRepositoryEvent, async (e
   propertiesToLog: ["properties.repositoryId", "properties.namespaceId"],
 });
 
-export const onExtractDeployments = EventHandler(extractDeploymentsEvent, async (ev) => {
-  const { crawlId, from, to, userId, sourceControl, tenantId } = ev.metadata;
-  const db = getTenantDb(tenantId);
-
-  const repository = await db.select().from(repositories).where(eq(repositories.id, ev.properties.repositoryId)).get();
-  const namespace = await db.select().from(namespaces).where(eq(namespaces.id, ev.properties.namespaceId)).get();
-  const newDeployments = await db.select().from(deployments).where(inArray(deployments.id, ev.properties.deploymentIds)).all();
-
-  if (!repository) throw new Error("invalid repo id");
-  if (!namespace) throw new Error("Invalid namespace id");
-  if (newDeployments.length === 0) throw new Error("Invalid deployment ids");
-
-  const arrayOfExtractDeploymentStatusMessageContent: Parameters<typeof deploymentStatusSenderHandler.sender.send>[0][] = newDeployments.map(
-    deployment => ({
-      namespace,
-      repository,
-      deployment
-    })
-  );
-
-  await sender.sendAll(arrayOfExtractDeploymentStatusMessageContent, {
-    version: 1,
-    caller: 'extract-deployment-status',
-    sourceControl,
-    userId,
-    timestamp: new Date().getTime(),
-    from,
-    to,
-    crawlId,
-    tenantId,
-  });
-
-});
-
-
 const initSourceControl = async (userId: string, sourceControl: 'github' | 'gitlab') => {
   const accessToken = await getClerkUserToken(userId, `oauth_${sourceControl}`);
   if (sourceControl === 'github') return new GitHubSourceControl({ auth: accessToken });
@@ -129,7 +94,7 @@ const initSourceControl = async (userId: string, sourceControl: 'github' | 'gitl
   return null;
 }
 
-const context: OmitDb<Context<GetDeploymentStatusSourceControl, GetDeploymentStatusEntities>> = {
+const context: OmitDb<Context<GetWorkflowDeploymentStatusSourceControl, GetWorkflowDeploymentStatusEntities>> = {
   entities: {
     deployments
   },

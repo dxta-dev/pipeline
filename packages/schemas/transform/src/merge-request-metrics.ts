@@ -25,9 +25,11 @@ export const mergeRequestMetrics = sqliteTable('merge_request_metrics', {
   codingDuration: integer('coding_duration').notNull(),
   pickupDuration: integer('review_start_delay').notNull(),
   reviewDuration: integer('review_duration').notNull(),
+  deployDuration: integer('deploy_duration').notNull(),
   handover: integer('handover').notNull(),
   reviewDepth: integer('review_depth').notNull(),
 
+  deployed: integer('deployed', { mode: 'boolean' }).notNull(),
   merged: integer('merged', { mode: 'boolean' }).notNull(),
   closed: integer('closed', { mode: 'boolean' }).notNull(),
   approved: integer('approved', { mode: 'boolean' }).notNull(),

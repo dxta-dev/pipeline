@@ -16,3 +16,4 @@ export const cicdDeployWorkflows = sqliteTable('cicd_deploy_workflows', {
 
 export type CicdDeployWorkflow = InferSelectModel<typeof cicdDeployWorkflows>;
 export type NewCicdDeployWorkflow = InferInsertModel<typeof cicdDeployWorkflows>;
+

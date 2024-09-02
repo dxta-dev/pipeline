@@ -513,7 +513,7 @@ export type MergeRequestNoteData = {
 }
 
 async function selectExtractData(db: ExtractDatabase, extractMergeRequestId: number) {
-  const { mergeRequests, mergeRequestDiffs, mergeRequestNotes, timelineEvents, repositories, namespaces, mergeRequestCommits } = extract;
+  const { mergeRequests, mergeRequestDiffs, mergeRequestNotes, timelineEvents, repositories, namespaces, mergeRequestCommits, repositoryShas } = extract;
   const mergeRequestData = await db.select({
     mergeRequest: {
       openedAt: mergeRequests.createdAt,
@@ -529,10 +529,11 @@ async function selectExtractData(db: ExtractDatabase, extractMergeRequestId: num
       webUrl: mergeRequests.webUrl,
       sourceBranch: mergeRequests.sourceBranch,
       targetBranch: mergeRequests.targetBranch,
-      mergeCommitSha: mergeRequests.mergeCommitSha,
+      mergeCommitSha: repositoryShas.sha,
     }
   }).from(mergeRequests)
     .where(eq(mergeRequests.id, extractMergeRequestId))
+    .leftJoin(repositoryShas, eq(repositoryShas.id, mergeRequests.mergeCommitShaId))
     .get();
 
   const repositoryData = await db.select({
@@ -1329,6 +1330,7 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
           lastUpdatedAt: lastUpdatedAtId,
           startedPickupAt: startedPickupAtId,
           startedReviewAt: startedReviewAtId,
+          deployedAt: nullDateId, // TODO: transform-deployment
         }).run();
 
         await updateUserJunk(tx, {
@@ -1346,8 +1348,10 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
           codingDuration: timeline.codingDuration,
           pickupDuration: timeline.pickupDuration,
           reviewDuration: timeline.reviewDuration,
+          deployDuration: 0, // TODO: transform-deployments
           handover: timeline.handover,
           reviewDepth: timeline.reviewDepth,
+          deployed: false, // TODO: transform-deployments
           merged,
           closed,
           approved: timeline.approved,
@@ -1366,6 +1370,7 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
           lastUpdatedAt: lastUpdatedAtId,
           startedPickupAt: startedPickupAtId,
           startedReviewAt: startedReviewAtId,
+          deployedAt: nullDateId, // TODO: transform-deployments
         }).get();
 
         const { id: userJunkId } = await insertUserJunk(tx, usersJunk).get();
@@ -1377,8 +1382,10 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
           codingDuration: timeline.codingDuration,
           pickupDuration: timeline.pickupDuration,
           reviewDuration: timeline.reviewDuration,
+          deployDuration: 0, // TODO: transform-deployments
           handover: timeline.handover,
           reviewDepth: timeline.reviewDepth,
+          deployed: false, // TODO: transform-deployments
           merged,
           closed,
           approved: timeline.approved,

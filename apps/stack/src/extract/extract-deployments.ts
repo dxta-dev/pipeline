@@ -1,7 +1,7 @@
 import { createMessageHandler } from "@stack/config/create-message";
 import { MessageKind, metadataSchema } from "./messages";
 import { z } from "zod";
-import { NamespaceSchema, RepositorySchema, repositoryCommits as commits, deployments, repositories, namespaces } from "@dxta/extract-schema";
+import { NamespaceSchema, RepositorySchema, deployments, repositories, namespaces, repositoryShas } from "@dxta/extract-schema";
 import type { Namespace, Repository } from "@dxta/extract-schema";
 import type { Context, GetDeploymentsEntities, GetDeploymentsSourceControl } from "@dxta/extract-functions";
 import { getDeployments } from "@dxta/extract-functions";
@@ -77,7 +77,7 @@ const initSourceControl = async (userId: string, sourceControl: 'github' | 'gitl
 }
 const context: OmitDb<Context<GetDeploymentsSourceControl, GetDeploymentsEntities>> = {
   entities: {
-    commits,
+    repositoryShas,
     deployments,
   },
   integrations: {

@@ -18,6 +18,7 @@ import {
   NamespaceSchema,
   repositories,
   RepositorySchema,
+  repositoryShas,
 } from "@dxta/extract-schema";
 import { GitHubSourceControl, GitlabSourceControl } from "@dxta/source-control";
 
@@ -95,6 +96,7 @@ const context: OmitDb<Context<
 >> = {
   entities: {
     mergeRequests,
+    repositoryShas
   },
   integrations: {
     sourceControl: null,
