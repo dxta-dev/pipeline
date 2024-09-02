@@ -54,6 +54,7 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
   const unresolvedDeployments = await db.select().from(deployments).where(
     and(
       eq(deployments.deploymentType, 'github-workflow-deployment'),
+      eq(repositories.id, repository.id),
       or(
         eq(deployments.status, "pending"),
         isNull(deployments.status)
