@@ -104,5 +104,5 @@ AND dmrs.deployment IS NULL
 `)
   const mergeRequestDeployments = result.rows as unknown as { deployment: number | null, merge_request: number }[];
 
-  return mergeRequestDeployments;
+  return mergeRequestDeployments.map(x => ({ deploymentId: x.deployment, mergeRequestId: x.merge_request }));
 }
