@@ -102,7 +102,7 @@ AND mrs.repository_id = ${repositoryId}
 AND dmrs.deployment IS NULL
 ;
 `)
-  const mergeRequestDeployments = result.rows as unknown as { deployment: number, merge_request: number }[];
+  const mergeRequestDeployments = result.rows as unknown as { deployment: number | null, merge_request: number }[];
 
   return mergeRequestDeployments;
 }
