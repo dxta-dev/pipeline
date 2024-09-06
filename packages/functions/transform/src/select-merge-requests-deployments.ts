@@ -4,6 +4,7 @@ import type { LibSQLDatabase } from "drizzle-orm/libsql";
 type Db = LibSQLDatabase<Record<string, never>>;
 
 export async function selectMergeRequestsDeployments(db: Db, repositoryId: number, from: Date, to: Date) {
+    // Issue: if transform arbitrary time period, can remove deployment info from historic PRs, (maybe set d_head to d_head_next || d_head_curr)
   const result = await db.run(sql`WITH RECURSIVE 
 deploys_in_period AS (
     SELECT id, repository_sha_id, deployed_at
