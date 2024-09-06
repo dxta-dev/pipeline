@@ -52,7 +52,7 @@ const nullRepository = {
 
 const timezone = {
   id: 1,
-  hqTimezone: 'UTC',
+  timezoneCode: 'UTC',
 } satisfies NewTenantConfig;
 
 export async function seed(db: LibSQLDatabase, startDate: Date, endDate: Date) {
