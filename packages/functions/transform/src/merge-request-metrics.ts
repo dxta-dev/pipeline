@@ -1,6 +1,6 @@
 import * as extract from '@dxta/extract-schema';
 import * as transform from '@dxta/transform-schema';
-// import * as tenant from '@dxta/tenant-schema';
+import * as tenant from '@dxta/tenant-schema';
 import { sql, eq, or, and, type ExtractTablesWithRelations } from "drizzle-orm";
 import type { LibSQLDatabase } from 'drizzle-orm/libsql';
 import { isCodeGen } from './is-codegen';
@@ -23,34 +23,23 @@ type TableMeta = {
   _updatedAt: Date | null;
 }
 
-// async function getTimezoneInMinutes(db: TenantDatabase): Promise<number> {
-//   const result = await db
-//     .select({ hqTimezone: tenant.tenantConfig.hqTimezone })
-//     .from(tenant.tenantConfig)
-//     .limit(1)
+async function getTimezoneInMinutes(db: TenantDatabase): Promise<string> {
+  const result = await db
+    .select({ timezoneCode: tenant.tenantConfig.timezoneCode })
+    .from(tenant.tenantConfig)
+    .limit(1)
 
-//   if (!result || result.length === 0) {
-//     return 0;
-//   }
-//   const timestamp = result[0];
+  if (!result || result.length === 0) {
+    return 'UTC';
+  }
+  const timezone = result[0];
 
-//   if (!timestamp || timestamp.hqTimezone === undefined) {
-//     return 0;
-//   }
+  if (!timezone || timezone.timezoneCode === undefined) {
+    return 'UTC';
+  }
   
-//   return timestamp.hqTimezone;
-// }
-
-const date = new Date();
-const formatter = new Intl.DateTimeFormat('en-US', {
-  timeZone: 'America/Phoenix',
-  hour: 'numeric',
-  minute: 'numeric',
-  hour12: false,
-});
-
-console.log("PETAR", formatter.format(date));
-
+  return timezone.timezoneCode;
+}
 
 function getUsersDatesMergeRequestMetricsId(db: TransformDatabase, transformMergeRequestId: number) {
   return db.select({
@@ -1131,24 +1120,14 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
     notes: extractData.notes,
   });
 
-  // const timezone = await getTimezoneInMinutes(ctx.tenantDatabase);
-
+  const timezone = await getTimezoneInMinutes(ctx.tenantDatabase);
   const currDate = new Date();
-
-  const timezone = 'Europe/Berlin'; // JUST IN TEST PURPOSES
-
   const options: Intl.DateTimeFormatOptions = { timeZone: timezone };
-
-
   const hqTime = new Date(currDate.toLocaleString('en-US', options));
-
   const timezoneOffset = (currDate.getTime() - hqTime.getTime()) / (1000 * 60);
-
   const timezoneInMinutes = Math.round(timezoneOffset);
 
-
   let timezoneInMilliseconds = 0;
-  
   timezoneInMilliseconds = timezoneInMinutes * 60 * 1000;
   
   const timestampsWithTimezone = new Set(
