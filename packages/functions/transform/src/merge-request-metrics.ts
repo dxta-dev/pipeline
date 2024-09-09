@@ -124,7 +124,7 @@ function upsertMergeRequest(db: TransformDatabase, mergeRequest: transform.NewMe
         title: mergeRequest.title,
         description: mergeRequest.description,
         webUrl: mergeRequest.webUrl,
-        mergeCommitSha: mergeRequest.mergeCommitSha,        
+        mergeCommitSha: mergeRequest.mergeCommitSha,
         _updatedAt: sql`(strftime('%s', 'now'))`,
       }
     })
@@ -298,7 +298,7 @@ async function selectDates(db: TransformDatabase, timestamps: Set<number>) {
       )
     )
     .all();
-  
+
   return datesData;
 }
 
@@ -379,7 +379,7 @@ function getCommitter(gitIdentity: extract.CommittedEvent & { committerId: numbe
       externalId: Number(frags[0]),
       forgeType: "github",
       name: gitIdentity.committerName,
-      username: gitIdentity.committerName,      
+      username: gitIdentity.committerName,
       email: gitIdentity.committerEmail,
       profileUrl: '',
       avatarUrl: ''
@@ -511,8 +511,8 @@ export type MergeRequestNoteData = {
   authorExternalId: extract.MergeRequestNote['authorExternalId'];
 }
 
-async function selectExtractData(db: ExtractDatabase, extractMergeRequestId: number) {
-  const { mergeRequests, mergeRequestDiffs, mergeRequestNotes, timelineEvents, repositories, namespaces, mergeRequestCommits, repositoryShas } = extract;
+async function selectExtractData(db: ExtractDatabase, extractMergeRequestId: number, extractDeploymentId: number | null) {
+  const { mergeRequests, mergeRequestDiffs, mergeRequestNotes, timelineEvents, repositories, namespaces, mergeRequestCommits, repositoryShas, deployments } = extract;
   const mergeRequestData = await db.select({
     mergeRequest: {
       openedAt: mergeRequests.createdAt,
@@ -554,7 +554,7 @@ async function selectExtractData(db: ExtractDatabase, extractMergeRequestId: num
     username: extract.members.username,
     email: extract.members.email,
     profileUrl: extract.members.profileUrl,
-    avatarUrl: extract.members.avatarUrl,    
+    avatarUrl: extract.members.avatarUrl,
   })
     .from(extract.members)
     .where(eq(extract.members.forgeType, repositoryData?.repository.forgeType || "github")) // idk man
@@ -606,6 +606,16 @@ async function selectExtractData(db: ExtractDatabase, extractMergeRequestId: num
     .where(eq(mergeRequestCommits.mergeRequestId, extractMergeRequestId))
     .all();
 
+  let deploymentData: { deployedAt: extract.Deployment['deployedAt']; status: extract.Deployment['status'] } | undefined;
+  if (extractDeploymentId) {
+    deploymentData = await db.select({
+      deployedAt: deployments.deployedAt,
+      status: deployments.status,
+    })
+      .from(deployments)
+      .where(eq(deployments.id, extractDeploymentId))
+      .get();
+  }
 
   return {
     diffs: mergerRequestDiffsData,
@@ -615,6 +625,7 @@ async function selectExtractData(db: ExtractDatabase, extractMergeRequestId: num
     ...repositoryData || { repository: null },
     members: membersData,
     commits: commitsData,
+    deployment: deploymentData
   };
 }
 
@@ -681,9 +692,9 @@ function getMergedAt(timelineMapKeys: TimelineMapKey[]) {
   return null;
 }
 
-type OpenedEventData =  {
-  actorId : extract.MergeRequest['authorExternalId'],
-  type : 'opened',
+type OpenedEventData = {
+  actorId: extract.MergeRequest['authorExternalId'],
+  type: 'opened',
 }
 
 export function calculateTimeline(timelineMapKeys: TimelineMapKey[], timelineMap: Map<TimelineMapKey, MergeRequestNoteData | TimelineEventData | OpenedEventData>, { authorExternalId, createdAt }: calcTimelineArgs) {
@@ -798,17 +809,17 @@ export function calculateTimeline(timelineMapKeys: TimelineMapKey[], timelineMap
   const handoverSortedTimelineMapKeys = [...sortedTimelineMapKeys];
   if (createdAt !== null) {
     const index = handoverSortedTimelineMapKeys.findIndex(key => key.timestamp >= createdAt);
-    const openedEventKey = {timestamp: createdAt, type: 'opened'} as const;
+    const openedEventKey = { timestamp: createdAt, type: 'opened' } as const;
     if (index === -1) {
       handoverSortedTimelineMapKeys.push(openedEventKey);
     } else {
       handoverSortedTimelineMapKeys.splice(index, 0, openedEventKey);
     }
-    timelineMap.set(openedEventKey, {type: 'opened', actorId: authorExternalId});
+    timelineMap.set(openedEventKey, { type: 'opened', actorId: authorExternalId });
   }
   handoverSortedTimelineMapKeys.forEach(key => {
     const value = timelineMap.get(key)
-    if (value  && value.type === 'note') {
+    if (value && value.type === 'note') {
       const authorExternalId = value.authorExternalId;
       if (prevActorId !== null && authorExternalId !== prevActorId) {
         handover++;
@@ -820,9 +831,9 @@ export function calculateTimeline(timelineMapKeys: TimelineMapKey[], timelineMap
     if (value && value.type == "closed") {
       isClosed = true;
     }
-    
+
     if (value && value.type === "committed" && !isClosed) {
-      const actorId = (value.data as { committerId: number | null}).committerId;
+      const actorId = (value.data as { committerId: number | null }).committerId;
       if (prevActorId !== null && actorId !== prevActorId) {
         handover++;
       }
@@ -833,11 +844,11 @@ export function calculateTimeline(timelineMapKeys: TimelineMapKey[], timelineMap
     if (value && value.type === "reviewed" && !isClosed) {
       const actorId = (value as unknown as TimelineEventData).actorId;
       const isStatePending = (value.data as extract.ReviewedEvent).state === 'pending';
-    
+
       if (prevActorId !== null && actorId !== prevActorId && !isStatePending) {
         handover++;
       }
-      if(!isStatePending) {
+      if (!isStatePending) {
         prevActorId = actorId;
       }
       return;
@@ -854,7 +865,7 @@ export function calculateTimeline(timelineMapKeys: TimelineMapKey[], timelineMap
   });
 
 
- 
+
 
   return {
     startedCodingAt,
@@ -986,8 +997,8 @@ function getMergeRequestMembers({
   return membersArray;
 }
 
-export async function run(extractMergeRequestId: number, ctx: RunContext) {
-  const extractData = await selectExtractData(ctx.extractDatabase, extractMergeRequestId);  
+export async function run(extractMergeRequestId: number, extractDeploymentId: number | null, ctx: RunContext) {
+  const extractData = await selectExtractData(ctx.extractDatabase, extractMergeRequestId, extractDeploymentId);
 
   if (!extractData) {
     console.error(`No extract data found for merge request with id ${extractMergeRequestId}`);
@@ -1001,6 +1012,13 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
   if (extractData.repository === null) {
     throw new Error(`No repository found for id ${extractData.mergeRequest.repositoryId}`);
   }
+
+  const {
+    dateId: nullDateId,
+    userId: nullUserId,
+    mergeRequestId: _nullMergeRequestId,
+    repositoryId: _nullRepositoryId
+  } = await selectNullRows(ctx.transformDatabase);
 
   const { id: transformRepositoryId } = await upsertRepository(ctx.transformDatabase, {
     externalId: extractData.repository.externalId,
@@ -1033,12 +1051,13 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
   })
     .get();
 
-  const {
-    dateId: nullDateId,
-    userId: nullUserId,
-    mergeRequestId: _nullMergeRequestId,
-    repositoryId: _nullRepositoryId
-  } = await selectNullRows(ctx.transformDatabase);
+  /**** Prepare deployment start ****/
+  const deployed = !!extractData.deployment;
+  const deployedAt = extractData.deployment && extractData.deployment.status === 'success' && extractData.deployment.deployedAt ? extractData.deployment.deployedAt : null;
+  if (deployed && !extractData.deployment?.deployedAt) console.error(new Error(`missing deployedAt for deployment ${extractDeploymentId}, mr: ${extractMergeRequestId}`));
+  if (deployed && extractData.deployment?.status !== 'success') console.error(new Error(`Invalid status for deployment ${extractDeploymentId}, mr: ${extractMergeRequestId}. Expected 'success' but got ${extractData.deployment?.status}`));
+
+  /**** Prepare deployment end ****/
 
   /**** Prepare timeline from commits ****/
   const timelineEventsWithCorrectedCommits = extractData.timelineEvents.filter(ev =>
@@ -1119,6 +1138,7 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
     timelineEvents: timelineEventsWithCorrectedCommits,
     notes: extractData.notes,
   });
+  if (deployedAt) mergeRequestTimestamps.add(deployedAt.getTime());
 
   const timezone = await getTimezoneInMinutes(ctx.tenantDatabase);
   const currDate = new Date();
@@ -1158,7 +1178,7 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
   forgeUsers.forEach(forgeUser => {
     const members = mergeRequestMembers.filter(m => m.externalId === forgeUser.externalId);
     members.forEach(member => {
-      if (member && member.email) {        
+      if (member && member.email) {
         memberEmailForgeUserIdMap.set(member.email, forgeUser.id);
       }
       memberExternalIdForgeUserIdMap.set(forgeUser.externalId, forgeUser.id);
@@ -1186,7 +1206,7 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
       case 'committed': {
         const committerExternalId = (timelineEvent.data as { committerId: number | null }).committerId;
         const committerEmail = (timelineEvent.data as extract.CommittedEvent).committerEmail;
-        
+
         const authorExternalId = timelineEvent.actorId;
         const authorEmail = timelineEvent.actorEmail;
 
@@ -1196,13 +1216,13 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
         if (!authorForgeUserId && authorEmail) authorForgeUserId = memberEmailForgeUserIdMap.get(authorEmail);
         if (!committerForgeUserId && committerEmail) committerForgeUserId = memberEmailForgeUserIdMap.get(committerEmail);
 
-        timelineEventForgeUsersIdsMap.set(timelineEvent, { 
-          actorId: authorForgeUserId || nullUserId, 
-          committerId: committerForgeUserId || nullUserId 
+        timelineEventForgeUsersIdsMap.set(timelineEvent, {
+          actorId: authorForgeUserId || nullUserId,
+          committerId: committerForgeUserId || nullUserId
         });
-        
+
         if (authorForgeUserId && !committers.includes(authorForgeUserId)) committers.push(authorForgeUserId);
-        if (committerForgeUserId  && !committers.includes(committerForgeUserId)) committers.push(committerForgeUserId);
+        if (committerForgeUserId && !committers.includes(committerForgeUserId)) committers.push(committerForgeUserId);
         break;
       }
       case 'reviewed': {
@@ -1320,6 +1340,11 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
   mergeRequestEvents.push(opened, startedCoding, startedPickup, startedReview);
   /**** MergeRequestEvents end ****/
 
+  /**** Deployment start ****/
+  const deployedAtId = deployedAt?timestampDateMap.get(deployedAt.getTime()) || nullDateId : nullDateId;
+  const deployDuration = extractData.mergeRequest.mergedAt && deployedAt ? deployedAt.getTime() - extractData.mergeRequest.mergedAt.getTime() : 0;
+  /**** Deployment end ****/
+
 
   /**** DB update / insert ****/
   await ctx.transformDatabase.transaction(
@@ -1334,7 +1359,7 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
           lastUpdatedAt: lastUpdatedAtId,
           startedPickupAt: startedPickupAtId,
           startedReviewAt: startedReviewAtId,
-          deployedAt: nullDateId, // TODO: transform-deployment
+          deployedAt: deployedAtId,
         }).run();
 
         await updateUserJunk(tx, {
@@ -1352,10 +1377,10 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
           codingDuration: timeline.codingDuration,
           pickupDuration: timeline.pickupDuration,
           reviewDuration: timeline.reviewDuration,
-          deployDuration: 0, // TODO: transform-deployments
+          deployDuration,
           handover: timeline.handover,
           reviewDepth: timeline.reviewDepth,
-          deployed: false, // TODO: transform-deployments
+          deployed,
           merged,
           closed,
           approved: timeline.approved,
@@ -1374,7 +1399,7 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
           lastUpdatedAt: lastUpdatedAtId,
           startedPickupAt: startedPickupAtId,
           startedReviewAt: startedReviewAtId,
-          deployedAt: nullDateId, // TODO: transform-deployments
+          deployedAt: deployedAtId,
         }).get();
 
         const { id: userJunkId } = await insertUserJunk(tx, usersJunk).get();
@@ -1386,10 +1411,10 @@ export async function run(extractMergeRequestId: number, ctx: RunContext) {
           codingDuration: timeline.codingDuration,
           pickupDuration: timeline.pickupDuration,
           reviewDuration: timeline.reviewDuration,
-          deployDuration: 0, // TODO: transform-deployments
+          deployDuration,
           handover: timeline.handover,
           reviewDepth: timeline.reviewDepth,
-          deployed: false, // TODO: transform-deployments
+          deployed,
           merged,
           closed,
           approved: timeline.approved,

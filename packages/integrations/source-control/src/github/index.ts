@@ -346,7 +346,7 @@ export class GitHubSourceControl implements SourceControl {
           state: mergeRequest.state,
           targetBranch: mergeRequest.base.ref,
           sourceBranch: mergeRequest.head.ref,
-          mergeCommitSha: mergeRequest.merge_commit_sha,
+          mergeCommitSha: mergeRequest.merge_commit_sha, // hypothesis: is null when conflict exists
         } satisfies NewMergeRequestWithSha)),
       pagination
     }
