@@ -1,6 +1,5 @@
 import * as extract from '@dxta/extract-schema';
 import * as transform from '@dxta/transform-schema';
-import * as tenant from '@dxta/tenant-schema';
 import { sql, eq, or, and, type ExtractTablesWithRelations } from "drizzle-orm";
 import type { LibSQLDatabase } from 'drizzle-orm/libsql';
 import { isCodeGen } from './is-codegen';
@@ -10,6 +9,8 @@ import { type ResultSet } from '@libsql/client/.';
 import { isMemberKnownBot } from './known-bots';
 import { getDateInfo } from '../../../schemas/transform/src/seed/dimensions';
 import { compare } from './compare';
+import { getLocaleTimezoneOffset } from './timezone-utils';
+
 
 type BrandedDatabase<T> = LibSQLDatabase<Record<string, never>> & { __brand: T }
 type DatabaseTransaction = SQLiteTransaction<"async", ResultSet, Record<string, unknown>, ExtractTablesWithRelations<Record<string, unknown>>>;
@@ -21,24 +22,6 @@ export type TenantDatabase = BrandedDatabase<'tenant'>;
 type TableMeta = {
   _createdAt: Date | null;
   _updatedAt: Date | null;
-}
-
-async function getTimezoneInMinutes(db: TenantDatabase): Promise<string> {
-  const result = await db
-    .select({ timezoneCode: tenant.tenantConfig.timezoneCode })
-    .from(tenant.tenantConfig)
-    .limit(1)
-
-  if (!result || result.length === 0) {
-    return 'UTC';
-  }
-  const timezone = result[0];
-
-  if (!timezone || timezone.timezoneCode === undefined) {
-    return 'UTC';
-  }
-  
-  return timezone.timezoneCode;
 }
 
 function getUsersDatesMergeRequestMetricsId(db: TransformDatabase, transformMergeRequestId: number) {
@@ -1140,26 +1123,21 @@ export async function run(extractMergeRequestId: number, extractDeploymentId: nu
   });
   if (deployedAt) mergeRequestTimestamps.add(deployedAt.getTime());
 
-  const timezone = await getTimezoneInMinutes(ctx.tenantDatabase);
-  const currDate = new Date();
-  const options: Intl.DateTimeFormatOptions = { timeZone: timezone };
-  const hqTime = new Date(currDate.toLocaleString('en-US', options));
-  const timezoneOffset = (currDate.getTime() - hqTime.getTime()) / (1000 * 60);
-  const timezoneInMinutes = Math.round(timezoneOffset);
-
-  let timezoneInMilliseconds = 0;
-  timezoneInMilliseconds = timezoneInMinutes * 60 * 1000;
+  const timezoneInMinutes = await getLocaleTimezoneOffset(ctx.tenantDatabase);
+  console.log(`Timezone offset in minutes: ${timezoneInMinutes}`);
+  const timezoneInMilliseconds = timezoneInMinutes * 60 * 1000;
   
   const timestampsWithTimezone = new Set(
     Array.from(mergeRequestTimestamps).map(timestamp => timestamp + timezoneInMilliseconds)
   );
-
+  
   const mergeRequestDates = await selectDates(ctx.transformDatabase, timestampsWithTimezone);
-
+  
   const timestampDateMap = new Map<number, transform.TransformDate['id']>();
   mergeRequestTimestamps.forEach(ts => {
     timestampDateMap.set(ts, getDateIdOrNullDateId(getDMY(new Date(ts + timezoneInMilliseconds)), mergeRequestDates, nullDateId).id);
   });
+  
 
   const mergedAtId = timestampDateMap.get(extractData.mergeRequest.mergedAt?.getTime() || 0) || nullDateId;
   const closedAtId = timestampDateMap.get(extractData.mergeRequest.closedAt?.getTime() || 0) || nullDateId;
