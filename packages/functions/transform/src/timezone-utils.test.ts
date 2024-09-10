@@ -2,7 +2,6 @@ import { describe, expect, test } from '@jest/globals';
 import { getTimezoneOffset } from './timezone-utils';
 import type { LibSQLDatabase } from 'drizzle-orm/libsql';
 
-// Define a mock database type
 type MockTenantDatabase = Partial<LibSQLDatabase<Record<string, never>>> & {
   select: jest.Mock<any, any>;
   from: jest.Mock<any, any>;
@@ -51,7 +50,7 @@ describe('getLocaleTimezoneOffset', () => {
           mockDb as unknown as LibSQLDatabase<Record<string, never>> & { __brand: 'tenant' }
         );
         expect(offset).toBe(-300);
-      });
+    });
 
     test('should return the correct offset for Europe/London during daylight saving time', async () => {
       mockDb.limit.mockResolvedValue([{ timezoneCode: 'Europe/London' }]);
