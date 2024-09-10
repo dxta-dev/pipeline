@@ -1124,7 +1124,6 @@ export async function run(extractMergeRequestId: number, extractDeploymentId: nu
   if (deployedAt) mergeRequestTimestamps.add(deployedAt.getTime());
 
   const timezoneInMinutes = await getTimezoneOffset(ctx.tenantDatabase);
-  console.log(`Timezone offset in minutes: ${timezoneInMinutes}`);
   const timezoneInMilliseconds = timezoneInMinutes * 60 * 1000;
   
   const timestampsWithTimezone = new Set(
