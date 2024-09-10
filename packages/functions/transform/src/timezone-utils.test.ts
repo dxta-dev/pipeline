@@ -1,20 +1,5 @@
 import { describe, expect, test } from '@jest/globals';
-import { getTimezoneOffset } from './timezone-utils';
-import type { LibSQLDatabase } from 'drizzle-orm/libsql';
-
-type MockTenantDatabase = Partial<LibSQLDatabase<Record<string, never>>> & {
-  select: jest.Mock<any, any>;
-  from: jest.Mock<any, any>;
-  limit: jest.Mock<any, any>;
-  __brand: 'tenant';
-};
-
-const mockDb: MockTenantDatabase = {
-  select: jest.fn().mockReturnThis(),
-  from: jest.fn().mockReturnThis(),
-  limit: jest.fn(),
-  __brand: 'tenant',
-};
+import { getUTCOffset } from './timezone-utils';
 
 describe('getLocaleTimezoneOffset', () => {
   beforeEach(() => {
@@ -25,47 +10,61 @@ describe('getLocaleTimezoneOffset', () => {
   });
 
   describe('timezone offset calculation', () => {
-    test('should return 0 for UTC', async () => {
-      mockDb.limit.mockResolvedValue([{ timezoneCode: 'UTC' }]);
+    test('should return 0 for UTC', () => {
+
+      const date = new Date('2021-01-01T00:00:00Z');
+      const timezone = 'UTC';
   
-      const offset = await getTimezoneOffset(mockDb as unknown as LibSQLDatabase<Record<string, never>> & { __brand: 'tenant' });
+      const offset = getUTCOffset(timezone, date);
       expect(offset).toBe(0); 
     });
 
-    test('should return the correct offset for America/New_York during daylight saving time', async () => {
-      mockDb.limit.mockResolvedValue([{ timezoneCode: 'America/New_York' }]);
-      jest.useFakeTimers().setSystemTime(new Date('2020-06-06T00:00:00'));
+    test('should return the correct offset for America/New_York during daylight saving time', () => {
+      const date = new Date('2021-07-01T00:00:00Z');
+      const timezone = 'America/New_York';
 
-      const offset = await getTimezoneOffset(
-        mockDb as unknown as LibSQLDatabase<Record<string, never>> & { __brand: 'tenant' }
-      );
+      const offset = getUTCOffset(timezone, date);
       expect(offset).toBe(-240);
     });
 
-    test('should return the correct offset for America/New_York during daylight saving time', async () => {
-        mockDb.limit.mockResolvedValue([{ timezoneCode: 'America/New_York' }]);
-        jest.useFakeTimers().setSystemTime(new Date('2020-01-01T00:00:00'));
-  
-        const offset = await getTimezoneOffset(
-          mockDb as unknown as LibSQLDatabase<Record<string, never>> & { __brand: 'tenant' }
-        );
-        expect(offset).toBe(-300);
+    test('should return the correct offset for America/New_York WITHOUT daylight saving time', () => {
+      const date = new Date('2021-01-01T00:00:00Z');
+      const timezone = 'America/New_York';
+
+      const offset = getUTCOffset(timezone, date);
+      expect(offset).toBe(-300);
     });
 
-    test('should return the correct offset for Europe/London during daylight saving time', async () => {
-      mockDb.limit.mockResolvedValue([{ timezoneCode: 'Europe/London' }]);
-      jest.useFakeTimers().setSystemTime(new Date('2020-06-06T00:00:00'));
-      const offset = await getTimezoneOffset(
-        mockDb as unknown as LibSQLDatabase<Record<string, never>> & { __brand: 'tenant' }
-      );
+    test('should return the correct offset for Europe/London during daylight saving time', () => {
+      const date = new Date('2021-01-01T00:00:00Z');
+      const timezone = 'Europe/London';
+
+      const offset = getUTCOffset(timezone, date);
+      expect(offset).toBe(0);
+    });
+
+    test('should return the correct offset for Europe/London WITHOUT daylight saving time', () => {
+      const date = new Date('2021-07-01T00:00:00Z');
+      const timezone = 'Europe/London';
+
+      const offset = getUTCOffset(timezone, date);
       expect(offset).toBe(60);
     });
 
-    test('should fallback to UTC if no timezone is returned', async () => {
-      mockDb.limit.mockResolvedValue([]);
-  
-      const offset = await getTimezoneOffset(mockDb as unknown as LibSQLDatabase<Record<string, never>> & { __brand: 'tenant' });
-      expect(offset).toBe(0);
+    test('check Asian offset in summer time', () => {
+      const date = new Date('2021-07-01T00:00:00Z');
+      const timezone = 'Asia/Tokyo';
+
+      const offset = getUTCOffset(timezone, date);
+      expect(offset).toBe(540);
+    });
+
+    test('check Asian offset in winter time', () => {
+      const date = new Date('2021-01-01T00:00:00Z');
+      const timezone = 'Asia/Tokyo';
+
+      const offset = getUTCOffset(timezone, date);
+      expect(offset).toBe(540);
     });
   });
 });
