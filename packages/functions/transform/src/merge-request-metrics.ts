@@ -9,7 +9,7 @@ import { type ResultSet } from '@libsql/client/.';
 import { isMemberKnownBot } from './known-bots';
 import { getDateInfo } from '../../../schemas/transform/src/seed/dimensions';
 import { compare } from './compare';
-import { getLocaleTimezoneOffset } from './timezone-utils';
+import { getTimezoneOffset } from './timezone-utils';
 
 
 type BrandedDatabase<T> = LibSQLDatabase<Record<string, never>> & { __brand: T }
@@ -1123,7 +1123,7 @@ export async function run(extractMergeRequestId: number, extractDeploymentId: nu
   });
   if (deployedAt) mergeRequestTimestamps.add(deployedAt.getTime());
 
-  const timezoneInMinutes = await getLocaleTimezoneOffset(ctx.tenantDatabase);
+  const timezoneInMinutes = await getTimezoneOffset(ctx.tenantDatabase);
   console.log(`Timezone offset in minutes: ${timezoneInMinutes}`);
   const timezoneInMilliseconds = timezoneInMinutes * 60 * 1000;
   

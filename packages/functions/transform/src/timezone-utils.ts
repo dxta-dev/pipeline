@@ -4,14 +4,14 @@ import type { LibSQLDatabase } from 'drizzle-orm/libsql';
 type BrandedDatabase<T> = LibSQLDatabase<Record<string, never>> & { __brand: T };
 export type TenantDatabase = BrandedDatabase<'tenant'>;
 
-export async function getLocaleTimezoneOffset(db: TenantDatabase): Promise<number> {
+export async function getTimezoneOffset(db: TenantDatabase): Promise<number> {
 
   const result = await db
     .select({ timezoneCode: tenant.tenantConfig.timezoneCode })
     .from(tenant.tenantConfig)
     .limit(1);
 
-    const timezone = result?.[0]?.timezoneCode || 'UTC';
+  const timezone = result?.[0]?.timezoneCode || 'UTC';
 
   const currDate = new Date();
 
@@ -41,27 +41,33 @@ export async function getLocaleTimezoneOffset(db: TenantDatabase): Promise<numbe
 
   const tzParts = tzFormatter.formatToParts(currDate);
 
-  const utcDate = new Date(Date.UTC(
-    parseInt(utcParts.find(part => part.type === 'year')!.value),
-    parseInt(utcParts.find(part => part.type === 'month')!.value) - 1,
-    parseInt(utcParts.find(part => part.type === 'day')!.value),
-    parseInt(utcParts.find(part => part.type === 'hour')!.value),
-    parseInt(utcParts.find(part => part.type === 'minute')!.value),
-    parseInt(utcParts.find(part => part.type === 'second')!.value)
-  ));
-
-  const tzDate = new Date(Date.UTC(
-    parseInt(tzParts.find(part => part.type === 'year')!.value),
-    parseInt(tzParts.find(part => part.type === 'month')!.value) - 1,
-    parseInt(tzParts.find(part => part.type === 'day')!.value),
-    parseInt(tzParts.find(part => part.type === 'hour')!.value),
-    parseInt(tzParts.find(part => part.type === 'minute')!.value),
-    parseInt(tzParts.find(part => part.type === 'second')!.value)
-
-  ));
+  const utcDate = partsDate(utcParts);
+  const tzDate = partsDate(tzParts);
 
   const timezoneOffset = (tzDate.getTime() - utcDate.getTime()) / (1000 * 60);
   
   return Math.round(timezoneOffset);
+}
 
+function partsDate(parts: Intl.DateTimeFormatPart[]) {
+  type DateParts = {
+    year?: string;
+    month?: string;
+    day?: string;
+    hour?: string;
+  };
+
+  const dateParts = parts.reduce((acc: DateParts, part) => {
+    if (part.type === 'year' || part.type === 'month' || part.type === 'day' || part.type === 'hour') {
+      acc[part.type] = part.value;
+    }
+    return acc;
+  }, {} as DateParts);
+
+  return new Date(
+    Number(dateParts.year),
+    Number(dateParts.month) - 1,
+    Number(dateParts.day),
+    Number(dateParts.hour)
+  );
 }
