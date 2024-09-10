@@ -1,5 +1,6 @@
 import * as extract from '@dxta/extract-schema';
 import * as transform from '@dxta/transform-schema';
+import * as tenant from '@dxta/tenant-schema';
 import { sql, eq, or, and, type ExtractTablesWithRelations } from "drizzle-orm";
 import type { LibSQLDatabase } from 'drizzle-orm/libsql';
 import { isCodeGen } from './is-codegen';
@@ -9,7 +10,7 @@ import { type ResultSet } from '@libsql/client/.';
 import { isMemberKnownBot } from './known-bots';
 import { getDateInfo } from '../../../schemas/transform/src/seed/dimensions';
 import { compare } from './compare';
-import { getTimezoneOffset } from './timezone-utils';
+import { getUTCOffset } from './timezone-utils';
 
 
 type BrandedDatabase<T> = LibSQLDatabase<Record<string, never>> & { __brand: T }
@@ -23,6 +24,16 @@ type TableMeta = {
   _createdAt: Date | null;
   _updatedAt: Date | null;
 }
+
+async function getHqTimezone(db: TenantDatabase): Promise<string> {
+  const result = await db.select({ timezoneCode: tenant.tenantConfig.timezoneCode })
+    .from(tenant.tenantConfig)
+    .limit(1);
+
+    const timezone = result?.[0]?.timezoneCode || 'UTC';
+    return timezone;
+}
+
 
 function getUsersDatesMergeRequestMetricsId(db: TransformDatabase, transformMergeRequestId: number) {
   return db.select({
@@ -1123,7 +1134,11 @@ export async function run(extractMergeRequestId: number, extractDeploymentId: nu
   });
   if (deployedAt) mergeRequestTimestamps.add(deployedAt.getTime());
 
-  const timezoneInMinutes = await getTimezoneOffset(ctx.tenantDatabase);
+  const currentDate = new Date();
+
+  const timezone = await getHqTimezone(ctx.tenantDatabase)
+
+  const timezoneInMinutes = getUTCOffset(timezone, currentDate);
   const timezoneInMilliseconds = timezoneInMinutes * 60 * 1000;
   
   const timestampsWithTimezone = new Set(
