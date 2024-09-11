@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "13729d91-d0cb-4731-bee7-a713f330c8c6",
+  "id": "cfd131ba-d53e-4365-a592-d3b8898d6a02",
   "prevId": "fae96bda-469b-4df3-954f-bf5c93ef1c04",
   "tables": {
     "crawl_events": {
@@ -1728,12 +1728,13 @@
           "notNull": true,
           "autoincrement": false
         },
-        "timezone_code": {
-          "name": "timezone_code",
+        "tzdata": {
+          "name": "tzdata",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false
+          "autoincrement": false,
+          "default": "'UTC'"
         },
         "__created_at": {
           "name": "__created_at",

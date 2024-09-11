@@ -26,11 +26,11 @@ type TableMeta = {
 }
 
 async function getHqTimezone(db: TenantDatabase): Promise<string> {
-  const result = await db.select({ timezoneCode: tenant.tenantConfig.timezoneCode })
+  const result = await db.select({ tzdata: tenant.tenantConfig.tzdata })
     .from(tenant.tenantConfig)
     .limit(1);
 
-    const timezone = result?.[0]?.timezoneCode || 'UTC';
+    const timezone = result?.[0]?.tzdata || 'UTC';
     return timezone;
 }
 

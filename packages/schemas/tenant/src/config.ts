@@ -5,7 +5,7 @@ import { sqliteTable } from './tenant-table';
 
 export const tenantConfig = sqliteTable('config', {
   id: integer('id').primaryKey(),
-  timezoneCode: text('timezone_code').notNull(),
+  tzdata: text('tzdata').notNull().default('UTC'),
   _createdAt: integer('__created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
   _updatedAt: integer('__updated_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
 });
