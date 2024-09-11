@@ -10,6 +10,8 @@ import { type ResultSet } from '@libsql/client/.';
 import { isMemberKnownBot } from './known-bots';
 import { getDateInfo } from '../../../schemas/transform/src/seed/dimensions';
 import { compare } from './compare';
+import { getUTCOffset } from './timezone-utils';
+
 
 type BrandedDatabase<T> = LibSQLDatabase<Record<string, never>> & { __brand: T }
 type DatabaseTransaction = SQLiteTransaction<"async", ResultSet, Record<string, unknown>, ExtractTablesWithRelations<Record<string, unknown>>>;
@@ -23,22 +25,13 @@ type TableMeta = {
   _updatedAt: Date | null;
 }
 
-async function getTimezoneInMinutes(db: TenantDatabase): Promise<number> {
-  const result = await db
-    .select({ hqTimezone: tenant.tenantConfig.hqTimezone })
+async function getHqTimezone(db: TenantDatabase): Promise<string> {
+  const result = await db.select({ tzdata: tenant.tenantConfig.tzdata })
     .from(tenant.tenantConfig)
-    .limit(1)
+    .limit(1);
 
-  if (!result || result.length === 0) {
-    return 0;
-  }
-  const timestamp = result[0];
-
-  if (!timestamp || timestamp.hqTimezone === undefined) {
-    return 0;
-  }
-
-  return timestamp.hqTimezone;
+    const timezone = result?.[0]?.tzdata || 'UTC';
+    return timezone;
 }
 
 
@@ -1141,21 +1134,24 @@ export async function run(extractMergeRequestId: number, extractDeploymentId: nu
   });
   if (deployedAt) mergeRequestTimestamps.add(deployedAt.getTime());
 
-  const timezone = await getTimezoneInMinutes(ctx.tenantDatabase);
-  let timezoneInMilliseconds = 0;
+  const currentDate = new Date();
 
-  timezoneInMilliseconds = timezone * 60 * 1000;
+  const timezone = await getHqTimezone(ctx.tenantDatabase)
 
+  const timezoneInMinutes = getUTCOffset(timezone, currentDate);
+  const timezoneInMilliseconds = timezoneInMinutes * 60 * 1000;
+  
   const timestampsWithTimezone = new Set(
     Array.from(mergeRequestTimestamps).map(timestamp => timestamp + timezoneInMilliseconds)
   );
-
+  
   const mergeRequestDates = await selectDates(ctx.transformDatabase, timestampsWithTimezone);
-
+  
   const timestampDateMap = new Map<number, transform.TransformDate['id']>();
   mergeRequestTimestamps.forEach(ts => {
     timestampDateMap.set(ts, getDateIdOrNullDateId(getDMY(new Date(ts + timezoneInMilliseconds)), mergeRequestDates, nullDateId).id);
   });
+  
 
   const mergedAtId = timestampDateMap.get(extractData.mergeRequest.mergedAt?.getTime() || 0) || nullDateId;
   const closedAtId = timestampDateMap.get(extractData.mergeRequest.closedAt?.getTime() || 0) || nullDateId;
