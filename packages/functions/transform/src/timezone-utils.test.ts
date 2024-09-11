@@ -1,14 +1,6 @@
 import { describe, expect, test } from '@jest/globals';
 import { getUTCOffset } from './timezone-utils';
 
-describe('getLocaleTimezoneOffset', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
-
   describe('timezone offset calculation', () => {
     test('should return 0 for UTC', () => {
 
@@ -67,4 +59,3 @@ describe('getLocaleTimezoneOffset', () => {
       expect(offset).toBe(540);
     });
   });
-});
