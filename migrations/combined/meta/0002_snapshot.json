@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "cdbd5ec5-fc56-4b58-a69f-550435459657",
+  "id": "76de7061-ebf5-422a-af77-39aad1271af1",
   "prevId": "cfd131ba-d53e-4365-a592-d3b8898d6a02",
   "tables": {
     "crawl_events": {
@@ -2592,8 +2592,7 @@
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false,
-          "default": 0
+          "autoincrement": false
         },
         "review_start_delay": {
           "name": "review_start_delay",
