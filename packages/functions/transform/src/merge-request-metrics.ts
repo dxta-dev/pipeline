@@ -198,11 +198,14 @@ type DMY = {
   week: string,
 };
 
-function getDMY(date: Date | null) {
+export function getDMY(date: Date | null, timeZone: string) {
   if (date === null) {
     return null;
   }
-  return getDateInfo(new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())))
+  const tzOffsetInMinutes = getUTCOffset(timeZone, date);
+  const tzOffset = tzOffsetInMinutes * 60 * 1000;
+  const tzDate = new Date(date.getTime() + tzOffset);
+  return getDateInfo(new Date(Date.UTC(tzDate.getUTCFullYear(), tzDate.getUTCMonth(), tzDate.getUTCDate())))
 }
 
 function getDMYQuery(dmy: DMY | null) {
@@ -272,11 +275,11 @@ async function upsertForgeUsers(db: TransformDatabase, members: MemberData[]) {
 }
 
 
-async function selectDates(db: TransformDatabase, timestamps: Set<number>) {
+async function selectDates(db: TransformDatabase, timestamps: Set<number>, timezone: string) {
 
   const query = [];
   for (const timestamp of timestamps) {
-    query.push(getDMYQuery(getDMY(new Date(timestamp))));
+    query.push(getDMYQuery(getDMY(new Date(timestamp), timezone)));
   }
 
   const datesData = await db.select({
@@ -1136,24 +1139,14 @@ export async function run(extractMergeRequestId: number, extractDeploymentId: nu
   });
   if (deployedAt) mergeRequestTimestamps.add(deployedAt.getTime());
 
-  const currentDate = new Date();
-
   const timezone = await getHqTimezone(ctx.tenantDatabase)
-
-  const timezoneInMinutes = getUTCOffset(timezone, currentDate);
-  const timezoneInMilliseconds = timezoneInMinutes * 60 * 1000;
   
-  const timestampsWithTimezone = new Set(
-    Array.from(mergeRequestTimestamps).map(timestamp => timestamp + timezoneInMilliseconds)
-  );
-  
-  const mergeRequestDates = await selectDates(ctx.transformDatabase, timestampsWithTimezone);
+  const mergeRequestDates = await selectDates(ctx.transformDatabase, mergeRequestTimestamps, timezone);
   
   const timestampDateMap = new Map<number, transform.TransformDate['id']>();
   mergeRequestTimestamps.forEach(ts => {
-    timestampDateMap.set(ts, getDateIdOrNullDateId(getDMY(new Date(ts + timezoneInMilliseconds)), mergeRequestDates, nullDateId).id);
-  });
-  
+    timestampDateMap.set(ts, getDateIdOrNullDateId(getDMY(new Date(ts), timezone), mergeRequestDates, nullDateId).id);
+  });  
 
   const mergedAtId = timestampDateMap.get(extractData.mergeRequest.mergedAt?.getTime() || 0) || nullDateId;
   const closedAtId = timestampDateMap.get(extractData.mergeRequest.closedAt?.getTime() || 0) || nullDateId;
