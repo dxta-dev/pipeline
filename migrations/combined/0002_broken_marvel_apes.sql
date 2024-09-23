@@ -1,0 +1,1 @@
+ALTER TABLE transform_merge_request_metrics ADD `time_to_merge` integer DEFAULT 0 NOT NULL;
