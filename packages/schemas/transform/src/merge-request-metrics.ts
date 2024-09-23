@@ -22,10 +22,11 @@ export const mergeRequestMetrics = sqliteTable('merge_request_metrics', {
   codeAddition: integer('code_addition').notNull().default(0),
   codeDeletion: integer('code_deletion').notNull().default(0),
 
-  codingDuration: integer('coding_duration').notNull(),
+  codingDuration: integer('coding_duration').notNull().default(0),
   pickupDuration: integer('review_start_delay').notNull(),
   reviewDuration: integer('review_duration').notNull(),
   deployDuration: integer('deploy_duration').notNull(),
+  timeToMerge: integer('time_to_merge').notNull().default(0),
   handover: integer('handover').notNull(),
   reviewDepth: integer('review_depth').notNull(),
 

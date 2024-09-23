@@ -891,6 +891,7 @@ function runTimeline(mergeRequestData: MergeRequestData, timelineEvents: Timelin
   const codingDuration = calculateDuration(startedCodingAt, startedPickupAt);
   const pickupDuration = calculateDuration(startedPickupAt, startedReviewAt);
   const reviewDuration = calculateDuration(startedReviewAt, mergeRequestData.closedAt);
+  const timeToMerge = calculateDuration(startedCodingAt, mergeRequestData.mergedAt);
 
   return {
     startedCodingAt,
@@ -903,6 +904,7 @@ function runTimeline(mergeRequestData: MergeRequestData, timelineEvents: Timelin
     codingDuration,
     pickupDuration,
     reviewDuration,
+    timeToMerge,
   }
 }
 
@@ -1369,6 +1371,7 @@ export async function run(extractMergeRequestId: number, extractDeploymentId: nu
           codingDuration: timeline.codingDuration,
           pickupDuration: timeline.pickupDuration,
           reviewDuration: timeline.reviewDuration,
+          timeToMerge: timeline.timeToMerge,
           deployDuration,
           handover: timeline.handover,
           reviewDepth: timeline.reviewDepth,
@@ -1403,6 +1406,7 @@ export async function run(extractMergeRequestId: number, extractDeploymentId: nu
           codingDuration: timeline.codingDuration,
           pickupDuration: timeline.pickupDuration,
           reviewDuration: timeline.reviewDuration,
+          timeToMerge: timeline.timeToMerge,
           deployDuration,
           handover: timeline.handover,
           reviewDepth: timeline.reviewDepth,
