@@ -92,6 +92,24 @@ function upsertRepository(db: TransformDatabase, repo: transform.NewRepository) 
     .returning();
 }
 
+function upsertDeployment(db: TransformDatabase, deploy: transform.NewDeployment) {
+  return db.insert(transform.deployments)
+  .values(deploy)
+  .onConflictDoUpdate({
+    target: [
+      transform.deployments.externalId,
+      transform.deployments.repositoryId,
+      transform.deployments.deploymentType
+    ],
+    set: {
+      deploymentType: deploy.deploymentType,
+      deployedAt: deploy.deployedAt,
+      status: deploy.status,
+      _updatedAt: sql`(strftime('%s', 'now'))`,
+    }
+  });
+}
+
 function upsertBranch(db: TransformDatabase, branch: transform.NewBranch) {
   return db.insert(transform.branches)
     .values(branch)
@@ -603,14 +621,28 @@ async function selectExtractData(db: ExtractDatabase, extractMergeRequestId: num
     .where(eq(mergeRequestCommits.mergeRequestId, extractMergeRequestId))
     .all();
 
-  let deploymentData: { deployedAt: extract.Deployment['deployedAt']; status: extract.Deployment['status'] } | undefined;
+  let deploymentData: {
+    deployedAt: extract.Deployment['deployedAt'];
+    status: extract.Deployment['status'];
+    type: extract.Deployment['deploymentType'];
+    externalId: extract.Deployment['externalId'];
+    // commitSha: string | null;
+    environment: extract.Deployment['environment'];
+    gitBranch: extract.Deployment['gitBranch'];
+  } | undefined;
   if (extractDeploymentId) {
     deploymentData = await db.select({
       deployedAt: deployments.deployedAt,
       status: deployments.status,
+      type: deployments.deploymentType,
+      externalId: deployments.externalId,
+      environment: deployments.environment,
+      gitBranch: deployments.gitBranch,
+      // commitSha: repositoryShas.sha,
     })
       .from(deployments)
       .where(eq(deployments.id, extractDeploymentId))
+      // .leftJoin(repositoryShas, eq(repositoryShas.id, deployments.repositoryShaId))
       .get();
   }
 
@@ -1328,8 +1360,17 @@ export async function run(extractMergeRequestId: number, extractDeploymentId: nu
   /**** MergeRequestEvents end ****/
 
   /**** Deployment start ****/
-  const deployedAtId = deployedAt?timestampDateMap.get(deployedAt.getTime()) || nullDateId : nullDateId;
+  const deployedAtId = timestampDateMap.get(deployedAt?.getTime() || 0) || nullDateId;
   const deployDuration = extractData.mergeRequest.mergedAt && deployedAt ? deployedAt.getTime() - extractData.mergeRequest.mergedAt.getTime() : 0;
+  if (extractData.deployment) {
+    await upsertDeployment(ctx.transformDatabase, {
+      deployedAt: deployedAtId,
+      deploymentType: extractData.deployment.type,
+      externalId: extractData.deployment.externalId,
+      repositoryId: transformRepositoryId,
+      status: extractData.deployment.status,
+    });
+  }
   /**** Deployment end ****/
 
 
