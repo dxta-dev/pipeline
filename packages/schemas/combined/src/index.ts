@@ -23,6 +23,7 @@ export { mergeRequestDatesJunk as transformMergeRequestDatesJunk } from '@dxta/t
 export { nullRows as transformNullRows } from '@dxta/transform-schema';
 export { mergeRequestEvents as transformMergeRequestEvents } from '@dxta/transform-schema';
 export { branches as transformBranches } from '@dxta/transform-schema';
+export { deployments as transformDeployments } from '@dxta/transform-schema';
 
 export { instances as crawlInstances } from '@dxta/crawl-schema';
 export { events as crawlEvents } from '@dxta/crawl-schema';

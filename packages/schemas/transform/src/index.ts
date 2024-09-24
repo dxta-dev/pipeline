@@ -7,6 +7,7 @@ export { mergeRequestUsersJunk } from './merge-request-users-junk';
 export { mergeRequestDatesJunk } from './merge-request-dates-junk';
 export { mergeRequestEvents } from './merge-request-events';
 export { branches } from './branches';
+export { deployments } from './deployments';
 export { nullRows } from './null-rows';
 
 export type { ForgeUser, NewForgeUser } from './forge-users';
@@ -18,5 +19,6 @@ export type { MergeRequestUsersJunk, NewMergeRequestUsersJunk } from './merge-re
 export type { MergeRequestDatesJunk, NewMergeRequestDatesJunk } from './merge-request-dates-junk';
 export type { MergeRequestEvent, NewMergeRequestEvent, MergeRequestEventType, ReviewStateType } from './merge-request-events';
 export type { Branch, NewBranch } from './branches';
+export type { Deployment, NewDeployment } from './deployments';
 
 export type { NullRows, NewNullRows } from './null-rows';
