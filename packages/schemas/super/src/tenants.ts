@@ -7,6 +7,7 @@ export const tenants = sqliteTable('tenants', {
   id: integer('id').primaryKey(),
   name: text('subdomain').notNull(),
   dbUrl: text('db_url').notNull(),
+  crawlUserId: text('crawl_user_id').notNull(),
   _createdAt: integer('__created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
   _updatedAt: integer('__updated_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
 });
