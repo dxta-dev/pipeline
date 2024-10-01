@@ -19,7 +19,8 @@ const initSourceControl = async (userId: string, sourceControl: 'github' | 'gitl
   return null;
 }
 
-type ExtractIntegrations = Context<SourceControl, Record<string, never>>['integrations'];
+type NoEntities = Record<string, never>;
+type ExtractIntegrations = Context<SourceControl, NoEntities>['integrations'];
 
 type initIntegrationsInput = { userId: string, sourceControl: 'github' | 'gitlab' };
 export const initIntegrations = async ({ userId, sourceControl }: initIntegrationsInput) => {
