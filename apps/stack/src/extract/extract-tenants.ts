@@ -50,7 +50,8 @@ const { sender } = tenantSenderHandler;
 
 export const cronHandler = async ()=> {
   const tenants = getTenants();
-  const tenantCrawlInput = tenants.map(tenant => ({ tenantId: tenant.id, crawlUserId: tenant.crawlUserId }));
+  const crawlEnabledTenants = tenants.filter(x => x.crawlUserId !== '');
+  const tenantCrawlInput = crawlEnabledTenants.map(tenant => ({ tenantId: tenant.id, crawlUserId: tenant.crawlUserId }));
 
   const PERIOD_DURATION = 15 * 60 * 1000; // 15 minutes
   const PERIOD_START_MARGIN = 5 * 60 * 1000; // 5 minutes
@@ -110,6 +111,7 @@ export const apiHandler = ApiHandler(async (ev) => {
   }
 
   const { tenant: tenantId, from, to } = inputValidation.data;
+  const { sub } = lambdaContextValidation.data.authorizer.jwt.claims;
 
   const tenants = getTenants();
   const tenant = tenants.find(tenant => tenant.id === tenantId);
@@ -118,7 +120,7 @@ export const apiHandler = ApiHandler(async (ev) => {
     message: JSON.stringify({ error: "Tenant not found" })
   }
 
-  await sender.sendAll([{ tenantId, crawlUserId: tenant.crawlUserId }], {
+  await sender.sendAll([{ tenantId, crawlUserId: sub }], {
     version: -1,
     caller: 'extract-tenant:apiHandler',
     timestamp: Date.now(),
