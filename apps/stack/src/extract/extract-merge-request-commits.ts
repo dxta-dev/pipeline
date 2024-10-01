@@ -1,16 +1,16 @@
 import { getMergeRequestCommits, type Context, type GetMergeRequestCommitsEntities, type GetMergeRequestCommitsSourceControl } from "@dxta/extract-functions";
-import { GitHubSourceControl, GitlabSourceControl } from "@dxta/source-control";
 import { mergeRequestCommits, namespaces, repositories, mergeRequests, RepositorySchema, NamespaceSchema, MergeRequestSchema, members, repositoriesToMembers } from "@dxta/extract-schema";
 import { EventHandler } from "@stack/config/create-event";
 import { extractMembersEvent, extractMergeRequestsEvent } from "./events";
 import { createMessageHandler } from "@stack/config/create-message";
 import { MessageKind, metadataSchema } from "./messages";
 import { z } from "zod";
-import { getClerkUserToken } from "./get-clerk-user-token";
 import { insertEvent } from "@dxta/crawl-functions";
 import { events } from "@dxta/crawl-schema";
-import { getTenantDb, type OmitDb } from "@stack/config/get-tenant-db";
 import { filterNewExtractMembers } from "./filter-extract-members";
+import { initDatabase, initIntegrations } from "./context";
+
+type ExtractMergeRequestCommitsContext = Context<GetMergeRequestCommitsSourceControl, GetMergeRequestCommitsEntities>;
 
 export const mrcsh = createMessageHandler({
   queueId: 'ExtractQueue',
@@ -27,7 +27,10 @@ export const mrcsh = createMessageHandler({
       return;
     }
 
-    context.integrations.sourceControl = await initSourceControl(message.metadata.userId, message.metadata.sourceControl);
+    const dynamicContext = {
+      integrations: await initIntegrations(message.metadata),
+      db: initDatabase(message.metadata),
+    } satisfies Partial<ExtractMergeRequestCommitsContext>;
 
     const { userId, sourceControl } = message.metadata;
     const { mergeRequestId, namespaceId, repositoryId } = message.content;
@@ -36,7 +39,7 @@ export const mrcsh = createMessageHandler({
         mergeRequestId,
         namespaceId,
         repositoryId
-      }, { ...context, db: getTenantDb(message.metadata.tenantId) })
+      }, { ...staticContext, ...dynamicContext })
 
       const memberIds = filterNewExtractMembers(members).map(member => member.id);
       if (memberIds.length === 0) return;
@@ -50,17 +53,14 @@ export const mrcsh = createMessageHandler({
         timestamp: new Date().getTime(),
         from: message.metadata.from,
         to: message.metadata.to,
-        tenantId: message.metadata.tenantId,
+        dbUrl: message.metadata.dbUrl,
       });      
   }
 });
 
 const { sender } = mrcsh;
 
-  const context: OmitDb<Context<
-    GetMergeRequestCommitsSourceControl,
-    GetMergeRequestCommitsEntities
-  >> = {
+  const staticContext = {
   entities: {
     mergeRequestCommits,
     members,
@@ -68,19 +68,9 @@ const { sender } = mrcsh;
     namespaces,
     repositories,
     mergeRequests,
-  },
-  integrations: {
-    sourceControl: null,
-  },
-};
+  }
+} satisfies Partial<ExtractMergeRequestCommitsContext>;
 
-
-const initSourceControl = async (userId: string, sourceControl: 'github' | 'gitlab') => {
-  const accessToken = await getClerkUserToken(userId, `oauth_${sourceControl}`);
-  if (sourceControl === 'github') return new GitHubSourceControl({ auth: accessToken });
-  if (sourceControl === 'gitlab') return new GitlabSourceControl(accessToken);
-  return null;
-}
 
 export const eventHandler = EventHandler(extractMergeRequestsEvent, async (ev) => {
   const { mergeRequestIds, namespaceId, repositoryId } = ev.properties;
@@ -99,7 +89,7 @@ export const eventHandler = EventHandler(extractMergeRequestsEvent, async (ev) =
 
   await insertEvent(
     { crawlId: ev.metadata.crawlId, eventNamespace: 'mergeRequestCommit', eventDetail: 'crawlInfo', data: { calls: mergeRequestIds.length } },
-    { db: getTenantDb(ev.metadata.tenantId), entities: { events } }
+    { db: initDatabase(ev.metadata), entities: { events } }
   );
 
   await sender.sendAll(arrayOfExtractMergeRequestData, {
@@ -111,7 +101,7 @@ export const eventHandler = EventHandler(extractMergeRequestsEvent, async (ev) =
     timestamp: new Date().getTime(),
     from: ev.metadata.from,
     to: ev.metadata.to,
-    tenantId: ev.metadata.tenantId,
+    dbUrl: ev.metadata.dbUrl,
   })
 
 });

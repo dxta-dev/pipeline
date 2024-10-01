@@ -5,15 +5,15 @@ import { NamespaceSchema, RepositorySchema, repositoryCommits as commits, reposi
 import type { Namespace, Repository } from "@dxta/extract-schema";
 import type { Context, GetCommitsEntities, GetCommitsSourceControl } from "@dxta/extract-functions";
 import { getCommits } from "@dxta/extract-functions";
-import { type OmitDb, getTenantDb } from "@stack/config/get-tenant-db";
 import { Config } from "sst/node/config";
-import { getClerkUserToken } from "./get-clerk-user-token";
-import { GitHubSourceControl, GitlabSourceControl } from "@dxta/source-control";
 import { EventHandler } from "@stack/config/create-event";
 import { extractRepositoryEvent } from "./events";
 import { eq } from "drizzle-orm";
 import { insertEvent } from "@dxta/crawl-functions";
 import { events } from "@dxta/crawl-schema";
+import { initDatabase, initIntegrations } from "./context";
+
+type ExtractDefaultBranchCommitsContext = Context<GetCommitsSourceControl, GetCommitsEntities>;
 
 type ExtractDefaultBranchCommitsPageInput = {
   namespace: Namespace;
@@ -24,7 +24,7 @@ type ExtractDefaultBranchCommitsPageInput = {
   page: number;
   userId: string;
   sourceControl: "github" | "gitlab";
-  tenantId: number;
+  dbUrl: string;
 }
 const extractDefaultBranchCommitsPage = async ({
   namespace,
@@ -35,9 +35,13 @@ const extractDefaultBranchCommitsPage = async ({
   page,
   userId,
   sourceControl,
-  tenantId,
+  dbUrl,
 }: ExtractDefaultBranchCommitsPageInput) => {
-  context.integrations.sourceControl = await initSourceControl(userId, sourceControl);
+
+  const dynamicContext = {
+    integrations: await initIntegrations({ userId, sourceControl }),
+    db: initDatabase({ dbUrl })
+  } satisfies Partial<ExtractDefaultBranchCommitsContext>;
 
   const { paginationInfo: pagination } = await getCommits({
     namespace,
@@ -46,27 +50,18 @@ const extractDefaultBranchCommitsPage = async ({
     timePeriod: { from, to },
     perPage,
     page,
-  }, { ...context, db: getTenantDb(tenantId) });
+  }, { ...staticContext, ...dynamicContext });
 
   return { pagination };
 }
 
-const initSourceControl = async (userId: string, sourceControl: 'github' | 'gitlab') => {
-  const accessToken = await getClerkUserToken(userId, `oauth_${sourceControl}`);
-  if (sourceControl === 'github') return new GitHubSourceControl({ auth: accessToken });
-  if (sourceControl === 'gitlab') return new GitlabSourceControl(accessToken);
-  return null;
-}
-const context: OmitDb<Context<GetCommitsSourceControl, GetCommitsEntities>> = {
+const staticContext = {
   entities: {
     commits,
     repositoryShaTrees,
     repositoryShas
   },
-  integrations: {
-    sourceControl: null,
-  },
-};
+} satisfies Partial<ExtractDefaultBranchCommitsContext>;
 
 export const commitsSenderHandler = createMessageHandler({
   queueId: 'ExtractQueue',
@@ -80,7 +75,7 @@ export const commitsSenderHandler = createMessageHandler({
   }).shape,
   handler: async (message) => {
     const { repository, namespace, page, perPage } = message.content;
-    const { from, to, userId, sourceControl, tenantId } = message.metadata;
+    const { from, to, userId, sourceControl, dbUrl } = message.metadata;
 
     await extractDefaultBranchCommitsPage({
       namespace,
@@ -91,7 +86,7 @@ export const commitsSenderHandler = createMessageHandler({
       page,
       userId,
       sourceControl,
-      tenantId
+      dbUrl
     });
   }
 });
@@ -99,9 +94,9 @@ export const commitsSenderHandler = createMessageHandler({
 const { sender } = commitsSenderHandler;
 
 export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
-  const { crawlId, from, to, userId, sourceControl, tenantId } = ev.metadata;
+  const { crawlId, from, to, userId, sourceControl, dbUrl } = ev.metadata;
 
-  const db = getTenantDb(tenantId);
+  const db = initDatabase(ev.metadata);
   const repository = await db.select().from(repositories).where(eq(repositories.id, ev.properties.repositoryId)).get();
   const namespace = await db.select().from(namespaces).where(eq(namespaces.id, ev.properties.namespaceId)).get();
 
@@ -116,7 +111,7 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
     perPage: Number(Config.PER_PAGE),
     page: 1,
     sourceControl,
-    tenantId,
+    dbUrl,
     userId
   });
 
@@ -147,7 +142,7 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
     from: ev.metadata.from,
     to: ev.metadata.to,
     crawlId: ev.metadata.crawlId,
-    tenantId: ev.metadata.tenantId,
+    dbUrl: ev.metadata.dbUrl,
   });
 
 }, {

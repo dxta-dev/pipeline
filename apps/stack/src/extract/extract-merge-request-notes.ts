@@ -2,24 +2,17 @@ import { mergeRequestNotes, mergeRequests, repositories, namespaces, MergeReques
 import { createMessageHandler } from "@stack/config/create-message";
 import { MessageKind, metadataSchema } from "./messages";
 import { z } from "zod";
-import { GitHubSourceControl, GitlabSourceControl } from "@dxta/source-control";
 import { getMergeRequestNotes, type Context, type GetMergeRequestNotesEntities, type GetMergeRequestNotesSourceControl } from "@dxta/extract-functions";
 import { EventHandler } from "@stack/config/create-event";
 import { extractMembersEvent, extractMergeRequestsEvent } from "./events";
-import { getClerkUserToken } from "./get-clerk-user-token";
 import { insertEvent } from "@dxta/crawl-functions";
 import { events } from "@dxta/crawl-schema";
-import { getTenantDb, type OmitDb } from "@stack/config/get-tenant-db";
 import { filterNewExtractMembers } from "./filter-extract-members";
+import { initDatabase, initIntegrations } from "./context";
 
-const initSourceControl = async (userId: string, sourceControl: 'github' | 'gitlab') => {
-  const accessToken = await getClerkUserToken(userId, `oauth_${sourceControl}`);
-  if (sourceControl === 'github') return new GitHubSourceControl({ auth: accessToken });
-  if (sourceControl === 'gitlab') return new GitlabSourceControl(accessToken);
-  return null;
-}
+type ExtractMergeRequestNotesContext = Context<GetMergeRequestNotesSourceControl, GetMergeRequestNotesEntities>;
 
-const context: OmitDb<Context<GetMergeRequestNotesSourceControl, GetMergeRequestNotesEntities>> = {
+const staticContext = {
   entities: {
     members,
     mergeRequestNotes,
@@ -28,10 +21,7 @@ const context: OmitDb<Context<GetMergeRequestNotesSourceControl, GetMergeRequest
     repositories,
     repositoriesToMembers,
   },
-  integrations: {
-    sourceControl: null
-  }
-};
+} satisfies Partial<ExtractMergeRequestNotesContext>;
 
 export const mergeRequestNoteSenderHandler = createMessageHandler({
   queueId: 'ExtractQueue',
@@ -43,15 +33,18 @@ export const mergeRequestNoteSenderHandler = createMessageHandler({
     namespaceId: NamespaceSchema.shape.id,
   }).shape,
   handler: async (message) => {
-    const { userId, sourceControl } = message.metadata;
     const { mergeRequestId, namespaceId, repositoryId } = message.content;
-    context.integrations.sourceControl = await initSourceControl(userId, sourceControl);
+
+    const dynamicContext = {
+      integrations: await initIntegrations(message.metadata),
+      db: initDatabase(message.metadata),
+    } satisfies Partial<ExtractMergeRequestNotesContext>;
 
     const { members } = await getMergeRequestNotes({
       mergeRequestId,
       repositoryId,
       namespaceId,
-    }, { ...context, db: getTenantDb(message.metadata.tenantId) });
+    }, { ...staticContext, ...dynamicContext });
 
     const memberIds = filterNewExtractMembers(members).map(member => member.id);
     if (memberIds.length === 0) return;
@@ -60,12 +53,12 @@ export const mergeRequestNoteSenderHandler = createMessageHandler({
       crawlId: message.metadata.crawlId,
       version: 1,
       caller: 'extract-merge-request-notes',
-      sourceControl,
-      userId,
+      sourceControl: message.metadata.sourceControl,
+      userId: message.metadata.userId,
       timestamp: new Date().getTime(),
       from: message.metadata.from,
       to: message.metadata.to,
-      tenantId: message.metadata.tenantId,
+      dbUrl: message.metadata.dbUrl,
     });
   }
 });
@@ -87,8 +80,8 @@ export const eventHandler = EventHandler(extractMergeRequestsEvent, async (ev) =
   }
 
   await insertEvent(
-    { crawlId: ev.metadata.crawlId, eventNamespace: 'mergeRequestNote', eventDetail: 'crawlInfo', data: {calls: mergeRequestIds.length }},
-    { db: getTenantDb(ev.metadata.tenantId), entities: { events } }
+    { crawlId: ev.metadata.crawlId, eventNamespace: 'mergeRequestNote', eventDetail: 'crawlInfo', data: { calls: mergeRequestIds.length } },
+    { db: initDatabase(ev.metadata), entities: { events } }
   );
 
   await mergeRequestNoteQueue.sendAll(arrayOfExtractMergeRequestData, {
@@ -100,6 +93,6 @@ export const eventHandler = EventHandler(extractMergeRequestsEvent, async (ev) =
     timestamp: new Date().getTime(),
     from: ev.metadata.from,
     to: ev.metadata.to,
-    tenantId: ev.metadata.tenantId,
+    dbUrl: ev.metadata.dbUrl,
   });
 });

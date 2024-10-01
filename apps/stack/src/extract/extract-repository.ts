@@ -1,25 +1,22 @@
 import { extractRepositoryEvent } from "./events";
 import { getRepository } from "@dxta/extract-functions";
 import type { Context, GetRepositorySourceControl, GetRepositoryEntities } from "@dxta/extract-functions";
-import { GitlabSourceControl, GitHubSourceControl } from "@dxta/source-control";
 import { repositories, namespaces, RepositorySchema, NamespaceSchema } from "@dxta/extract-schema";
 import { instances } from "@dxta/crawl-schema";
 import { z } from "zod";
-import { getClerkUserToken } from "./get-clerk-user-token";
 import { setInstance } from "@dxta/crawl-functions";
-import { getTenantDb, type OmitDb } from "@stack/config/get-tenant-db";
 import { MessageKind, metadataSchema } from "./messages";
 import { createMessageHandler } from "@stack/config/create-message";
+import { initDatabase, initIntegrations } from "./context";
 
-const context: OmitDb<Context<GetRepositorySourceControl, GetRepositoryEntities>> = {
+type ExtractRepositoryContext = Context<GetRepositorySourceControl, GetRepositoryEntities>;
+
+const staticContext = {
   entities: {
     repositories,
     namespaces,
   },
-  integrations: {
-    sourceControl: null,
-  },
-};
+} satisfies Partial<ExtractRepositoryContext>;
 
 const inputSchema = z.object({
   repositoryId: z.number(),
@@ -28,24 +25,20 @@ const inputSchema = z.object({
   sourceControl: z.literal("gitlab").or(z.literal("github")),
   from: z.coerce.date(),
   to: z.coerce.date(),
-  tenantId: z.number(),
+  dbUrl: z.string(),
 });
 
 type Input = z.infer<typeof inputSchema>;
 const extractRepository = async (input: Input, userId: string) => {
-  const { tenantId, repositoryId, repositoryName, namespaceName, sourceControl, from, to } = input;
-  const db = getTenantDb(tenantId);
+  const { dbUrl, repositoryId, repositoryName, namespaceName, sourceControl, from, to } = input;
+  const db = initDatabase({dbUrl});
 
-  const sourceControlAccessToken = await getClerkUserToken(userId, `oauth_${sourceControl}`);
+  const dynamicContext = {
+    integrations: await initIntegrations({ sourceControl: input.sourceControl, userId }),
+    db,
+  } satisfies Partial<ExtractRepositoryContext>;
 
-  if (sourceControl === "gitlab") {
-    context.integrations.sourceControl = new GitlabSourceControl(sourceControlAccessToken);
-  } else if (sourceControl === "github") {
-    if (sourceControl === 'github') 
-    context.integrations.sourceControl = new GitHubSourceControl({ auth: sourceControlAccessToken });
-  }
-
-  const { repository, namespace } = await getRepository({ externalRepositoryId: repositoryId, repositoryName, namespaceName }, { ...context, db });
+  const { repository, namespace } = await getRepository({ externalRepositoryId: repositoryId, repositoryName, namespaceName }, { ...staticContext, ...dynamicContext });
 
   const { instanceId } = await setInstance({ repositoryId: repository.id, userId, since: from, until: to }, { db, entities: { instances } });
 
@@ -63,7 +56,7 @@ const extractRepository = async (input: Input, userId: string) => {
       userId,
       from,
       to,
-      tenantId,
+      dbUrl,
     }
   );
 
@@ -87,7 +80,7 @@ export const repositorySenderHandler = createMessageHandler({
       from:message.metadata.from,
       to:message.metadata.to,
       sourceControl: message.content.forgeType,
-      tenantId: message.metadata.tenantId,
+      dbUrl: message.metadata.dbUrl,
     }, message.metadata.userId);
   }
 });

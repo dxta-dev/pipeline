@@ -20,12 +20,12 @@ import {
   RepositorySchema,
   repositoryShas,
 } from "@dxta/extract-schema";
-import { GitHubSourceControl, GitlabSourceControl } from "@dxta/source-control";
 
 import { extractMergeRequestsEvent, extractRepositoryEvent } from "./events";
-import { getClerkUserToken } from "./get-clerk-user-token";
 import { MessageKind, metadataSchema, paginationSchema } from "./messages";
-import { getTenantDb, type OmitDb } from "@stack/config/get-tenant-db";
+import { initDatabase, initIntegrations } from "./context";
+
+type ExtractMergeRequestsContext = Context<GetMergeRequestsSourceControl, GetMergeRequestsEntities>;
 
 export const mergeRequestSenderHandler = createMessageHandler({
   queueId: 'ExtractQueue',
@@ -42,10 +42,10 @@ export const mergeRequestSenderHandler = createMessageHandler({
       return;
     }
 
-    context.integrations.sourceControl = await initSourceControl(
-      message.metadata.userId,
-      message.metadata.sourceControl,
-    );
+    const dynamicContext = {
+      integrations: await initIntegrations(message.metadata),
+      db: initDatabase(message.metadata),
+    } satisfies Partial<ExtractMergeRequestsContext>;
 
     const { namespace, pagination, repository } = message.content;
 
@@ -62,7 +62,7 @@ export const mergeRequestSenderHandler = createMessageHandler({
         timePeriod: { from: message.metadata.from, to: message.metadata.to },
         totalPages: pagination.totalPages,
       },
-      { ...context, db: getTenantDb(message.metadata.tenantId) },
+      { ...staticContext, ...dynamicContext },
     );
 
     if (mergeRequests.length === 0) return;
@@ -82,7 +82,7 @@ export const mergeRequestSenderHandler = createMessageHandler({
         timestamp: new Date().getTime(),
         from: message.metadata.from,
         to: message.metadata.to,
-        tenantId: message.metadata.tenantId,
+        dbUrl: message.metadata.dbUrl,
       },
     );
   },
@@ -90,33 +90,17 @@ export const mergeRequestSenderHandler = createMessageHandler({
 
 const { sender } = mergeRequestSenderHandler;
 
-const context: OmitDb<Context<
-  GetMergeRequestsSourceControl,
-  GetMergeRequestsEntities
->> = {
+const staticContext = {
   entities: {
     mergeRequests,
     repositoryShas
   },
-  integrations: {
-    sourceControl: null,
-  },
-};
-
-const initSourceControl = async (
-  userId: string,
-  sourceControl: "github" | "gitlab",
-) => {
-  const accessToken = await getClerkUserToken(userId, `oauth_${sourceControl}`);
-  if (sourceControl === 'github') return new GitHubSourceControl({ auth: accessToken });
-  if (sourceControl === "gitlab") return new GitlabSourceControl(accessToken);
-  return null;
-};
+} satisfies Partial<ExtractMergeRequestsContext>;
 
 export const eventHandler = EventHandler(
   extractRepositoryEvent,
   async (ev) => {
-    const db = getTenantDb(ev.metadata.tenantId);
+    const db = initDatabase(ev.metadata);
     const repository = await db
       .select()
       .from(repositories)
@@ -131,12 +115,10 @@ export const eventHandler = EventHandler(
     if (!repository) throw new Error("invalid repo id");
     if (!namespace) throw new Error("Invalid namespace id");
 
-    const sourceControl = ev.metadata.sourceControl;
-
-    context.integrations.sourceControl = await initSourceControl(
-      ev.metadata.userId,
-      sourceControl,
-    );
+    const dynamicContext = {
+      integrations: await initIntegrations(ev.metadata),
+      db: initDatabase(ev.metadata),
+    } satisfies Partial<ExtractMergeRequestsContext>;
 
     const startDate = ev.metadata.from;
     const endDate = ev.metadata.to;
@@ -155,7 +137,7 @@ export const eventHandler = EventHandler(
         perPage: Number(Config.PER_PAGE),
         timePeriod,
       },
-      { ...context, db },
+      { ...staticContext, ...dynamicContext },
     );
 
     if (mergeRequests.length === 0 && (paginationInfo.totalPages - paginationInfo.page) === 0) return;
@@ -183,12 +165,12 @@ export const eventHandler = EventHandler(
           crawlId: ev.metadata.crawlId,
           version: 1,
           caller: "extract-merge-requests",
-          sourceControl,
+          sourceControl: ev.metadata.sourceControl,
           userId: ev.metadata.userId,
           timestamp: new Date().getTime(),
           from: ev.metadata.from,
           to: ev.metadata.to,
-          tenantId: ev.metadata.tenantId,
+          dbUrl: ev.metadata.dbUrl,
         },
       );
     }
@@ -212,12 +194,12 @@ export const eventHandler = EventHandler(
       crawlId: ev.metadata.crawlId,
       version: 1,
       caller: "extract-merge-requests",
-      sourceControl,
+      sourceControl: ev.metadata.sourceControl,
       userId: ev.metadata.userId,
       timestamp: new Date().getTime(),
       from: ev.metadata.from,
       to: ev.metadata.to,
-      tenantId: ev.metadata.tenantId,
+      dbUrl: ev.metadata.dbUrl,
     });
   }, 
   {

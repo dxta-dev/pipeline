@@ -4,7 +4,6 @@ import { getMembers } from "@dxta/extract-functions";
 import type { Context, GetMembersEntities, GetMembersSourceControl } from "@dxta/extract-functions";
 import { members, namespaces, repositories, repositoriesToMembers, NamespaceSchema, RepositorySchema } from "@dxta/extract-schema";
 import type { Namespace, Repository } from "@dxta/extract-schema";
-import { GitHubSourceControl, GitlabSourceControl } from "@dxta/source-control";
 import type { Pagination } from "@dxta/source-control";
 import { Config } from "sst/node/config";
 
@@ -12,11 +11,12 @@ import { createMessageHandler } from "@stack/config/create-message";
 import { eq } from "drizzle-orm";
 import { metadataSchema, paginationSchema, MessageKind } from "./messages";
 import { z } from 'zod';
-import { getClerkUserToken } from "./get-clerk-user-token";
 import { insertEvent } from "@dxta/crawl-functions";
 import { events } from "@dxta/crawl-schema";
-import { getTenantDb, type OmitDb } from "@stack/config/get-tenant-db";
 import { filterNewExtractMembers } from "./filter-extract-members";
+import { initDatabase, initIntegrations } from "./context";
+
+type ExtractMembersContext = Context<GetMembersSourceControl, GetMembersEntities>;
 
 export const memberSenderHandler = createMessageHandler({
   queueId: 'ExtractQueue',
@@ -37,29 +37,19 @@ export const memberSenderHandler = createMessageHandler({
       userId: message.metadata.userId,
       from: message.metadata.from,
       to: message.metadata.to,
-      tenantId: message.metadata.tenantId,
+      dbUrl: message.metadata.dbUrl,
     });
   }
 });
 
 const { sender } = memberSenderHandler;
 
-const initSourceControl = async (userId: string, sourceControl: 'github' | 'gitlab') => {
-  const accessToken = await getClerkUserToken(userId, `oauth_${sourceControl}`);
-  if (sourceControl === 'github') return new GitHubSourceControl({ auth: accessToken });
-  if (sourceControl === 'gitlab') return new GitlabSourceControl(accessToken);
-  return null;
-}
-
-const context: OmitDb<Context<GetMembersSourceControl, GetMembersEntities>> = {
+const staticContext = {
   entities: {
     members,
     repositoriesToMembers
   },
-  integrations: {
-    sourceControl: null,
-  },
-};
+} satisfies Partial<ExtractMembersContext>;
 
 type ExtractMembersPageInput = {
   namespace: Namespace;
@@ -70,12 +60,15 @@ type ExtractMembersPageInput = {
   from: Date;
   to: Date;
   crawlId: number;
-  tenantId: number;
+  dbUrl: string;
 }
 
-const extractMembersPage = async ({ namespace, repository, sourceControl, userId, paginationInput, from, to, crawlId, tenantId }: ExtractMembersPageInput) => {
+const extractMembersPage = async ({ namespace, repository, sourceControl, userId, paginationInput, from, to, crawlId, dbUrl }: ExtractMembersPageInput) => {
 
-  context.integrations.sourceControl = await initSourceControl(userId, sourceControl);
+  const dynamicContext = {
+    integrations: await initIntegrations({ userId, sourceControl }),
+    db: initDatabase({ dbUrl }),
+  } satisfies Partial<ExtractMembersContext>;
 
   const { members, paginationInfo } = await getMembers({
     externalRepositoryId: repository.externalId,
@@ -84,7 +77,7 @@ const extractMembersPage = async ({ namespace, repository, sourceControl, userId
     repositoryName: repository.name,
     perPage: paginationInput.perPage, // provjeriti ovo,da li je ovo nesto sto moze API da mijenja (procitati docs)
     page: paginationInput.page
-  }, { ...context, db: getTenantDb(tenantId) });
+  }, { ...staticContext, ...dynamicContext });
 
   const memberIds = filterNewExtractMembers(members).map(member => member.id);
   
@@ -92,7 +85,7 @@ const extractMembersPage = async ({ namespace, repository, sourceControl, userId
     await extractMembersEvent.publish({
       memberIds
     }, {
-      tenantId,
+      dbUrl,
       crawlId,
       version: 1,
       caller: 'extract-member',
@@ -108,7 +101,7 @@ const extractMembersPage = async ({ namespace, repository, sourceControl, userId
 };
 
 export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
-  const db = getTenantDb(ev.metadata.tenantId);
+  const db = initDatabase(ev.metadata);
   const repository = await db.select().from(repositories).where(eq(repositories.id, ev.properties.repositoryId)).get();
   const namespace = await db.select().from(namespaces).where(eq(namespaces.id, ev.properties.namespaceId)).get();
 
@@ -127,7 +120,7 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
     from: ev.metadata.from,
     to: ev.metadata.to,
     crawlId: ev.metadata.crawlId,
-    tenantId: ev.metadata.tenantId,
+    dbUrl: ev.metadata.dbUrl,
   });
 
   const arrayOfExtractMemberPageMessageContent: { repository: Repository, namespace: Namespace, pagination: Pagination }[] = [];
@@ -159,7 +152,7 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
     from: ev.metadata.from,
     to: ev.metadata.to,
     crawlId: ev.metadata.crawlId,
-    tenantId: ev.metadata.tenantId,
+    dbUrl: ev.metadata.dbUrl,
   });
 
 },
