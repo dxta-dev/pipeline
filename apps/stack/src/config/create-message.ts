@@ -115,9 +115,10 @@ export function QueueHandler(map: Map<string, unknown>, logMap: Map<string, stri
     for (const record of event.Records) {
       const parsedEvent = JSON.parse(record.body) as unknown as MessagePayload<ZodRawShape, ZodRawShape>;
       
-      const tenantId = parsedEvent.metadata?.tenantId as unknown as (Tenant['id'] | undefined);
-      if (!tenantId) {
-        console.error(`No tenantId for message kind ${parsedEvent.kind}`);
+      // Enforces all queue handlers to have dbUrl since it's required for extracts and crawls
+      const dbUrl = parsedEvent.metadata?.dbUrl as unknown as (Tenant['dbUrl'] | undefined);
+      if (!dbUrl) {
+        console.error(`No dbUrl for message kind ${parsedEvent.kind}`);
         break;
       }
 
@@ -146,7 +147,7 @@ export function QueueHandler(map: Map<string, unknown>, logMap: Map<string, stri
         console.error(
           `ERROR: Failed to parse message '${parsedEvent.kind}'. Reason: ${validatedMessage.error}`,
         );
-        await crawlFailed(isCrawlMessage, tenantId, crawlId, crawlEventNamespace, `Error: Failed to parse message ${parsedEvent.kind} for crawl id: ${crawlId} - ${crawlEventNamespace}`);  
+        await crawlFailed(isCrawlMessage, dbUrl, crawlId, crawlEventNamespace, `Error: Failed to parse message ${parsedEvent.kind} for crawl id: ${crawlId} - ${crawlEventNamespace}`);  
         return;        
       }
 
@@ -161,7 +162,7 @@ export function QueueHandler(map: Map<string, unknown>, logMap: Map<string, stri
       if (!handlerError) {
         console.log('Handled message', createLog(validatedMessage.data, parsedEvent.kind, propertiesToLog))
         try {
-          await crawlComplete(isCrawlMessage, tenantId, crawlId, crawlEventNamespace);
+          await crawlComplete(isCrawlMessage, dbUrl, crawlId, crawlEventNamespace);
         } catch (e) {
           console.error(`Failed to insert crawl complete event for id: ${crawlId} - ${crawlEventNamespace}`, e);
         } 
@@ -170,7 +171,7 @@ export function QueueHandler(map: Map<string, unknown>, logMap: Map<string, stri
 
       try {
         console.error('Failed to handle message', createLog(validatedMessage.data, parsedEvent.kind, propertiesToLog));
-        await crawlFailed(isCrawlMessage, tenantId, crawlId, crawlEventNamespace, handlerError);
+        await crawlFailed(isCrawlMessage, dbUrl, crawlId, crawlEventNamespace, handlerError);
       } catch (e) {
         console.error(`Failed to insert crawl failed event for id: ${crawlId} - ${crawlEventNamespace}`, e);
       }

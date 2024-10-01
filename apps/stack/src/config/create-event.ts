@@ -150,9 +150,9 @@ export const EventHandler = <
     const propertiesToLog = logConfig?.propertiesToLog ?? undefined;
     const crawlEventNamespace = logConfig?.crawlEventNamespace ?? undefined;
 
-    const tenantId = (event.detail as EventPayload<PropertiesShape, MetadataShape>).metadata?.tenantId as unknown as (Tenant['id'] | undefined);
-    if (!tenantId) {
-      console.error(`No tenantId for event ${targetSource}.${targetDetailType}`);
+    const dbUrl = (event.detail as EventPayload<PropertiesShape, MetadataShape>).metadata?.tenantId as unknown as (Tenant['dbUrl'] | undefined);
+    if (!dbUrl) {
+      console.error(`No dbUrl for event ${targetSource}.${targetDetailType}`);
       return;
     }
     
@@ -165,7 +165,7 @@ export const EventHandler = <
         `ERROR: Failed to parse event detail '${targetSource}.${targetDetailType}'. Reason: ${parseResult.error}`,
       );
 
-      await crawlFailed(isCrawlEvent, tenantId, crawlId, crawlEventNamespace, `Error: Failed to parse event ${targetSource}.${targetDetailType} for crawl id: ${crawlId} - ${crawlEventNamespace}`);
+      await crawlFailed(isCrawlEvent, dbUrl, crawlId, crawlEventNamespace, `Error: Failed to parse event ${targetSource}.${targetDetailType} for crawl id: ${crawlId} - ${crawlEventNamespace}`);
 
       return;
     }
@@ -185,7 +185,7 @@ export const EventHandler = <
     if (!callbackError) {
       console.log('Handled event', createLog(parseResult.data, `${targetSource}.${targetDetailType}`, propertiesToLog));
       try {
-        await crawlComplete(isCrawlEvent, tenantId, crawlId, targetDetailType as EventNamespaceType);
+        await crawlComplete(isCrawlEvent, dbUrl, crawlId, targetDetailType as EventNamespaceType);
       } catch (e) {
         console.error(`Failed to insert crawl complete event for id: ${crawlId} - ${crawlEventNamespace}`, e);
       }
@@ -194,7 +194,7 @@ export const EventHandler = <
 
     try {
       console.error('Failed to handle event', createLog(parseResult.data, `${targetSource}.${targetDetailType}`, propertiesToLog));
-      await crawlFailed(isCrawlEvent, tenantId, crawlId, crawlEventNamespace, callbackError);
+      await crawlFailed(isCrawlEvent, dbUrl, crawlId, crawlEventNamespace, callbackError);
     } catch (e) {
       console.error(`Failed to insert crawl failed event for id: ${crawlId} - ${crawlEventNamespace}`, e);
     }
