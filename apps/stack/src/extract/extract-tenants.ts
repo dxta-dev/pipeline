@@ -50,7 +50,8 @@ const { sender } = tenantSenderHandler;
 
 export const cronHandler = async ()=> {
   const tenants = getTenants();
-  const tenantCrawlInput = tenants.map(tenant => ({ tenantId: tenant.id, crawlUserId: tenant.crawlUserId }));
+  const crawlEnabledTenants = tenants.filter(x => x.crawlUserId !== '');
+  const tenantCrawlInput = crawlEnabledTenants.map(tenant => ({ tenantId: tenant.id, crawlUserId: tenant.crawlUserId }));
 
   const PERIOD_DURATION = 15 * 60 * 1000; // 15 minutes
   const PERIOD_START_MARGIN = 5 * 60 * 1000; // 5 minutes
