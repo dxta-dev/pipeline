@@ -111,6 +111,7 @@ export const apiHandler = ApiHandler(async (ev) => {
   }
 
   const { tenant: tenantId, from, to } = inputValidation.data;
+  const { sub } = lambdaContextValidation.data.authorizer.jwt.claims;
 
   const tenants = getTenants();
   const tenant = tenants.find(tenant => tenant.id === tenantId);
@@ -119,7 +120,7 @@ export const apiHandler = ApiHandler(async (ev) => {
     message: JSON.stringify({ error: "Tenant not found" })
   }
 
-  await sender.sendAll([{ tenantId, crawlUserId: tenant.crawlUserId }], {
+  await sender.sendAll([{ tenantId, crawlUserId: sub }], {
     version: -1,
     caller: 'extract-tenant:apiHandler',
     timestamp: Date.now(),
