@@ -18,7 +18,7 @@ const metadataSchema = z.object({
   from: z.coerce.date(),
   to: z.coerce.date(),
   crawlId: z.number(),
-  tenantId: z.number(),
+  dbUrl: z.string(),
 });
 
 const FOURTEEN_DAYS_MS = 14 * 24 * 60 * 60 * 1000;
