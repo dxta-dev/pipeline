@@ -2,8 +2,7 @@ import { insertEvent } from "@dxta/crawl-functions";
 import { events } from "@dxta/crawl-schema";
 import type { Context, InsertEventEntities } from "@dxta/crawl-functions";
 import type { EventNamespaceType } from "@dxta/crawl-schema/src/events";
-import type { Tenant } from "@dxta/super-schema";
-import { initDatabase } from "@stack/extract/context";
+import type { LibSQLDatabase } from "drizzle-orm/libsql";
 
 const context: Omit<Context<InsertEventEntities>, 'db'> = {
   entities: {
@@ -11,8 +10,10 @@ const context: Omit<Context<InsertEventEntities>, 'db'> = {
   }
 };
 
-export const crawlFailed = (isCrawlMessage: boolean, dbUrl: Tenant['dbUrl'], crawlId: number | undefined, namespace: EventNamespaceType | undefined, error: unknown) => {
-  if(namespace === undefined || !isCrawlMessage) {
+type CrawlDatabase = LibSQLDatabase<Record<string, never>>;
+
+export const crawlFailed = (isCrawlMessage: boolean, db: CrawlDatabase | undefined, crawlId: number | undefined, namespace: EventNamespaceType | undefined, error: unknown) => {
+  if(namespace === undefined || !isCrawlMessage || db === undefined) {
     return;
   }
 
@@ -28,11 +29,11 @@ export const crawlFailed = (isCrawlMessage: boolean, dbUrl: Tenant['dbUrl'], cra
       message: (error instanceof Error) ? error.toString() : `Error: ${JSON.stringify(error)}`,
     },
     eventNamespace: namespace
-  }, { ...context, db: initDatabase({ dbUrl }) });
+  }, { ...context, db });
 };
 
-export const crawlComplete = (isCrawlMessage: boolean, dbUrl: Tenant['dbUrl'], crawlId: number | undefined, namespace: EventNamespaceType | undefined) => {
-  if(namespace === undefined || !isCrawlMessage) {
+export const crawlComplete = (isCrawlMessage: boolean, db: CrawlDatabase | undefined, crawlId: number | undefined, namespace: EventNamespaceType | undefined) => {
+  if(namespace === undefined || !isCrawlMessage || db === undefined) {
     return;
   }
 
@@ -46,5 +47,5 @@ export const crawlComplete = (isCrawlMessage: boolean, dbUrl: Tenant['dbUrl'], c
     eventDetail: 'crawlComplete',
     data: {},
     eventNamespace: namespace
-  }, { ...context, db: initDatabase({ dbUrl }) });
+  }, { ...context, db });
 }

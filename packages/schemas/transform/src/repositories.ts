@@ -8,7 +8,6 @@ export const repositories = sqliteTable('repositories', {
   id: integer('id').primaryKey(),
   externalId: integer('external_id').notNull(),
   forgeType: Enum('forge_type', { enum: ['unknown', 'github', 'gitlab'] }).notNull(),
-  // tenantId: integer('tenant_id').notNull(),
   name: text('name').notNull(),
   namespaceName: text('namespace_name').default(''),
   // url: text('url').notNull(),

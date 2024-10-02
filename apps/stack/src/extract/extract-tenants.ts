@@ -34,7 +34,7 @@ export const tenantSenderHandler = createMessageHandler({
     .all();
 
     if (repos.length === 0) {
-      console.log(`Warn: no repositories to extract for tenant: ${message.content.tenantId}`);
+      console.log(`Warn: no repositories to extract for tenant: ${message.content.dbUrl}`);
       return;
     }
  
