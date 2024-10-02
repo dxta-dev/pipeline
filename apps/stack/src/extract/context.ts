@@ -12,9 +12,9 @@ export const initDatabase = ({ dbUrl }: initDatabaseInput) => drizzle(createClie
   authToken: Config.TENANT_DATABASE_AUTH_TOKEN,
 }));
 
-const initSourceControl = async (userId: string, sourceControl: 'github' | 'gitlab') => {
+const initSourceControl = async (userId: string, sourceControl: 'github' | 'gitlab', fetchTimelineEventsPerPage?: number) => {
   const accessToken = await getClerkUserToken(userId, `oauth_${sourceControl}`);
-  if (sourceControl === 'github') return new GitHubSourceControl({ auth: accessToken });
+  if (sourceControl === 'github') return new GitHubSourceControl({ auth: accessToken, fetchTimelineEventsPerPage });
   if (sourceControl === 'gitlab') return new GitlabSourceControl(accessToken);
   return null;
 }
@@ -22,7 +22,13 @@ const initSourceControl = async (userId: string, sourceControl: 'github' | 'gitl
 type NoEntities = Record<string, never>;
 type ExtractIntegrations = Context<SourceControl, NoEntities>['integrations'];
 
-type initIntegrationsInput = { userId: string, sourceControl: 'github' | 'gitlab' };
+type initIntegrationsInput = {
+  userId: string;
+  sourceControl: 'github' | 'gitlab';
+  sourceControlOptions?: {
+    fetchTimelineEventsPerPage?: number
+  }
+};
 export const initIntegrations = async ({ userId, sourceControl }: initIntegrationsInput) => {
   return {
     sourceControl: await initSourceControl(userId, sourceControl)
