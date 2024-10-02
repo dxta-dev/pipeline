@@ -11,7 +11,7 @@ import { extractRepositoryEvent } from "./events";
 import { eq } from "drizzle-orm";
 import { insertEvent } from "@dxta/crawl-functions";
 import { events } from "@dxta/crawl-schema";
-import { initDatabase, initIntegrations } from "./context";
+import { initDatabase, initSourceControl } from "./context";
 
 type ExtractDefaultBranchCommitsContext = Context<GetCommitsSourceControl, GetCommitsEntities>;
 
@@ -39,7 +39,7 @@ const extractDefaultBranchCommitsPage = async ({
 }: ExtractDefaultBranchCommitsPageInput) => {
 
   const dynamicContext = {
-    integrations: await initIntegrations({ userId, sourceControl }),
+    integrations: { sourceControl: await initSourceControl({ userId, sourceControl }) },
     db: initDatabase({ dbUrl })
   } satisfies Partial<ExtractDefaultBranchCommitsContext>;
 

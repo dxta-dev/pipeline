@@ -23,7 +23,7 @@ import {
 
 import { extractMergeRequestsEvent, extractRepositoryEvent } from "./events";
 import { MessageKind, metadataSchema, paginationSchema } from "./messages";
-import { initDatabase, initIntegrations } from "./context";
+import { initDatabase, initSourceControl } from "./context";
 
 type ExtractMergeRequestsContext = Context<GetMergeRequestsSourceControl, GetMergeRequestsEntities>;
 
@@ -43,7 +43,7 @@ export const mergeRequestSenderHandler = createMessageHandler({
     }
 
     const dynamicContext = {
-      integrations: await initIntegrations(message.metadata),
+      integrations: { sourceControl: await initSourceControl(message.metadata) },
       db: initDatabase(message.metadata),
     } satisfies Partial<ExtractMergeRequestsContext>;
 
@@ -116,7 +116,7 @@ export const eventHandler = EventHandler(
     if (!namespace) throw new Error("Invalid namespace id");
 
     const dynamicContext = {
-      integrations: await initIntegrations(ev.metadata),
+      integrations: { sourceControl: await initSourceControl(ev.metadata) },
       db: initDatabase(ev.metadata),
     } satisfies Partial<ExtractMergeRequestsContext>;
 

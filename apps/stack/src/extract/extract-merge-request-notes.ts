@@ -8,7 +8,7 @@ import { extractMembersEvent, extractMergeRequestsEvent } from "./events";
 import { insertEvent } from "@dxta/crawl-functions";
 import { events } from "@dxta/crawl-schema";
 import { filterNewExtractMembers } from "./filter-extract-members";
-import { initDatabase, initIntegrations } from "./context";
+import { initDatabase, initSourceControl } from "./context";
 
 type ExtractMergeRequestNotesContext = Context<GetMergeRequestNotesSourceControl, GetMergeRequestNotesEntities>;
 
@@ -36,7 +36,7 @@ export const mergeRequestNoteSenderHandler = createMessageHandler({
     const { mergeRequestId, namespaceId, repositoryId } = message.content;
 
     const dynamicContext = {
-      integrations: await initIntegrations(message.metadata),
+      integrations: { sourceControl: await initSourceControl(message.metadata) },
       db: initDatabase(message.metadata),
     } satisfies Partial<ExtractMergeRequestNotesContext>;
 

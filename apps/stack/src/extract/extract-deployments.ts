@@ -10,7 +10,7 @@ import { EventHandler } from "@stack/config/create-event";
 import { extractDeploymentsEvent, extractRepositoryEvent, isInitialExtractEvent } from "./events";
 import { and, eq } from "drizzle-orm";
 import { deploymentEnvironments } from "@dxta/tenant-schema";
-import { initDatabase, initIntegrations } from "./context";
+import { initDatabase, initSourceControl } from "./context";
 
 type ExtractDeploymentsContext = Context<GetDeploymentsSourceControl, GetDeploymentsEntities>;
 
@@ -35,7 +35,7 @@ const extractDeploymentsPage = async ({
 }: ExtractDeploymentsPageInput) => {
 
   const dynamicContext = {
-    integrations: await initIntegrations({ userId, sourceControl }),
+    integrations: { sourceControl: await initSourceControl({ userId, sourceControl }) },
     db: initDatabase({ dbUrl })
   } satisfies Partial<ExtractDeploymentsContext>;
 

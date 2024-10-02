@@ -9,7 +9,7 @@ import { EventHandler } from "@stack/config/create-event";
 import { extractRepositoryEvent } from "./events";
 import { and, eq } from "drizzle-orm";
 import { Config } from "sst/node/config";
-import { initDatabase, initIntegrations } from "./context";
+import { initDatabase, initSourceControl } from "./context";
 
 type ExtractWorkflowDeploymentsContext = Context<GetWorkflowDeploymentsSourceControl, GetWorkflowDeploymentsEntities>;
 
@@ -30,7 +30,7 @@ export const workflowDeploymentsSenderHandler = createMessageHandler({
     const { namespace, repository, workflowId, branch, perPage, page } = message.content;
 
     const dynamicContext = {
-      integrations: await initIntegrations(message.metadata),
+      integrations: { sourceControl: await initSourceControl(message.metadata) },
       db: initDatabase(message.metadata),
     } satisfies Partial<ExtractWorkflowDeploymentsContext>;
 
@@ -77,7 +77,7 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
   }
 
   const dynamicContext = {
-    integrations: await initIntegrations(ev.metadata),
+    integrations: { sourceControl: await initSourceControl(ev.metadata) },
     db,
   } satisfies Partial<ExtractWorkflowDeploymentsContext>;
 

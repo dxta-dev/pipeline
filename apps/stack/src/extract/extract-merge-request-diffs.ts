@@ -9,7 +9,7 @@ import { MessageKind, metadataSchema } from "./messages";
 import { z } from "zod";
 import { insertEvent } from "@dxta/crawl-functions";
 import { events } from "@dxta/crawl-schema";
-import { initDatabase, initIntegrations } from "./context";
+import { initDatabase, initSourceControl } from "./context";
 
 type ExtractMergeRequestDiffsContext = Context<GetMergeRequestDiffsSourceControl, GetMergeRequestDiffsEntities>;
 
@@ -26,7 +26,7 @@ export const mergeRequestDiffSenderHandler = createMessageHandler({
     const { mergeRequestId, repositoryId, namespaceId } = message.content;
     
     const dynamicContext = {
-      integrations: await initIntegrations(message.metadata),
+      integrations: { sourceControl: await initSourceControl(message.metadata) },
       db: initDatabase(message.metadata),
     } satisfies Partial<ExtractMergeRequestDiffsContext>;
 

@@ -8,7 +8,7 @@ import { members, mergeRequests, MergeRequestSchema, namespaces, NamespaceSchema
 import { extractMembersEvent, extractMergeRequestsEvent } from "./events";
 import { MessageKind, metadataSchema } from "./messages";
 import { filterNewExtractMembers } from "./filter-extract-members";
-import { initDatabase, initIntegrations } from "./context";
+import { initDatabase, initSourceControl } from "./context";
 import { Config } from "sst/node/config";
 
 type ExtractTimelineEventsContext = Context<GetTimelineEventsSourceControl, GetTimelineEventsEntities>;
@@ -29,13 +29,13 @@ export const timelineEventsSenderHandler = createMessageHandler({
     }
 
     const dynamicContext = {
-      integrations: await initIntegrations({
-        sourceControl: message.metadata.sourceControl,
-        userId: message.metadata.userId,
-        sourceControlOptions: {
-          fetchTimelineEventsPerPage: Number(Config.FETCH_TIMELINE_EVENTS_PER_PAGE),
-        }
-      }),
+      integrations: {
+        sourceControl: await initSourceControl({
+          userId: message.metadata.userId,
+          sourceControl: message.metadata.sourceControl,
+          options: { fetchTimelineEventsPerPage: Number(Config.FETCH_TIMELINE_EVENTS_PER_PAGE) }
+        })
+      },
       db: initDatabase(message.metadata),
     } satisfies Partial<ExtractTimelineEventsContext>;
 

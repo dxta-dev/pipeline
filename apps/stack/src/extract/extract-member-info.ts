@@ -8,7 +8,7 @@ import { z } from "zod";
 import { getMemberInfo } from "@dxta/extract-functions";
 import { insertEvent } from "@dxta/crawl-functions";
 import { events } from "@dxta/crawl-schema";
-import { initDatabase, initIntegrations } from "./context";
+import { initDatabase, initSourceControl } from "./context";
 
 type ExtractMemberInfoContext = Context<GetMemberInfoSourceControl, GetMemberInfoEntities>;
 
@@ -23,7 +23,7 @@ export const memberInfoSenderHandler = createMessageHandler({
     const { memberId } = message.content;
 
     const dynamicContext = {
-      integrations: await initIntegrations(message.metadata),
+      integrations: { sourceControl: await initSourceControl(message.metadata) },
       db: initDatabase(message.metadata),
     } satisfies Partial<ExtractMemberInfoContext>;
 

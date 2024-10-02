@@ -7,7 +7,7 @@ import type { Context, GetWorkflowDeploymentStatusEntities, GetWorkflowDeploymen
 import { getWorkflowDeploymentStatus } from "@dxta/extract-functions";
 import { MessageKind, metadataSchema } from "./messages"
 import { and, eq, isNull, or } from "drizzle-orm"
-import { initDatabase, initIntegrations } from "./context"
+import { initDatabase, initSourceControl } from "./context"
 
 type ExtractWorkflowDeploymentStatusContext = Context<GetWorkflowDeploymentStatusSourceControl, GetWorkflowDeploymentStatusEntities>;
 
@@ -29,7 +29,7 @@ export const workflowDeploymentStatusSenderHandler = createMessageHandler({
     }
 
     const dynamicContext = {
-      integrations: await initIntegrations(message.metadata),
+    integrations: { sourceControl: await initSourceControl(message.metadata) },
       db: initDatabase(message.metadata),
     } satisfies Partial<ExtractWorkflowDeploymentStatusContext>;
 

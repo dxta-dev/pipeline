@@ -14,7 +14,7 @@ import { z } from 'zod';
 import { insertEvent } from "@dxta/crawl-functions";
 import { events } from "@dxta/crawl-schema";
 import { filterNewExtractMembers } from "./filter-extract-members";
-import { initDatabase, initIntegrations } from "./context";
+import { initDatabase, initSourceControl } from "./context";
 
 type ExtractMembersContext = Context<GetMembersSourceControl, GetMembersEntities>;
 
@@ -66,7 +66,7 @@ type ExtractMembersPageInput = {
 const extractMembersPage = async ({ namespace, repository, sourceControl, userId, paginationInput, from, to, crawlId, dbUrl }: ExtractMembersPageInput) => {
 
   const dynamicContext = {
-    integrations: await initIntegrations({ userId, sourceControl }),
+    integrations: { sourceControl: await initSourceControl({ userId, sourceControl }) },
     db: initDatabase({ dbUrl }),
   } satisfies Partial<ExtractMembersContext>;
 

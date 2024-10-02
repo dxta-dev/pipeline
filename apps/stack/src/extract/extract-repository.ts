@@ -7,7 +7,7 @@ import { z } from "zod";
 import { setInstance } from "@dxta/crawl-functions";
 import { MessageKind, metadataSchema } from "./messages";
 import { createMessageHandler } from "@stack/config/create-message";
-import { initDatabase, initIntegrations } from "./context";
+import { initDatabase, initSourceControl } from "./context";
 
 type ExtractRepositoryContext = Context<GetRepositorySourceControl, GetRepositoryEntities>;
 
@@ -34,7 +34,7 @@ const extractRepository = async (input: Input, userId: string) => {
   const db = initDatabase({dbUrl});
 
   const dynamicContext = {
-    integrations: await initIntegrations({ sourceControl: input.sourceControl, userId }),
+    integrations: { sourceControl: await initSourceControl({ userId, sourceControl }) },
     db,
   } satisfies Partial<ExtractRepositoryContext>;
 
