@@ -2,10 +2,10 @@ import { z } from "zod";
 import type { TransformDatabase, ExtractDatabase, TenantDatabase } from "@dxta/transform-functions";
 import { run, selectMergeRequestsDeployments } from "@dxta/transform-functions";
 import { createMessageHandler } from "@stack/config/create-message";
-import { getTenantDb } from "@stack/config/get-tenant-db";
 import { MessageKind, metadataSchema } from "./messages";
 import { EventHandler } from "@stack/config/create-event";
 import { transformRepositoryEvent } from "./events";
+import { initDatabase } from "./context";
 
 export const timelineSenderHandler = createMessageHandler({
   queueId: 'TransformQueue',
@@ -16,7 +16,7 @@ export const timelineSenderHandler = createMessageHandler({
     deploymentId: z.nullable(z.number()),
   }).shape,
   handler: async (message) => {
-    const db = getTenantDb(message.metadata.tenantId);
+    const db = initDatabase(message.metadata);
 
     await run(message.content.mergeRequestId, message.content.deploymentId, {
       extractDatabase: db as ExtractDatabase,
@@ -31,8 +31,8 @@ const { sender } = timelineSenderHandler;
 export const eventHandler = EventHandler(transformRepositoryEvent, async (ev) => {
 
   const { repositoryExtractId } = ev.properties;
-  const { tenantId, from, to, sourceControl } = ev.metadata;
-  const db = getTenantDb(tenantId);
+  const { dbUrl, from, to, sourceControl } = ev.metadata;
+  const db = initDatabase(ev.metadata);
 
   const mrDeploys = await selectMergeRequestsDeployments(db, repositoryExtractId, from, to);
 
@@ -45,7 +45,7 @@ export const eventHandler = EventHandler(transformRepositoryEvent, async (ev) =>
     sourceControl,
     from,
     to,
-    tenantId,
+    dbUrl,
   })
 
 });

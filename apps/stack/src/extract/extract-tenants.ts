@@ -55,8 +55,8 @@ export const cronHandler = async ()=> {
 
   const superDb = drizzle(createClient({ url: Config.SUPER_DATABASE_URL, authToken: Config.SUPER_DATABASE_AUTH_TOKEN }));
   const tenants = await getTenants(superDb);
-  const crawlEnabledTenants = tenants.filter(x => x.crawlUserId !== '');
-  const tenantCrawlInput = crawlEnabledTenants.map(tenant => ({ dbUrl: tenant.dbUrl, crawlUserId: tenant.crawlUserId }));
+  const cronEnabledTenants = tenants.filter(x => x.crawlUserId !== '');
+  const tenantCrawlInput = cronEnabledTenants.map(tenant => ({ dbUrl: tenant.dbUrl, crawlUserId: tenant.crawlUserId }));
 
   const PERIOD_DURATION = 15 * 60 * 1000; // 15 minutes
   const PERIOD_START_MARGIN = 5 * 60 * 1000; // 5 minutes

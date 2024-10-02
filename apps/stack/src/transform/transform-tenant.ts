@@ -1,25 +1,28 @@
 import { z } from "zod";
 import * as extract from "@dxta/extract-schema";
-import { getTenants } from "@stack/config/tenants";
 import { ApiHandler, useJsonBody } from "sst/node/api";
 import { MessageKind, metadataSchema } from "./messages";
 import { createMessageHandler } from "@stack/config/create-message";
-import { getTenantDb } from "@stack/config/get-tenant-db";
 import { timePeriodOf } from "@stack/config/time-period";
 import { transformRepositoryEvent } from "./events";
+import { createClient } from "@libsql/client";
+import { drizzle } from "drizzle-orm/libsql";
+import { getTenants } from "@dxta/super-schema";
+import { Config } from "sst/node/config";
+import { initDatabase } from "./context";
 
 export const tenantSenderHandler = createMessageHandler({
   queueId: 'TransformQueue',
   kind: MessageKind.Tenant,
   metadataShape: metadataSchema.omit({ sourceControl: true }).shape,
   contentShape: z.object({
-    tenantId: z.number(),
+    dbUrl: z.string(),
   }).shape,
   handler: async (message) => {
 
     const { from, to } = message.metadata;
-    const { tenantId } = message.content;
-    const db = getTenantDb(tenantId);
+    const { dbUrl } = message.content;
+    const db = initDatabase(message.content);
 
     const tenantRepositories = await db.select({
       id: extract.repositories.id,
@@ -44,7 +47,7 @@ export const tenantSenderHandler = createMessageHandler({
         timestamp: Date.now(),
         from,
         to,
-        tenantId,
+        dbUrl,
       }))
     }
 
@@ -56,20 +59,23 @@ export const tenantSenderHandler = createMessageHandler({
 const { sender } = tenantSenderHandler;
 
 export const cronHandler = async () => {
-  const tenants = getTenants().map(tenant => ({ tenantId: tenant.id }));
+  const superDb = drizzle(createClient({ url: Config.SUPER_DATABASE_URL, authToken: Config.SUPER_DATABASE_AUTH_TOKEN }));
+  const tenants = await getTenants(superDb);
+  const cronEnabledTenants = tenants.filter(x => x.crawlUserId !== '');
+  const tenantTransformInput = cronEnabledTenants.map(x => ({ dbUrl: x.dbUrl }));
 
   const PERIOD_DURATION = 15 * 60 * 1000; // 15 minutes
   const PERIOD_START_MARGIN = 5 * 60 * 1000; // 5 minutes
   const PERIOD_LATENCY = (15 - 8) * 60 * 1000; // extract delay
   const { from, to } = timePeriodOf(Date.now(), PERIOD_DURATION, PERIOD_START_MARGIN, PERIOD_LATENCY);
 
-  await sender.sendAll(tenants, {
+  await sender.sendAll(tenantTransformInput, {
     version: 1,
     caller: 'transform-tenants:cronHandler',
     timestamp: Date.now(),
     from,
     to,
-    tenantId: -1,
+    dbUrl: '', // required since create-event and create-message require this to be present in metadata, although this isnt a "crawl-function"
   });
 }
 
@@ -113,7 +119,8 @@ export const apiHandler = ApiHandler(async (ev) => {
 
   const { tenantId, from, to } = inputValidation.data;
 
-  const tenants = getTenants();
+  const superDb = drizzle(createClient({ url: Config.SUPER_DATABASE_URL, authToken: Config.SUPER_DATABASE_AUTH_TOKEN }));
+  const tenants = await getTenants(superDb);
   const tenant = tenants.find(tenant => tenant.id === tenantId);
 
   if (!tenant) return {
@@ -123,14 +130,14 @@ export const apiHandler = ApiHandler(async (ev) => {
 
   try {
     await sender.send({
-      tenantId
+      dbUrl: tenant.dbUrl
     }, {
       version: 1,
       caller: 'transform-tenants:apiHandler',
       timestamp: Date.now(),
       from,
       to,
-      tenantId: -1,
+      dbUrl: '', // required since create-event and create-message require this to be present in metadata, although this isnt a "crawl-function"
     });
   } catch (error) {
     return {
