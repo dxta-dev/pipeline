@@ -129,6 +129,16 @@ export class GitHubSourceControl implements SourceControl {
   }
 
   async fetchUserInfo(_externalId: number, username: string): Promise<{ member: NewMember }> {
+    if (username === 'invalid-email-address') {
+      return {
+        member: {
+          externalId: _externalId,
+          forgeType: 'github',
+          username: username,
+        }
+      }
+    }
+
     const result = await this.api.users.getByUsername({
       username
     });
