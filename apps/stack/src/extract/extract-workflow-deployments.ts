@@ -3,15 +3,15 @@ import { MessageKind, metadataSchema } from "./messages";
 import { NamespaceSchema, RepositorySchema, repositories, namespaces, repositoryShas, deployments } from "@dxta/extract-schema";
 import { cicdDeployWorkflows } from '@dxta/tenant-schema';
 import { z } from "zod";
-import { type OmitDb, getTenantDb } from "@stack/config/get-tenant-db";
 import type { Context, GetWorkflowDeploymentsEntities, GetWorkflowDeploymentsSourceControl } from "@dxta/extract-functions";
 import { getWorkflowDeployments } from '@dxta/extract-functions';
-import { GitHubSourceControl, GitlabSourceControl } from "@dxta/source-control";
-import { getClerkUserToken } from "./get-clerk-user-token";
 import { EventHandler } from "@stack/config/create-event";
 import { extractRepositoryEvent } from "./events";
 import { and, eq } from "drizzle-orm";
 import { Config } from "sst/node/config";
+import { initDatabase, initSourceControl } from "./context";
+
+type ExtractWorkflowDeploymentsContext = Context<GetWorkflowDeploymentsSourceControl, GetWorkflowDeploymentsEntities>;
 
 export const workflowDeploymentsSenderHandler = createMessageHandler({
   queueId: 'ExtractQueue',
@@ -26,10 +26,13 @@ export const workflowDeploymentsSenderHandler = createMessageHandler({
     perPage: z.number(),
   }).shape,
   handler: async (message) => {
-    const { userId, sourceControl, from, to, tenantId } = message.metadata;
+    const { from, to } = message.metadata;
     const { namespace, repository, workflowId, branch, perPage, page } = message.content;
 
-    context.integrations.sourceControl = await initSourceControl(userId, sourceControl);
+    const dynamicContext = {
+      integrations: { sourceControl: await initSourceControl(message.metadata) },
+      db: initDatabase(message.metadata),
+    } satisfies Partial<ExtractWorkflowDeploymentsContext>;
 
     await getWorkflowDeployments({
       namespace,
@@ -39,32 +42,22 @@ export const workflowDeploymentsSenderHandler = createMessageHandler({
       branch,
       perPage,
       page,
-    }, { db: getTenantDb(tenantId), ...context });
+    }, { ...staticContext, ...dynamicContext });
 
   }
 });
 
 const { sender } = workflowDeploymentsSenderHandler;
 
-const initSourceControl = async (userId: string, sourceControl: 'github' | 'gitlab') => {
-  const accessToken = await getClerkUserToken(userId, `oauth_${sourceControl}`);
-  if (sourceControl === 'github') return new GitHubSourceControl({ auth: accessToken });
-  if (sourceControl === 'gitlab') return new GitlabSourceControl(accessToken);
-  return null;
-}
-
-const context: OmitDb<Context<GetWorkflowDeploymentsSourceControl, GetWorkflowDeploymentsEntities>> = {
+const staticContext = {
   entities: {
     deployments,
     repositoryShas
   },
-  integrations: {
-    sourceControl: null,
-  },
-};
+} satisfies Partial<ExtractWorkflowDeploymentsContext>;
 
 export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
-  const db = getTenantDb(ev.metadata.tenantId);
+  const db = initDatabase(ev.metadata);
   const repository = await db.select().from(repositories).where(eq(repositories.id, ev.properties.repositoryId)).get();
   const namespace = await db.select().from(namespaces).where(eq(namespaces.id, ev.properties.namespaceId)).get();
 
@@ -83,7 +76,10 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
     return;
   }
 
-  context.integrations.sourceControl = await initSourceControl(ev.metadata.userId, ev.metadata.sourceControl);
+  const dynamicContext = {
+    integrations: { sourceControl: await initSourceControl(ev.metadata) },
+    db,
+  } satisfies Partial<ExtractWorkflowDeploymentsContext>;
 
   const workflowDeploymentsFirstPages = await Promise.all(workflows.map(workflow => getWorkflowDeployments({
     repository,
@@ -93,7 +89,7 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
     timePeriod: { from: ev.metadata.from, to: ev.metadata.to },
     workflowId: workflow.workflowExternalid,
     branch: workflow.branch || undefined,
-  }, { db: getTenantDb(ev.metadata.tenantId), ...context }).then(result => ({ workflow, result }))));
+  }, { ...staticContext, ...dynamicContext }).then(result => ({ workflow, result }))));
 
   const arrayOfExtractDeploymentsPageMessageContent: Parameters<typeof workflowDeploymentsSenderHandler.sender.send>[0][] = [];
   for (const firstPage of workflowDeploymentsFirstPages) {
@@ -118,7 +114,7 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
     from: ev.metadata.from,
     to: ev.metadata.to,
     crawlId: ev.metadata.crawlId,
-    tenantId: ev.metadata.tenantId,
+    dbUrl: ev.metadata.dbUrl,
   });
 
 }, {

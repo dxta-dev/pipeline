@@ -15,7 +15,7 @@ export const metadataSchema = z.object({
   from: z.coerce.date(),
   to: z.coerce.date(),
   crawlId: z.number(),
-  tenantId: z.number(),
+  dbUrl: z.string(),
 });
 
 export enum MessageKind {

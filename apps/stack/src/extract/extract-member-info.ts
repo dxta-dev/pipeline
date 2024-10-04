@@ -1,4 +1,3 @@
-import { GitHubSourceControl, GitlabSourceControl } from "@dxta/source-control";
 import type { Context, GetMemberInfoEntities, GetMemberInfoSourceControl } from "@dxta/extract-functions";
 import { members } from "@dxta/extract-schema";
 import { EventHandler } from "@stack/config/create-event";
@@ -7,10 +6,11 @@ import { createMessageHandler } from "@stack/config/create-message";
 import { MessageKind, metadataSchema } from "./messages";
 import { z } from "zod";
 import { getMemberInfo } from "@dxta/extract-functions";
-import { getClerkUserToken } from "./get-clerk-user-token";
 import { insertEvent } from "@dxta/crawl-functions";
 import { events } from "@dxta/crawl-schema";
-import { getTenantDb, type OmitDb } from "@stack/config/get-tenant-db";
+import { initDatabase, initSourceControl } from "./context";
+
+type ExtractMemberInfoContext = Context<GetMemberInfoSourceControl, GetMemberInfoEntities>;
 
 export const memberInfoSenderHandler = createMessageHandler({
   queueId: 'ExtractQueue',
@@ -20,38 +20,31 @@ export const memberInfoSenderHandler = createMessageHandler({
     memberId: z.number(),
   }).shape,
   handler: async (message) => {
-    const { sourceControl, userId } = message.metadata;
     const { memberId } = message.content;
-    context.integrations.sourceControl = await initSourceControl(userId, sourceControl);
-    await getMemberInfo({ memberId }, { ...context, db: getTenantDb(message.metadata.tenantId) });
+
+    const dynamicContext = {
+      integrations: { sourceControl: await initSourceControl(message.metadata) },
+      db: initDatabase(message.metadata),
+    } satisfies Partial<ExtractMemberInfoContext>;
+
+    await getMemberInfo({ memberId }, { ...staticContext, ...dynamicContext });
     await extractMemberInfoEvent.publish({ memberId }, { ...message.metadata, timestamp: new Date().getTime(), version: 1, caller: "extract-member-info" });
   }
 });
 
 const { sender } = memberInfoSenderHandler;
 
-
-const initSourceControl = async (userId: string, sourceControl: 'github' | 'gitlab') => {
-  const accessToken = await getClerkUserToken(userId, `oauth_${sourceControl}`);
-  if (sourceControl === 'github') return new GitHubSourceControl({ auth: accessToken });
-  if (sourceControl === 'gitlab') return new GitlabSourceControl(accessToken);
-  return null;
-}
-
-const context: OmitDb<Context<GetMemberInfoSourceControl, GetMemberInfoEntities>> = {
+const staticContext = {
   entities: {
     members,
   },
-  integrations: {
-    sourceControl: null
-  }
-};
+} satisfies Partial<ExtractMemberInfoContext>;
 
 export const eventHandler = EventHandler(extractMembersEvent, async (ev) => {
   const { sourceControl, userId } = ev.metadata;
   const { memberIds } = ev.properties;
   await sender.sendAll(memberIds.map(memberId => ({ memberId })), {
-    tenantId: ev.metadata.tenantId,
+    dbUrl: ev.metadata.dbUrl,
     crawlId: ev.metadata.crawlId,
     version: 1,
     caller: 'extract-member-info',
@@ -64,7 +57,7 @@ export const eventHandler = EventHandler(extractMembersEvent, async (ev) => {
 
   await insertEvent(
     { crawlId: ev.metadata.crawlId, eventNamespace: 'memberInfo', eventDetail: 'crawlInfo', data: { calls: memberIds.length } },
-    { db: getTenantDb(ev.metadata.tenantId), entities: { events } }
+    { db: initDatabase(ev.metadata), entities: { events } }
   );
 
 });

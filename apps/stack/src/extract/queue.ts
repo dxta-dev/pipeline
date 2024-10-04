@@ -51,7 +51,7 @@ messageHandlers.set(MessageKind.WorkflowDeploymentStatus, workflowDeploymentStat
 
 const logMap = new Map<string, string[]>();
 
-logMap.set(MessageKind.Tenant, ['content.tenantId']);
+logMap.set(MessageKind.Tenant, ['content.tenantDomain']);
 
 logMap.set(MessageKind.Repository, ['content.forgeType', 'content.externalRepositoryId', 'content.repositoryName']);
 

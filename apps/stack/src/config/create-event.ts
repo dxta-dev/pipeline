@@ -8,6 +8,9 @@ import { z } from "zod";
 import { crawlComplete, crawlFailed } from "./crawl";
 import type { EventNamespaceType } from "@dxta/crawl-schema";
 import type { Tenant } from "@dxta/super-schema";
+import { drizzle } from "drizzle-orm/libsql";
+import { createClient } from "@libsql/client";
+import { Config } from "sst/node/config";
 
 const client = new EventBridgeClient({});
 type InferShapeOutput<Shape extends z.ZodRawShape> = z.infer<
@@ -150,13 +153,18 @@ export const EventHandler = <
     const propertiesToLog = logConfig?.propertiesToLog ?? undefined;
     const crawlEventNamespace = logConfig?.crawlEventNamespace ?? undefined;
 
-    const tenantId = (event.detail as EventPayload<PropertiesShape, MetadataShape>).metadata?.tenantId as unknown as (Tenant['id'] | undefined);
-    if (!tenantId) {
-      console.error(`No tenantId for event ${targetSource}.${targetDetailType}`);
+    const dbUrl = (event.detail as EventPayload<PropertiesShape, MetadataShape>).metadata?.dbUrl as unknown as (Tenant['dbUrl'] | undefined);
+    if (dbUrl === undefined) {
+      console.error(`No dbUrl for event ${targetSource}.${targetDetailType}`);
       return;
     }
     
     const isCrawlEvent = eventSchema.shape.metadata.shape.crawlId !== undefined;
+    const db = isCrawlEvent && dbUrl ? drizzle(createClient({
+      url: dbUrl,
+      authToken: Config.TENANT_DATABASE_AUTH_TOKEN
+    })) : undefined;
+
     const crawlId = (event.detail as EventPayload<PropertiesShape, MetadataShape>).metadata?.crawlId as unknown as (number | undefined);
 
     const parseResult = eventSchema.safeParse(event.detail);
@@ -165,7 +173,7 @@ export const EventHandler = <
         `ERROR: Failed to parse event detail '${targetSource}.${targetDetailType}'. Reason: ${parseResult.error}`,
       );
 
-      await crawlFailed(isCrawlEvent, tenantId, crawlId, crawlEventNamespace, `Error: Failed to parse event ${targetSource}.${targetDetailType} for crawl id: ${crawlId} - ${crawlEventNamespace}`);
+      await crawlFailed(isCrawlEvent, db, crawlId, crawlEventNamespace, `Error: Failed to parse event ${targetSource}.${targetDetailType} for crawl id: ${crawlId} - ${crawlEventNamespace}`);
 
       return;
     }
@@ -185,7 +193,7 @@ export const EventHandler = <
     if (!callbackError) {
       console.log('Handled event', createLog(parseResult.data, `${targetSource}.${targetDetailType}`, propertiesToLog));
       try {
-        await crawlComplete(isCrawlEvent, tenantId, crawlId, targetDetailType as EventNamespaceType);
+        await crawlComplete(isCrawlEvent, db, crawlId, targetDetailType as EventNamespaceType);
       } catch (e) {
         console.error(`Failed to insert crawl complete event for id: ${crawlId} - ${crawlEventNamespace}`, e);
       }
@@ -194,7 +202,7 @@ export const EventHandler = <
 
     try {
       console.error('Failed to handle event', createLog(parseResult.data, `${targetSource}.${targetDetailType}`, propertiesToLog));
-      await crawlFailed(isCrawlEvent, tenantId, crawlId, crawlEventNamespace, callbackError);
+      await crawlFailed(isCrawlEvent, db, crawlId, crawlEventNamespace, callbackError);
     } catch (e) {
       console.error(`Failed to insert crawl failed event for id: ${crawlId} - ${crawlEventNamespace}`, e);
     }

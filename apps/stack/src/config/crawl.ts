@@ -2,17 +2,18 @@ import { insertEvent } from "@dxta/crawl-functions";
 import { events } from "@dxta/crawl-schema";
 import type { Context, InsertEventEntities } from "@dxta/crawl-functions";
 import type { EventNamespaceType } from "@dxta/crawl-schema/src/events";
-import { getTenantDb, type OmitDb } from "./get-tenant-db";
-import type { Tenant } from "@dxta/super-schema";
+import type { LibSQLDatabase } from "drizzle-orm/libsql";
 
-const context: OmitDb<Context<InsertEventEntities>> = {
+const context: Omit<Context<InsertEventEntities>, 'db'> = {
   entities: {
     events
   }
 };
 
-export const crawlFailed = (isCrawlMessage: boolean, tenantId: Tenant['id'], crawlId: number | undefined, namespace: EventNamespaceType | undefined, error: unknown) => {
-  if(namespace === undefined || !isCrawlMessage) {
+type CrawlDatabase = LibSQLDatabase<Record<string, never>>;
+
+export const crawlFailed = (isCrawlMessage: boolean, db: CrawlDatabase | undefined, crawlId: number | undefined, namespace: EventNamespaceType | undefined, error: unknown) => {
+  if(namespace === undefined || !isCrawlMessage || db === undefined) {
     return;
   }
 
@@ -28,11 +29,11 @@ export const crawlFailed = (isCrawlMessage: boolean, tenantId: Tenant['id'], cra
       message: (error instanceof Error) ? error.toString() : `Error: ${JSON.stringify(error)}`,
     },
     eventNamespace: namespace
-  }, {...context, db: getTenantDb(tenantId) });
+  }, { ...context, db });
 };
 
-export const crawlComplete = (isCrawlMessage: boolean, tenantId: Tenant['id'], crawlId: number | undefined, namespace: EventNamespaceType | undefined) => {
-  if(namespace === undefined || !isCrawlMessage) {
+export const crawlComplete = (isCrawlMessage: boolean, db: CrawlDatabase | undefined, crawlId: number | undefined, namespace: EventNamespaceType | undefined) => {
+  if(namespace === undefined || !isCrawlMessage || db === undefined) {
     return;
   }
 
@@ -46,5 +47,5 @@ export const crawlComplete = (isCrawlMessage: boolean, tenantId: Tenant['id'], c
     eventDetail: 'crawlComplete',
     data: {},
     eventNamespace: namespace
-  }, {...context, db: getTenantDb(tenantId) });
+  }, { ...context, db });
 }

@@ -1,25 +1,29 @@
 import { createMessageHandler } from "@stack/config/create-message";
 import { MessageKind, metadataSchema } from "./messages";
 import { z } from "zod";
-import { getTenants } from "@stack/config/tenants";
-import { getTenantDb } from "@stack/config/get-tenant-db";
 import { namespaces, repositories } from "@dxta/extract-schema";
 import { eq } from "drizzle-orm";
 import { repositorySenderHandler } from "./extract-repository";
 import { ApiHandler, useJsonBody } from "sst/node/api";
 import { timePeriodOf } from "@stack/config/time-period";
+import { drizzle } from "drizzle-orm/libsql";
+import { createClient } from "@libsql/client";
+import { getTenants } from "@dxta/super-schema";
+import { Config } from "sst/node/config";
+import { initDatabase } from "./context";
 
 export const tenantSenderHandler = createMessageHandler({
   queueId: 'ExtractQueue',
   kind: MessageKind.Tenant,
   metadataShape: metadataSchema.omit({ sourceControl: true, crawlId: true }).shape,
   contentShape: z.object({
-    tenantId: z.number(),
+    tenantDomain: z.string(),
+    dbUrl: z.string(),
     crawlUserId: z.string(),
   }).shape,
-  handler: async (message) => {
-    const db = getTenantDb(message.content.tenantId);
-
+  handler: async (message) => { 
+    
+    const db = initDatabase(message.content);
     const repos = await db.select({
       repositoryName: repositories.name,
       externalRepositoryId: repositories.externalId,
@@ -31,7 +35,7 @@ export const tenantSenderHandler = createMessageHandler({
     .all();
 
     if (repos.length === 0) {
-      console.log(`Warn: no repositories to extract for tenant: ${message.content.tenantId}`);
+      console.log(`Warn: no repositories to extract for tenant: ${message.content.tenantDomain}`);
       return;
     }
  
@@ -42,16 +46,18 @@ export const tenantSenderHandler = createMessageHandler({
       userId: message.content.crawlUserId,
       from: message.metadata.from,
       to: message.metadata.to,
-      tenantId: message.content.tenantId,
+      dbUrl: message.content.dbUrl,
     });
   }
 });
 const { sender } = tenantSenderHandler;
 
 export const cronHandler = async ()=> {
-  const tenants = getTenants();
-  const cronEnabled = tenants.filter(x => x.crawlUserId !== '');
-  const tenantCrawlInput = cronEnabled.map(tenant => ({ tenantId: tenant.id, crawlUserId: tenant.crawlUserId }));
+  
+  const superDb = drizzle(createClient({ url: Config.SUPER_DATABASE_URL, authToken: Config.SUPER_DATABASE_AUTH_TOKEN }));
+  const tenants = await getTenants(superDb);
+  const cronEnabledTenants = tenants.filter(x => x.crawlUserId !== '');
+  const tenantCrawlInput = cronEnabledTenants.map(tenant => ({ dbUrl: tenant.dbUrl, crawlUserId: tenant.crawlUserId, tenantDomain: tenant.name }));
 
   const PERIOD_DURATION = 15 * 60 * 1000; // 15 minutes
   const PERIOD_START_MARGIN = 5 * 60 * 1000; // 5 minutes
@@ -65,7 +71,7 @@ export const cronHandler = async ()=> {
     userId: '',
     from,
     to,
-    tenantId: -1, // -1 means no db access ?
+    dbUrl: '', // required since create-event and create-message require this to be present in metadata, although this isnt a "crawl-function"
   });
    
 };
@@ -113,21 +119,22 @@ export const apiHandler = ApiHandler(async (ev) => {
   const { tenant: tenantId, from, to } = inputValidation.data;
   const { sub } = lambdaContextValidation.data.authorizer.jwt.claims;
 
-  const tenants = getTenants();
+  const superDb = drizzle(createClient({ url: Config.SUPER_DATABASE_URL, authToken: Config.SUPER_DATABASE_AUTH_TOKEN }));
+  const tenants = await getTenants(superDb);
   const tenant = tenants.find(tenant => tenant.id === tenantId);
   if (!tenant) return {
     statusCode: 404,
     message: JSON.stringify({ error: "Tenant not found" })
   }
 
-  await sender.sendAll([{ tenantId, crawlUserId: sub }], {
+  await sender.sendAll([{ dbUrl: tenant.dbUrl, crawlUserId: sub, tenantDomain: tenant.name }], {
     version: -1,
     caller: 'extract-tenant:apiHandler',
     timestamp: Date.now(),
     userId: '',
     from,
     to,
-    tenantId: -1,
+    dbUrl: '', // required since create-event and create-message require this to be present in metadata, although this isnt a "crawl-function"
   });
   return {
     statusCode: 200,

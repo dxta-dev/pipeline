@@ -1,4 +1,3 @@
-import { GitHubSourceControl, GitlabSourceControl } from "@dxta/source-control";
 import { Config } from "sst/node/config";
 import type { Context, GetMergeRequestDiffsEntities, GetMergeRequestDiffsSourceControl } from "@dxta/extract-functions";
 import { getMergeRequestsDiffs } from "@dxta/extract-functions";
@@ -8,10 +7,11 @@ import { extractMergeRequestsEvent } from "./events";
 import { createMessageHandler } from "@stack/config/create-message";
 import { MessageKind, metadataSchema } from "./messages";
 import { z } from "zod";
-import { getClerkUserToken } from "./get-clerk-user-token";
 import { insertEvent } from "@dxta/crawl-functions";
 import { events } from "@dxta/crawl-schema";
-import { getTenantDb, type OmitDb } from "@stack/config/get-tenant-db";
+import { initDatabase, initSourceControl } from "./context";
+
+type ExtractMergeRequestDiffsContext = Context<GetMergeRequestDiffsSourceControl, GetMergeRequestDiffsEntities>;
 
 export const mergeRequestDiffSenderHandler = createMessageHandler({
   queueId: 'ExtractQueue',
@@ -23,40 +23,32 @@ export const mergeRequestDiffSenderHandler = createMessageHandler({
     namespaceId: NamespaceSchema.shape.id,
   }).shape,
   handler: async (message) => {
-    const { sourceControl, userId } = message.metadata;
     const { mergeRequestId, repositoryId, namespaceId } = message.content;
-    context.integrations.sourceControl = await initSourceControl(userId, sourceControl);
+    
+    const dynamicContext = {
+      integrations: { sourceControl: await initSourceControl(message.metadata) },
+      db: initDatabase(message.metadata),
+    } satisfies Partial<ExtractMergeRequestDiffsContext>;
 
     await getMergeRequestsDiffs({
       mergeRequestId,
       repositoryId,
       namespaceId,
       perPage: Number(Config.PER_PAGE),
-    }, { ...context, db: getTenantDb(message.metadata.tenantId) });
+    }, { ...staticContext, ...dynamicContext });
   }
 });
 
 const { sender } = mergeRequestDiffSenderHandler;
 
-
-const initSourceControl = async (userId: string, sourceControl: 'github' | 'gitlab') => {
-  const accessToken = await getClerkUserToken(userId, `oauth_${sourceControl}`);
-  if (sourceControl === 'github') return new GitHubSourceControl({ auth: accessToken });
-  if (sourceControl === 'gitlab') return new GitlabSourceControl(accessToken);
-  return null;
-}
-
-const context: OmitDb<Context<GetMergeRequestDiffsSourceControl, GetMergeRequestDiffsEntities>> = {
+const staticContext = {
   entities: {
     mergeRequestDiffs,
     mergeRequests,
     namespaces,
     repositories
   },
-  integrations: {
-    sourceControl: null
-  }
-};
+} satisfies Partial<ExtractMergeRequestDiffsContext>;
 
 export const eventHandler = EventHandler(extractMergeRequestsEvent, async (ev) => {
   const { sourceControl, userId } = ev.metadata;
@@ -73,7 +65,7 @@ export const eventHandler = EventHandler(extractMergeRequestsEvent, async (ev) =
   }
   await insertEvent(
     { crawlId: ev.metadata.crawlId, eventNamespace: 'mergeRequestDiff', eventDetail: 'crawlInfo', data: { calls: mergeRequestIds.length } },
-    { db: getTenantDb(ev.metadata.tenantId), entities: { events } }
+    { db: initDatabase(ev.metadata), entities: { events } }
   );
 
   await sender.sendAll(arrayOfExtractMergeRequestData, {
@@ -85,7 +77,7 @@ export const eventHandler = EventHandler(extractMergeRequestsEvent, async (ev) =
     timestamp: new Date().getTime(),
     from: ev.metadata.from,
     to: ev.metadata.to,
-    tenantId: ev.metadata.tenantId,
+    dbUrl: ev.metadata.dbUrl,
   });
 
 });

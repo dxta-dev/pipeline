@@ -9,7 +9,7 @@ export const metadataSchema = z.object({
   sourceControl: z.literal("github"), // TODO: implement gitlab transform // .or(z.literal("gitlab")),
   from: z.coerce.date(),
   to: z.coerce.date(),
-  tenantId: z.number(),
+  dbUrl: z.string(),
 });
 
 const transformRepositoryEventSchema = z.object({

@@ -5,14 +5,14 @@ import { NamespaceSchema, RepositorySchema, deployments, repositories, namespace
 import type { Namespace, Repository } from "@dxta/extract-schema";
 import type { Context, GetDeploymentsEntities, GetDeploymentsSourceControl } from "@dxta/extract-functions";
 import { getDeployments } from "@dxta/extract-functions";
-import { type OmitDb, getTenantDb } from "@stack/config/get-tenant-db";
 import { Config } from "sst/node/config";
-import { getClerkUserToken } from "./get-clerk-user-token";
-import { GitHubSourceControl, GitlabSourceControl } from "@dxta/source-control";
 import { EventHandler } from "@stack/config/create-event";
 import { extractDeploymentsEvent, extractRepositoryEvent, isInitialExtractEvent } from "./events";
 import { and, eq } from "drizzle-orm";
 import { deploymentEnvironments } from "@dxta/tenant-schema";
+import { initDatabase, initSourceControl } from "./context";
+
+type ExtractDeploymentsContext = Context<GetDeploymentsSourceControl, GetDeploymentsEntities>;
 
 type ExtractDeploymentsPageInput = {
   namespace: Namespace;
@@ -24,16 +24,20 @@ type ExtractDeploymentsPageInput = {
   page: number;
   userId: string;
   sourceControl: "github" | "gitlab";
-  tenantId: number;
+  dbUrl: string;
   crawlId: number;
 }
 const extractDeploymentsPage = async ({
   namespace, repository, environment,
   perPage, page,
   from, to,
-  userId, sourceControl, tenantId, crawlId,
+  userId, sourceControl, dbUrl, crawlId,
 }: ExtractDeploymentsPageInput) => {
-  context.integrations.sourceControl = await initSourceControl(userId, sourceControl);
+
+  const dynamicContext = {
+    integrations: { sourceControl: await initSourceControl({ userId, sourceControl }) },
+    db: initDatabase({ dbUrl })
+  } satisfies Partial<ExtractDeploymentsContext>;
 
   const { paginationInfo: pagination, deployments } = await getDeployments({
     namespace,
@@ -41,7 +45,7 @@ const extractDeploymentsPage = async ({
     environment,
     page,
     perPage,
-  }, { ...context, db: getTenantDb(tenantId) });
+  }, { ...staticContext, ...dynamicContext });
 
   const deploymentsWithUndeterminedStatus = deployments.filter(d => d.status === null).map(deployment => deployment.id);
 
@@ -59,7 +63,7 @@ const extractDeploymentsPage = async ({
       from,
       to,
       crawlId,
-      tenantId,
+      dbUrl,
     });
   }
 
@@ -69,21 +73,12 @@ const extractDeploymentsPage = async ({
   };
 }
 
-const initSourceControl = async (userId: string, sourceControl: 'github' | 'gitlab') => {
-  const accessToken = await getClerkUserToken(userId, `oauth_${sourceControl}`);
-  if (sourceControl === 'github') return new GitHubSourceControl({ auth: accessToken });
-  if (sourceControl === 'gitlab') return new GitlabSourceControl(accessToken);
-  return null;
-}
-const context: OmitDb<Context<GetDeploymentsSourceControl, GetDeploymentsEntities>> = {
+const staticContext = {
   entities: {
     repositoryShas,
     deployments,
   },
-  integrations: {
-    sourceControl: null,
-  },
-};
+} satisfies Partial<ExtractDeploymentsContext>;
 
 export const deploymentsSenderHandler = createMessageHandler({
   queueId: 'ExtractQueue',
@@ -98,13 +93,13 @@ export const deploymentsSenderHandler = createMessageHandler({
   }).shape,
   handler: async (message) => {
     const { repository, namespace, environment, page, perPage } = message.content;
-    const { from, to, userId, sourceControl, tenantId, crawlId } = message.metadata;
+    const { from, to, userId, sourceControl, dbUrl, crawlId } = message.metadata;
 
     await extractDeploymentsPage({
       namespace, repository, environment,
       perPage, page,
       from, to,
-      userId, sourceControl, tenantId, crawlId
+      userId, sourceControl, dbUrl, crawlId
     });
 
   }
@@ -113,9 +108,9 @@ export const deploymentsSenderHandler = createMessageHandler({
 const { sender } = deploymentsSenderHandler;
 
 export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
-  const { crawlId, from, to, userId, sourceControl, tenantId } = ev.metadata;
+  const { crawlId, from, to, userId, sourceControl, dbUrl } = ev.metadata;
 
-  const db = getTenantDb(tenantId);
+  const db = initDatabase(ev.metadata);
   const repository = await db.select().from(repositories).where(eq(repositories.id, ev.properties.repositoryId)).get();
   const namespace = await db.select().from(namespaces).where(eq(namespaces.id, ev.properties.namespaceId)).get();
 
@@ -138,7 +133,7 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
     namespace, repository, environment: environment.environment,
     perPage: Number(Config.PER_PAGE), page: 1,
     from, to,
-    userId, sourceControl, tenantId, crawlId
+    userId, sourceControl, dbUrl, crawlId
   }).then(result => ({ result, deploymentEnvironment: environment }))));
 
   if (!isInitialExtractEvent(ev)) return;
@@ -165,7 +160,7 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
     from,
     to,
     crawlId,
-    tenantId,
+    dbUrl,
   });
 
 }, {

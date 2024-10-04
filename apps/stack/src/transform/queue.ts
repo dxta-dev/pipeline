@@ -11,8 +11,8 @@ messageHandlers.set(MessageKind.Timeline, timelineSenderHandler);
 
 const logMap = new Map<string, string[]>();
 
-logMap.set(MessageKind.Tenant, ['content.tenantId']);
-logMap.set(MessageKind.Timeline, ['metadata.tenantId', 'content.mergeRequestId', 'content.deploymentId', 'metadata.from', 'metadata.to']);
+logMap.set(MessageKind.Tenant, ['content.tenantDomain']);
+logMap.set(MessageKind.Timeline, ['content.mergeRequestId', 'content.deploymentId', 'metadata.from', 'metadata.to']);
 
 const crawlNamespaceMap = new Map<string, EventNamespaceType>();
 

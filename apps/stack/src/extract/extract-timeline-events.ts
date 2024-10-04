@@ -4,14 +4,14 @@ import { z } from "zod";
 
 import { getTimelineEvents, type Context, type GetTimelineEventsEntities, type GetTimelineEventsSourceControl } from "@dxta/extract-functions";
 import { members, mergeRequests, MergeRequestSchema, namespaces, NamespaceSchema, repositories, repositoriesToMembers, RepositorySchema, timelineEvents, gitIdentities } from "@dxta/extract-schema";
-import { GitHubSourceControl, GitlabSourceControl } from "@dxta/source-control";
 
 import { extractMembersEvent, extractMergeRequestsEvent } from "./events";
-import { getClerkUserToken } from "./get-clerk-user-token";
 import { MessageKind, metadataSchema } from "./messages";
-import { getTenantDb, type OmitDb } from "@stack/config/get-tenant-db";
-import { Config } from "sst/node/config";
 import { filterNewExtractMembers } from "./filter-extract-members";
+import { initDatabase, initSourceControl } from "./context";
+import { Config } from "sst/node/config";
+
+type ExtractTimelineEventsContext = Context<GetTimelineEventsSourceControl, GetTimelineEventsEntities>;
 
 export const timelineEventsSenderHandler = createMessageHandler({
   queueId: 'ExtractQueue',
@@ -28,7 +28,16 @@ export const timelineEventsSenderHandler = createMessageHandler({
       return;
     }
 
-    context.integrations.sourceControl = await initSourceControl(message.metadata.userId, message.metadata.sourceControl);
+    const dynamicContext = {
+      integrations: {
+        sourceControl: await initSourceControl({
+          userId: message.metadata.userId,
+          sourceControl: message.metadata.sourceControl,
+          options: { fetchTimelineEventsPerPage: Number(Config.FETCH_TIMELINE_EVENTS_PER_PAGE) }
+        })
+      },
+      db: initDatabase(message.metadata),
+    } satisfies Partial<ExtractTimelineEventsContext>;
 
     const { userId, sourceControl } = message.metadata;
     const { mergeRequestId, namespaceId, repositoryId } = message.content;
@@ -37,7 +46,7 @@ export const timelineEventsSenderHandler = createMessageHandler({
         mergeRequestId,
         namespaceId,
         repositoryId,
-      }, { ...context, db: getTenantDb(message.metadata.tenantId) }
+      }, { ...staticContext, ...dynamicContext }
     );
 
     const memberIds = filterNewExtractMembers(members).map(member => member.id);
@@ -52,17 +61,14 @@ export const timelineEventsSenderHandler = createMessageHandler({
       timestamp: new Date().getTime(),
       from: message.metadata.from,
       to: message.metadata.to,
-      tenantId: message.metadata.tenantId,
+      dbUrl: message.metadata.dbUrl,
     });
   }
 });
 
 const { sender } = timelineEventsSenderHandler;
 
-const context: OmitDb<Context<
-  GetTimelineEventsSourceControl,
-  GetTimelineEventsEntities
->> = {
+const staticContext = {
   entities: {
     namespaces,
     repositories,
@@ -72,17 +78,7 @@ const context: OmitDb<Context<
     repositoriesToMembers,
     gitIdentities,
   },
-  integrations: {
-    sourceControl: null,
-  },
-};
-
-const initSourceControl = async (userId: string, sourceControl: "github" | "gitlab") => {
-  const accessToken = await getClerkUserToken(userId, `oauth_${sourceControl}`);
-  if (sourceControl === 'github') return new GitHubSourceControl({ auth: accessToken, fetchTimelineEventsPerPage: Number(Config.FETCH_TIMELINE_EVENTS_PER_PAGE) });
-  if (sourceControl === "gitlab") return new GitlabSourceControl(accessToken);
-  return null;
-};
+} satisfies Partial<ExtractTimelineEventsContext>;
 
 export const eventHandler = EventHandler(extractMergeRequestsEvent, async (ev) => {
     const { mergeRequestIds, namespaceId, repositoryId } = ev.properties;
@@ -107,7 +103,7 @@ export const eventHandler = EventHandler(extractMergeRequestsEvent, async (ev) =
       timestamp: new Date().getTime(),
       from: ev.metadata.from,
       to: ev.metadata.to,
-      tenantId: ev.metadata.tenantId,
+      dbUrl: ev.metadata.dbUrl,
     });
   },
 );
