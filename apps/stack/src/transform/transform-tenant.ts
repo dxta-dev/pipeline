@@ -17,6 +17,7 @@ export const tenantSenderHandler = createMessageHandler({
   metadataShape: metadataSchema.omit({ sourceControl: true }).shape,
   contentShape: z.object({
     dbUrl: z.string(),
+    tenantDomain: z.string(),
   }).shape,
   handler: async (message) => {
 
@@ -62,7 +63,7 @@ export const cronHandler = async () => {
   const superDb = drizzle(createClient({ url: Config.SUPER_DATABASE_URL, authToken: Config.SUPER_DATABASE_AUTH_TOKEN }));
   const tenants = await getTenants(superDb);
   const cronEnabledTenants = tenants.filter(x => x.crawlUserId !== '');
-  const tenantTransformInput = cronEnabledTenants.map(x => ({ dbUrl: x.dbUrl }));
+  const tenantTransformInput = cronEnabledTenants.map(tenant => ({ dbUrl: tenant.dbUrl, tenantDomain: tenant.name }));
 
   const PERIOD_DURATION = 15 * 60 * 1000; // 15 minutes
   const PERIOD_START_MARGIN = 5 * 60 * 1000; // 5 minutes
@@ -130,7 +131,8 @@ export const apiHandler = ApiHandler(async (ev) => {
 
   try {
     await sender.send({
-      dbUrl: tenant.dbUrl
+      dbUrl: tenant.dbUrl,
+      tenantDomain: tenant.name,
     }, {
       version: 1,
       caller: 'transform-tenants:apiHandler',
