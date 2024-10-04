@@ -53,7 +53,7 @@ export const tenantSenderHandler = createMessageHandler({
 const { sender } = tenantSenderHandler;
 
 export const cronHandler = async ()=> {
-
+  
   const superDb = drizzle(createClient({ url: Config.SUPER_DATABASE_URL, authToken: Config.SUPER_DATABASE_AUTH_TOKEN }));
   const tenants = await getTenants(superDb);
   const cronEnabledTenants = tenants.filter(x => x.crawlUserId !== '');
