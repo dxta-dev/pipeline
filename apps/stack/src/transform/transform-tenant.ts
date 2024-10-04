@@ -56,14 +56,16 @@ export const tenantSenderHandler = createMessageHandler({
 const { sender } = tenantSenderHandler;
 
 export const cronHandler = async () => {
-  const tenants = getTenants().map(tenant => ({ tenantId: tenant.id }));
+  const tenants = getTenants();
+  const cronEnabled = tenants.filter(x => x.crawlUserId !== '');
+  const tenantTransformInput = cronEnabled.map(tenant => ({ tenantId: tenant.id }));
 
   const PERIOD_DURATION = 15 * 60 * 1000; // 15 minutes
   const PERIOD_START_MARGIN = 5 * 60 * 1000; // 5 minutes
   const PERIOD_LATENCY = (15 - 8) * 60 * 1000; // extract delay
   const { from, to } = timePeriodOf(Date.now(), PERIOD_DURATION, PERIOD_START_MARGIN, PERIOD_LATENCY);
 
-  await sender.sendAll(tenants, {
+  await sender.sendAll(tenantTransformInput, {
     version: 1,
     caller: 'transform-tenants:cronHandler',
     timestamp: Date.now(),
