@@ -119,6 +119,13 @@ export const apiHandler = ApiHandler(async (ev) => {
   const { tenant: tenantId, from, to } = inputValidation.data;
   const { sub } = lambdaContextValidation.data.authorizer.jwt.claims;
 
+  if (from.getTime() > to.getTime()) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({error: `the lower bound of the period since: ${from.toISOString()} is greater than the upper bound until: ${to.toISOString()}`}),
+    }
+  }
+
   const superDb = drizzle(createClient({ url: Config.SUPER_DATABASE_URL, authToken: Config.SUPER_DATABASE_AUTH_TOKEN }));
   const tenants = await getTenants(superDb);
   const tenant = tenants.find(tenant => tenant.id === tenantId);
