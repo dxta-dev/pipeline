@@ -129,7 +129,7 @@ export class GitHubSourceControl implements SourceControl {
   }
 
   async fetchUserInfo(_externalId: number, username: string): Promise<{ member: NewMember }> {
-    if (username === 'invalid-email-address') {
+    if (username === 'invalid-email-address' || username === 'Copilot') {
       return {
         member: {
           externalId: _externalId,
