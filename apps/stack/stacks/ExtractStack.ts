@@ -69,6 +69,17 @@ export function ExtractStack({ stack }: StackContext) {
           }
         }
       },
+      githubRepositoryDeployments: {
+        pattern: {
+          source: ["extract"],
+          detailType: ["repository-deployments"],
+          detail: {
+            metadata: {
+              sourceControl: ["github"],
+            }
+          }
+        }
+      },
       deployments: {
         pattern: {
           source: ["extract"],
@@ -133,7 +144,7 @@ export function ExtractStack({ stack }: StackContext) {
       function: {
         bind: [bus, extractQueue],
         handler: "src/extract/extract-members.eventHandler",
-              },
+      },
     },
     extractNamespaceMember: {
       function: {
@@ -179,6 +190,15 @@ export function ExtractStack({ stack }: StackContext) {
         bind: [bus, extractQueue],
         handler: "src/extract/extract-workflow-deployment-status.eventHandler",
       },
+    }
+  });
+
+  bus.addTargets(stack, "githubRepositoryDeployments", {
+    extractRepositoryDeployments: {
+      function: {
+        bind: [bus, extractQueue],
+        handler: "src/extract/extract-initial-deployments.eventHandler",
+      }
     }
   });
 
@@ -249,6 +269,7 @@ export function ExtractStack({ stack }: StackContext) {
     },
     routes: {
       "POST /start": "src/extract/extract-tenants.apiHandler",
+      "POST /start-deployments": "src/extract/extract-initial-deployments.apiHandler",
     },
   });
   

@@ -27,7 +27,8 @@ type ExtractDeploymentsPageInput = {
   dbUrl: string;
   crawlId: number;
 }
-const extractDeploymentsPage = async ({
+// EXPORTED ONLY FOR ./extract-initial-deployments.ts
+export const extractDeploymentsPage = async ({
   namespace, repository, environment,
   perPage, page,
   from, to,
