@@ -87,7 +87,6 @@ const contextSchema = z.object({
 
 const inputSchema = z.object({
   tenant: z.number(),
-  since: z.coerce.date(),
 });
 
 export const apiHandler = ApiHandler(async (ev) => {
@@ -114,15 +113,8 @@ export const apiHandler = ApiHandler(async (ev) => {
     }
   }
 
-  const { tenant: tenantId, since } = inputValidation.data;
+  const { tenant: tenantId } = inputValidation.data;
   const { sub } = lambdaContextValidation.data.authorizer.jwt.claims;
-
-  if (since.getTime() > Date.now()) {
-    return {
-      statusCode: 400,
-      body: JSON.stringify({ error: `parameter since: ${since.toISOString()} can't be in the future.` }),
-    }
-  }
 
   const superDb = drizzle(createClient({ url: Config.SUPER_DATABASE_URL, authToken: Config.SUPER_DATABASE_AUTH_TOKEN }));
   const tenants = await getTenants(superDb);

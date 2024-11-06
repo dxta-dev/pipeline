@@ -246,6 +246,7 @@ export function ExtractStack({ stack }: StackContext) {
       authorizer: "JwtAuthorizer",
       function: {
         bind: [
+          bus,
           extractQueue,
           TENANT_DATABASE_AUTH_TOKEN,
           SUPER_DATABASE_AUTH_TOKEN,
