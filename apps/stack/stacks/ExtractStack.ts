@@ -69,6 +69,17 @@ export function ExtractStack({ stack }: StackContext) {
           }
         }
       },
+      githubRepositoryDeployments: {
+        pattern: {
+          source: ["extract"],
+          detailType: ["repository-deployments"],
+          detail: {
+            metadata: {
+              sourceControl: ["github"],
+            }
+          }
+        }
+      },
       deployments: {
         pattern: {
           source: ["extract"],
@@ -133,7 +144,7 @@ export function ExtractStack({ stack }: StackContext) {
       function: {
         bind: [bus, extractQueue],
         handler: "src/extract/extract-members.eventHandler",
-              },
+      },
     },
     extractNamespaceMember: {
       function: {
@@ -182,6 +193,15 @@ export function ExtractStack({ stack }: StackContext) {
     }
   });
 
+  bus.addTargets(stack, "githubRepositoryDeployments", {
+    extractRepositoryDeployments: {
+      function: {
+        bind: [bus, extractQueue],
+        handler: "src/extract/extract-initial-deployments.eventHandler",
+      }
+    }
+  });
+
   bus.addTargets(stack, "mergeRequests", {
     extractMergeRequestDiffs: {
       function: {
@@ -226,6 +246,7 @@ export function ExtractStack({ stack }: StackContext) {
       authorizer: "JwtAuthorizer",
       function: {
         bind: [
+          bus,
           extractQueue,
           TENANT_DATABASE_AUTH_TOKEN,
           SUPER_DATABASE_AUTH_TOKEN,
@@ -249,6 +270,7 @@ export function ExtractStack({ stack }: StackContext) {
     },
     routes: {
       "POST /start": "src/extract/extract-tenants.apiHandler",
+      "POST /start-deployments": "src/extract/extract-initial-deployments.apiHandler",
     },
   });
   

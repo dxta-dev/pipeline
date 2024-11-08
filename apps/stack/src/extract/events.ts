@@ -86,3 +86,10 @@ export const extractDeploymentsEvent = createEvent({
   metadataShape: metadataSchema.shape,
 });
 
+export const extractRepositoryDeploymentsEvent = createEvent({
+  source: "extract",
+  type: "repository-deployments",
+  propertiesShape: extractRepositoryEventSchema.shape,
+  bus: 'ExtractBus',
+  metadataShape: metadataSchema.shape,
+});
