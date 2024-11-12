@@ -402,7 +402,7 @@ export class GitHubSourceControl implements SourceControl {
           ],
           pagination: {
             page: 1,
-            perPage: 1,
+            perPage: perPage,
             totalPages: 1,
           }
         }
