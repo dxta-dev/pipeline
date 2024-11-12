@@ -461,7 +461,13 @@ function calculateMrSize(mergeRequestId: number, diffs: { stringifiedHunks: stri
   let codeDeletion = 0;
 
   for (const diff of diffs) {
+    const isVeryLargeDiff = diff.newPath === 'urn:dxta-pipeline:very-large-diff' && diff.stringifiedHunks === '';
     const codeGenResult = isCodeGen(diff.newPath);
+
+    if (isVeryLargeDiff) {
+      mrSize += 29999984;
+      continue;
+    }
 
     if (codeGenResult === true) {
       continue;
