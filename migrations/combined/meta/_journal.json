@@ -29,6 +29,13 @@
       "when": 1727177124075,
       "tag": "0003_same_miek",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1731514184977,
+      "tag": "0004_square_speed_demon",
+      "breakpoints": true
     }
   ]
 }

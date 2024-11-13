@@ -3,6 +3,7 @@ import { sql } from 'drizzle-orm';
 import { text, integer, uniqueIndex } from 'drizzle-orm/sqlite-core';
 import { Enum } from './enum-column';
 import { sqliteTable } from './transform-table';
+import { branches } from './branches';
 
 export const repositories = sqliteTable('repositories', {
   id: integer('id').primaryKey(),
@@ -11,6 +12,7 @@ export const repositories = sqliteTable('repositories', {
   name: text('name').notNull(),
   namespaceName: text('namespace_name').default(''),
   // url: text('url').notNull(),
+  defaultBranch: integer('default_branch').references(() => branches.id), // TODO(transform-schema-restart): add .notNull()
   _createdAt: integer('__created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
   _updatedAt: integer('__updated_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
 }, (repositories) => ({

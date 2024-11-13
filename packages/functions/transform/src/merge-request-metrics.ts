@@ -563,6 +563,7 @@ async function selectExtractData(db: ExtractDatabase, extractMergeRequestId: num
       name: repositories.name,
       forgeType: repositories.forgeType,
       namespaceName: namespaces.name,
+      defaultBranchName: repositories.defaultBranch,
     }
   }).from(repositories)
     .where(eq(repositories.id, mergeRequestData?.mergeRequest.repositoryId || 0))
@@ -1058,11 +1059,17 @@ export async function run(extractMergeRequestId: number, extractDeploymentId: nu
     repositoryId: _nullRepositoryId
   } = await selectNullRows(ctx.transformDatabase);
 
+  const { id: repositoryDefaultBranchId } = await upsertBranch(ctx.transformDatabase, {
+    name: extractData.repository.defaultBranchName || "", // TODO(transform-schema-restart): is default branch nullable ? (check github/gitlab)
+  })
+    .get();
+
   const { id: transformRepositoryId } = await upsertRepository(ctx.transformDatabase, {
     externalId: extractData.repository.externalId,
     forgeType: extractData.repository.forgeType,
     name: extractData.repository.name,
     namespaceName: extractData.repository.namespaceName,
+    defaultBranch: repositoryDefaultBranchId,
   })
     .get();
 
