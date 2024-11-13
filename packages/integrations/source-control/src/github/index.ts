@@ -7,6 +7,7 @@ import type { CommitData, Pagination, TimePeriod } from '../source-control';
 import type { components } from '@octokit/openapi-types';
 import { TimelineEventTypes } from '../../../../../packages/schemas/extract/src/timeline-events';
 import { RequestError } from '@octokit/request-error';
+import assert from 'assert';
 
 const FILE_STATUS_FLAGS_MAPPING: Record<
   "added"
@@ -365,13 +366,49 @@ export class GitHubSourceControl implements SourceControl {
   async fetchMergeRequestDiffs(repository: Repository, namespace: Namespace, mergeRequest: MergeRequest, perPage: number, page?: number): Promise<{ mergeRequestDiffs: NewMergeRequestDiff[], pagination: Pagination }> {
     page = page || 1;
 
-    const result = await this.api.pulls.listFiles({
-      owner: namespace.name,
-      repo: repository.name,
-      page: page,
-      per_page: perPage,
-      pull_number: mergeRequest.canonId,
-    });
+    let result: Awaited<ReturnType<Octokit['pulls']['listFiles']>>;
+    try {
+      result = await this.api.pulls.listFiles({
+        owner: namespace.name,
+        repo: repository.name,
+        page: page,
+        per_page: perPage,
+        pull_number: mergeRequest.canonId,
+      });
+    } catch (error) {
+      if (error instanceof RequestError && error.status === 422) {
+        assert.deepStrictEqual(error.response?.data, {
+          message: 'Server Error: Sorry, this diff is taking too long to generate.',
+          errors: [
+            { resource: 'PullRequest', field: 'diff', code: 'not_available' }
+          ],
+          documentation_url: 'https://docs.github.com/rest/pulls/pulls#list-pull-requests-files',
+          status: '422'
+        }, 'Assumption: Http Response Status 422 is returned only for very large diffs');
+
+        return {
+          mergeRequestDiffs: [
+            {
+              mergeRequestId: mergeRequest.id,
+              diff: "",
+              newPath: "urn:dxta-pipeline:very-large-diff",
+              oldPath: "urn:dxta-pipeline:very-large-diff",
+              aMode: "",
+              bMode: "",
+              deletedFile: false,
+              newFile: false,
+              renamedFile: false,
+            }
+          ],
+          pagination: {
+            page: 1,
+            perPage: perPage,
+            totalPages: 1,
+          }
+        }
+      }
+      throw error;
+    }
 
     const linkHeader = parseLinkHeader(result.headers.link) || { next: { per_page: perPage } };
 
