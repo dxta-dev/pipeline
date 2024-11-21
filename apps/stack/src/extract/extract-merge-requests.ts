@@ -51,7 +51,7 @@ export const mergeRequestSenderHandler = createMessageHandler({
 
     if (!namespace) throw new Error("Invalid namespace id");
 
-    const { mergeRequests } = await getMergeRequests(
+    const { processableMergeRequests } = await getMergeRequests(
       {
         externalRepositoryId: repository.externalId,
         namespaceName: namespace.name,
@@ -65,11 +65,11 @@ export const mergeRequestSenderHandler = createMessageHandler({
       { ...staticContext, ...dynamicContext },
     );
 
-    if (mergeRequests.length === 0) return;
+    if (processableMergeRequests.length === 0) return;
 
     await extractMergeRequestsEvent.publish(
       {
-        mergeRequestIds: mergeRequests.map((mr) => mr.id),
+        mergeRequestIds: processableMergeRequests.map((mr) => mr.id),
         namespaceId: namespace.id,
         repositoryId: repository.id,
       },
@@ -128,7 +128,7 @@ export const eventHandler = EventHandler(
       to: endDate,
     };
 
-    const { mergeRequests, paginationInfo } = await getMergeRequests(
+    const { mergeRequests, paginationInfo, processableMergeRequests } = await getMergeRequests(
       {
         externalRepositoryId: repository.externalId,
         namespaceName: namespace.name,
@@ -154,10 +154,10 @@ export const eventHandler = EventHandler(
       { db, entities: { events } },
     );
 
-    if (mergeRequests.length !== 0) {
+    if (processableMergeRequests.length !== 0) {
       await extractMergeRequestsEvent.publish(
         {
-          mergeRequestIds: mergeRequests.map((mr) => mr.id),
+          mergeRequestIds: processableMergeRequests.map((mr) => mr.id),
           namespaceId: namespace.id,
           repositoryId: repository.id,
         },

@@ -2,6 +2,7 @@ import type { MergeRequest, Sha } from "@dxta/extract-schema";
 import type { ExtractFunction, Entities } from "./config";
 import type { Pagination, SourceControl, TimePeriod } from "@dxta/source-control";
 import { sql } from "drizzle-orm";
+import { isRelativeResidualMergeRequest } from "./classify-merge-requests";
 
 export type GetMergeRequestsInput = {
   externalRepositoryId: number;
@@ -16,6 +17,7 @@ export type GetMergeRequestsInput = {
 
 export type GetMergeRequestsOutput = {
   mergeRequests: MergeRequest[];
+  processableMergeRequests: MergeRequest[];
   paginationInfo: Pagination;
 };
 
@@ -105,11 +107,17 @@ export const getMergeRequests: GetMergeRequestsFunction = async (
 
   if (timePeriod === undefined) return {
     mergeRequests: insertedMergeRequests,
-    paginationInfo: pagination
+    paginationInfo: pagination,
+    processableMergeRequests: insertedMergeRequests,
   }
 
+  const updatedInPeriod = insertedMergeRequests.filter(mr => wasMergeRequestUpdatedInTimePeriod(mr, timePeriod));
+  const SIX_MONTHS = 6 * 30 * 24 * 60 * 60 * 1000;
+  const processable = updatedInPeriod.filter(mr => !isRelativeResidualMergeRequest(mr, timePeriod.from, SIX_MONTHS));
+  
   return {
-    mergeRequests: insertedMergeRequests.filter(mr => wasMergeRequestUpdatedInTimePeriod(mr, timePeriod)),
+    mergeRequests: updatedInPeriod,
     paginationInfo: pagination,
+    processableMergeRequests: processable,
   };
 };
