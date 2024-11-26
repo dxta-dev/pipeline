@@ -88,7 +88,7 @@ const contextSchema = z.object({
 const inputSchema = z.object({
   tenant: z.number(),
   deploymentId: z.number(),
-  firstPage: z.number(),
+  firstPage: z.number().default(1),
   lastPage: z.number().optional(),
 });
 
