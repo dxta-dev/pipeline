@@ -87,6 +87,9 @@ const contextSchema = z.object({
 
 const inputSchema = z.object({
   tenant: z.number(),
+  deploymentId: z.number(),
+  firstPage: z.number(),
+  lastPage: z.number().optional(),
 });
 
 export const apiHandler = ApiHandler(async (ev) => {
@@ -113,7 +116,7 @@ export const apiHandler = ApiHandler(async (ev) => {
     }
   }
 
-  const { tenant: tenantId } = inputValidation.data;
+  const { tenant: tenantId, deploymentId, firstPage, lastPage } = inputValidation.data;
   const { sub } = lambdaContextValidation.data.authorizer.jwt.claims;
 
   const superDb = drizzle(createClient({ url: Config.SUPER_DATABASE_URL, authToken: Config.SUPER_DATABASE_AUTH_TOKEN }));
@@ -125,62 +128,102 @@ export const apiHandler = ApiHandler(async (ev) => {
   }
 
   const db = initDatabase({ dbUrl: tenant.dbUrl });
-  const repos = await db.select({
-    repositoryId: repositories.id,
-    name: repositories.name,
-    namespaceId: repositories.namespaceId,
-    sourceControl: repositories.forgeType,
-  }).from(repositories).all();
+  const target = await db.select({
+    repository: repositories,
+    namespace: namespaces,
+    deployment: deploymentEnvironments,
+  })
+    .from(deploymentEnvironments)
+    .where(eq(deploymentEnvironments.id, deploymentId))
+    .innerJoin(repositories, eq(repositories.externalId, deploymentEnvironments.repositoryExternalId))
+    .innerJoin(namespaces, eq(repositories.namespaceId, namespaces.id))
+    .get();
 
-  if (repos.length === 0) {
-    return {
-      statusCode: 412,
-      body: JSON.stringify({ message: `No repositories found for tenant ${tenant.name}` }),
-    }
+  if (!target) return {
+    statusCode: 404,
+    body: JSON.stringify({ message: `Invalid deployment id ${deploymentId} for tenant ${tenant.name}` }),
   }
 
   const nullDurationDateAt = new Date();
 
-  for (const repo of repos) {
-    let instanceId = -1;
-    try {
-      const crawl = await setInstance({ repositoryId: repo.repositoryId, userId: sub, since: nullDurationDateAt, until: nullDurationDateAt }, { db, entities: { instances } });
-      instanceId = crawl.instanceId;
-    } catch (error) {
-      console.error(error);
-      return {
-        statusCode: 500,
-        body: JSON.stringify({ message: `Failed to create deployments crawl instance for repository ${repo.name}` }),
-      }
+  let instanceId = -1;
+  try {
+    const crawl = await setInstance({ repositoryId: target.repository.id, userId: sub, since: nullDurationDateAt, until: nullDurationDateAt }, { db, entities: { instances } });
+    instanceId = crawl.instanceId;
+  } catch (error) {
+    console.error(error);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ message: `Failed to create deployment crawl instance for repository ${target.namespace.name}/${target.repository.name}` }),
     }
-
-    try {
-      await extractRepositoryDeploymentsEvent.publish({
-        namespaceId: repo.namespaceId,
-        repositoryId: repo.namespaceId,
-      }, {
-        caller: "extract-initial-deployments:apiHandler",
-        crawlId: instanceId,
-        dbUrl: tenant.dbUrl,
-        from: nullDurationDateAt,
-        to: nullDurationDateAt,
-        sourceControl: repo.sourceControl,
-        timestamp: Date.now(),
-        userId: sub,
-        version: 1
-      });
-    } catch (error) {
-      console.error(error);
-      return {
-        statusCode: 500,
-        body: JSON.stringify({ message: `Failed to publish extract repository deployments event for repository ${repo.name} ` }),
-      }
-    }
-
   }
 
-  return {
+  let firstPageResult: Awaited<ReturnType<typeof extractDeploymentsPage>>;
+  try {
+    firstPageResult = await extractDeploymentsPage({
+      namespace: target.namespace,
+      repository: target.repository,
+      crawlId: instanceId,
+      dbUrl: tenant.dbUrl,
+      from: nullDurationDateAt,
+      to: nullDurationDateAt,
+      page: firstPage,
+      perPage: Number(Config.PER_PAGE),
+      sourceControl: target.repository.forgeType,
+      userId: sub,
+      environment: target.deployment.environment,
+    });
+  } catch (error) {
+    console.error(error);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ message: `Failed to retrieve first page #${firstPage} of deployments for repository ${target.namespace.name}/${target.repository.name}` }),
+    }
+  }
+
+  const totalPages = lastPage || firstPageResult.pagination.totalPages;
+  const arrayOfExtractDeploymentsPageMessageContent: Parameters<typeof deploymentsSenderHandler.sender.send>[0][] = [];
+  for (let page = firstPage + 1; page <= totalPages; page++) {
+    arrayOfExtractDeploymentsPageMessageContent.push({
+      namespace: target.namespace,
+      repository: target.repository,
+      page: page,
+      perPage: Number(Config.PER_PAGE),
+      environment: target.deployment.environment,
+    });
+  }
+
+
+  if (arrayOfExtractDeploymentsPageMessageContent.length === 0)  {
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ message: `Extracted ${firstPageResult.deployments.length} deployments for tenant ${tenant.name} repository ${target.namespace.name}/${target.repository.name}` }),
+    }   
+  }
+
+  try {
+    await sender.sendAll(arrayOfExtractDeploymentsPageMessageContent, {
+      version: 1,
+      caller: 'extract-deployments',
+      sourceControl: target.repository.forgeType,
+      userId: sub,
+      timestamp: new Date().getTime(),
+      from: nullDurationDateAt,
+      to: nullDurationDateAt,
+      crawlId: instanceId,
+      dbUrl: tenant.dbUrl,
+    });      
+  } catch (error) {
+    console.error(error);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ message: `Failed to enqueue pages ${firstPage + 1}..${totalPages} for tenant ${tenant.name} repository ${target.namespace.name}/${target.repository.name}` }),
+    }
+  }
+
+  return {    
     statusCode: 200,
-    body: JSON.stringify({ message: `Extracting ${tenant.name} deployments for repositories (${repos.map(x => x.name).join(", ")})...` })
-  };
+    body: JSON.stringify({ message: `Extracted ${firstPageResult.deployments.length} deployments and enqueued pages ${firstPage + 1}..${totalPages} for tenant ${tenant.name} repository ${target.namespace.name}/${target.repository.name}` }),
+  }
+
 });

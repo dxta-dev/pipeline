@@ -254,7 +254,8 @@ export function ExtractStack({ stack }: StackContext) {
           CLERK_SECRET_KEY,
           REDIS_URL,
           REDIS_TOKEN,
-          REDIS_USER_TOKEN_TTL
+          REDIS_USER_TOKEN_TTL,
+          PER_PAGE,
         ],
       },
     },
