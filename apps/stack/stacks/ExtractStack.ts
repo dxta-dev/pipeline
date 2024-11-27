@@ -69,17 +69,6 @@ export function ExtractStack({ stack }: StackContext) {
           }
         }
       },
-      githubRepositoryDeployments: {
-        pattern: {
-          source: ["extract"],
-          detailType: ["repository-deployments"],
-          detail: {
-            metadata: {
-              sourceControl: ["github"],
-            }
-          }
-        }
-      },
       deployments: {
         pattern: {
           source: ["extract"],
@@ -190,15 +179,6 @@ export function ExtractStack({ stack }: StackContext) {
         bind: [bus, extractQueue],
         handler: "src/extract/extract-workflow-deployment-status.eventHandler",
       },
-    }
-  });
-
-  bus.addTargets(stack, "githubRepositoryDeployments", {
-    extractRepositoryDeployments: {
-      function: {
-        bind: [bus, extractQueue],
-        handler: "src/extract/extract-initial-deployments.eventHandler",
-      }
     }
   });
 

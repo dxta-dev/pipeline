@@ -1,9 +1,7 @@
 import { z } from "zod";
 import { repositories, namespaces } from "@dxta/extract-schema";
 import { Config } from "sst/node/config";
-import { EventHandler } from "@stack/config/create-event";
-import { extractRepositoryDeploymentsEvent } from "./events";
-import { and, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { deploymentEnvironments } from "@dxta/tenant-schema";
 import { initDatabase } from "./context";
 import { ApiHandler, useJsonBody } from "sst/node/api";
@@ -15,65 +13,6 @@ import { setInstance } from "@dxta/crawl-functions";
 import { instances } from "@dxta/crawl-schema";
 
 const { sender } = deploymentsSenderHandler;
-
-export const eventHandler = EventHandler(extractRepositoryDeploymentsEvent, async (ev) => {
-  const { crawlId, from, to, userId, sourceControl, dbUrl } = ev.metadata;
-
-  const db = initDatabase(ev.metadata);
-  const repository = await db.select().from(repositories).where(eq(repositories.id, ev.properties.repositoryId)).get();
-  const namespace = await db.select().from(namespaces).where(eq(namespaces.id, ev.properties.namespaceId)).get();
-
-  if (!repository) throw new Error("invalid repo id");
-  if (!namespace) throw new Error("Invalid namespace id");
-
-  const environments = await db.select().from(deploymentEnvironments).where(
-    and(
-      eq(deploymentEnvironments.repositoryExternalId, repository.externalId),
-      eq(deploymentEnvironments.forgeType, repository.forgeType)
-    )
-  ).all();
-
-  if (environments.length == 0) {
-    console.log("No deployment environments defined for repository", `${namespace.name}/${repository.name}`);
-    return;
-  }
-
-  const deploymentsFirstPages = await Promise.all(environments.map(environment => extractDeploymentsPage({
-    namespace, repository, environment: environment.environment,
-    perPage: Number(Config.PER_PAGE), page: 1,
-    from, to,
-    userId, sourceControl, dbUrl, crawlId
-  }).then(result => ({ result, deploymentEnvironment: environment }))));
-
-  const arrayOfExtractDeploymentsPageMessageContent: Parameters<typeof deploymentsSenderHandler.sender.send>[0][] = [];
-  for (const firstPage of deploymentsFirstPages) {
-    for (let i = 2; i <= firstPage.result.pagination.totalPages; i++) {
-      arrayOfExtractDeploymentsPageMessageContent.push({
-        namespace,
-        repository,
-        page: i,
-        perPage: firstPage.result.pagination.perPage,
-        environment: firstPage.deploymentEnvironment.environment,
-      });
-    }
-  }
-
-  await sender.sendAll(arrayOfExtractDeploymentsPageMessageContent, {
-    version: 1,
-    caller: 'extract-deployments',
-    sourceControl,
-    userId,
-    timestamp: new Date().getTime(),
-    from,
-    to,
-    crawlId,
-    dbUrl,
-  });
-
-}, {
-  propertiesToLog: ["properties.repositoryId", "properties.namespaceId"],
-  crawlEventNamespace: "deployment",
-})
 
 const contextSchema = z.object({
   authorizer: z.object({
@@ -88,7 +27,7 @@ const contextSchema = z.object({
 const inputSchema = z.object({
   tenant: z.number(),
   deploymentId: z.number(),
-  firstPage: z.number().default(1),
+  firstPage: z.number().default(1), // note: github api pages sort by created_at desc
   lastPage: z.number().optional(),
 });
 
