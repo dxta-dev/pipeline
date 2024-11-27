@@ -69,17 +69,6 @@ export function ExtractStack({ stack }: StackContext) {
           }
         }
       },
-      githubRepositoryDeployments: {
-        pattern: {
-          source: ["extract"],
-          detailType: ["repository-deployments"],
-          detail: {
-            metadata: {
-              sourceControl: ["github"],
-            }
-          }
-        }
-      },
       deployments: {
         pattern: {
           source: ["extract"],
@@ -193,15 +182,6 @@ export function ExtractStack({ stack }: StackContext) {
     }
   });
 
-  bus.addTargets(stack, "githubRepositoryDeployments", {
-    extractRepositoryDeployments: {
-      function: {
-        bind: [bus, extractQueue],
-        handler: "src/extract/extract-initial-deployments.eventHandler",
-      }
-    }
-  });
-
   bus.addTargets(stack, "mergeRequests", {
     extractMergeRequestDiffs: {
       function: {
@@ -254,7 +234,8 @@ export function ExtractStack({ stack }: StackContext) {
           CLERK_SECRET_KEY,
           REDIS_URL,
           REDIS_TOKEN,
-          REDIS_USER_TOKEN_TTL
+          REDIS_USER_TOKEN_TTL,
+          PER_PAGE,
         ],
       },
     },
