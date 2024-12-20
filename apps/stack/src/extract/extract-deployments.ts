@@ -7,7 +7,7 @@ import type { Context, GetDeploymentsEntities, GetDeploymentsSourceControl } fro
 import { getDeployments } from "@dxta/extract-functions";
 import { Config } from "sst/node/config";
 import { EventHandler } from "@stack/config/create-event";
-import { extractDeploymentsEvent, extractRepositoryEvent, isInitialExtractEvent } from "./events";
+import { extractDeploymentsEvent, extractRepositoryEvent } from "./events";
 import { and, eq } from "drizzle-orm";
 import { deploymentEnvironments } from "@dxta/tenant-schema";
 import { initDatabase, initSourceControl } from "./context";
@@ -106,8 +106,6 @@ export const deploymentsSenderHandler = createMessageHandler({
   }
 });
 
-const { sender } = deploymentsSenderHandler;
-
 export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
   const { crawlId, from, to, userId, sourceControl, dbUrl } = ev.metadata;
 
@@ -130,39 +128,12 @@ export const eventHandler = EventHandler(extractRepositoryEvent, async (ev) => {
     return;
   }
 
-  const deploymentsFirstPages = await Promise.all(environments.map(environment => extractDeploymentsPage({
+  const _deploymentsFirstPages = await Promise.all(environments.map(environment => extractDeploymentsPage({
     namespace, repository, environment: environment.environment,
     perPage: Number(Config.PER_PAGE), page: 1,
     from, to,
     userId, sourceControl, dbUrl, crawlId
   }).then(result => ({ result, deploymentEnvironment: environment }))));
-
-  if (!isInitialExtractEvent(ev)) return;
-
-  const arrayOfExtractDeploymentsPageMessageContent: Parameters<typeof deploymentsSenderHandler.sender.send>[0][] = [];
-  for (const firstPage of deploymentsFirstPages) {
-    for (let i = 2; i <= firstPage.result.pagination.totalPages; i++) {
-      arrayOfExtractDeploymentsPageMessageContent.push({
-        namespace,
-        repository,
-        page: i,
-        perPage: firstPage.result.pagination.perPage,
-        environment: firstPage.deploymentEnvironment.environment,
-      });
-    }
-  }
-
-  await sender.sendAll(arrayOfExtractDeploymentsPageMessageContent, {
-    version: 1,
-    caller: 'extract-deployments',
-    sourceControl,
-    userId,
-    timestamp: new Date().getTime(),
-    from,
-    to,
-    crawlId,
-    dbUrl,
-  });
 
 }, {
   propertiesToLog: ["properties.repositoryId", "properties.namespaceId"],
