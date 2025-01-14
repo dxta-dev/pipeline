@@ -93,15 +93,26 @@ export function ExtractStack({ stack }: StackContext) {
     },
   });
 
-  const extractQueue = new Queue(stack, "ExtractQueue");
+  const extractDLQ = new Queue(stack, "ExtractDLQ");  
+  const extractQueue = new Queue(stack, "ExtractQueue", {
+    cdk: {
+      queue: {
+        deadLetterQueue: {
+          maxReceiveCount: 5,
+          queue: extractDLQ.cdk.queue,
+        }
+      }
+    },
+  });
   extractQueue.addConsumer(stack, {
     cdk: {
       eventSource: {
         batchSize: 1,
         maxConcurrency: 20,
-      },
+      },      
     },
     function: {
+      retryAttempts: 5, // not clear if this is for DLQ
       handler: "src/extract/queue.handler",
       bind: [
         bus,

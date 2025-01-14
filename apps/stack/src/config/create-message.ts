@@ -177,7 +177,7 @@ export function QueueHandler(map: Map<string, unknown>, logMap: Map<string, stri
       }
 
       try {
-        console.error('Failed to handle message', createLog(validatedMessage.data, parsedEvent.kind, propertiesToLog));
+        console.error('Failed to handle message', createLog(validatedMessage.data, parsedEvent.kind, propertiesToLog) + `\n- aws.attributes.ApproximateRecieveCount: ${record.attributes.ApproximateReceiveCount}`);
         await crawlFailed(isCrawlMessage, db, crawlId, crawlEventNamespace, handlerError);
       } catch (e) {
         console.error(`Failed to insert crawl failed event for id: ${crawlId} - ${crawlEventNamespace}`, e);
