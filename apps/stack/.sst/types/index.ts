@@ -108,6 +108,15 @@ declare module "sst/node/event-bus" {
 import "sst/node/queue";
 declare module "sst/node/queue" {
   export interface QueueResources {
+    "ExtractDLQ": {
+      queueUrl: string;
+    }
+  }
+}
+
+import "sst/node/queue";
+declare module "sst/node/queue" {
+  export interface QueueResources {
     "ExtractQueue": {
       queueUrl: string;
     }
@@ -128,6 +137,15 @@ declare module "sst/node/event-bus" {
   export interface EventBusResources {
     "TransformBus": {
       eventBusName: string;
+    }
+  }
+}
+
+import "sst/node/queue";
+declare module "sst/node/queue" {
+  export interface QueueResources {
+    "TransformDLQ": {
+      queueUrl: string;
     }
   }
 }

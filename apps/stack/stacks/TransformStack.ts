@@ -44,7 +44,17 @@ export function TransformStack({ stack }: StackContext) {
     }
   });
 
-  const transformQueue = new Queue(stack, "TransformQueue");
+  const transformDLQ = new Queue(stack, "TransformDLQ");
+  const transformQueue = new Queue(stack, "TransformQueue", {
+    cdk: {
+      queue: {
+        deadLetterQueue: {
+          maxReceiveCount: 5,
+          queue: transformDLQ.cdk.queue
+        }
+      }
+    }
+  });
   transformQueue.addConsumer(stack, {
     cdk: {
       eventSource: {
