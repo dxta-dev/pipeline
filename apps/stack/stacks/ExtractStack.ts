@@ -112,7 +112,6 @@ export function ExtractStack({ stack }: StackContext) {
       },      
     },
     function: {
-      retryAttempts: 5, // not clear if this is for DLQ
       handler: "src/extract/queue.handler",
       bind: [
         bus,
