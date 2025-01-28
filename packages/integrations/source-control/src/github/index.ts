@@ -340,16 +340,15 @@ export class GitHubSourceControl implements SourceControl {
     const pullsTotalPages = (!('last' in linkHeader)) ? page : Number(linkHeader.last?.page);
     const pullsPerPage = ('next' in linkHeader) ? Number(linkHeader.next?.per_page) : Number(linkHeader.prev?.per_page);
     
-    const now = new Date();
-    const nowUtcHours = now.getUTCHours();
-    if (firstPagePagination !== null && firstPagePagination.totalPages === pullsTotalPages && nowUtcHours >= 10 && nowUtcHours <= 18) {
+    if (firstPagePagination !== null && firstPagePagination.totalPages === pullsTotalPages) {
       const q1Timeout = firstPagePagination.q1Timeout;
       const q2Timeout = firstPagePagination.q2Timeout;
       if (q2Timeout === null) { // when doing crawl until = today. should happen for delta crawls exclusively
-        if (q1Timeout) throw new Error(`Search API Timed out resulting in full PR crawl. q1Timeout: ${q1Timeout}`);
-        else throw new Error(`Search API DID NOT Time out But why are we doing a full PR Crawl?. q1Timeout: ${q1Timeout}`); // Critical if we try to do all PRs
+        if (q1Timeout) console.log(`LOOK_HERE_DEJAN: Search API Timed out resulting in full PR crawl. q1Timeout: ${q1Timeout}`);
+        else console.log(`LOOK_HERE_DEJAN: Search API DID NOT Time out But why are we doing a full PR Crawl?. q1Timeout: ${q1Timeout}`); // Critical if we try to do all PRs
       } else {
-        if (q1Timeout || q2Timeout) throw new Error(`Search API resulted in full PR crawl. q1Timeout: ${q1Timeout}, q2Timeout: ${q1Timeout}`);
+        if (q1Timeout || q2Timeout) console.log(`LOOK_HERE_DEJAN: Search API resulted in full PR crawl. q1Timeout: ${q1Timeout}, q2Timeout: ${q1Timeout}`);
+        if (!q1Timeout && q2Timeout) console.log(`LOOK_HERE_DEJAN: Search API resulted in full crawl even though no-one timed out?!?!?!!?!?!`);
       }
 
     }
