@@ -281,6 +281,7 @@ export class GitHubSourceControl implements SourceControl {
 
       return {
         totalCount: searchResult.data.total_count,
+        didQueryTimeout: searchResult.data.incomplete_results // https://docs.github.com/en/rest/search/search?apiVersion=2022-11-28#timeouts-and-incomplete-results
       }
     }
 
@@ -303,6 +304,8 @@ export class GitHubSourceControl implements SourceControl {
           page,
           totalPages: Math.ceil(searchPRsResult.totalCount / perPage),
           perPage, // perPage should be calculated from the pulls api not search
+          q1Timeout: searchPRsResult.didQueryTimeout,
+          q2Timeout: null,
         };
       }
       const searchOffsetResult = await serchPRs(namespaceName, repositoryName, page, perPage, timePeriod.from, 'today');
@@ -311,6 +314,8 @@ export class GitHubSourceControl implements SourceControl {
         page: page + Math.floor((searchOffsetResult.totalCount - searchPRsResult.totalCount) / perPage),
         totalPages: Math.ceil(searchOffsetResult.totalCount / perPage), // totalPages is actually the last page that contains MRs inside the search period
         perPage, // perPage should be calculated from pulls api not search
+        q1Timeout: searchPRsResult.didQueryTimeout,
+        q2Timeout: searchOffsetResult.didQueryTimeout,
       }
 
     }
@@ -334,6 +339,20 @@ export class GitHubSourceControl implements SourceControl {
 
     const pullsTotalPages = (!('last' in linkHeader)) ? page : Number(linkHeader.last?.page);
     const pullsPerPage = ('next' in linkHeader) ? Number(linkHeader.next?.per_page) : Number(linkHeader.prev?.per_page);
+    
+    const now = new Date();
+    const nowUtcHours = now.getUTCHours();
+    if (firstPagePagination !== null && firstPagePagination.totalPages === pullsTotalPages && nowUtcHours >= 10 && nowUtcHours <= 18) {
+      const q1Timeout = firstPagePagination.q1Timeout;
+      const q2Timeout = firstPagePagination.q2Timeout;
+      if (q2Timeout === null) { // when doing crawl until = today. should happen for delta crawls exclusively
+        if (q1Timeout) throw new Error(`Search API Timed out resulting in full PR crawl. q1Timeout: ${q1Timeout}`);
+        else throw new Error(`Search API DID NOT Time out But why are we doing a full PR Crawl?. q1Timeout: ${q1Timeout}`); // Critical if we try to do all PRs
+      } else {
+        if (q1Timeout || q2Timeout) throw new Error(`Search API resulted in full PR crawl. q1Timeout: ${q1Timeout}, q2Timeout: ${q1Timeout}`);
+      }
+
+    }
 
     const pagination = {
       page: firstPagePagination?.page || page,
