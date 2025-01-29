@@ -281,6 +281,7 @@ export class GitHubSourceControl implements SourceControl {
 
       return {
         totalCount: searchResult.data.total_count,
+        queryDidTimeout: searchResult.data.incomplete_results
       }
     }
 
@@ -303,6 +304,7 @@ export class GitHubSourceControl implements SourceControl {
           page,
           totalPages: Math.ceil(searchPRsResult.totalCount / perPage),
           perPage, // perPage should be calculated from the pulls api not search
+          queryDidTimeout: searchPRsResult.queryDidTimeout
         };
       }
       const searchOffsetResult = await serchPRs(namespaceName, repositoryName, page, perPage, timePeriod.from, 'today');
@@ -311,6 +313,7 @@ export class GitHubSourceControl implements SourceControl {
         page: page + Math.floor((searchOffsetResult.totalCount - searchPRsResult.totalCount) / perPage),
         totalPages: Math.ceil(searchOffsetResult.totalCount / perPage), // totalPages is actually the last page that contains MRs inside the search period
         perPage, // perPage should be calculated from pulls api not search
+        queryDidTimeout: searchPRsResult.queryDidTimeout || searchOffsetResult.queryDidTimeout
       }
 
     }
@@ -321,6 +324,16 @@ export class GitHubSourceControl implements SourceControl {
       totalPages,
       timePeriod: creationPeriod,
     });
+
+    if (firstPagePagination !== null && firstPagePagination.totalPages === 0 && firstPagePagination.queryDidTimeout === false) return {
+      mergeRequests: [],
+      pagination: {
+        page: firstPagePagination.page,
+        perPage: firstPagePagination.perPage,
+        totalPages: firstPagePagination.totalPages
+      }
+    };
+
     const result = await this.api.pulls.list({
       owner: namespaceName,
       repo: repositoryName,
@@ -337,8 +350,20 @@ export class GitHubSourceControl implements SourceControl {
 
     const pagination = {
       page: firstPagePagination?.page || page,
-      perPage: perPage || firstPagePagination?.perPage || pullsPerPage, // Dejan: This can break if firstPagePagination returns different perPage -> check documentation on linkHeader ???
-      totalPages: totalPages || firstPagePagination?.totalPages || pullsTotalPages, // Refactor: should recalculate totalPages here if pulls api returns different perPage
+      perPage: (
+        perPage !== undefined
+          ? perPage
+          : firstPagePagination?.perPage !== undefined
+            ? firstPagePagination?.perPage
+            : pullsPerPage
+      ), // Dejan: This can break if firstPagePagination returns different perPage -> check documentation on linkHeader ???
+      totalPages: (
+        totalPages !== undefined
+          ? totalPages
+          : firstPagePagination?.totalPages !== undefined
+            ? firstPagePagination?.totalPages
+            : pullsTotalPages
+      ), // Refactor: should recalculate totalPages here if pulls api returns different perPage
     } satisfies Pagination;
     return {
       mergeRequests: result.data
