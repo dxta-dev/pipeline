@@ -1,4 +1,4 @@
-import type { MergeRequest, Sha } from "@dxta/extract-schema";
+import type { MergeRequest, NewMergeRequest, Sha } from "@dxta/extract-schema";
 import type { ExtractFunction, Entities } from "./config";
 import type { Pagination, SourceControl, TimePeriod } from "@dxta/source-control";
 import { sql } from "drizzle-orm";
@@ -27,7 +27,7 @@ export type GetMergeRequestsEntities = Pick<Entities, "mergeRequests" | "reposit
 export type GetMergeRequestsFunction = ExtractFunction<GetMergeRequestsInput, GetMergeRequestsOutput, GetMergeRequestsSourceControl, GetMergeRequestsEntities>;
 
 
-export const wasMergeRequestUpdatedInTimePeriod = (mergeRequest: MergeRequest, timePeriod: TimePeriod) => {
+export const wasMergeRequestUpdatedInTimePeriod = (mergeRequest: NewMergeRequest, timePeriod: TimePeriod) => {
   const timestamp = mergeRequest.updatedAt || mergeRequest.createdAt; // TODO: why is updatedAt nullable ? Add note in table
 
   return timestamp.getTime() < timePeriod.to.getTime() && timestamp.getTime() >= timePeriod.from.getTime();
@@ -44,8 +44,11 @@ export const getMergeRequests: GetMergeRequestsFunction = async (
 
   const { mergeRequests, pagination } = await integrations.sourceControl.fetchMergeRequests(externalRepositoryId, namespaceName, repositoryName, repositoryId, perPage, timePeriod, page, totalPages);
 
+  // HOTFIX: insertion issue when page all PRs without intent. Should be removed at some point when we remove invalid pagination / identify issue
+  const mergeRequestsUpdatedInPeriod = mergeRequests.filter(mr => timePeriod === undefined ? true : wasMergeRequestUpdatedInTimePeriod(mr, timePeriod));
+
   const insertedShas = await db.transaction(async (tx) => {
-    return Promise.all(mergeRequests.map(mergeRequest => mergeRequest.mergeCommitSha).filter(sha => sha != undefined).map(sha =>
+    return Promise.all(mergeRequestsUpdatedInPeriod.map(mergeRequest => mergeRequest.mergeCommitSha).filter(sha => sha != undefined).map(sha =>
       tx.insert(entities.repositoryShas).values({ repositoryId: repositoryId, sha: sha as string })
         .onConflictDoUpdate({
           target: [entities.repositoryShas.repositoryId, entities.repositoryShas.sha],
@@ -59,7 +62,7 @@ export const getMergeRequests: GetMergeRequestsFunction = async (
   const shaIdMap = insertedShas.reduce((map, sha) => map.set(sha.sha, sha.id), new Map<string, Sha['id']>());
 
   const insertedMergeRequests = await db.transaction(async (tx) => {
-    return Promise.all(mergeRequests.map(mergeRequest =>
+    return Promise.all(mergeRequestsUpdatedInPeriod.map(mergeRequest =>
       tx.insert(entities.mergeRequests).values({
         externalId: mergeRequest.externalId,
         canonId: mergeRequest.canonId,
@@ -111,12 +114,11 @@ export const getMergeRequests: GetMergeRequestsFunction = async (
     processableMergeRequests: insertedMergeRequests,
   }
 
-  const updatedInPeriod = insertedMergeRequests.filter(mr => wasMergeRequestUpdatedInTimePeriod(mr, timePeriod));
   const SIX_MONTHS = 6 * 30 * 24 * 60 * 60 * 1000;
-  const processable = updatedInPeriod.filter(mr => !isRelativeResidualMergeRequest(mr, timePeriod.from, SIX_MONTHS));
+  const processable = insertedMergeRequests.filter(mr => !isRelativeResidualMergeRequest(mr, timePeriod.from, SIX_MONTHS));
   
   return {
-    mergeRequests: updatedInPeriod,
+    mergeRequests: insertedMergeRequests,
     paginationInfo: pagination,
     processableMergeRequests: processable,
   };
