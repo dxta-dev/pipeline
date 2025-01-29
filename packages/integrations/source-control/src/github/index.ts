@@ -505,8 +505,8 @@ export class GitHubSourceControl implements SourceControl {
             type: assignedEvent.event as TimelineEventType,
             mergeRequestId: mergeRequest.id,
             timestamp: new Date(assignedEvent.created_at),
-            actorName: assignedEvent.actor.login,
-            actorId: assignedEvent.actor.id,
+            actorName: assignedEvent.actor?.login || '',
+            actorId: assignedEvent.actor?.id,
             htmlUrl: null,
             data: {
               assigneeId: assignedEvent.assignee.id,
@@ -537,8 +537,8 @@ export class GitHubSourceControl implements SourceControl {
             type: requestedEvent.event as TimelineEventType,
             mergeRequestId: mergeRequest.id,
             timestamp: new Date(requestedEvent.created_at),
-            actorName: requestedEvent.actor.login,
-            actorId: requestedEvent.actor.id,
+            actorName: requestedEvent.actor?.login || '',
+            actorId: requestedEvent.actor?.id,
             htmlUrl: null,
             data: {
               requestedReviewerId: requestedEvent.requested_reviewer?.id,
@@ -552,8 +552,8 @@ export class GitHubSourceControl implements SourceControl {
             type: reviewedEvent.event as TimelineEventType,
             mergeRequestId: mergeRequest.id,
             timestamp: new Date(reviewedEvent.submitted_at as string),
-            actorName: reviewedEvent.user.login,
-            actorId: reviewedEvent.user.id,
+            actorName: reviewedEvent.user?.login || '',
+            actorId: reviewedEvent.user?.id,
             htmlUrl: reviewedEvent.html_url,
             data: {
               state: reviewedEvent.state,
@@ -567,8 +567,8 @@ export class GitHubSourceControl implements SourceControl {
             mergeRequestId: mergeRequest.id,
             timestamp: new Date(commentedEvent.created_at),
             htmlUrl: commentedEvent.html_url,
-            actorName: commentedEvent.actor.login,
-            actorId: commentedEvent.actor.id,
+            actorName: commentedEvent.actor?.login || '',
+            actorId: commentedEvent.actor?.id,
           } satisfies NewTimelineEvents;
         default:
           const generalEvent = singleEvent as components["schemas"]["state-change-issue-event"];
@@ -577,8 +577,8 @@ export class GitHubSourceControl implements SourceControl {
             type: generalEvent.event as TimelineEventType,
             mergeRequestId: mergeRequest.id,
             timestamp: new Date(generalEvent.created_at),
-            actorName: generalEvent.actor.login,
-            actorId: generalEvent.actor.id,
+            actorName: generalEvent.actor?.login || '',
+            actorId: generalEvent.actor?.id,
             htmlUrl: null,
           } satisfies NewTimelineEvents;
       }
