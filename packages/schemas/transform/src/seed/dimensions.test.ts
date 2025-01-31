@@ -91,10 +91,13 @@ describe("dimensions", () => {
       const date2 = getDateInfo(new Date(Date.UTC(2021, 0, 3)));
       const date3 = getDateInfo(new Date(Date.UTC(2023, 0, 4)));
       const date4 = getDateInfo(new Date(Date.UTC(2023, 0, 3)));
-      const date5 = getDateInfo(new Date(Date.UTC(2024, 11, 30)));
-      const date6 = getDateInfo(new Date(Date.UTC(2024, 11, 31)));
-      const date7 = getDateInfo(new Date(Date.UTC(2025, 0, 1)));
-      const date8 = getDateInfo(new Date(Date.UTC(2026, 11, 31)));
+      const date5 = getDateInfo(new Date(Date.UTC(2024, 11, 29)));
+      const date6 = getDateInfo(new Date(Date.UTC(2024, 11, 30)));
+      const date7 = getDateInfo(new Date(Date.UTC(2024, 11, 31)));
+      const date8 = getDateInfo(new Date(Date.UTC(2025, 0, 1)));
+      const date9 = getDateInfo(new Date(Date.UTC(2025, 11, 29)));
+      const date10 = getDateInfo(new Date(Date.UTC(2026, 11, 31)));
+      const date11 = getDateInfo(new Date(Date.UTC(2027, 0, 4)));
       expect(date1).toEqual({
         day: 4,
         week: "2021-W01",
@@ -120,28 +123,46 @@ describe("dimensions", () => {
         year: 2023,
       });
       expect(date5).toEqual({
-        day: 30,
+        day: 29,
         week: "2024-W52",
         month: 12,
         year: 2024,
       });
       expect(date6).toEqual({
-        day: 31,
-        week: "2024-W52",
+        day: 30,
+        week: "2025-W01",
         month: 12,
         year: 2024,
       });
       expect(date7).toEqual({
+        day: 31,
+        week: "2025-W01",
+        month: 12,
+        year: 2024,
+      });
+      expect(date8).toEqual({
         day: 1,
         week: "2025-W01",
         month: 1,
         year: 2025,
       });
-      expect(date8).toEqual({
+      expect(date9).toEqual({
+        day: 29,
+        week: "2026-W01",
+        month: 12,
+        year: 2025,
+      });
+      expect(date10).toEqual({
         day: 31,
         week: "2026-W53",
         month: 12,
         year: 2026,
+      });
+      expect(date11).toEqual({
+        day: 4,
+        week: "2027-W01",
+        month: 1,
+        year: 2027,
       });
     });
   });

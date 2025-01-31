@@ -146,6 +146,12 @@ function startsOnWednesday(year: number) {
   return firstDay === 3;
 }
 
+function shouldBeWeekOne(year: number) {
+  const january4 = new Date(year + 1, 0, 4, 0, 0).getDay();
+  const isInWeekWithJan4 = january4 !== 1;
+  return isInWeekWithJan4;
+}
+
 export function checkWeek(week: number, year: number): { newWeek: string } {
   let isoWeek = week;
   let isoYear = year;
@@ -168,9 +174,12 @@ export function checkWeek(week: number, year: number): { newWeek: string } {
      * The extra week is sometimes referred to as a leap week, although ISO 8601 does not use this term.
      */
     const isLeapYear = getLeapYear(year);
-
     if ((!isLeapYear || !startsOnWednesday(year)) && !startsOnThursday(year)) {
       isoWeek = 52;
+    }
+    if (shouldBeWeekOne(year)) {
+      isoWeek = 1;
+      isoYear = year + 1;
     }
   }
   return { newWeek: `${isoYear}-W${isoWeek.toString().padStart(2, "0")}` };
@@ -186,6 +195,7 @@ export function getDateInfo(date: Date): {
   const week = Math.ceil(
     ((date.getTime() - firstDay.getTime()) / (24 * 60 * 60 * 1000) + 1) / 7,
   );
+
   const { newWeek } = checkWeek(week, date.getUTCFullYear());
   return {
     day: date.getUTCDate(),
