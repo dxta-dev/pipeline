@@ -4,12 +4,11 @@ import { createClient } from "@libsql/client";
 import { drizzle, type LibSQLDatabase } from "drizzle-orm/libsql";
 import { migrate } from "drizzle-orm/libsql/migrator";
 
-import { getDateInfo, seed } from "./dimensions";
-import { forgeUsers } from "../forge-users";
 import { dates } from "../dates";
+import { forgeUsers } from "../forge-users";
 import { mergeRequests } from "../merge-requests";
 import { repositories } from "../repositories";
-import { getFirstDay } from "./dimensions"
+import { getDateInfo, getFirstDay, seed } from "./dimensions";
 
 let db: LibSQLDatabase;
 let sqlite: ReturnType<typeof createClient>;
@@ -17,7 +16,8 @@ let sqlite: ReturnType<typeof createClient>;
 const testStartDate = new Date("1995-10-18");
 const testEndDate = new Date("1996-01-01");
 
-const testSeedDays = (testEndDate.getTime() - testStartDate.getTime()) / (24*60*60*1000) + 1
+const testSeedDays =
+  (testEndDate.getTime() - testStartDate.getTime()) / (24 * 60 * 60 * 1000) + 1;
 
 const dbName = "dimensions";
 
@@ -41,10 +41,12 @@ describe("dimensions", () => {
       const seededUsers = await db.select().from(forgeUsers).all();
       expect(seededUsers).toBeDefined();
       expect(seededUsers).toHaveLength(1);
-      expect(seededUsers[0]).toEqual(expect.objectContaining({
-        id: 1,
-        forgeType: 'unknown',
-      }))
+      expect(seededUsers[0]).toEqual(
+        expect.objectContaining({
+          id: 1,
+          forgeType: "unknown",
+        }),
+      );
 
       const seededDates = await db.select().from(dates).all();
       expect(seededDates).toBeDefined();
@@ -53,18 +55,22 @@ describe("dimensions", () => {
       const seedMergeRequests = await db.select().from(mergeRequests).all();
       expect(seedMergeRequests).toBeDefined();
       expect(seedMergeRequests).toHaveLength(1);
-      expect(seedMergeRequests[0]).toEqual(expect.objectContaining({
-        id: 1,
-        forgeType: 'unknown',
-      }))
+      expect(seedMergeRequests[0]).toEqual(
+        expect.objectContaining({
+          id: 1,
+          forgeType: "unknown",
+        }),
+      );
 
       const seedRepositories = await db.select().from(repositories).all();
       expect(seedRepositories).toBeDefined();
       expect(seedRepositories).toHaveLength(1);
-      expect(seedRepositories[0]).toEqual(expect.objectContaining({
-        id: 1,
-        forgeType: 'unknown',
-      }))
+      expect(seedRepositories[0]).toEqual(
+        expect.objectContaining({
+          id: 1,
+          forgeType: "unknown",
+        }),
+      );
     });
   });
   describe("getFirstDay", () => {
@@ -77,7 +83,7 @@ describe("dimensions", () => {
       expect(year1981).toEqual(new Date("1980-12-29"));
       expect(year2015).toEqual(new Date("2014-12-29"));
       expect(year2022).toEqual(new Date("2022-01-03"));
-    })
+    });
   });
   describe("getDateInfo", () => {
     test("should return correct data for given date", () => {
@@ -85,6 +91,18 @@ describe("dimensions", () => {
       const date2 = getDateInfo(new Date(Date.UTC(2021, 0, 3)));
       const date3 = getDateInfo(new Date(Date.UTC(2023, 0, 4)));
       const date4 = getDateInfo(new Date(Date.UTC(2023, 0, 3)));
+      const date5 = getDateInfo(new Date(Date.UTC(2024, 11, 29)));
+      const date6 = getDateInfo(new Date(Date.UTC(2024, 11, 30)));
+      const date7 = getDateInfo(new Date(Date.UTC(2024, 11, 31)));
+      const date8 = getDateInfo(new Date(Date.UTC(2025, 0, 1)));
+      const date9 = getDateInfo(new Date(Date.UTC(2025, 11, 29)));
+      const date10 = getDateInfo(new Date(Date.UTC(2026, 11, 31)));
+      const date11 = getDateInfo(new Date(Date.UTC(2027, 0, 4)));
+      const date12 = getDateInfo(new Date(Date.UTC(1976, 11, 27)));
+      const date13 = getDateInfo(new Date(Date.UTC(2020, 11, 31)));
+      const date14 = getDateInfo(new Date(Date.UTC(2020, 11, 28)));
+      const date15 = getDateInfo(new Date(Date.UTC(2004, 11, 27)));
+      const date16 = getDateInfo(new Date(Date.UTC(2015, 11, 28)));
       expect(date1).toEqual({
         day: 4,
         week: "2021-W01",
@@ -108,6 +126,78 @@ describe("dimensions", () => {
         week: "2023-W01",
         month: 1,
         year: 2023,
+      });
+      expect(date5).toEqual({
+        day: 29,
+        week: "2024-W52",
+        month: 12,
+        year: 2024,
+      });
+      expect(date6).toEqual({
+        day: 30,
+        week: "2025-W01",
+        month: 12,
+        year: 2024,
+      });
+      expect(date7).toEqual({
+        day: 31,
+        week: "2025-W01",
+        month: 12,
+        year: 2024,
+      });
+      expect(date8).toEqual({
+        day: 1,
+        week: "2025-W01",
+        month: 1,
+        year: 2025,
+      });
+      expect(date9).toEqual({
+        day: 29,
+        week: "2026-W01",
+        month: 12,
+        year: 2025,
+      });
+      expect(date10).toEqual({
+        day: 31,
+        week: "2026-W53",
+        month: 12,
+        year: 2026,
+      });
+      expect(date11).toEqual({
+        day: 4,
+        week: "2027-W01",
+        month: 1,
+        year: 2027,
+      });
+      expect(date12).toEqual({
+        day: 27,
+        week: "1976-W53",
+        month: 12,
+        year: 1976,
+      });
+      expect(date13).toEqual({
+        day: 31,
+        week: "2020-W53",
+        month: 12,
+        year: 2020,
+      });
+      expect(date14).toEqual({
+        day: 28,
+        week: "2020-W53",
+        month: 12,
+        year: 2020,
+      });
+      expect(date15).toEqual({
+        day: 27,
+        week: "2004-W53",
+        month: 12,
+        year: 2004,
+      });
+      expect(date16).toEqual({
+        day: 28,
+        week: "2015-W53",
+        month: 12,
+        year: 2015,
       });
     });
   });
