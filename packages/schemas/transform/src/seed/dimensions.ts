@@ -148,7 +148,7 @@ function startsOnWednesday(year: number) {
 
 function shouldBeWeekOne(year: number) {
   const january4 = new Date(year + 1, 0, 4, 0, 0).getDay();
-  const isInWeekWithJan4 = january4 !== 1;
+  const isInWeekWithJan4 = january4 !== 1 && january4 !== 2;
   return isInWeekWithJan4;
 }
 

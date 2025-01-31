@@ -98,6 +98,11 @@ describe("dimensions", () => {
       const date9 = getDateInfo(new Date(Date.UTC(2025, 11, 29)));
       const date10 = getDateInfo(new Date(Date.UTC(2026, 11, 31)));
       const date11 = getDateInfo(new Date(Date.UTC(2027, 0, 4)));
+      const date12 = getDateInfo(new Date(Date.UTC(1976, 11, 27)));
+      const date13 = getDateInfo(new Date(Date.UTC(2020, 11, 31)));
+      const date14 = getDateInfo(new Date(Date.UTC(2020, 11, 28)));
+      const date15 = getDateInfo(new Date(Date.UTC(2004, 11, 27)));
+      const date16 = getDateInfo(new Date(Date.UTC(2015, 11, 28)));
       expect(date1).toEqual({
         day: 4,
         week: "2021-W01",
@@ -163,6 +168,36 @@ describe("dimensions", () => {
         week: "2027-W01",
         month: 1,
         year: 2027,
+      });
+      expect(date12).toEqual({
+        day: 27,
+        week: "1976-W53",
+        month: 12,
+        year: 1976,
+      });
+      expect(date13).toEqual({
+        day: 31,
+        week: "2020-W53",
+        month: 12,
+        year: 2020,
+      });
+      expect(date14).toEqual({
+        day: 28,
+        week: "2020-W53",
+        month: 12,
+        year: 2020,
+      });
+      expect(date15).toEqual({
+        day: 27,
+        week: "2004-W53",
+        month: 12,
+        year: 2004,
+      });
+      expect(date16).toEqual({
+        day: 28,
+        week: "2015-W53",
+        month: 12,
+        year: 2015,
       });
     });
   });
