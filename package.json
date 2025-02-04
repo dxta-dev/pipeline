@@ -21,7 +21,7 @@
   "dependencies": {
     "@dxta/eslint-config": "*",
     "@ianvs/prettier-plugin-sort-imports": "4.0.2",
-    "@libsql/client": "0.3.6",
+    "@libsql/client": "0.14.0",
     "@manypkg/cli": "0.21.1",
     "@types/node": "20.4.4",
     "@types/prettier": "2.7.3",
