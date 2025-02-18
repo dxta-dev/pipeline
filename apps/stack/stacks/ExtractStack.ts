@@ -20,9 +20,9 @@ export function ExtractStack({ stack }: StackContext) {
   const SUPER_DATABASE_URL = new Config.Secret(stack, "SUPER_DATABASE_URL");
   const SUPER_DATABASE_AUTH_TOKEN = new Config.Secret(stack, "SUPER_DATABASE_AUTH_TOKEN");
   const CLERK_SECRET_KEY = new Config.Secret(stack, "CLERK_SECRET_KEY");
-  const REDIS_URL = new Config.Secret(stack, "REDIS_URL");
-  const REDIS_TOKEN = new Config.Secret(stack, "REDIS_TOKEN");
-  const REDIS_USER_TOKEN_TTL = new Config.Parameter(stack, "REDIS_USER_TOKEN_TTL", { value: (20 * 60).toString() });
+  const REDIS_URL = new Config.Secret(stack, "REDIS_URL"); // Deprecated: removed upstash client
+  const REDIS_TOKEN = new Config.Secret(stack, "REDIS_TOKEN"); // Deprecated: removed upstash client
+  const REDIS_USER_TOKEN_TTL = new Config.Parameter(stack, "REDIS_USER_TOKEN_TTL", { value: (20 * 60).toString() }); // Deprecated: removed upstash client
   const PER_PAGE = new Config.Parameter(stack, "PER_PAGE", { value: (30).toString() });
   const FETCH_TIMELINE_EVENTS_PER_PAGE = new Config.Parameter(stack, "FETCH_TIMELINE_EVENTS_PER_PAGE", { value: (1000).toString() });
   const CRON_USER_ID = new Config.Secret(stack, "CRON_USER_ID");
