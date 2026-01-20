@@ -1,15 +1,20 @@
 # Terminology
 
 Temporal - workflow engine used for orchestration on Railway.
-Workflow - deterministic orchestration code in `apps/temporal-workflows`.
+Workflow - deterministic orchestration code in `apps/workflows`.
 Activity - I/O function executed by workers.
 Worker - Temporal service hosting activities and polling a task queue.
-Task queue - name workers poll (default: `pipeline`).
+Task queue - named queue workers poll (`extract` or `transform`).
 Schedule - Temporal schedule that starts workflows on a cadence.
-ExtractTenantsWorkflow - main extract fanout workflow.
-TransformTenantWorkflow - main transform workflow.
-SST stacks - current AWS infra in `apps/stack`.
+Child workflow - workflow started by another workflow for sub-orchestration.
+extractTenantsWorkflow - main extract entry point workflow.
+extractRepositoryWorkflow - per-repo extract orchestration.
+extractMergeRequestWorkflow - per-MR extract orchestration.
+transformTenantsWorkflow - main transform entry point workflow.
+transformRepositoryWorkflow - per-repo transform orchestration.
+SST stacks - current AWS infra in `apps/stack` (to be removed).
 Railway - hosting platform for Temporal server and workers.
+Orchestrator - app for manual triggers and schedule management (`apps/orchestrator`).
 
 ## Invariants
 - Terminology reflects current architecture direction and workflow names.
@@ -38,3 +43,4 @@ flowchart TD
 ## Related
 - [Summary](summary.md)
 - [Temporal migration plan](plans/temporal-migration.md)
+- [Baseline design](temporal/baseline-design.md)

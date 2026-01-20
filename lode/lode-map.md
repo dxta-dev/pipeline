@@ -4,6 +4,7 @@
 - `lode/terminology.md`
 - `lode/practices.md`
 - `lode/plans/temporal-migration.md`
+- `lode/temporal/baseline-design.md`
 
 ## Invariants
 - Every lode file covers one topic and stays under 250 lines.
@@ -24,6 +25,7 @@ export const lodeIndex = [
   "lode/terminology.md",
   "lode/practices.md",
   "lode/plans/temporal-migration.md",
+  "lode/temporal/baseline-design.md",
 ];
 ```
 
@@ -32,12 +34,15 @@ export const lodeIndex = [
 flowchart TD
   lode[lode/] --> core[core files]
   lode --> plans[plans/]
+  lode --> temporal[temporal/]
   core --> summary[summary.md]
   core --> terminology[terminology.md]
   core --> practices[practices.md]
   plans --> migration[temporal-migration.md]
+  temporal --> baseline[baseline-design.md]
 ```
 
 ## Related
 - [Summary](summary.md)
 - [Temporal migration plan](plans/temporal-migration.md)
+- [Temporal baseline design](temporal/baseline-design.md)

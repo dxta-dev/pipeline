@@ -10,12 +10,12 @@ while keeping Drizzle and existing integrations intact.
 - Runtime configuration is managed via SST config/parameters.
 
 ## Target Architecture
-- Temporal server runs on Railway.
-- Workflow definitions live in `apps/temporal-workflows`.
-- Worker services live in `apps/temporal-worker-extract` and
-  `apps/temporal-worker-transform`.
-- Manual starts and schedule creation live in `apps/temporal-client`.
+- Temporal server runs on Railway (local dev via nix flake).
+- Workflow definitions live in `apps/workflows`.
+- Worker services live in `apps/worker-extract` and `apps/worker-transform`.
+- Manual starts and schedule creation live in `apps/orchestrator`.
 - Shared schemas, integrations, and activity logic remain in `packages/*`.
+- Task queues: `extract` and `transform` (separate for independent scaling).
 
 ## Workflow Boundaries
 - ExtractTenantsWorkflow orchestrates tenant/repo/MR fanout using activities that
@@ -48,7 +48,7 @@ while keeping Drizzle and existing integrations intact.
 - Temporal code stays under `apps/`, not `packages/`.
 
 ## Contracts
-- Task queue name remains consistent across all workers.
+- Task queue names: `extract` for extract workers, `transform` for transform workers.
 - Activity retry + timeout policies replace DLQ behavior.
 
 ## Rationale
@@ -78,13 +78,14 @@ export async function extractTenantsWorkflow(input: ExtractTenantsInput) {
 ```mermaid
 flowchart LR
   sst[SST stacks today] --> plan[Temporal migration]
-  plan --> workflows[apps/temporal-workflows]
-  plan --> workerExtract[apps/temporal-worker-extract]
-  plan --> workerTransform[apps/temporal-worker-transform]
-  plan --> client[apps/temporal-client]
+  plan --> workflows[apps/workflows]
+  plan --> workerExtract[apps/worker-extract]
+  plan --> workerTransform[apps/worker-transform]
+  plan --> orchestrator[apps/orchestrator]
 ```
 
 ## Related
 - [Summary](../summary.md)
 - [Terminology](../terminology.md)
 - [Practices](../practices.md)
+- [Baseline design](../temporal/baseline-design.md)

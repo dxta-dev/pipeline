@@ -153,3 +153,4 @@ Observed patterns in the codebase:
 - Respect the existing import order and formatting.
 - Use workspace scripts for package-specific tasks.
 - If a workspace has no tests, keep `test` output as-is.
+- Do not write comments in code. Code should be self-documenting.
