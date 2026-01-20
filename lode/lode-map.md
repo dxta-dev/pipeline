@@ -11,6 +11,7 @@
 - `lode/temporal/baseline-design.md`
 - `lode/temporal/extract-worker.md`
 - `lode/temporal/transform-worker.md`
+- `lode/temporal/orchestrator.md`
 
 ## Invariants
 - Every lode file covers one topic and stays under 250 lines.
@@ -38,6 +39,7 @@ export const lodeIndex = [
   "lode/temporal/baseline-design.md",
   "lode/temporal/extract-worker.md",
   "lode/temporal/transform-worker.md",
+  "lode/temporal/orchestrator.md",
 ];
 ```
 
@@ -60,6 +62,7 @@ flowchart TD
   temporal --> baseline[baseline-design.md]
   temporal --> extractWorker[extract-worker.md]
   temporal --> transformWorker[transform-worker.md]
+  temporal --> orchestrator[orchestrator.md]
 ```
 
 ## Related
@@ -69,3 +72,4 @@ flowchart TD
 - [Temporal baseline design](temporal/baseline-design.md)
 - [Extract worker](temporal/extract-worker.md)
 - [Transform worker](temporal/transform-worker.md)
+- [Orchestrator](temporal/orchestrator.md)

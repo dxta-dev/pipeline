@@ -1,0 +1,24 @@
+{
+  "name": "@dxta/orchestrator",
+  "version": "1.0.0",
+  "description": "Temporal orchestrator for schedules and manual triggers",
+  "main": "src/index.ts",
+  "scripts": {
+    "type-check": "tsc --noEmit && echo \"No TypeScript warnings or errors\"",
+    "build": "tsc",
+    "lint": "biome lint . && echo \"No Biome warnings or errors\"",
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "start:extract": "tsx src/commands/start-extract.ts",
+    "start:transform": "tsx src/commands/start-transform.ts"
+  },
+  "dependencies": {
+    "@dxta/workflows": "*",
+    "@temporalio/client": "^1.11.7",
+    "zod": "^4.3.5"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0",
+    "typescript": "^5.9.3"
+  }
+}

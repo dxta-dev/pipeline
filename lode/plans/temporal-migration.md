@@ -37,7 +37,7 @@ while keeping Drizzle and existing integrations intact.
 1. ✅ Baseline design: workflow/activity interfaces, workflow-only app structure.
 2. ✅ Extract migration: activities + extract workflows complete.
 3. ✅ Transform migration: activities + transformTenantsWorkflow + transformRepositoryWorkflow.
-4. ⏳ Scheduling/manual start: Temporal schedules + client entrypoints.
+4. ✅ Scheduling/manual start: Temporal schedules + CLI commands in `apps/orchestrator`.
 5. ⏳ Remove SST/AWS infra: delete stacks and SST config.
 6. ⏳ Production rollout: deploy workers, validate schedules and visibility.
 
@@ -88,3 +88,4 @@ flowchart LR
 - [Terminology](../terminology.md)
 - [Practices](../practices.md)
 - [Baseline design](../temporal/baseline-design.md)
+- [Orchestrator](../temporal/orchestrator.md)
