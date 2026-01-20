@@ -34,13 +34,12 @@ while keeping Drizzle and existing integrations intact.
 - Introduce a shared config module for activities to validate env values.
 
 ## Plan Phases
-1. Baseline design: workflow/activity interfaces, workflow-only app structure.
-2. Extract migration: activities + ExtractTenantsWorkflow +
-   ExtractInitialDeploymentsWorkflow.
-3. Transform migration: activities + TransformTenantWorkflow.
-4. Scheduling/manual start: Temporal schedules + client entrypoints.
-5. Remove SST/AWS infra: delete stacks and SST config.
-6. Production rollout: deploy workers, validate schedules and visibility.
+1. ✅ Baseline design: workflow/activity interfaces, workflow-only app structure.
+2. 🔄 Extract migration: activities + ExtractTenantsWorkflow (in progress).
+3. ⏳ Transform migration: activities + TransformTenantWorkflow.
+4. ⏳ Scheduling/manual start: Temporal schedules + client entrypoints.
+5. ⏳ Remove SST/AWS infra: delete stacks and SST config.
+6. ⏳ Production rollout: deploy workers, validate schedules and visibility.
 
 ## Invariants
 - Workflow code is deterministic and contains no I/O.

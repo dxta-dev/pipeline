@@ -1,0 +1,34 @@
+{
+  "name": "@dxta/worker-extract",
+  "version": "1.0.0",
+  "description": "Temporal extract worker",
+  "main": "src/index.ts",
+  "scripts": {
+    "type-check": "tsc --noEmit && echo \"No TypeScript warnings or errors\"",
+    "build": "tsc",
+    "lint": "biome lint . && echo \"No Biome warnings or errors\"",
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@clerk/clerk-sdk-node": "^4.13.9",
+    "@dxta/crawl-functions": "*",
+    "@dxta/crawl-schema": "*",
+    "@dxta/extract-functions": "*",
+    "@dxta/extract-schema": "*",
+    "@dxta/source-control": "*",
+    "@dxta/super-schema": "*",
+    "@dxta/tenant-schema": "*",
+    "@dxta/workflows": "*",
+    "@libsql/client": "^0.17.0",
+    "@temporalio/activity": "^1.11.7",
+    "@temporalio/worker": "^1.11.7",
+    "@upstash/redis": "^1.30.0",
+    "drizzle-orm": "^0.45.1",
+    "nanoid": "^5.0.7"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0",
+    "typescript": "^5.9.3"
+  }
+}

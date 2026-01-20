@@ -2,11 +2,11 @@
 
 This repo is a TypeScript monorepo that currently runs extract/transform
 pipelines via SST stacks in `apps/stack`, with an active migration to Temporal
-on Railway. The migration introduces four new apps: `apps/workflows` (workflow
-definitions), `apps/worker-extract` (extract activities), `apps/worker-transform`
-(transform activities), and `apps/orchestrator` (manual triggers and schedules).
-Drizzle and integrations remain in `packages/`. The migration replaces
-EventBus/SQS/API Gateway/Cron with Temporal workflows, activities, and schedules.
+on Railway. Two Temporal apps are now scaffolded: `apps/workflows` (workflow
+definitions) and `apps/worker-extract` (extract activities). Transform worker
+and orchestrator are pending. Drizzle and integrations remain in `packages/`.
+GitHub Actions workflows are currently removed; CI/CD is pending.
+The Nix dev shell includes Node.js, pnpm, Biome, git, and jq.
 
 ## Invariants
 - Source of truth for current infra remains `apps/stack` until Temporal workers ship.
@@ -29,9 +29,9 @@ EventBus/SQS/API Gateway/Cron with Temporal workflows, activities, and schedules
 ## Code Example
 ```ts
 export interface ExtractTenantsInput {
-  tenantId?: string;
+  tenantId?: number;
   sourceControl?: "github" | "gitlab";
-  runMode: "full" | "incremental";
+  timePeriod: { from: Date; to: Date };
 }
 ```
 

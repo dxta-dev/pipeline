@@ -25,7 +25,10 @@
             packages =
               (with pkgs; [
                 nodejs_24
+                biome
                 pnpm
+                git
+                jq
                 temporal
                 temporal-cli
                 python3

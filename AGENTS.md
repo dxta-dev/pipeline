@@ -1,25 +1,26 @@
 # Agent Guide
 
-This repo is a TypeScript monorepo (pnpm workspaces + Turborepo) with apps and
-packages under `apps/*` and `packages/*`.
+This repo is a TypeScript monorepo using pnpm workspaces. Apps live in
+`apps/*` and shared code lives in `packages/*`. Task orchestration is done
+directly with pnpm (no Turbo).
 
 ## Quick Facts
 
-- Package manager: pnpm (see `package.json`)
+- Package manager: pnpm (`packageManager` in `package.json`)
 - Node: >= v18.17.1
-- Workspaces: apps, packages, config, integrations, schemas, functions
+- Workspaces: `apps/*`, `packages/*`, `packages/{config,integrations,schemas,functions}/*`
 - Primary language: TypeScript
-- Linting: ESLint with @dxta shared config
-- Formatting: Prettier + sort-imports plugin
-- Tests: Jest (per package)
+- Lint/format: Biome (`biome.json`)
+- Tests: Jest in selected packages
+- Infra app: SST in `apps/stack`
 
-## Commands (root)
+## Root Commands
 
-Use these from the repo root unless noted.
+Run from repo root. These scripts are recursive and use `--if-present`.
 
-- Install: `pnpm install`
+- Install: `pnpm install` (CI: `pnpm install --frozen-lockfile`)
 - Build all: `pnpm run build`
-- Dev (all packages): `pnpm run dev`
+- Dev all: `pnpm run dev`
 - Lint all: `pnpm run lint`
 - Lint fix all: `pnpm run lint:fix`
 - Format all: `pnpm run format`
@@ -31,117 +32,107 @@ Use these from the repo root unless noted.
 
 ## Workspace Commands
 
-You can run any workspace script with `--workspace <name>`.
+Prefer `pnpm --filter` for a single package or app.
 
-- Example: `pnpm run lint --workspace @dxta/transform-functions`
-- Example: `pnpm run test --workspace @dxta/crawl-functions`
-- Example: `pnpm run type-check --workspace @dxta/stack`
+- `pnpm --filter @dxta/transform-functions lint`
+- `pnpm --filter @dxta/extract-functions test`
+- `pnpm --filter ./apps/stack dev`
+- `pnpm --filter ./packages/schemas/transform type-check`
 
 ## Running a Single Test
 
 Jest runs at the package level. Use `--runTestsByPath` or `-t`.
 
 - By file:
-  - `pnpm run test --workspace @dxta/transform-functions -- --runTestsByPath src/parse-hunks.test.ts`
+  - `pnpm --filter @dxta/transform-functions test -- --runTestsByPath src/parse-hunks.test.ts`
 - By name:
-  - `pnpm run test --workspace @dxta/transform-functions -- -t "parse hunks"`
-- Crawl package (no tests required, but still supported):
-  - `pnpm run test --workspace @dxta/crawl-functions -- --runTestsByPath src/some.test.ts`
+  - `pnpm --filter @dxta/transform-functions test -- -t "parse hunks"`
+- Another package:
+  - `pnpm --filter @dxta/source-control test -- --runTestsByPath src/github/client.test.ts`
 
 ## Stack App (SST)
 
-Located at `apps/stack`.
+Located in `apps/stack`.
 
-- Dev: `pnpm run dev --workspace @dxta/stack`
-- Build: `pnpm run build --workspace @dxta/stack`
-- Deploy: `pnpm run deploy --workspace @dxta/stack`
-- Remove: `pnpm run remove --workspace @dxta/stack`
-- Console: `pnpm run console --workspace @dxta/stack`
+- Dev: `pnpm --filter ./apps/stack dev`
+- Build: `pnpm --filter ./apps/stack build`
+- Deploy: `pnpm --filter ./apps/stack deploy`
+- Deploy with stage: `pnpm --filter ./apps/stack deploy:stage -- prod`
+- Remove: `pnpm --filter ./apps/stack remove`
+- Console: `pnpm --filter ./apps/stack console`
 
-## Formatting and Linting Rules
+## Formatting and Linting
 
-ESLint config: `packages/config/eslint/index.js` and `.eslintrc.js`.
-Prettier config: `prettier.config.cjs`.
+Biome is the formatter and linter.
 
-Key ESLint rules:
+- Format: `pnpm run format` (uses `biome format --write .`)
+- Lint: `pnpm run lint` (uses `biome lint .`)
+- Lint fix: `pnpm run lint:fix` (uses `biome check --write .`)
 
-- TypeScript rules enabled with type-aware linting.
-- `@typescript-eslint/consistent-type-imports`: enforce `import type`.
-- `@typescript-eslint/no-unused-vars`: unused ok if prefixed `_`.
-- `@typescript-eslint/restrict-template-expressions`: off.
+Biome defaults from `biome.json`:
 
-Prettier defaults (selected):
+- Indent: 2 spaces
+- Line width: 80
+- Quotes: double
+- Semicolons: always
+- Trailing commas: all
+- Imports: organized automatically (`organizeImports` enabled)
 
-- `printWidth`: 80
-- `semi`: true
-- `singleQuote`: false
-- `trailingComma`: all
-- `tabWidth`: 2
-- Import sorting via `@ianvs/prettier-plugin-sort-imports`.
+## Import Style
 
-Import order (from `prettier.config.cjs`):
-
-1. React / React Native
-2. Next.js
-3. Expo
-4. Third-party modules
-5. Blank line
-6. `@dxta/*`
-7. Blank line
-8. `~/utils`, `~/components`, `~/styles`, `~/...`
-9. Relative imports
+- Let Biome handle import ordering and formatting.
+- Use `import type` for type-only imports when it improves clarity.
+- Prefer explicit relative paths over deep index re-exports unless a package
+  already exposes a stable public API.
 
 ## TypeScript Conventions
 
-Global TS settings are strict (`strict: true`) with:
+Global TS settings are strict (`tsconfig.json`). Notable options:
 
+- `strict: true`
 - `noUncheckedIndexedAccess: true`
-- `skipLibCheck: true`
-- `esModuleInterop: true`
-- `resolveJsonModule: true`
+- `noEmit: true`
+- `checkJs: true` and `allowJs: true`
 - `isolatedModules: true`
 
 Guidelines:
 
-- Prefer explicit types for exported functions, public APIs, and complex objects.
-- Use `import type` for types; follow ESLint rule.
-- Keep nullability explicit; avoid `any`.
-- Use `readonly` or `as const` when values are intended immutable.
+- Type public APIs and exported functions explicitly.
+- Avoid `any`; prefer `unknown` with narrowing.
+- Use `as const` for literal-heavy config objects.
+- Keep nullability explicit in return types.
 
 ## Naming Conventions
 
-Observed patterns in the codebase:
-
-- Files: `kebab-case` for most modules (e.g. `merge-request-diffs.ts`).
-- Functions: `camelCase` with verb-first naming.
-- Types/Interfaces: `PascalCase`.
-- Constants: `camelCase` for values, `UPPER_SNAKE_CASE` for env keys.
+- Files: `kebab-case` (e.g. `merge-request-diffs.ts`)
+- Functions/variables: `camelCase`
+- Types/interfaces/enums: `PascalCase`
+- Constants: `camelCase` for values, `UPPER_SNAKE_CASE` for env keys
 
 ## Error Handling
 
-- Prefer explicit error types when throwing (e.g. custom errors in integrations).
-- Surface errors with context (ids, URLs, provider name).
-- Avoid swallowing errors unless handling retries/backoffs explicitly.
-- For external calls, consider rate limit behavior (see source-control package).
+- Throw explicit errors with context (ids, URLs, provider name).
+- Avoid swallowing errors unless a retry/backoff is handled nearby.
+- For external API calls, include rate-limit or retry metadata if available.
 
 ## Code Organization
 
-- Schemas live in `packages/schemas/*`.
-- Shared functions live in `packages/functions/*`.
-- Integrations live in `packages/integrations/*`.
-- SST app lives in `apps/stack`.
+- Schemas: `packages/schemas/*`
+- Shared functions: `packages/functions/*`
+- Integrations: `packages/integrations/*`
+- Apps: `apps/*` (Temporal workers/workflows, stack infra)
 
 ## Tests
 
-- Jest config is minimal (`preset: ts-jest`, `testEnvironment: node`).
-- Keep tests co-located with module files as `*.test.ts`.
-- Prefer deterministic tests without network access.
+- Jest configs live per package (`jest.config.*`).
+- Co-locate tests as `*.test.ts` next to modules.
+- Keep tests deterministic and avoid network calls unless mocked.
 
 ## Lint/Format Workflow
 
-- Run `pnpm run lint` and `pnpm run format` before PRs.
-- Use `pnpm run lint:fix` to auto-fix when possible.
-- Formatting uses Prettier; avoid manual reformatting.
+- Run `pnpm run lint` and `pnpm run format` before changes land.
+- Use `pnpm run lint:fix` for autofixes.
+- If CI is missing, ensure local checks cover lint, type-check, and tests.
 
 ## Cursor/Copilot Rules
 
@@ -149,8 +140,7 @@ Observed patterns in the codebase:
 
 ## Notes for Agents
 
-- Do not modify generated files unless required by task.
-- Respect the existing import order and formatting.
-- Use workspace scripts for package-specific tasks.
-- If a workspace has no tests, keep `test` output as-is.
-- Do not write comments in code. Code should be self-documenting.
+- Do not modify generated files unless the task requires it.
+- Keep changes scoped to the requested packages.
+- Prefer workspace-level commands over ad-hoc scripts.
+- Avoid adding comments unless they explain non-obvious logic.
