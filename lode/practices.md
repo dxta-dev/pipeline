@@ -17,6 +17,10 @@
 ## Lessons
 - Keep Temporal-specific code out of `packages/` to avoid cross-cutting imports.
 
+## Local Development
+- Temporal server runs via `temporal server start-dev` (Temporal CLI).
+- Workers connect to `localhost:7233` with namespace `default`.
+
 ## Code Example
 ```ts
 import { proxyActivities } from "@temporalio/workflow";

@@ -157,7 +157,7 @@ const longRunningActivityOptions = {
 
 | Variable | Description |
 |----------|-------------|
-| `TEMPORAL_ADDRESS` | Temporal server address (local: `localhost:7233`) |
+| `TEMPORAL_ADDRESS` | Temporal server address (local: `localhost:7233`, via `temporal server start-dev`) |
 | `TEMPORAL_NAMESPACE` | Temporal namespace (default: `default`) |
 | `TENANT_DATABASE_AUTH_TOKEN` | Turso auth token for tenant DBs |
 | `SUPER_DATABASE_URL` | Super DB URL |
