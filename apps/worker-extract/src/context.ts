@@ -5,16 +5,13 @@ import {
   GitlabSourceControl,
   githubErrorMod,
 } from "@dxta/source-control";
-import { Redis } from "@upstash/redis";
 import { drizzle } from "drizzle-orm/libsql";
-import { nanoid } from "nanoid";
 
 import { getEnv } from "./env";
 
 type SupportedClerkOAuthProviders = "oauth_github" | "oauth_gitlab";
 
 let clerkClient: ReturnType<typeof Clerk> | null = null;
-let redisClient: Redis | null = null;
 
 function getClerkClient() {
   if (!clerkClient) {
@@ -22,22 +19,6 @@ function getClerkClient() {
   }
   return clerkClient;
 }
-
-function getRedisClient() {
-  if (!redisClient) {
-    const env = getEnv();
-    redisClient = new Redis({
-      url: env.REDIS_URL,
-      token: env.REDIS_TOKEN,
-    });
-  }
-  return redisClient;
-}
-
-const encodeUserTokenCacheValue = (token: string) =>
-  [token, nanoid()].join(" ");
-const decodeUserTokenCacheValue = (value: string) =>
-  value.split(" ") as [string, string];
 
 async function fetchClerkUserToken(
   userId: string,
@@ -59,36 +40,7 @@ export async function getClerkUserToken(
   userId: string,
   provider: SupportedClerkOAuthProviders,
 ) {
-  const userTokenCacheKey = `${userId}_${provider}`;
-  let encodedUserTokenCacheValue: string | null;
-
-  try {
-    encodedUserTokenCacheValue =
-      await getRedisClient().get<string>(userTokenCacheKey);
-  } catch (error) {
-    console.error("RedisClerkTokenCache: read error");
-    console.error(error);
-    encodedUserTokenCacheValue = null;
-  }
-
-  if (encodedUserTokenCacheValue !== null) {
-    const [cachedToken] = decodeUserTokenCacheValue(encodedUserTokenCacheValue);
-    return cachedToken;
-  }
-
-  const userToken = await fetchClerkUserToken(userId, provider);
-
-  try {
-    await getRedisClient().set<string>(
-      userTokenCacheKey,
-      encodeUserTokenCacheValue(userToken),
-      { ex: getEnv().REDIS_USER_TOKEN_TTL },
-    );
-  } catch (error) {
-    console.error("RedisClerkTokenCache: write error");
-    console.error(error);
-  }
-  return userToken;
+  return fetchClerkUserToken(userId, provider);
 }
 
 export function initDatabase(dbUrl: string) {

@@ -27,9 +27,6 @@ apps/worker-extract/
 | `SUPER_DATABASE_URL` | Super DB URL | required |
 | `SUPER_DATABASE_AUTH_TOKEN` | Super DB auth token | required |
 | `CLERK_SECRET_KEY` | Clerk API key for user tokens | required |
-| `REDIS_URL` | Redis URL for token caching | required |
-| `REDIS_TOKEN` | Redis auth token | required |
-| `REDIS_USER_TOKEN_TTL` | Token cache TTL in seconds | `1200` |
 | `PER_PAGE` | Pagination size | `30` |
 | `FETCH_TIMELINE_EVENTS_PER_PAGE` | Timeline events page size | `1000` |
 
@@ -64,7 +61,7 @@ The worker reuses patterns from `apps/stack/src/extract/context.ts`:
 - `initDatabase(dbUrl)` - Creates a Drizzle client for a tenant database
 - `initSuperDatabase()` - Creates a Drizzle client for the super database
 - `initSourceControl({ userId, sourceControl })` - Creates GitHub/GitLab client
-- `getClerkUserToken(userId, provider)` - Fetches OAuth token with Redis caching
+- `getClerkUserToken(userId, provider)` - Fetches OAuth token from Clerk on demand
 
 ## Running the Worker
 
@@ -81,7 +78,7 @@ pnpm run start --workspace @dxta/worker-extract
 
 - Activities must not import from `@temporalio/workflow` (non-deterministic).
 - All I/O happens in activities, never in workflows.
-- Token caching via Redis prevents excessive Clerk API calls.
+- OAuth tokens are fetched on demand from Clerk.
 
 ## Contracts
 
@@ -127,7 +124,6 @@ flowchart TD
   entry --> acts
   acts --> ctx
   ctx --> clerk[Clerk API]
-  ctx --> redis[Redis]
   ctx --> turso[Turso DBs]
   acts --> extractFns[packages/functions/extract]
 ```

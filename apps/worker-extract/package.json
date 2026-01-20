@@ -23,9 +23,7 @@
     "@libsql/client": "^0.17.0",
     "@temporalio/activity": "^1.11.7",
     "@temporalio/worker": "^1.11.7",
-    "@upstash/redis": "^1.30.0",
-    "drizzle-orm": "^0.45.1",
-    "nanoid": "^5.0.7"
+    "drizzle-orm": "^0.45.1"
   },
   "devDependencies": {
     "tsx": "^4.19.0",

@@ -7,9 +7,6 @@ const envSchema = z.object({
   SUPER_DATABASE_URL: z.string(),
   SUPER_DATABASE_AUTH_TOKEN: z.string(),
   CLERK_SECRET_KEY: z.string(),
-  REDIS_URL: z.string(),
-  REDIS_TOKEN: z.string(),
-  REDIS_USER_TOKEN_TTL: z.coerce.number().default(20 * 60),
   PER_PAGE: z.coerce.number().default(30),
   FETCH_TIMELINE_EVENTS_PER_PAGE: z.coerce.number().default(1000),
 });

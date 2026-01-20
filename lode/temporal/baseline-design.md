@@ -163,8 +163,6 @@ const longRunningActivityOptions = {
 | `SUPER_DATABASE_URL` | Super DB URL |
 | `SUPER_DATABASE_AUTH_TOKEN` | Super DB auth token |
 | `CLERK_SECRET_KEY` | Clerk API key for user tokens |
-| `REDIS_URL` | Redis URL for token caching |
-| `REDIS_TOKEN` | Redis auth token |
 | `PER_PAGE` | Pagination size (default: 30) |
 
 ## Scheduling
