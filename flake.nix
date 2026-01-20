@@ -22,11 +22,24 @@
         in
         {
           default = pkgs.mkShell {
-            packages = [
-              pkgs.nodejs_24
-              pkgs.temporal
-              pkgs.temporal-cli
-            ];
+            packages =
+              (with pkgs; [
+                nodejs_24
+                pnpm
+                temporal
+                temporal-cli
+                python3
+                pkg-config
+                cairo
+                openssl
+                zlib
+                libpng
+                giflib
+                libjpeg_turbo
+              ])
+              ++ pkgs.lib.optionals pkgs.stdenv.isLinux [
+                pkgs.libuuid
+              ];
           };
         });
     };
