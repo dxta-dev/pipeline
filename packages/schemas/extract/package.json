@@ -10,6 +10,6 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "drizzle-kit": "^0.20.6"
+    "drizzle-kit": "^0.31.8"
   }
 }

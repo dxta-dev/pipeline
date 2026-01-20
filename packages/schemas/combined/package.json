@@ -19,8 +19,8 @@
     "@dxta/transform-schema": "*"
   },
   "devDependencies": {
-    "dotenv-cli": "^7.3.0",
-    "drizzle-kit": "^0.20.6"
+    "dotenv-cli": "^11.0.0",
+    "drizzle-kit": "^0.31.8"
   },
   "keywords": [],
   "author": "",
