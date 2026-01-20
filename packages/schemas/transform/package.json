@@ -7,7 +7,7 @@
   "scripts": {
     "type-check": "tsc --noEmit && echo \"✔ No TypeScript warnings or errors\"",
     "test": "jest",
-    "lint": "eslint . && echo \"✔ No ESLint warnings or errors\""
+    "lint": "biome lint . && echo \"✔ No Biome warnings or errors\""
   },
   "devDependencies": {
     "@jest/globals": "^29.7.0",
