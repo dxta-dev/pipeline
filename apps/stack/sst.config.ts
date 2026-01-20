@@ -11,18 +11,15 @@ export default {
   },
   stacks(app) {
     app.setDefaultFunctionProps({
-      runtime: 'nodejs18.x',
+      runtime: "nodejs18.x",
       nodejs: {
         esbuild: {
-          external: ['@aws-sdk/client-sqs', '@aws-sdk/client-eventbridge']
+          external: ["@aws-sdk/client-sqs", "@aws-sdk/client-eventbridge"],
         },
-        install: [
-          '@libsql/client',
-          '@libsql/linux-x64-gnu'
-        ]
-      }
+        install: ["@libsql/client", "@libsql/linux-x64-gnu"],
+      },
     });
     app.stack(ExtractStack);
     app.stack(TransformStack);
-  }
+  },
 } satisfies SSTConfig;

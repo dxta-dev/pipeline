@@ -11,6 +11,6 @@ export const metadataSchema = z.object({
 });
 
 export enum MessageKind {
-  Tenant = 'tenant',
-  Timeline = 'timeline',
+  Tenant = "tenant",
+  Timeline = "timeline",
 }

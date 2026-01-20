@@ -16,27 +16,38 @@ export type GetMemberInfoOutput = {
 export type GetMemberInfoSourceControl = Pick<SourceControl, "fetchUserInfo">;
 export type GetMemberInfoEntities = Pick<Entities, "members">;
 
-export type GetMemberInfoFunction = ExtractFunction<GetMemberInfoInput, GetMemberInfoOutput, GetMemberInfoSourceControl, GetMemberInfoEntities>;
+export type GetMemberInfoFunction = ExtractFunction<
+  GetMemberInfoInput,
+  GetMemberInfoOutput,
+  GetMemberInfoSourceControl,
+  GetMemberInfoEntities
+>;
 
-export const shouldGetMemberInfo = (member: Pick<Member, '_extractedAt'>,
+export const shouldGetMemberInfo = (
+  member: Pick<Member, "_extractedAt">,
   maxAgeMs = 12 * 60 * 60 * 1000,
-  currentTimeMs = Date.now()) => member._extractedAt === null 
-  || currentTimeMs > (member._extractedAt.getTime() + maxAgeMs);
+  currentTimeMs = Date.now(),
+) =>
+  member._extractedAt === null ||
+  currentTimeMs > member._extractedAt.getTime() + maxAgeMs;
 
 export const getMemberInfo: GetMemberInfoFunction = async (
   { memberId, maxAgeMs, currentTime },
-  { integrations, db, entities }
+  { integrations, db, entities },
 ) => {
-
   if (!integrations.sourceControl) {
     throw new Error("Source control integration not configured");
   }
 
-  const member = await db.select({ 
-    externalId: entities.members.externalId, 
-    username: entities.members.username,
-    _extractedAt: entities.members._extractedAt,
-   }).from(entities.members).where(eq(entities.members.id, memberId)).get();
+  const member = await db
+    .select({
+      externalId: entities.members.externalId,
+      username: entities.members.username,
+      _extractedAt: entities.members._extractedAt,
+    })
+    .from(entities.members)
+    .where(eq(entities.members.id, memberId))
+    .get();
 
   if (!member) {
     console.error(`Member ${memberId} not found`);
@@ -45,9 +56,14 @@ export const getMemberInfo: GetMemberInfoFunction = async (
 
   if (!shouldGetMemberInfo(member, maxAgeMs, currentTime)) return {};
 
-  const { member: fetchedMember } = await integrations.sourceControl.fetchUserInfo(member.externalId, member.username);
+  const { member: fetchedMember } =
+    await integrations.sourceControl.fetchUserInfo(
+      member.externalId,
+      member.username,
+    );
 
-  const insertedMember = await db.update(entities.members)
+  const insertedMember = await db
+    .update(entities.members)
     .set({
       ...fetchedMember,
       _updatedAt: sql`(strftime('%s', 'now'))`,
@@ -55,8 +71,7 @@ export const getMemberInfo: GetMemberInfoFunction = async (
     })
     .where(eq(entities.members.id, memberId))
     .returning()
-    .get()
-
+    .get();
 
   return {
     member: insertedMember,

@@ -1,5 +1,9 @@
 import { z } from "zod";
-import type { TransformDatabase, ExtractDatabase, TenantDatabase } from "@dxta/transform-functions";
+import type {
+  TransformDatabase,
+  ExtractDatabase,
+  TenantDatabase,
+} from "@dxta/transform-functions";
 import { run, selectMergeRequestsDeployments } from "@dxta/transform-functions";
 import { createMessageHandler } from "@stack/config/create-message";
 import { MessageKind, metadataSchema } from "./messages";
@@ -8,7 +12,7 @@ import { transformRepositoryEvent } from "./events";
 import { initDatabase } from "./context";
 
 export const timelineSenderHandler = createMessageHandler({
-  queueId: 'TransformQueue',
+  queueId: "TransformQueue",
   kind: MessageKind.Timeline,
   metadataShape: metadataSchema.shape,
   contentShape: z.object({
@@ -23,29 +27,35 @@ export const timelineSenderHandler = createMessageHandler({
       transformDatabase: db as TransformDatabase,
       tenantDatabase: db as TenantDatabase,
     });
-  }
+  },
 });
 
 const { sender } = timelineSenderHandler;
 
-export const eventHandler = EventHandler(transformRepositoryEvent, async (ev) => {
+export const eventHandler = EventHandler(
+  transformRepositoryEvent,
+  async (ev) => {
+    const { repositoryExtractId } = ev.properties;
+    const { dbUrl, from, to, sourceControl } = ev.metadata;
+    const db = initDatabase(ev.metadata);
 
-  const { repositoryExtractId } = ev.properties;
-  const { dbUrl, from, to, sourceControl } = ev.metadata;
-  const db = initDatabase(ev.metadata);
+    const mrDeploys = await selectMergeRequestsDeployments(
+      db,
+      repositoryExtractId,
+      from,
+      to,
+    );
 
-  const mrDeploys = await selectMergeRequestsDeployments(db, repositoryExtractId, from, to);
+    if (mrDeploys.length === 0) return;
 
-  if (mrDeploys.length === 0) return;
-
-  await sender.sendAll(mrDeploys, {
-    version: 1,
-    caller: 'transform-timeline',
-    timestamp: Date.now(),
-    sourceControl,
-    from,
-    to,
-    dbUrl,
-  })
-
-});
+    await sender.sendAll(mrDeploys, {
+      version: 1,
+      caller: "transform-timeline",
+      timestamp: Date.now(),
+      sourceControl,
+      from,
+      to,
+      dbUrl,
+    });
+  },
+);

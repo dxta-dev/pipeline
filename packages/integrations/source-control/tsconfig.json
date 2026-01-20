@@ -4,13 +4,8 @@
     "baseUrl": ".",
     "paths": {
       "~/*": ["./src/*"]
-    },
+    }
   },
   "exclude": [],
-  "include": [
-    "src/**/*.ts",
-    "src/**/*.ts",
-    "src/**/*.cjs",
-    "src/**/*.mjs",
- ]
+  "include": ["src/**/*.ts", "src/**/*.ts", "src/**/*.cjs", "src/**/*.mjs"]
 }

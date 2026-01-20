@@ -101,28 +101,42 @@ type EventPayload<
   metadata: InferShapeOutput<MetadataShape>;
 };
 
-
-function createLog(event: unknown, eventTypeName: string, propertiesToLog?: string[]) {
+function createLog(
+  event: unknown,
+  eventTypeName: string,
+  propertiesToLog?: string[],
+) {
   try {
     if (!propertiesToLog) return eventTypeName;
-    const props = propertiesToLog.map((property) => property.split('.').reduce((acc, curr) => {
-      const key = curr;
-      if (acc?.value) return { key, value: (acc.value as Record<string, unknown>)[curr] };
-      return { key, value: null }
-    }, { key: '', value: event })
-    ).filter((prop) => prop.value !== null);
-    const logMessage = props.map(({ key, value }) => `- ${key}: ${JSON.stringify(value)}`).join('\n');
+    const props = propertiesToLog
+      .map((property) =>
+        property.split(".").reduce(
+          (acc, curr) => {
+            const key = curr;
+            if (acc?.value)
+              return {
+                key,
+                value: (acc.value as Record<string, unknown>)[curr],
+              };
+            return { key, value: null };
+          },
+          { key: "", value: event },
+        ),
+      )
+      .filter((prop) => prop.value !== null);
+    const logMessage = props
+      .map(({ key, value }) => `- ${key}: ${JSON.stringify(value)}`)
+      .join("\n");
     return `${eventTypeName}\n${logMessage}`;
   } catch {
     return eventTypeName;
   }
-
 }
 
 type EventLogConfig = {
   propertiesToLog: string[];
   crawlEventNamespace?: EventNamespaceType;
-}
+};
 
 export const EventHandler = <
   Source extends string,
@@ -132,7 +146,7 @@ export const EventHandler = <
 >(
   event: EventDefinition<Source, DetailType, PropertiesShape, MetadataShape>,
   cb: (ev: EventPayload<PropertiesShape, MetadataShape>) => Promise<void>,
-  logConfig?: EventLogConfig
+  logConfig?: EventLogConfig,
 ) => {
   const { source: targetSource, type: targetDetailType } = event;
   const eventSchema = z.object({
@@ -153,19 +167,27 @@ export const EventHandler = <
     const propertiesToLog = logConfig?.propertiesToLog ?? undefined;
     const crawlEventNamespace = logConfig?.crawlEventNamespace ?? undefined;
 
-    const dbUrl = (event.detail as EventPayload<PropertiesShape, MetadataShape>).metadata?.dbUrl as unknown as (Tenant['dbUrl'] | undefined);
+    const dbUrl = (event.detail as EventPayload<PropertiesShape, MetadataShape>)
+      .metadata?.dbUrl as unknown as Tenant["dbUrl"] | undefined;
     if (dbUrl === undefined) {
       console.error(`No dbUrl for event ${targetSource}.${targetDetailType}`);
       return;
     }
-    
-    const isCrawlEvent = eventSchema.shape.metadata.shape.crawlId !== undefined;
-    const db = isCrawlEvent && dbUrl ? drizzle(createClient({
-      url: dbUrl,
-      authToken: Config.TENANT_DATABASE_AUTH_TOKEN
-    })) : undefined;
 
-    const crawlId = (event.detail as EventPayload<PropertiesShape, MetadataShape>).metadata?.crawlId as unknown as (number | undefined);
+    const isCrawlEvent = eventSchema.shape.metadata.shape.crawlId !== undefined;
+    const db =
+      isCrawlEvent && dbUrl
+        ? drizzle(
+            createClient({
+              url: dbUrl,
+              authToken: Config.TENANT_DATABASE_AUTH_TOKEN,
+            }),
+          )
+        : undefined;
+
+    const crawlId = (
+      event.detail as EventPayload<PropertiesShape, MetadataShape>
+    ).metadata?.crawlId as unknown as number | undefined;
 
     const parseResult = eventSchema.safeParse(event.detail);
     if (!parseResult.success) {
@@ -173,7 +195,13 @@ export const EventHandler = <
         `ERROR: Failed to parse event detail '${targetSource}.${targetDetailType}'. Reason: ${parseResult.error}`,
       );
 
-      await crawlFailed(isCrawlEvent, db, crawlId, crawlEventNamespace, `Error: Failed to parse event ${targetSource}.${targetDetailType} for crawl id: ${crawlId} - ${crawlEventNamespace}`);
+      await crawlFailed(
+        isCrawlEvent,
+        db,
+        crawlId,
+        crawlEventNamespace,
+        `Error: Failed to parse event ${targetSource}.${targetDetailType} for crawl id: ${crawlId} - ${crawlEventNamespace}`,
+      );
 
       return;
     }
@@ -184,27 +212,56 @@ export const EventHandler = <
       await cb(
         parseResult.data as EventPayload<PropertiesShape, MetadataShape>,
       );
-    }
-    catch (e) {
+    } catch (e) {
       callbackError = e;
     }
 
-
     if (!callbackError) {
-      console.log('Handled event', createLog(parseResult.data, `${targetSource}.${targetDetailType}`, propertiesToLog));
+      console.log(
+        "Handled event",
+        createLog(
+          parseResult.data,
+          `${targetSource}.${targetDetailType}`,
+          propertiesToLog,
+        ),
+      );
       try {
-        await crawlComplete(isCrawlEvent, db, crawlId, targetDetailType as EventNamespaceType);
+        await crawlComplete(
+          isCrawlEvent,
+          db,
+          crawlId,
+          targetDetailType as EventNamespaceType,
+        );
       } catch (e) {
-        console.error(`Failed to insert crawl complete event for id: ${crawlId} - ${crawlEventNamespace}`, e);
+        console.error(
+          `Failed to insert crawl complete event for id: ${crawlId} - ${crawlEventNamespace}`,
+          e,
+        );
       }
       return;
     }
 
     try {
-      console.error('Failed to handle event', createLog(parseResult.data, `${targetSource}.${targetDetailType}`, propertiesToLog));
-      await crawlFailed(isCrawlEvent, db, crawlId, crawlEventNamespace, callbackError);
+      console.error(
+        "Failed to handle event",
+        createLog(
+          parseResult.data,
+          `${targetSource}.${targetDetailType}`,
+          propertiesToLog,
+        ),
+      );
+      await crawlFailed(
+        isCrawlEvent,
+        db,
+        crawlId,
+        crawlEventNamespace,
+        callbackError,
+      );
     } catch (e) {
-      console.error(`Failed to insert crawl failed event for id: ${crawlId} - ${crawlEventNamespace}`, e);
+      console.error(
+        `Failed to insert crawl failed event for id: ${crawlId} - ${crawlEventNamespace}`,
+        e,
+      );
     }
 
     throw callbackError;

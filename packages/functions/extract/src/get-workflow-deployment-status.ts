@@ -11,25 +11,42 @@ export type GetWorkflowDeploymentStatusInput = {
 
 export type GetWorkflowDeploymentStatusOutput = void;
 
-export type GetWorkflowDeploymentStatusSourceControl = Pick<SourceControl, 'fetchWorkflowDeployment'>;
-export type GetWorkflowDeploymentStatusEntities = Pick<Entities, 'deployments'>;
+export type GetWorkflowDeploymentStatusSourceControl = Pick<
+  SourceControl,
+  "fetchWorkflowDeployment"
+>;
+export type GetWorkflowDeploymentStatusEntities = Pick<Entities, "deployments">;
 
-export type GetWorkflowDeploymentStatusFunction = ExtractFunction<GetWorkflowDeploymentStatusInput, GetWorkflowDeploymentStatusOutput, GetWorkflowDeploymentStatusSourceControl, GetWorkflowDeploymentStatusEntities>;
+export type GetWorkflowDeploymentStatusFunction = ExtractFunction<
+  GetWorkflowDeploymentStatusInput,
+  GetWorkflowDeploymentStatusOutput,
+  GetWorkflowDeploymentStatusSourceControl,
+  GetWorkflowDeploymentStatusEntities
+>;
 
-export const getWorkflowDeploymentStatus: GetWorkflowDeploymentStatusFunction = async (
-  { namespace, repository, deployment },
-  { db, entities, integrations }
-) => {
-  if (!integrations.sourceControl) {
-    throw new Error("Source control integration not configured");
-  }
-  const { deployment: upToDateDeployment } = await integrations.sourceControl.fetchWorkflowDeployment(repository, namespace, deployment);
+export const getWorkflowDeploymentStatus: GetWorkflowDeploymentStatusFunction =
+  async (
+    { namespace, repository, deployment },
+    { db, entities, integrations },
+  ) => {
+    if (!integrations.sourceControl) {
+      throw new Error("Source control integration not configured");
+    }
+    const { deployment: upToDateDeployment } =
+      await integrations.sourceControl.fetchWorkflowDeployment(
+        repository,
+        namespace,
+        deployment,
+      );
 
-  await db.update(entities.deployments).set({
-    status: upToDateDeployment.status,
-    updatedAt: upToDateDeployment.updatedAt,
-    deployedAt: upToDateDeployment.deployedAt,
-    _updatedAt: sql`(strftime('%s', 'now'))`,
-  }).where(eq(entities.deployments.id, upToDateDeployment.id)).run();
-
-};
+    await db
+      .update(entities.deployments)
+      .set({
+        status: upToDateDeployment.status,
+        updatedAt: upToDateDeployment.updatedAt,
+        deployedAt: upToDateDeployment.deployedAt,
+        _updatedAt: sql`(strftime('%s', 'now'))`,
+      })
+      .where(eq(entities.deployments.id, upToDateDeployment.id))
+      .run();
+  };

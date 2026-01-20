@@ -1,5 +1,5 @@
-import type { LibSQLDatabase } from 'drizzle-orm/libsql';
-import type { instances, events } from '@dxta/crawl-schema';
+import type { LibSQLDatabase } from "drizzle-orm/libsql";
+import type { instances, events } from "@dxta/crawl-schema";
 
 export type Entities = {
   instances: typeof instances;
@@ -13,4 +13,7 @@ export type Context<E extends Partial<Entities>> = {
 
 export type Input = Record<string, unknown>;
 
-export type CrawlFunction<I extends Input, O, E extends Partial<Entities>> = (input: I, context: Context<E>) => Promise<O>;
+export type CrawlFunction<I extends Input, O, E extends Partial<Entities>> = (
+  input: I,
+  context: Context<E>,
+) => Promise<O>;

@@ -13,7 +13,7 @@ export function TransformStack({ stack }: StackContext) {
   const ENVSchema = z.object({
     CLERK_JWT_ISSUER: z.string(),
     CLERK_JWT_AUDIENCE: z.string(),
-    CRON_DISABLED: z.literal('true').or(z.any()).optional(),
+    CRON_DISABLED: z.literal("true").or(z.any()).optional(),
   });
   const ENV = ENVSchema.parse(process.env);
 
@@ -29,8 +29,8 @@ export function TransformStack({ stack }: StackContext) {
         pattern: {
           source: ["transform"],
           detailType: ["repository"],
-        }
-      }
+        },
+      },
     },
     defaults: {
       retries: 10,
@@ -38,10 +38,10 @@ export function TransformStack({ stack }: StackContext) {
         bind: [
           SUPER_DATABASE_AUTH_TOKEN,
           SUPER_DATABASE_URL,
-          TENANT_DATABASE_AUTH_TOKEN,      
-        ]
+          TENANT_DATABASE_AUTH_TOKEN,
+        ],
       },
-    }
+    },
   });
 
   const transformDLQ = new Queue(stack, "TransformDLQ");
@@ -50,10 +50,10 @@ export function TransformStack({ stack }: StackContext) {
       queue: {
         deadLetterQueue: {
           maxReceiveCount: 5,
-          queue: transformDLQ.cdk.queue
-        }
-      }
-    }
+          queue: transformDLQ.cdk.queue,
+        },
+      },
+    },
   });
   transformQueue.addConsumer(stack, {
     cdk: {
@@ -72,7 +72,6 @@ export function TransformStack({ stack }: StackContext) {
       ],
       handler: "src/transform/queue.handler",
     },
-
   });
 
   transformBus.addTargets(stack, "repository", {
@@ -80,8 +79,8 @@ export function TransformStack({ stack }: StackContext) {
       function: {
         bind: [transformBus, transformQueue],
         handler: "src/transform/transform-timeline.eventHandler",
-      }
-    }
+      },
+    },
   });
 
   const api = new Api(stack, "TransformApi", {
@@ -111,7 +110,7 @@ export function TransformStack({ stack }: StackContext) {
     },
   });
 
-  if (ENV.CRON_DISABLED !== 'true') {
+  if (ENV.CRON_DISABLED !== "true") {
     new Cron(stack, "TransformCron", {
       schedule: "cron(0/15 * * * ? *)",
       job: {
@@ -123,14 +122,12 @@ export function TransformStack({ stack }: StackContext) {
             SUPER_DATABASE_AUTH_TOKEN,
             SUPER_DATABASE_URL,
           ],
-        }
-      }
+        },
+      },
     });
   }
 
   stack.addOutputs({
     ApiEndpoint: api.url,
   });
-
-
 }

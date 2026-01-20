@@ -1,19 +1,30 @@
-import type { EventDetailType, EventNamespaceType, CrawlInfo, CrawlFailed, CrawlComplete } from "@dxta/crawl-schema";
-import { CrawlInfoSchema, CrawlFailedSchema, CrawlCompleteSchema } from "@dxta/crawl-schema";
+import type {
+  EventDetailType,
+  EventNamespaceType,
+  CrawlInfo,
+  CrawlFailed,
+  CrawlComplete,
+} from "@dxta/crawl-schema";
+import {
+  CrawlInfoSchema,
+  CrawlFailedSchema,
+  CrawlCompleteSchema,
+} from "@dxta/crawl-schema";
 import type { CrawlFunction, Entities } from "./config";
 
-
-type Data = {
-  eventDetail: 'crawlInfo';
-  data: CrawlInfo;
-} | {
-  eventDetail: 'crawlFailed';
-  data: CrawlFailed;
-} | {
-  eventDetail: 'crawlComplete';
-  data: CrawlComplete;
-};
-
+type Data =
+  | {
+      eventDetail: "crawlInfo";
+      data: CrawlInfo;
+    }
+  | {
+      eventDetail: "crawlFailed";
+      data: CrawlFailed;
+    }
+  | {
+      eventDetail: "crawlComplete";
+      data: CrawlComplete;
+    };
 
 export type InsertEventInput = {
   crawlId: number;
@@ -26,31 +37,43 @@ export type InsertEventOutput = {
 
 export type InsertEventEntities = Pick<Entities, "events">;
 
-export type InsertEventFunction = CrawlFunction<InsertEventInput, InsertEventOutput, InsertEventEntities>;
+export type InsertEventFunction = CrawlFunction<
+  InsertEventInput,
+  InsertEventOutput,
+  InsertEventEntities
+>;
 
-const validateData = (eventDetail: EventDetailType, data: CrawlInfo | CrawlComplete | CrawlFailed) => {
+const validateData = (
+  eventDetail: EventDetailType,
+  data: CrawlInfo | CrawlComplete | CrawlFailed,
+) => {
   switch (eventDetail) {
-    case 'crawlInfo':
+    case "crawlInfo":
       return CrawlInfoSchema.parse(data);
-    case 'crawlFailed':
+    case "crawlFailed":
       return CrawlFailedSchema.parse(data);
-    case 'crawlComplete':
+    case "crawlComplete":
       return CrawlCompleteSchema.parse(data);
   }
-}
-
+};
 
 export const insertEvent: InsertEventFunction = async (
   { crawlId, eventNamespace, eventDetail, data },
-  { db, entities }
+  { db, entities },
 ) => {
-
   const validatedData = validateData(eventDetail, data);
 
-  const insertedEvents = await db.insert(entities.events)
-    .values({ crawlId, namespace: eventNamespace, detail: eventDetail, data: validatedData })
+  const insertedEvents = await db
+    .insert(entities.events)
+    .values({
+      crawlId,
+      namespace: eventNamespace,
+      detail: eventDetail,
+      data: validatedData,
+    })
     .onConflictDoNothing()
-    .returning().get();
+    .returning()
+    .get();
 
   return {
     eventId: insertedEvents.id,

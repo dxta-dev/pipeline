@@ -1,7 +1,7 @@
 import type { Namespace, Repository } from "@dxta/extract-schema";
 import type { ExtractFunction, Entities } from "./config";
 import type { SourceControl } from "@dxta/source-control";
-import { sql } from 'drizzle-orm';
+import { sql } from "drizzle-orm";
 
 export type GetRepositoryInput = {
   externalRepositoryId: number;
@@ -15,43 +15,57 @@ export type GetRepositoryOutput = {
 };
 
 export type GetRepositorySourceControl = Pick<SourceControl, "fetchRepository">;
-export type GetRepositoryEntities = Pick<Entities, "repositories" | "namespaces">;
+export type GetRepositoryEntities = Pick<
+  Entities,
+  "repositories" | "namespaces"
+>;
 
-export type GetRepositoryFunction = ExtractFunction<GetRepositoryInput, GetRepositoryOutput, GetRepositorySourceControl, GetRepositoryEntities>;
+export type GetRepositoryFunction = ExtractFunction<
+  GetRepositoryInput,
+  GetRepositoryOutput,
+  GetRepositorySourceControl,
+  GetRepositoryEntities
+>;
 
 export const getRepository: GetRepositoryFunction = async (
   { externalRepositoryId, namespaceName, repositoryName },
-  { integrations, db, entities }
+  { integrations, db, entities },
 ) => {
-
   if (!integrations.sourceControl) {
     throw new Error("Source control integration not configured");
   }
 
-  const { repository, namespace } = await integrations.sourceControl.fetchRepository(externalRepositoryId, namespaceName, repositoryName);
+  const { repository, namespace } =
+    await integrations.sourceControl.fetchRepository(
+      externalRepositoryId,
+      namespaceName,
+      repositoryName,
+    );
 
-  return await db.transaction(async (tx)=> {
-    const insertedNamespace = await tx.insert(entities.namespaces).values(namespace)
-    .onConflictDoUpdate({
-      target: [
-        entities.namespaces.externalId,
-        entities.namespaces.forgeType
-      ],
-      set: {
-        name: namespace.name,
-        _updatedAt: sql`(strftime('%s', 'now'))`,
-      },
-    }).returning()
-    .get();
+  return await db.transaction(async (tx) => {
+    const insertedNamespace = await tx
+      .insert(entities.namespaces)
+      .values(namespace)
+      .onConflictDoUpdate({
+        target: [entities.namespaces.externalId, entities.namespaces.forgeType],
+        set: {
+          name: namespace.name,
+          _updatedAt: sql`(strftime('%s', 'now'))`,
+        },
+      })
+      .returning()
+      .get();
 
-    const insertedRepository = await tx.insert(entities.repositories).values({
-      ...repository,
-      namespaceId: insertedNamespace.id,
-    })
+    const insertedRepository = await tx
+      .insert(entities.repositories)
+      .values({
+        ...repository,
+        namespaceId: insertedNamespace.id,
+      })
       .onConflictDoUpdate({
         target: [
           entities.repositories.externalId,
-          entities.repositories.forgeType
+          entities.repositories.forgeType,
         ],
         set: {
           name: repository.name,
@@ -59,7 +73,8 @@ export const getRepository: GetRepositoryFunction = async (
           defaultBranch: repository.defaultBranch,
           _updatedAt: sql`(strftime('%s', 'now'))`,
         },
-      }).returning()
+      })
+      .returning()
       .get();
 
     return {
@@ -67,5 +82,4 @@ export const getRepository: GetRepositoryFunction = async (
       repository: insertedRepository,
     };
   });
-
 };

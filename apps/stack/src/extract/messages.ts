@@ -19,8 +19,8 @@ export const metadataSchema = z.object({
 });
 
 export enum MessageKind {
-  Tenant = 'tenant',
-  Repository = 'repository',
+  Tenant = "tenant",
+  Repository = "repository",
   MemberInfo = "member-info",
   NamespaceMember = "namespace-member",
   Member = "member",
@@ -30,9 +30,8 @@ export enum MessageKind {
   MergeRequestNote = "merge-request-note",
   TimelineEvent = "timeline-event",
   WorkflowDeployments = "workflow-deployments",
-  DefaultBranchCommit = 'default-branch-commit',
+  DefaultBranchCommit = "default-branch-commit",
   Deployment = "deployment",
   DeploymentStatus = "deployment-status",
   WorkflowDeploymentStatus = "workflow-deployment-status",
-};
-
+}

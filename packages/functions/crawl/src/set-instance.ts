@@ -13,22 +13,27 @@ export type SetInstaceOutput = {
 
 export type SetInstanceEntities = Pick<Entities, "instances">;
 
-export type SetInstanceFunction = CrawlFunction<SetInstanceInput, SetInstaceOutput, SetInstanceEntities>;
+export type SetInstanceFunction = CrawlFunction<
+  SetInstanceInput,
+  SetInstaceOutput,
+  SetInstanceEntities
+>;
 
 export const setInstance: SetInstanceFunction = async (
   { repositoryId, userId, since, until },
-  { db, entities }
+  { db, entities },
 ) => {
-
-  const insertedInstance = await db.insert(entities.instances)
-    .values({ 
-      repositoryId: repositoryId, 
-      userId: userId, 
+  const insertedInstance = await db
+    .insert(entities.instances)
+    .values({
+      repositoryId: repositoryId,
+      userId: userId,
       since: since,
-      until: until
+      until: until,
     })
     .onConflictDoNothing()
-    .returning().get();
+    .returning()
+    .get();
 
   return {
     instanceId: insertedInstance.id,

@@ -3,8 +3,13 @@ import type { LibSQLDatabase } from "drizzle-orm/libsql";
 
 type Db = LibSQLDatabase<Record<string, never>>;
 
-export async function selectMergeRequestsDeployments(db: Db, repositoryId: number, from: Date, to: Date) {
-    // Issue: if transform arbitrary time period, can remove deployment info from historic PRs, (maybe set d_head to d_head_next || d_head_curr)
+export async function selectMergeRequestsDeployments(
+  db: Db,
+  repositoryId: number,
+  from: Date,
+  to: Date,
+) {
+  // Issue: if transform arbitrary time period, can remove deployment info from historic PRs, (maybe set d_head to d_head_next || d_head_curr)
   const result = await db.run(sql`WITH RECURSIVE 
 deploys_in_period AS (
     SELECT id, repository_sha_id, deployed_at
@@ -102,8 +107,14 @@ WHERE mrs.updated_at BETWEEN ${from.getTime()} AND ${to.getTime()}
 AND mrs.repository_id = ${repositoryId}
 AND dmrs.deployment IS NULL
 ;
-`)
-  const mergeRequestDeployments = result.rows as unknown as { deployment: number | null, merge_request: number }[];
+`);
+  const mergeRequestDeployments = result.rows as unknown as {
+    deployment: number | null;
+    merge_request: number;
+  }[];
 
-  return mergeRequestDeployments.map(x => ({ deploymentId: x.deployment, mergeRequestId: x.merge_request }));
+  return mergeRequestDeployments.map((x) => ({
+    deploymentId: x.deployment,
+    mergeRequestId: x.merge_request,
+  }));
 }

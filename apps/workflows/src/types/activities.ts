@@ -29,7 +29,9 @@ export interface ExtractActivities {
     sourceControl?: SourceControl;
   }): Promise<RepositoryInfo[]>;
 
-  extractRepository(input: ExtractRepositoryInput): Promise<ExtractRepositoryResult>;
+  extractRepository(
+    input: ExtractRepositoryInput,
+  ): Promise<ExtractRepositoryResult>;
 
   extractMergeRequests(input: {
     tenantId: number;
@@ -76,7 +78,9 @@ export interface ExtractActivities {
     crawlId: number;
   }): Promise<void>;
 
-  extractDeployments(input: ExtractDeploymentsInput): Promise<ExtractDeploymentsResult>;
+  extractDeployments(
+    input: ExtractDeploymentsInput,
+  ): Promise<ExtractDeploymentsResult>;
 
   extractDeploymentStatus(input: {
     tenantId: number;

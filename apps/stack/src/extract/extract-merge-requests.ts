@@ -25,10 +25,13 @@ import { extractMergeRequestsEvent, extractRepositoryEvent } from "./events";
 import { MessageKind, metadataSchema, paginationSchema } from "./messages";
 import { initDatabase, initSourceControl } from "./context";
 
-type ExtractMergeRequestsContext = Context<GetMergeRequestsSourceControl, GetMergeRequestsEntities>;
+type ExtractMergeRequestsContext = Context<
+  GetMergeRequestsSourceControl,
+  GetMergeRequestsEntities
+>;
 
 export const mergeRequestSenderHandler = createMessageHandler({
-  queueId: 'ExtractQueue',
+  queueId: "ExtractQueue",
   kind: MessageKind.MergeRequest,
   metadataShape: metadataSchema.shape,
   contentShape: z.object({
@@ -43,7 +46,9 @@ export const mergeRequestSenderHandler = createMessageHandler({
     }
 
     const dynamicContext = {
-      integrations: { sourceControl: await initSourceControl(message.metadata) },
+      integrations: {
+        sourceControl: await initSourceControl(message.metadata),
+      },
       db: initDatabase(message.metadata),
     } satisfies Partial<ExtractMergeRequestsContext>;
 
@@ -93,7 +98,7 @@ const { sender } = mergeRequestSenderHandler;
 const staticContext = {
   entities: {
     mergeRequests,
-    repositoryShas
+    repositoryShas,
   },
 } satisfies Partial<ExtractMergeRequestsContext>;
 
@@ -128,20 +133,25 @@ export const eventHandler = EventHandler(
       to: endDate,
     };
 
-    const { mergeRequests, paginationInfo, processableMergeRequests } = await getMergeRequests(
-      {
-        externalRepositoryId: repository.externalId,
-        namespaceName: namespace.name,
-        repositoryName: repository.name,
-        repositoryId: repository.id,
-        perPage: Number(Config.PER_PAGE),
-        timePeriod,
-      },
-      { ...staticContext, ...dynamicContext },
-    );
+    const { mergeRequests, paginationInfo, processableMergeRequests } =
+      await getMergeRequests(
+        {
+          externalRepositoryId: repository.externalId,
+          namespaceName: namespace.name,
+          repositoryName: repository.name,
+          repositoryId: repository.id,
+          perPage: Number(Config.PER_PAGE),
+          timePeriod,
+        },
+        { ...staticContext, ...dynamicContext },
+      );
 
     if (mergeRequests.length === 0 && paginationInfo.totalPages === 0) return;
-    if (mergeRequests.length === 0 && (paginationInfo.totalPages - paginationInfo.page) === 0) return;
+    if (
+      mergeRequests.length === 0 &&
+      paginationInfo.totalPages - paginationInfo.page === 0
+    )
+      return;
 
     await insertEvent(
       {
@@ -202,9 +212,9 @@ export const eventHandler = EventHandler(
       to: ev.metadata.to,
       dbUrl: ev.metadata.dbUrl,
     });
-  }, 
+  },
   {
     propertiesToLog: ["properties.repositoryId", "properties.namespaceId"],
     crawlEventNamespace: "mergeRequest",
-  }
+  },
 );

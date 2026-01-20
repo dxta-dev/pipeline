@@ -1,6 +1,21 @@
-import type { LibSQLDatabase } from 'drizzle-orm/libsql';
-import type { repositories, namespaces, gitIdentities, mergeRequests, members, repositoriesToMembers, mergeRequestDiffs, mergeRequestCommits, mergeRequestNotes, timelineEvents, repositoryCommits, repositoryShaTrees, deployments, repositoryShas } from '@dxta/extract-schema';
-import type { SourceControl } from '@dxta/source-control';
+import type { LibSQLDatabase } from "drizzle-orm/libsql";
+import type {
+  repositories,
+  namespaces,
+  gitIdentities,
+  mergeRequests,
+  members,
+  repositoriesToMembers,
+  mergeRequestDiffs,
+  mergeRequestCommits,
+  mergeRequestNotes,
+  timelineEvents,
+  repositoryCommits,
+  repositoryShaTrees,
+  deployments,
+  repositoryShas,
+} from "@dxta/extract-schema";
+import type { SourceControl } from "@dxta/source-control";
 
 export type Database = LibSQLDatabase<Record<string, unknown>>;
 
@@ -21,7 +36,10 @@ export type Entities = {
   repositoryShas: typeof repositoryShas;
 };
 
-export type Context<SC extends Partial<SourceControl>, E extends Partial<Entities>> = {
+export type Context<
+  SC extends Partial<SourceControl>,
+  E extends Partial<Entities>,
+> = {
   integrations: {
     sourceControl: SC | null;
   };
@@ -31,4 +49,9 @@ export type Context<SC extends Partial<SourceControl>, E extends Partial<Entitie
 
 export type Input = Record<string, unknown>;
 
-export type ExtractFunction<I extends Input, O, SC extends Partial<SourceControl>, E extends Partial<Entities>> = (input: I, context: Context<SC, E>) => Promise<O>;
+export type ExtractFunction<
+  I extends Input,
+  O,
+  SC extends Partial<SourceControl>,
+  E extends Partial<Entities>,
+> = (input: I, context: Context<SC, E>) => Promise<O>;

@@ -1,9 +1,6 @@
 import { createClient } from "@libsql/client";
 import { createAppAuth } from "@octokit/auth-app";
-import {
-  GitHubSourceControl,
-  githubErrorMod,
-} from "@dxta/source-control";
+import { GitHubSourceControl, githubErrorMod } from "@dxta/source-control";
 import { drizzle } from "drizzle-orm/libsql";
 import { getTenantSourceControl } from "@dxta/super-schema";
 
@@ -25,12 +22,14 @@ async function getGithubAppInstallationToken(installationId: number) {
 
 async function getGithubInstallationId(tenantId: number) {
   const superDb = initSuperDatabase();
-  const sourceControl = await getTenantSourceControl(superDb, tenantId, "github");
+  const sourceControl = await getTenantSourceControl(
+    superDb,
+    tenantId,
+    "github",
+  );
 
   if (!sourceControl?.githubInstallationId) {
-    throw new Error(
-      `Missing GitHub installation id for tenant ${tenantId}.`,
-    );
+    throw new Error(`Missing GitHub installation id for tenant ${tenantId}.`);
   }
 
   return sourceControl.githubInstallationId;

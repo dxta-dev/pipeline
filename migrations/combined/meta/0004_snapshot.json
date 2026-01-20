@@ -73,12 +73,8 @@
           "name": "crawl_events_instance_id_crawl_instances_id_fk",
           "tableFrom": "crawl_events",
           "tableTo": "crawl_instances",
-          "columnsFrom": [
-            "instance_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["instance_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -212,9 +208,7 @@
       "indexes": {
         "repository_commits_repository_sha_id_idx": {
           "name": "repository_commits_repository_sha_id_idx",
-          "columns": [
-            "repository_sha_id"
-          ],
+          "columns": ["repository_sha_id"],
           "isUnique": true
         }
       },
@@ -223,12 +217,8 @@
           "name": "extract_repository_commits_repository_id_extract_repositories_id_fk",
           "tableFrom": "extract_repository_commits",
           "tableTo": "extract_repositories",
-          "columnsFrom": [
-            "repository_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["repository_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -236,12 +226,8 @@
           "name": "extract_repository_commits_repository_sha_id_extract_repository_shas_id_fk",
           "tableFrom": "extract_repository_commits",
           "tableTo": "extract_repository_shas",
-          "columnsFrom": [
-            "repository_sha_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["repository_sha_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -349,11 +335,7 @@
       "indexes": {
         "deployments_external_id_idx": {
           "name": "deployments_external_id_idx",
-          "columns": [
-            "external_id",
-            "repository_id",
-            "deployment_type"
-          ],
+          "columns": ["external_id", "repository_id", "deployment_type"],
           "isUnique": true
         }
       },
@@ -362,12 +344,8 @@
           "name": "extract_deployments_repository_id_extract_repositories_id_fk",
           "tableFrom": "extract_deployments",
           "tableTo": "extract_repositories",
-          "columnsFrom": [
-            "repository_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["repository_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -375,12 +353,8 @@
           "name": "extract_deployments_repository_sha_id_extract_repository_shas_id_fk",
           "tableFrom": "extract_deployments",
           "tableTo": "extract_repository_shas",
-          "columnsFrom": [
-            "repository_sha_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["repository_sha_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -439,11 +413,7 @@
       "indexes": {
         "repository_id_email_name_idx": {
           "name": "repository_id_email_name_idx",
-          "columns": [
-            "repository_id",
-            "email",
-            "name"
-          ],
+          "columns": ["repository_id", "email", "name"],
           "isUnique": true
         }
       },
@@ -452,12 +422,8 @@
           "name": "extract_git_identities_repository_id_extract_repositories_id_fk",
           "tableFrom": "extract_git_identities",
           "tableTo": "extract_repositories",
-          "columnsFrom": [
-            "repository_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["repository_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -560,10 +526,7 @@
       "indexes": {
         "members_external_id_idx": {
           "name": "members_external_id_idx",
-          "columns": [
-            "external_id",
-            "forge_type"
-          ],
+          "columns": ["external_id", "forge_type"],
           "isUnique": true
         }
       },
@@ -713,10 +676,7 @@
       "indexes": {
         "merge_request_commits_external_id_idx": {
           "name": "merge_request_commits_external_id_idx",
-          "columns": [
-            "merge_request_id",
-            "external_id"
-          ],
+          "columns": ["merge_request_id", "external_id"],
           "isUnique": true
         }
       },
@@ -725,12 +685,8 @@
           "name": "extract_merge_request_commits_merge_request_id_extract_merge_requests_id_fk",
           "tableFrom": "extract_merge_request_commits",
           "tableTo": "extract_merge_requests",
-          "columnsFrom": [
-            "merge_request_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["merge_request_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -831,10 +787,7 @@
       "indexes": {
         "diffs_merge_request_id_newPath_idx": {
           "name": "diffs_merge_request_id_newPath_idx",
-          "columns": [
-            "merge_request_id",
-            "new_path"
-          ],
+          "columns": ["merge_request_id", "new_path"],
           "isUnique": true
         }
       },
@@ -843,12 +796,8 @@
           "name": "extract_merge_request_diffs_merge_request_id_extract_merge_requests_id_fk",
           "tableFrom": "extract_merge_request_diffs",
           "tableTo": "extract_merge_requests",
-          "columnsFrom": [
-            "merge_request_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["merge_request_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -949,10 +898,7 @@
       "indexes": {
         "merge_request_notes_external_id_idx": {
           "name": "merge_request_notes_external_id_idx",
-          "columns": [
-            "merge_request_id",
-            "external_id"
-          ],
+          "columns": ["merge_request_id", "external_id"],
           "isUnique": true
         }
       },
@@ -961,12 +907,8 @@
           "name": "extract_merge_request_notes_merge_request_id_extract_merge_requests_id_fk",
           "tableFrom": "extract_merge_request_notes",
           "tableTo": "extract_merge_requests",
-          "columnsFrom": [
-            "merge_request_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["merge_request_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1124,10 +1066,7 @@
       "indexes": {
         "merge_requests_external_id_idx": {
           "name": "merge_requests_external_id_idx",
-          "columns": [
-            "external_id",
-            "repository_id"
-          ],
+          "columns": ["external_id", "repository_id"],
           "isUnique": true
         }
       },
@@ -1136,12 +1075,8 @@
           "name": "extract_merge_requests_repository_id_extract_repositories_id_fk",
           "tableFrom": "extract_merge_requests",
           "tableTo": "extract_repositories",
-          "columnsFrom": [
-            "repository_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["repository_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1149,12 +1084,8 @@
           "name": "extract_merge_requests_repository_sha_id_extract_repository_shas_id_fk",
           "tableFrom": "extract_merge_requests",
           "tableTo": "extract_repository_shas",
-          "columnsFrom": [
-            "repository_sha_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["repository_sha_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1221,10 +1152,7 @@
       "indexes": {
         "namespaces_external_id_idx": {
           "name": "namespaces_external_id_idx",
-          "columns": [
-            "external_id",
-            "forge_type"
-          ],
+          "columns": ["external_id", "forge_type"],
           "isUnique": true
         }
       },
@@ -1297,10 +1225,7 @@
       "indexes": {
         "repositories_external_id_idx": {
           "name": "repositories_external_id_idx",
-          "columns": [
-            "external_id",
-            "forge_type"
-          ],
+          "columns": ["external_id", "forge_type"],
           "isUnique": true
         }
       },
@@ -1309,12 +1234,8 @@
           "name": "extract_repositories_namespace_id_extract_namespaces_id_fk",
           "tableFrom": "extract_repositories",
           "tableTo": "extract_namespaces",
-          "columnsFrom": [
-            "namespace_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["namespace_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1362,12 +1283,8 @@
           "name": "extract_repositories_to_members_repository_id_extract_repositories_id_fk",
           "tableFrom": "extract_repositories_to_members",
           "tableTo": "extract_repositories",
-          "columnsFrom": [
-            "repository_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["repository_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1375,22 +1292,15 @@
           "name": "extract_repositories_to_members_member_id_extract_members_id_fk",
           "tableFrom": "extract_repositories_to_members",
           "tableTo": "extract_members",
-          "columnsFrom": [
-            "member_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["member_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {
         "extract_repositories_to_members_repository_id_member_id_pk": {
-          "columns": [
-            "member_id",
-            "repository_id"
-          ],
+          "columns": ["member_id", "repository_id"],
           "name": "extract_repositories_to_members_repository_id_member_id_pk"
         }
       },
@@ -1436,12 +1346,8 @@
           "name": "extract_repository_sha_trees_sha_id_extract_repository_shas_id_fk",
           "tableFrom": "extract_repository_sha_trees",
           "tableTo": "extract_repository_shas",
-          "columnsFrom": [
-            "sha_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["sha_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1449,22 +1355,15 @@
           "name": "extract_repository_sha_trees_parent_id_extract_repository_shas_id_fk",
           "tableFrom": "extract_repository_sha_trees",
           "tableTo": "extract_repository_shas",
-          "columnsFrom": [
-            "parent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["parent_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {
         "extract_repository_sha_trees_sha_id_parent_id_pk": {
-          "columns": [
-            "parent_id",
-            "sha_id"
-          ],
+          "columns": ["parent_id", "sha_id"],
           "name": "extract_repository_sha_trees_sha_id_parent_id_pk"
         }
       },
@@ -1514,10 +1413,7 @@
       "indexes": {
         "repository_shas_repository_id_sha_idx": {
           "name": "repository_shas_repository_id_sha_idx",
-          "columns": [
-            "repository_id",
-            "sha"
-          ],
+          "columns": ["repository_id", "sha"],
           "isUnique": true
         }
       },
@@ -1526,12 +1422,8 @@
           "name": "extract_repository_shas_repository_id_extract_repositories_id_fk",
           "tableFrom": "extract_repository_shas",
           "tableTo": "extract_repositories",
-          "columnsFrom": [
-            "repository_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["repository_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1632,11 +1524,7 @@
       "indexes": {
         "timeline_events_external_id_merge_request_id_type_idx": {
           "name": "timeline_events_external_id_merge_request_id_type_idx",
-          "columns": [
-            "external_id",
-            "merge_request_id",
-            "type"
-          ],
+          "columns": ["external_id", "merge_request_id", "type"],
           "isUnique": true
         }
       },
@@ -1645,12 +1533,8 @@
           "name": "extract_timeline_events_merge_request_id_extract_merge_requests_id_fk",
           "tableFrom": "extract_timeline_events",
           "tableTo": "extract_merge_requests",
-          "columnsFrom": [
-            "merge_request_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["merge_request_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1855,10 +1739,7 @@
       "indexes": {
         "team_members_unique_idx": {
           "name": "team_members_unique_idx",
-          "columns": [
-            "team",
-            "member"
-          ],
+          "columns": ["team", "member"],
           "isUnique": true
         }
       },
@@ -1867,12 +1748,8 @@
           "name": "tenant_team_members_team_tenant_teams_id_fk",
           "tableFrom": "tenant_team_members",
           "tableTo": "tenant_teams",
-          "columnsFrom": [
-            "team"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["team"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1956,9 +1833,7 @@
       "indexes": {
         "branches_name_idx": {
           "name": "branches_name_idx",
-          "columns": [
-            "name"
-          ],
+          "columns": ["name"],
           "isUnique": true
         }
       },
@@ -2024,19 +1899,12 @@
       "indexes": {
         "dates_day_week_month_year_idx": {
           "name": "dates_day_week_month_year_idx",
-          "columns": [
-            "day",
-            "week",
-            "month",
-            "year"
-          ],
+          "columns": ["day", "week", "month", "year"],
           "isUnique": true
         },
         "dates_week_idx": {
           "name": "dates_week_idx",
-          "columns": [
-            "week"
-          ],
+          "columns": ["week"],
           "isUnique": false
         }
       },
@@ -2109,11 +1977,7 @@
       "indexes": {
         "t_deployments_external_id_type_idx": {
           "name": "t_deployments_external_id_type_idx",
-          "columns": [
-            "external_id",
-            "repository_id",
-            "deployment_type"
-          ],
+          "columns": ["external_id", "repository_id", "deployment_type"],
           "isUnique": true
         }
       },
@@ -2122,12 +1986,8 @@
           "name": "transform_deployments_repository_id_transform_repositories_id_fk",
           "tableFrom": "transform_deployments",
           "tableTo": "transform_repositories",
-          "columnsFrom": [
-            "repository_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["repository_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -2135,12 +1995,8 @@
           "name": "transform_deployments_deployed_at_transform_dates_id_fk",
           "tableFrom": "transform_deployments",
           "tableTo": "transform_dates",
-          "columnsFrom": [
-            "deployed_at"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["deployed_at"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -2222,10 +2078,7 @@
       "indexes": {
         "forge_users_external_id_forge_type_idx": {
           "name": "forge_users_external_id_forge_type_idx",
-          "columns": [
-            "external_id",
-            "forge_type"
-          ],
+          "columns": ["external_id", "forge_type"],
           "isUnique": true
         }
       },
@@ -2322,12 +2175,8 @@
           "name": "transform_merge_request_fact_dates_junk_deployed_at_transform_dates_id_fk",
           "tableFrom": "transform_merge_request_fact_dates_junk",
           "tableTo": "transform_dates",
-          "columnsFrom": [
-            "deployed_at"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["deployed_at"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -2335,12 +2184,8 @@
           "name": "transform_merge_request_fact_dates_junk_merged_at_transform_dates_id_fk",
           "tableFrom": "transform_merge_request_fact_dates_junk",
           "tableTo": "transform_dates",
-          "columnsFrom": [
-            "merged_at"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["merged_at"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -2348,12 +2193,8 @@
           "name": "transform_merge_request_fact_dates_junk_opened_at_transform_dates_id_fk",
           "tableFrom": "transform_merge_request_fact_dates_junk",
           "tableTo": "transform_dates",
-          "columnsFrom": [
-            "opened_at"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["opened_at"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -2361,12 +2202,8 @@
           "name": "transform_merge_request_fact_dates_junk_closed_at_transform_dates_id_fk",
           "tableFrom": "transform_merge_request_fact_dates_junk",
           "tableTo": "transform_dates",
-          "columnsFrom": [
-            "closed_at"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["closed_at"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -2374,12 +2211,8 @@
           "name": "transform_merge_request_fact_dates_junk_last_updated_at_transform_dates_id_fk",
           "tableFrom": "transform_merge_request_fact_dates_junk",
           "tableTo": "transform_dates",
-          "columnsFrom": [
-            "last_updated_at"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["last_updated_at"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -2387,12 +2220,8 @@
           "name": "transform_merge_request_fact_dates_junk_started_coding_at_transform_dates_id_fk",
           "tableFrom": "transform_merge_request_fact_dates_junk",
           "tableTo": "transform_dates",
-          "columnsFrom": [
-            "started_coding_at"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["started_coding_at"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -2400,12 +2229,8 @@
           "name": "transform_merge_request_fact_dates_junk_started_pickup_at_transform_dates_id_fk",
           "tableFrom": "transform_merge_request_fact_dates_junk",
           "tableTo": "transform_dates",
-          "columnsFrom": [
-            "started_pickup_at"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["started_pickup_at"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -2413,12 +2238,8 @@
           "name": "transform_merge_request_fact_dates_junk_started_review_at_transform_dates_id_fk",
           "tableFrom": "transform_merge_request_fact_dates_junk",
           "tableTo": "transform_dates",
-          "columnsFrom": [
-            "started_review_at"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["started_review_at"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -2527,23 +2348,17 @@
       "indexes": {
         "merge_request_events_occured_on_idx": {
           "name": "merge_request_events_occured_on_idx",
-          "columns": [
-            "occured_on"
-          ],
+          "columns": ["occured_on"],
           "isUnique": false
         },
         "merge_request_events_merge_request_idx": {
           "name": "merge_request_events_merge_request_idx",
-          "columns": [
-            "merge_request"
-          ],
+          "columns": ["merge_request"],
           "isUnique": false
         },
         "merge_request_events_commited_at_idx": {
           "name": "merge_request_events_commited_at_idx",
-          "columns": [
-            "commited_at"
-          ],
+          "columns": ["commited_at"],
           "isUnique": false
         }
       },
@@ -2552,12 +2367,8 @@
           "name": "transform_merge_request_events_actor_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_events",
           "tableTo": "transform_forge_users",
-          "columnsFrom": [
-            "actor"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["actor"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -2565,12 +2376,8 @@
           "name": "transform_merge_request_events_subject_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_events",
           "tableTo": "transform_forge_users",
-          "columnsFrom": [
-            "subject"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["subject"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -2578,12 +2385,8 @@
           "name": "transform_merge_request_events_occured_on_transform_dates_id_fk",
           "tableFrom": "transform_merge_request_events",
           "tableTo": "transform_dates",
-          "columnsFrom": [
-            "occured_on"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["occured_on"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -2591,12 +2394,8 @@
           "name": "transform_merge_request_events_commited_at_transform_dates_id_fk",
           "tableFrom": "transform_merge_request_events",
           "tableTo": "transform_dates",
-          "columnsFrom": [
-            "commited_at"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["commited_at"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -2604,12 +2403,8 @@
           "name": "transform_merge_request_events_repository_transform_repositories_id_fk",
           "tableFrom": "transform_merge_request_events",
           "tableTo": "transform_repositories",
-          "columnsFrom": [
-            "repository"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["repository"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -2617,12 +2412,8 @@
           "name": "transform_merge_request_events_merge_request_transform_merge_requests_id_fk",
           "tableFrom": "transform_merge_request_events",
           "tableTo": "transform_merge_requests",
-          "columnsFrom": [
-            "merge_request"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["merge_request"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -2796,30 +2587,22 @@
       "indexes": {
         "merge_request_metrics_users_junk_idx": {
           "name": "merge_request_metrics_users_junk_idx",
-          "columns": [
-            "users_junk"
-          ],
+          "columns": ["users_junk"],
           "isUnique": false
         },
         "merge_request_metrics_dates_junk_idx": {
           "name": "merge_request_metrics_dates_junk_idx",
-          "columns": [
-            "dates_junk"
-          ],
+          "columns": ["dates_junk"],
           "isUnique": false
         },
         "merge_request_metrics_repository_idx": {
           "name": "merge_request_metrics_repository_idx",
-          "columns": [
-            "repository"
-          ],
+          "columns": ["repository"],
           "isUnique": false
         },
         "merge_request_metrics_merge_request_idx": {
           "name": "merge_request_metrics_merge_request_idx",
-          "columns": [
-            "merge_request"
-          ],
+          "columns": ["merge_request"],
           "isUnique": false
         }
       },
@@ -2828,12 +2611,8 @@
           "name": "transform_merge_request_metrics_users_junk_transform_merge_request_fact_users_junk_id_fk",
           "tableFrom": "transform_merge_request_metrics",
           "tableTo": "transform_merge_request_fact_users_junk",
-          "columnsFrom": [
-            "users_junk"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["users_junk"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -2841,12 +2620,8 @@
           "name": "transform_merge_request_metrics_repository_transform_repositories_id_fk",
           "tableFrom": "transform_merge_request_metrics",
           "tableTo": "transform_repositories",
-          "columnsFrom": [
-            "repository"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["repository"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -2854,12 +2629,8 @@
           "name": "transform_merge_request_metrics_merge_request_transform_merge_requests_id_fk",
           "tableFrom": "transform_merge_request_metrics",
           "tableTo": "transform_merge_requests",
-          "columnsFrom": [
-            "merge_request"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["merge_request"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -2867,12 +2638,8 @@
           "name": "transform_merge_request_metrics_dates_junk_transform_merge_request_fact_dates_junk_id_fk",
           "tableFrom": "transform_merge_request_metrics",
           "tableTo": "transform_merge_request_fact_dates_junk",
-          "columnsFrom": [
-            "dates_junk"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["dates_junk"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -3137,12 +2904,8 @@
           "name": "transform_merge_request_fact_users_junk_author_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_fact_users_junk",
           "tableTo": "transform_forge_users",
-          "columnsFrom": [
-            "author"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["author"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -3150,12 +2913,8 @@
           "name": "transform_merge_request_fact_users_junk_merged_by_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_fact_users_junk",
           "tableTo": "transform_forge_users",
-          "columnsFrom": [
-            "merged_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["merged_by"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -3163,12 +2922,8 @@
           "name": "transform_merge_request_fact_users_junk_approver1_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_fact_users_junk",
           "tableTo": "transform_forge_users",
-          "columnsFrom": [
-            "approver1"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["approver1"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -3176,12 +2931,8 @@
           "name": "transform_merge_request_fact_users_junk_approver2_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_fact_users_junk",
           "tableTo": "transform_forge_users",
-          "columnsFrom": [
-            "approver2"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["approver2"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -3189,12 +2940,8 @@
           "name": "transform_merge_request_fact_users_junk_approver3_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_fact_users_junk",
           "tableTo": "transform_forge_users",
-          "columnsFrom": [
-            "approver3"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["approver3"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -3202,12 +2949,8 @@
           "name": "transform_merge_request_fact_users_junk_approver4_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_fact_users_junk",
           "tableTo": "transform_forge_users",
-          "columnsFrom": [
-            "approver4"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["approver4"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -3215,12 +2958,8 @@
           "name": "transform_merge_request_fact_users_junk_approver5_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_fact_users_junk",
           "tableTo": "transform_forge_users",
-          "columnsFrom": [
-            "approver5"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["approver5"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -3228,12 +2967,8 @@
           "name": "transform_merge_request_fact_users_junk_approver6_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_fact_users_junk",
           "tableTo": "transform_forge_users",
-          "columnsFrom": [
-            "approver6"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["approver6"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -3241,12 +2976,8 @@
           "name": "transform_merge_request_fact_users_junk_approver7_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_fact_users_junk",
           "tableTo": "transform_forge_users",
-          "columnsFrom": [
-            "approver7"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["approver7"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -3254,12 +2985,8 @@
           "name": "transform_merge_request_fact_users_junk_approver8_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_fact_users_junk",
           "tableTo": "transform_forge_users",
-          "columnsFrom": [
-            "approver8"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["approver8"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -3267,12 +2994,8 @@
           "name": "transform_merge_request_fact_users_junk_approver9_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_fact_users_junk",
           "tableTo": "transform_forge_users",
-          "columnsFrom": [
-            "approver9"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["approver9"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -3280,12 +3003,8 @@
           "name": "transform_merge_request_fact_users_junk_approver10_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_fact_users_junk",
           "tableTo": "transform_forge_users",
-          "columnsFrom": [
-            "approver10"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["approver10"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -3293,12 +3012,8 @@
           "name": "transform_merge_request_fact_users_junk_committer1_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_fact_users_junk",
           "tableTo": "transform_forge_users",
-          "columnsFrom": [
-            "committer1"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["committer1"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -3306,12 +3021,8 @@
           "name": "transform_merge_request_fact_users_junk_committer2_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_fact_users_junk",
           "tableTo": "transform_forge_users",
-          "columnsFrom": [
-            "committer2"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["committer2"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -3319,12 +3030,8 @@
           "name": "transform_merge_request_fact_users_junk_committer3_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_fact_users_junk",
           "tableTo": "transform_forge_users",
-          "columnsFrom": [
-            "committer3"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["committer3"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -3332,12 +3039,8 @@
           "name": "transform_merge_request_fact_users_junk_committer4_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_fact_users_junk",
           "tableTo": "transform_forge_users",
-          "columnsFrom": [
-            "committer4"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["committer4"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -3345,12 +3048,8 @@
           "name": "transform_merge_request_fact_users_junk_committer5_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_fact_users_junk",
           "tableTo": "transform_forge_users",
-          "columnsFrom": [
-            "committer5"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["committer5"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -3358,12 +3057,8 @@
           "name": "transform_merge_request_fact_users_junk_committer6_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_fact_users_junk",
           "tableTo": "transform_forge_users",
-          "columnsFrom": [
-            "committer6"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["committer6"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -3371,12 +3066,8 @@
           "name": "transform_merge_request_fact_users_junk_committer7_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_fact_users_junk",
           "tableTo": "transform_forge_users",
-          "columnsFrom": [
-            "committer7"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["committer7"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -3384,12 +3075,8 @@
           "name": "transform_merge_request_fact_users_junk_committer8_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_fact_users_junk",
           "tableTo": "transform_forge_users",
-          "columnsFrom": [
-            "committer8"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["committer8"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -3397,12 +3084,8 @@
           "name": "transform_merge_request_fact_users_junk_committer9_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_fact_users_junk",
           "tableTo": "transform_forge_users",
-          "columnsFrom": [
-            "committer9"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["committer9"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -3410,12 +3093,8 @@
           "name": "transform_merge_request_fact_users_junk_committer10_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_fact_users_junk",
           "tableTo": "transform_forge_users",
-          "columnsFrom": [
-            "committer10"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["committer10"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -3423,12 +3102,8 @@
           "name": "transform_merge_request_fact_users_junk_reviewer1_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_fact_users_junk",
           "tableTo": "transform_forge_users",
-          "columnsFrom": [
-            "reviewer1"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["reviewer1"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -3436,12 +3111,8 @@
           "name": "transform_merge_request_fact_users_junk_reviewer2_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_fact_users_junk",
           "tableTo": "transform_forge_users",
-          "columnsFrom": [
-            "reviewer2"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["reviewer2"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -3449,12 +3120,8 @@
           "name": "transform_merge_request_fact_users_junk_reviewer3_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_fact_users_junk",
           "tableTo": "transform_forge_users",
-          "columnsFrom": [
-            "reviewer3"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["reviewer3"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -3462,12 +3129,8 @@
           "name": "transform_merge_request_fact_users_junk_reviewer4_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_fact_users_junk",
           "tableTo": "transform_forge_users",
-          "columnsFrom": [
-            "reviewer4"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["reviewer4"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -3475,12 +3138,8 @@
           "name": "transform_merge_request_fact_users_junk_reviewer5_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_fact_users_junk",
           "tableTo": "transform_forge_users",
-          "columnsFrom": [
-            "reviewer5"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["reviewer5"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -3488,12 +3147,8 @@
           "name": "transform_merge_request_fact_users_junk_reviewer6_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_fact_users_junk",
           "tableTo": "transform_forge_users",
-          "columnsFrom": [
-            "reviewer6"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["reviewer6"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -3501,12 +3156,8 @@
           "name": "transform_merge_request_fact_users_junk_reviewer7_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_fact_users_junk",
           "tableTo": "transform_forge_users",
-          "columnsFrom": [
-            "reviewer7"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["reviewer7"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -3514,12 +3165,8 @@
           "name": "transform_merge_request_fact_users_junk_reviewer8_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_fact_users_junk",
           "tableTo": "transform_forge_users",
-          "columnsFrom": [
-            "reviewer8"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["reviewer8"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -3527,12 +3174,8 @@
           "name": "transform_merge_request_fact_users_junk_reviewer9_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_fact_users_junk",
           "tableTo": "transform_forge_users",
-          "columnsFrom": [
-            "reviewer9"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["reviewer9"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -3540,12 +3183,8 @@
           "name": "transform_merge_request_fact_users_junk_reviewer10_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_fact_users_junk",
           "tableTo": "transform_forge_users",
-          "columnsFrom": [
-            "reviewer10"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["reviewer10"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -3650,10 +3289,7 @@
       "indexes": {
         "merge_requests_external_id_forge_type_idx": {
           "name": "merge_requests_external_id_forge_type_idx",
-          "columns": [
-            "external_id",
-            "forge_type"
-          ],
+          "columns": ["external_id", "forge_type"],
           "isUnique": true
         }
       },
@@ -3662,12 +3298,8 @@
           "name": "transform_merge_requests_target_branch_transform_branches_id_fk",
           "tableFrom": "transform_merge_requests",
           "tableTo": "transform_branches",
-          "columnsFrom": [
-            "target_branch"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["target_branch"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -3675,12 +3307,8 @@
           "name": "transform_merge_requests_source_branch_transform_branches_id_fk",
           "tableFrom": "transform_merge_requests",
           "tableTo": "transform_branches",
-          "columnsFrom": [
-            "source_branch"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["source_branch"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -3834,10 +3462,7 @@
       "indexes": {
         "repositories_external_id_forge_type_idx": {
           "name": "repositories_external_id_forge_type_idx",
-          "columns": [
-            "external_id",
-            "forge_type"
-          ],
+          "columns": ["external_id", "forge_type"],
           "isUnique": true
         }
       },
@@ -3846,12 +3471,8 @@
           "name": "transform_repositories_default_branch_transform_branches_id_fk",
           "tableFrom": "transform_repositories",
           "tableTo": "transform_branches",
-          "columnsFrom": [
-            "default_branch"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["default_branch"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }

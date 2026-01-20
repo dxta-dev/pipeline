@@ -1,7 +1,12 @@
 import type { InferInsertModel, InferSelectModel } from "drizzle-orm";
 import { and, eq, sql } from "drizzle-orm";
 import type { LibSQLDatabase } from "drizzle-orm/libsql";
-import { integer, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
+import {
+  integer,
+  sqliteTable,
+  text,
+  uniqueIndex,
+} from "drizzle-orm/sqlite-core";
 
 export const tenantSourceControl = sqliteTable(
   "tenant_source_control",
@@ -18,15 +23,16 @@ export const tenantSourceControl = sqliteTable(
     ),
   },
   (table) => ({
-    tenantProviderIndex: uniqueIndex("tenant_source_control_tenant_provider_idx").on(
-      table.tenantId,
-      table.provider,
-    ),
+    tenantProviderIndex: uniqueIndex(
+      "tenant_source_control_tenant_provider_idx",
+    ).on(table.tenantId, table.provider),
   }),
 );
 
 export type TenantSourceControl = InferSelectModel<typeof tenantSourceControl>;
-export type NewTenantSourceControl = InferInsertModel<typeof tenantSourceControl>;
+export type NewTenantSourceControl = InferInsertModel<
+  typeof tenantSourceControl
+>;
 
 export const getTenantSourceControl = async (
   db: LibSQLDatabase,

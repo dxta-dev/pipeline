@@ -14,14 +14,16 @@ export const metadataSchema = z.object({
 
 const transformRepositoryEventSchema = z.object({
   repositoryExtractId: RepositorySchema.shape.id,
-})
+});
 
-export type transformRepositoryEventMessage = z.infer<typeof transformRepositoryEventSchema>;
+export type transformRepositoryEventMessage = z.infer<
+  typeof transformRepositoryEventSchema
+>;
 
 export const transformRepositoryEvent = createEvent({
   bus: "TransformBus",
-  source: 'transform',
-  type: 'repository',
+  source: "transform",
+  type: "repository",
   propertiesShape: transformRepositoryEventSchema.shape,
   metadataShape: metadataSchema.shape,
-})
+});

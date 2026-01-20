@@ -13,7 +13,9 @@ import type {
 import { initDatabase } from "../context";
 
 export const transformActivities: TransformActivities = {
-  async getMergeRequestDeploymentPairs(input): Promise<MergeRequestDeploymentPair[]> {
+  async getMergeRequestDeploymentPairs(
+    input,
+  ): Promise<MergeRequestDeploymentPair[]> {
     const db = initDatabase(input.tenantDbUrl);
     return selectMergeRequestsDeployments(
       db,

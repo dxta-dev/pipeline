@@ -34,7 +34,10 @@ import {
   repositoryCommits,
   repositoryShaTrees,
 } from "@dxta/extract-schema";
-import { deploymentEnvironments, cicdDeployWorkflows } from "@dxta/tenant-schema";
+import {
+  deploymentEnvironments,
+  cicdDeployWorkflows,
+} from "@dxta/tenant-schema";
 import { getTenants } from "@dxta/super-schema";
 import type {
   ExtractActivities,
@@ -192,7 +195,9 @@ export const extractActivities: ExtractActivities = {
     };
   },
 
-  async extractMergeRequestDiffs(input: ExtractMergeRequestInput): Promise<void> {
+  async extractMergeRequestDiffs(
+    input: ExtractMergeRequestInput,
+  ): Promise<void> {
     const db = initDatabase(input.tenantDbUrl);
     const sourceControl = await initSourceControl({
       tenantId: input.tenantId,
@@ -209,12 +214,19 @@ export const extractActivities: ExtractActivities = {
       {
         db,
         integrations: { sourceControl },
-        entities: { mergeRequestDiffs, mergeRequests, namespaces, repositories },
+        entities: {
+          mergeRequestDiffs,
+          mergeRequests,
+          namespaces,
+          repositories,
+        },
       },
     );
   },
 
-  async extractMergeRequestCommits(input: ExtractMergeRequestInput): Promise<void> {
+  async extractMergeRequestCommits(
+    input: ExtractMergeRequestInput,
+  ): Promise<void> {
     const db = initDatabase(input.tenantDbUrl);
     const sourceControl = await initSourceControl({
       tenantId: input.tenantId,
@@ -242,7 +254,9 @@ export const extractActivities: ExtractActivities = {
     );
   },
 
-  async extractMergeRequestNotes(input: ExtractMergeRequestInput): Promise<void> {
+  async extractMergeRequestNotes(
+    input: ExtractMergeRequestInput,
+  ): Promise<void> {
     const db = initDatabase(input.tenantDbUrl);
     const sourceControl = await initSourceControl({
       tenantId: input.tenantId,
@@ -302,7 +316,9 @@ export const extractActivities: ExtractActivities = {
     );
   },
 
-  async extractMembers(input: ExtractMembersInput): Promise<ExtractMembersResult> {
+  async extractMembers(
+    input: ExtractMembersInput,
+  ): Promise<ExtractMembersResult> {
     const db = initDatabase(input.tenantDbUrl);
     const sourceControl = await initSourceControl({
       tenantId: input.tenantId,
@@ -441,7 +457,10 @@ export const extractActivities: ExtractActivities = {
       .from(deploymentEnvironments)
       .where(
         and(
-          eq(deploymentEnvironments.repositoryExternalId, repository.externalId),
+          eq(
+            deploymentEnvironments.repositoryExternalId,
+            repository.externalId,
+          ),
           eq(deploymentEnvironments.forgeType, repository.forgeType),
         ),
       )

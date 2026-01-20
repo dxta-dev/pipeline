@@ -1,5 +1,4 @@
-export  function getUTCOffset(timeZone: string, date: Date) {
-
+export function getUTCOffset(timeZone: string, date: Date) {
   const utcDate = new Date(date.toLocaleString("en-US", { timeZone: "UTC" }));
 
   const timeZoneDate = new Date(date.toLocaleString("en-US", { timeZone }));

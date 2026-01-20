@@ -3,7 +3,7 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@stack/*": ["./src/*"],
+      "@stack/*": ["./src/*"]
     }
   },
   "exclude": [],
@@ -14,5 +14,5 @@
     "src/**/*.ts",
     "src/**/*.cjs",
     "src/**/*.mjs"
- ]
+  ]
 }

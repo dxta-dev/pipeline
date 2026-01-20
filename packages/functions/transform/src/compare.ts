@@ -10,9 +10,12 @@ function levenshteinDistance(a: string, b: string): number {
     v1[0] = i + 1;
 
     for (let j = 0; j < b.length; j += 1) {
-      const deletionCost = v0[j + 1] as unknown as number + 1;
-      const insertionCost = v1[j] as unknown as number + 1;
-      const substitutionCost = a[i] === b[j] ? v0[j] as unknown as number : v0[j] as unknown as number + 1;
+      const deletionCost = (v0[j + 1] as unknown as number) + 1;
+      const insertionCost = (v1[j] as unknown as number) + 1;
+      const substitutionCost =
+        a[i] === b[j]
+          ? (v0[j] as unknown as number)
+          : (v0[j] as unknown as number) + 1;
 
       v1[j + 1] = Math.min(deletionCost, insertionCost, substitutionCost);
     }
@@ -26,7 +29,11 @@ function levenshteinDistance(a: string, b: string): number {
   return v0[b.length] as unknown as number;
 }
 
-export function compare(firstItem: string, secondItem: string, opts = {}): boolean {
+export function compare(
+  firstItem: string,
+  secondItem: string,
+  opts = {},
+): boolean {
   if (!firstItem && !secondItem) {
     return true;
   }
@@ -40,11 +47,11 @@ export function compare(firstItem: string, secondItem: string, opts = {}): boole
   }
 
   const defaultOptions = {
-    threshold: 2
+    threshold: 2,
   };
   const options = {
     ...defaultOptions,
-    ...opts
+    ...opts,
   };
 
   return levenshteinDistance(firstItem, secondItem) <= options.threshold;
