@@ -34,6 +34,7 @@ export async function extractRepositoryWorkflow(
   const { crawlId, mergeRequestIds } = result;
 
   const baseInput = {
+    tenantId: input.tenantId,
     tenantDbUrl: input.tenantDbUrl,
     repositoryId: input.repositoryId,
     namespaceId: input.namespaceId,
@@ -55,10 +56,11 @@ export async function extractRepositoryWorkflow(
 
 async function extractMergeRequestsAndChildren(
   baseInput: {
+    tenantId: number;
     tenantDbUrl: string;
     repositoryId: number;
     namespaceId: number;
-    sourceControl: "github" | "gitlab";
+    sourceControl: "github";
     userId: string;
     crawlId: number;
     timePeriod: { from: Date; to: Date };
@@ -122,10 +124,11 @@ async function extractMergeRequestsAndChildren(
 
 async function extractMembersAndInfo(
   baseInput: {
+    tenantId: number;
     tenantDbUrl: string;
     repositoryId: number;
     namespaceId: number;
-    sourceControl: "github" | "gitlab";
+    sourceControl: "github";
     userId: string;
     crawlId: number;
     timePeriod: { from: Date; to: Date };
@@ -142,6 +145,7 @@ async function extractMembersAndInfo(
   await Promise.all(
     membersResult.memberIds.map((memberId) =>
       extractMemberInfo({
+        tenantId: baseInput.tenantId,
         tenantDbUrl: input.tenantDbUrl,
         memberId,
         sourceControl: input.sourceControl,
@@ -151,6 +155,7 @@ async function extractMembersAndInfo(
   );
 
   await extractNamespaceMembers({
+    tenantId: baseInput.tenantId,
     tenantDbUrl: input.tenantDbUrl,
     namespaceId: input.namespaceId,
     namespaceName: input.namespaceName,
@@ -163,10 +168,11 @@ async function extractMembersAndInfo(
 
 async function extractDeploymentsAndStatus(
   baseInput: {
+    tenantId: number;
     tenantDbUrl: string;
     repositoryId: number;
     namespaceId: number;
-    sourceControl: "github" | "gitlab";
+    sourceControl: "github";
     userId: string;
     crawlId: number;
     timePeriod: { from: Date; to: Date };
@@ -183,6 +189,7 @@ async function extractDeploymentsAndStatus(
   await Promise.all(
     deploymentsResult.deploymentIds.map((deploymentId) =>
       extractDeploymentStatus({
+        tenantId: baseInput.tenantId,
         tenantDbUrl: input.tenantDbUrl,
         repositoryId: input.repositoryId,
         namespaceId: input.namespaceId,
@@ -196,10 +203,11 @@ async function extractDeploymentsAndStatus(
 
 async function extractGitHubSpecific(
   baseInput: {
+    tenantId: number;
     tenantDbUrl: string;
     repositoryId: number;
     namespaceId: number;
-    sourceControl: "github" | "gitlab";
+    sourceControl: "github";
     userId: string;
     crawlId: number;
     timePeriod: { from: Date; to: Date };
@@ -214,6 +222,7 @@ async function extractGitHubSpecific(
   });
 
   await extractWorkflowDeployments({
+    tenantId: baseInput.tenantId,
     tenantDbUrl: input.tenantDbUrl,
     repositoryId: input.repositoryId,
     externalRepositoryId: input.externalRepositoryId,

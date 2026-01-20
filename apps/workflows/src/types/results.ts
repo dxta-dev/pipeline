@@ -11,7 +11,7 @@ export interface RepositoryInfo {
   name: string;
   namespaceId: number;
   namespaceName: string;
-  forgeType: "github" | "gitlab";
+  forgeType: "github";
 }
 
 export interface ExtractRepositoryResult {

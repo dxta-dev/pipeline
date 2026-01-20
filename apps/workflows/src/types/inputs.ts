@@ -1,4 +1,4 @@
-export type SourceControl = "github" | "gitlab";
+export type SourceControl = "github";
 
 export interface TimePeriod {
   from: Date;
@@ -12,6 +12,7 @@ export interface ExtractTenantsInput {
 }
 
 export interface ExtractRepositoryInput {
+  tenantId: number;
   tenantDbUrl: string;
   repositoryId: number;
   externalRepositoryId: number;
@@ -25,6 +26,7 @@ export interface ExtractRepositoryInput {
 }
 
 export interface ExtractMergeRequestInput {
+  tenantId: number;
   tenantDbUrl: string;
   repositoryId: number;
   namespaceId: number;
@@ -36,6 +38,7 @@ export interface ExtractMergeRequestInput {
 }
 
 export interface ExtractMembersInput {
+  tenantId: number;
   tenantDbUrl: string;
   repositoryId: number;
   externalRepositoryId: number;
@@ -49,6 +52,7 @@ export interface ExtractMembersInput {
 }
 
 export interface ExtractDeploymentsInput {
+  tenantId: number;
   tenantDbUrl: string;
   repositoryId: number;
   externalRepositoryId: number;

@@ -92,7 +92,7 @@ export const extractActivities: ExtractActivities = {
       .innerJoin(namespaces, eq(repositories.namespaceId, namespaces.id))
       .all();
 
-    let filtered = repos;
+    let filtered = repos.filter((r) => r.forgeType === "github");
     if (input.sourceControl) {
       filtered = filtered.filter((r) => r.forgeType === input.sourceControl);
     }
@@ -103,7 +103,7 @@ export const extractActivities: ExtractActivities = {
       name: r.name,
       namespaceId: r.namespaceId,
       namespaceName: r.namespaceName,
-      forgeType: r.forgeType as "github" | "gitlab",
+      forgeType: "github",
     }));
   },
 
@@ -112,7 +112,7 @@ export const extractActivities: ExtractActivities = {
   ): Promise<ExtractRepositoryResult> {
     const db = initDatabase(input.tenantDbUrl);
     const sourceControl = await initSourceControl({
-      userId: input.userId,
+      tenantId: input.tenantId,
       sourceControl: input.sourceControl,
     });
 
@@ -148,6 +148,7 @@ export const extractActivities: ExtractActivities = {
   },
 
   async extractMergeRequests(input: {
+    tenantId: number;
     tenantDbUrl: string;
     repositoryId: number;
     externalRepositoryId: number;
@@ -163,7 +164,7 @@ export const extractActivities: ExtractActivities = {
   }): Promise<ExtractMergeRequestsResult> {
     const db = initDatabase(input.tenantDbUrl);
     const sourceControl = await initSourceControl({
-      userId: input.userId,
+      tenantId: input.tenantId,
       sourceControl: input.sourceControl,
     });
 
@@ -193,7 +194,7 @@ export const extractActivities: ExtractActivities = {
   async extractMergeRequestDiffs(input: ExtractMergeRequestInput): Promise<void> {
     const db = initDatabase(input.tenantDbUrl);
     const sourceControl = await initSourceControl({
-      userId: input.userId,
+      tenantId: input.tenantId,
       sourceControl: input.sourceControl,
     });
 
@@ -215,7 +216,7 @@ export const extractActivities: ExtractActivities = {
   async extractMergeRequestCommits(input: ExtractMergeRequestInput): Promise<void> {
     const db = initDatabase(input.tenantDbUrl);
     const sourceControl = await initSourceControl({
-      userId: input.userId,
+      tenantId: input.tenantId,
       sourceControl: input.sourceControl,
     });
 
@@ -243,7 +244,7 @@ export const extractActivities: ExtractActivities = {
   async extractMergeRequestNotes(input: ExtractMergeRequestInput): Promise<void> {
     const db = initDatabase(input.tenantDbUrl);
     const sourceControl = await initSourceControl({
-      userId: input.userId,
+      tenantId: input.tenantId,
       sourceControl: input.sourceControl,
     });
 
@@ -271,7 +272,7 @@ export const extractActivities: ExtractActivities = {
   async extractTimelineEvents(input: ExtractMergeRequestInput): Promise<void> {
     const db = initDatabase(input.tenantDbUrl);
     const sourceControl = await initSourceControl({
-      userId: input.userId,
+      tenantId: input.tenantId,
       sourceControl: input.sourceControl,
       options: {
         fetchTimelineEventsPerPage: getEnv().FETCH_TIMELINE_EVENTS_PER_PAGE,
@@ -303,7 +304,7 @@ export const extractActivities: ExtractActivities = {
   async extractMembers(input: ExtractMembersInput): Promise<ExtractMembersResult> {
     const db = initDatabase(input.tenantDbUrl);
     const sourceControl = await initSourceControl({
-      userId: input.userId,
+      tenantId: input.tenantId,
       sourceControl: input.sourceControl,
     });
 
@@ -349,6 +350,7 @@ export const extractActivities: ExtractActivities = {
   },
 
   async extractMemberInfo(input: {
+    tenantId: number;
     tenantDbUrl: string;
     memberId: number;
     sourceControl: SourceControl;
@@ -356,7 +358,7 @@ export const extractActivities: ExtractActivities = {
   }): Promise<void> {
     const db = initDatabase(input.tenantDbUrl);
     const sourceControl = await initSourceControl({
-      userId: input.userId,
+      tenantId: input.tenantId,
       sourceControl: input.sourceControl,
     });
 
@@ -371,6 +373,7 @@ export const extractActivities: ExtractActivities = {
   },
 
   async extractNamespaceMembers(input: {
+    tenantId: number;
     tenantDbUrl: string;
     namespaceId: number;
     namespaceName: string;
@@ -381,7 +384,7 @@ export const extractActivities: ExtractActivities = {
   }): Promise<void> {
     const db = initDatabase(input.tenantDbUrl);
     const sourceControl = await initSourceControl({
-      userId: input.userId,
+      tenantId: input.tenantId,
       sourceControl: input.sourceControl,
     });
 
@@ -413,7 +416,7 @@ export const extractActivities: ExtractActivities = {
   ): Promise<ExtractDeploymentsResult> {
     const db = initDatabase(input.tenantDbUrl);
     const sourceControl = await initSourceControl({
-      userId: input.userId,
+      tenantId: input.tenantId,
       sourceControl: input.sourceControl,
     });
 
@@ -475,6 +478,7 @@ export const extractActivities: ExtractActivities = {
   },
 
   async extractDeploymentStatus(input: {
+    tenantId: number;
     tenantDbUrl: string;
     repositoryId: number;
     namespaceId: number;
@@ -484,7 +488,7 @@ export const extractActivities: ExtractActivities = {
   }): Promise<void> {
     const db = initDatabase(input.tenantDbUrl);
     const sourceControl = await initSourceControl({
-      userId: input.userId,
+      tenantId: input.tenantId,
       sourceControl: input.sourceControl,
     });
 
@@ -517,6 +521,7 @@ export const extractActivities: ExtractActivities = {
   },
 
   async extractDefaultBranchCommits(input: {
+    tenantId: number;
     tenantDbUrl: string;
     repositoryId: number;
     externalRepositoryId: number;
@@ -530,7 +535,7 @@ export const extractActivities: ExtractActivities = {
   }): Promise<void> {
     const db = initDatabase(input.tenantDbUrl);
     const sourceControl = await initSourceControl({
-      userId: input.userId,
+      tenantId: input.tenantId,
       sourceControl: input.sourceControl,
     });
 
@@ -568,6 +573,7 @@ export const extractActivities: ExtractActivities = {
   },
 
   async extractWorkflowDeployments(input: {
+    tenantId: number;
     tenantDbUrl: string;
     repositoryId: number;
     externalRepositoryId: number;
@@ -580,7 +586,7 @@ export const extractActivities: ExtractActivities = {
   }): Promise<void> {
     const db = initDatabase(input.tenantDbUrl);
     const sourceControl = await initSourceControl({
-      userId: input.userId,
+      tenantId: input.tenantId,
       sourceControl: "github",
     });
 
@@ -630,6 +636,7 @@ export const extractActivities: ExtractActivities = {
   },
 
   async extractWorkflowDeploymentStatus(input: {
+    tenantId: number;
     tenantDbUrl: string;
     repositoryId: number;
     namespaceId: number;
@@ -638,7 +645,7 @@ export const extractActivities: ExtractActivities = {
   }): Promise<void> {
     const db = initDatabase(input.tenantDbUrl);
     const sourceControl = await initSourceControl({
-      userId: input.userId,
+      tenantId: input.tenantId,
       sourceControl: "github",
     });
 

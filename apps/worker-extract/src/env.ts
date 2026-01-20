@@ -6,7 +6,8 @@ const envSchema = z.object({
   TENANT_DATABASE_AUTH_TOKEN: z.string(),
   SUPER_DATABASE_URL: z.string(),
   SUPER_DATABASE_AUTH_TOKEN: z.string(),
-  CLERK_SECRET_KEY: z.string(),
+  GITHUB_APP_ID: z.string(),
+  GITHUB_APP_PRIVATE_KEY: z.string(),
   PER_PAGE: z.coerce.number().default(30),
   FETCH_TIMELINE_EVENTS_PER_PAGE: z.coerce.number().default(1000),
 });

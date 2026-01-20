@@ -162,7 +162,8 @@ const longRunningActivityOptions = {
 | `TENANT_DATABASE_AUTH_TOKEN` | Turso auth token for tenant DBs |
 | `SUPER_DATABASE_URL` | Super DB URL |
 | `SUPER_DATABASE_AUTH_TOKEN` | Super DB auth token |
-| `CLERK_SECRET_KEY` | Clerk API key for user tokens |
+| `GITHUB_APP_ID` | GitHub App id |
+| `GITHUB_APP_PRIVATE_KEY` | GitHub App private key |
 | `PER_PAGE` | Pagination size (default: 30) |
 
 ## Scheduling

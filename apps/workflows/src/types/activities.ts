@@ -27,6 +27,7 @@ export interface ExtractActivities {
   extractRepository(input: ExtractRepositoryInput): Promise<ExtractRepositoryResult>;
 
   extractMergeRequests(input: {
+    tenantId: number;
     tenantDbUrl: string;
     repositoryId: number;
     externalRepositoryId: number;
@@ -52,6 +53,7 @@ export interface ExtractActivities {
   extractMembers(input: ExtractMembersInput): Promise<ExtractMembersResult>;
 
   extractMemberInfo(input: {
+    tenantId: number;
     tenantDbUrl: string;
     memberId: number;
     sourceControl: SourceControl;
@@ -59,6 +61,7 @@ export interface ExtractActivities {
   }): Promise<void>;
 
   extractNamespaceMembers(input: {
+    tenantId: number;
     tenantDbUrl: string;
     namespaceId: number;
     namespaceName: string;
@@ -71,6 +74,7 @@ export interface ExtractActivities {
   extractDeployments(input: ExtractDeploymentsInput): Promise<ExtractDeploymentsResult>;
 
   extractDeploymentStatus(input: {
+    tenantId: number;
     tenantDbUrl: string;
     repositoryId: number;
     namespaceId: number;
@@ -80,6 +84,7 @@ export interface ExtractActivities {
   }): Promise<void>;
 
   extractDefaultBranchCommits(input: {
+    tenantId: number;
     tenantDbUrl: string;
     repositoryId: number;
     externalRepositoryId: number;
@@ -93,6 +98,7 @@ export interface ExtractActivities {
   }): Promise<void>;
 
   extractWorkflowDeployments(input: {
+    tenantId: number;
     tenantDbUrl: string;
     repositoryId: number;
     externalRepositoryId: number;
@@ -105,6 +111,7 @@ export interface ExtractActivities {
   }): Promise<void>;
 
   extractWorkflowDeploymentStatus(input: {
+    tenantId: number;
     tenantDbUrl: string;
     repositoryId: number;
     namespaceId: number;

@@ -2,7 +2,7 @@
 
 The extract worker (`apps/worker-extract`) executes extract activities for the
 Temporal-based pipeline. It polls the `extract` task queue and runs activities
-that fetch data from GitHub/GitLab APIs and store it in tenant databases.
+that fetch data from GitHub APIs and store it in tenant databases.
 
 ## Structure
 
@@ -26,7 +26,8 @@ apps/worker-extract/
 | `TENANT_DATABASE_AUTH_TOKEN` | Turso auth token for tenant DBs | required |
 | `SUPER_DATABASE_URL` | Super DB URL | required |
 | `SUPER_DATABASE_AUTH_TOKEN` | Super DB auth token | required |
-| `CLERK_SECRET_KEY` | Clerk API key for user tokens | required |
+| `GITHUB_APP_ID` | GitHub App id | required |
+| `GITHUB_APP_PRIVATE_KEY` | GitHub App private key | required |
 | `PER_PAGE` | Pagination size | `30` |
 | `FETCH_TIMELINE_EVENTS_PER_PAGE` | Timeline events page size | `1000` |
 
@@ -60,8 +61,9 @@ The worker reuses patterns from `apps/stack/src/extract/context.ts`:
 
 - `initDatabase(dbUrl)` - Creates a Drizzle client for a tenant database
 - `initSuperDatabase()` - Creates a Drizzle client for the super database
-- `initSourceControl({ userId, sourceControl })` - Creates GitHub/GitLab client
-- `getClerkUserToken(userId, provider)` - Fetches OAuth token from Clerk on demand
+- `initSourceControl({ tenantId, sourceControl })` - Loads GitHub App installation id
+  from `tenant_source_control` in the super DB and builds a GitHub client with
+  an installation token
 
 ## Running the Worker
 
@@ -78,7 +80,7 @@ pnpm run start --workspace @dxta/worker-extract
 
 - Activities must not import from `@temporalio/workflow` (non-deterministic).
 - All I/O happens in activities, never in workflows.
-- OAuth tokens are fetched on demand from Clerk.
+- GitHub App installation tokens are fetched on demand.
 
 ## Contracts
 
@@ -123,7 +125,8 @@ flowchart TD
   entry --> env
   entry --> acts
   acts --> ctx
-  ctx --> clerk[Clerk API]
+  ctx --> superdb[Super DB]
+  ctx --> github[GitHub App]
   ctx --> turso[Turso DBs]
   acts --> extractFns[packages/functions/extract]
 ```

@@ -1,46 +1,39 @@
-import { Clerk } from "@clerk/clerk-sdk-node";
 import { createClient } from "@libsql/client";
+import { createAppAuth } from "@octokit/auth-app";
 import {
   GitHubSourceControl,
-  GitlabSourceControl,
   githubErrorMod,
 } from "@dxta/source-control";
 import { drizzle } from "drizzle-orm/libsql";
+import { getTenantSourceControl } from "@dxta/super-schema";
 
 import { getEnv } from "./env";
 
-type SupportedClerkOAuthProviders = "oauth_github" | "oauth_gitlab";
-
-let clerkClient: ReturnType<typeof Clerk> | null = null;
-
-function getClerkClient() {
-  if (!clerkClient) {
-    clerkClient = Clerk({ secretKey: getEnv().CLERK_SECRET_KEY });
-  }
-  return clerkClient;
+function getGithubAppPrivateKey() {
+  return getEnv().GITHUB_APP_PRIVATE_KEY.replace(/\\n/g, "\n");
 }
 
-async function fetchClerkUserToken(
-  userId: string,
-  provider: SupportedClerkOAuthProviders,
-) {
-  const [userOauthAccessTokenPayload] = await getClerkClient().users.getUserOauthAccessToken(
-    userId,
-    provider,
-  );
+async function getGithubAppInstallationToken(installationId: number) {
+  const auth = createAppAuth({
+    appId: getEnv().GITHUB_APP_ID,
+    privateKey: getGithubAppPrivateKey(),
+  });
 
-  if (!userOauthAccessTokenPayload) {
-    throw new Error(`Failed to get token for ${userId} and ${provider}`);
-  }
-
-  return userOauthAccessTokenPayload.token;
+  const { token } = await auth({ type: "installation", installationId });
+  return token;
 }
 
-export async function getClerkUserToken(
-  userId: string,
-  provider: SupportedClerkOAuthProviders,
-) {
-  return fetchClerkUserToken(userId, provider);
+async function getGithubInstallationId(tenantId: number) {
+  const superDb = initSuperDatabase();
+  const sourceControl = await getTenantSourceControl(superDb, tenantId, "github");
+
+  if (!sourceControl?.githubInstallationId) {
+    throw new Error(
+      `Missing GitHub installation id for tenant ${tenantId}.`,
+    );
+  }
+
+  return sourceControl.githubInstallationId;
 }
 
 export function initDatabase(dbUrl: string) {
@@ -63,21 +56,21 @@ export function initSuperDatabase() {
 }
 
 type InitSourceControlInput = {
-  userId: string;
-  sourceControl: "github" | "gitlab";
+  tenantId: number;
+  sourceControl: "github";
   options?: {
     fetchTimelineEventsPerPage?: number;
   };
 };
 
 export async function initSourceControl({
-  userId,
+  tenantId,
   sourceControl,
   options,
 }: InitSourceControlInput) {
-  const accessToken = await getClerkUserToken(userId, `oauth_${sourceControl}`);
-
   if (sourceControl === "github") {
+    const installationId = await getGithubInstallationId(tenantId);
+    const accessToken = await getGithubAppInstallationToken(installationId);
     const githubClient = new GitHubSourceControl({
       auth: accessToken,
       fetchTimelineEventsPerPage: options?.fetchTimelineEventsPerPage,
@@ -85,9 +78,5 @@ export async function initSourceControl({
     return githubErrorMod(githubClient);
   }
 
-  if (sourceControl === "gitlab") {
-    return new GitlabSourceControl(accessToken);
-  }
-
-  return null;
+  throw new Error(`Unsupported source control provider: ${sourceControl}`);
 }

@@ -19,6 +19,7 @@ export async function extractTenantsWorkflow(
   input: ExtractTenantsInput,
 ): Promise<void> {
   const tenants = await getTenants(input);
+  const sourceControl = input.sourceControl ?? "github";
 
   for (const tenant of tenants) {
     if (!tenant.crawlUserId) {
@@ -27,7 +28,7 @@ export async function extractTenantsWorkflow(
 
     const repositories = await getRepositoriesForTenant({
       tenantDbUrl: tenant.dbUrl,
-      sourceControl: input.sourceControl,
+      sourceControl,
     });
 
     await Promise.all(
@@ -35,13 +36,14 @@ export async function extractTenantsWorkflow(
         executeChild(extractRepositoryWorkflow, {
           args: [
             {
+              tenantId: tenant.id,
               tenantDbUrl: tenant.dbUrl,
               repositoryId: repo.id,
               externalRepositoryId: repo.externalId,
               repositoryName: repo.name,
               namespaceName: repo.namespaceName,
               namespaceId: repo.namespaceId,
-              sourceControl: repo.forgeType,
+              sourceControl,
               userId: tenant.crawlUserId,
               crawlId: 0,
               timePeriod: input.timePeriod,

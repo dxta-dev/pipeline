@@ -11,7 +11,6 @@
     "start": "node dist/index.js"
   },
   "dependencies": {
-    "@clerk/clerk-sdk-node": "^4.13.9",
     "@dxta/crawl-functions": "*",
     "@dxta/crawl-schema": "*",
     "@dxta/extract-functions": "*",
@@ -21,6 +20,7 @@
     "@dxta/tenant-schema": "*",
     "@dxta/workflows": "*",
     "@libsql/client": "^0.17.0",
+    "@octokit/auth-app": "^7.0.1",
     "@temporalio/activity": "^1.11.7",
     "@temporalio/worker": "^1.11.7",
     "drizzle-orm": "^0.45.1"
