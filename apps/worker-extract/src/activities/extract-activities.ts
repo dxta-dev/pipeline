@@ -51,6 +51,7 @@ import type {
   ExtractMergeRequestsResult,
   ExtractMembersResult,
   ExtractDeploymentsResult,
+  ExtractWorkflowDeploymentsResult,
 } from "@dxta/workflows";
 
 import { getEnv } from "../env";
@@ -583,7 +584,7 @@ export const extractActivities: ExtractActivities = {
     userId: string;
     crawlId: number;
     timePeriod: TimePeriod;
-  }): Promise<void> {
+  }): Promise<ExtractWorkflowDeploymentsResult> {
     const db = initDatabase(input.tenantDbUrl);
     const sourceControl = await initSourceControl({
       tenantId: input.tenantId,
@@ -601,7 +602,9 @@ export const extractActivities: ExtractActivities = {
       .where(eq(namespaces.id, input.namespaceId))
       .get();
 
-    if (!repository || !namespace) return;
+    if (!repository || !namespace) {
+      return { deploymentIds: [] };
+    }
 
     const workflows = await db
       .select()
@@ -614,10 +617,14 @@ export const extractActivities: ExtractActivities = {
       )
       .all();
 
-    if (workflows.length === 0) return;
+    if (workflows.length === 0) {
+      return { deploymentIds: [] };
+    }
+
+    const allDeploymentIds: number[] = [];
 
     for (const workflow of workflows) {
-      await getWorkflowDeployments(
+      const { deployments: extracted } = await getWorkflowDeployments(
         {
           repository,
           namespace,
@@ -632,7 +639,15 @@ export const extractActivities: ExtractActivities = {
           entities: { deployments, repositoryShas },
         },
       );
+
+      // Collect deployments with undetermined status (null or pending)
+      const undeterminedIds = extracted
+        .filter((d) => d.status === null || d.status === "pending")
+        .map((d) => d.id);
+      allDeploymentIds.push(...undeterminedIds);
     }
+
+    return { deploymentIds: allDeploymentIds };
   },
 
   async extractWorkflowDeploymentStatus(input: {

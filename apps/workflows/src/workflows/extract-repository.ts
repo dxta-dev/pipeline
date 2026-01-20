@@ -221,7 +221,7 @@ async function extractGitHubSpecific(
     namespaceName: input.namespaceName,
   });
 
-  await extractWorkflowDeployments({
+  const workflowDeploymentsResult = await extractWorkflowDeployments({
     tenantId: baseInput.tenantId,
     tenantDbUrl: input.tenantDbUrl,
     repositoryId: input.repositoryId,
@@ -233,4 +233,17 @@ async function extractGitHubSpecific(
     crawlId: baseInput.crawlId,
     timePeriod: input.timePeriod,
   });
+
+  await Promise.all(
+    workflowDeploymentsResult.deploymentIds.map((deploymentId) =>
+      extractWorkflowDeploymentStatus({
+        tenantId: baseInput.tenantId,
+        tenantDbUrl: input.tenantDbUrl,
+        repositoryId: input.repositoryId,
+        namespaceId: input.namespaceId,
+        deploymentId,
+        userId: input.userId,
+      }),
+    ),
+  );
 }

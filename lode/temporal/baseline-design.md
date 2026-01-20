@@ -70,7 +70,7 @@ interface ExtractActivities {
   // Deployment extraction
   extractDeployments(input: ExtractDeploymentsInput): Promise<ExtractDeploymentsResult>;
   extractDeploymentStatus(input: ExtractDeploymentStatusInput): Promise<void>;
-  extractWorkflowDeployments(input: ExtractWorkflowDeploymentsInput): Promise<void>;
+  extractWorkflowDeployments(input: ExtractWorkflowDeploymentsInput): Promise<ExtractWorkflowDeploymentsResult>;
   extractWorkflowDeploymentStatus(input: ExtractWorkflowDeploymentStatusInput): Promise<void>;
   extractDefaultBranchCommits(input: ExtractDefaultBranchCommitsInput): Promise<void>;
 }

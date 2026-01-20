@@ -34,3 +34,20 @@ export interface ExtractMembersResult {
 export interface ExtractDeploymentsResult {
   deploymentIds: number[];
 }
+
+export interface ExtractWorkflowDeploymentsResult {
+  deploymentIds: number[];
+}
+
+export interface ExtractWorkflowDeploymentInput {
+  tenantId: number;
+  tenantDbUrl: string;
+  repositoryId: number;
+  externalRepositoryId: number;
+  repositoryName: string;
+  namespaceId: number;
+  namespaceName: string;
+  userId: string;
+  crawlId: number;
+  timePeriod: { from: Date; to: Date };
+}

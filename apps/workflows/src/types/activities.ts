@@ -12,6 +12,8 @@ import type {
   ExtractMembersResult,
   ExtractMergeRequestsResult,
   ExtractRepositoryResult,
+  ExtractWorkflowDeploymentsResult,
+  ExtractWorkflowDeploymentInput,
   RepositoryInfo,
   Tenant,
 } from "./results";
@@ -97,18 +99,9 @@ export interface ExtractActivities {
     timePeriod: TimePeriod;
   }): Promise<void>;
 
-  extractWorkflowDeployments(input: {
-    tenantId: number;
-    tenantDbUrl: string;
-    repositoryId: number;
-    externalRepositoryId: number;
-    repositoryName: string;
-    namespaceId: number;
-    namespaceName: string;
-    userId: string;
-    crawlId: number;
-    timePeriod: TimePeriod;
-  }): Promise<void>;
+  extractWorkflowDeployments(
+    input: ExtractWorkflowDeploymentInput,
+  ): Promise<ExtractWorkflowDeploymentsResult>;
 
   extractWorkflowDeploymentStatus(input: {
     tenantId: number;
