@@ -51,3 +51,10 @@ export interface ExtractWorkflowDeploymentInput {
   crawlId: number;
   timePeriod: { from: Date; to: Date };
 }
+
+// Transform results
+
+export interface MergeRequestDeploymentPair {
+  mergeRequestId: number;
+  deploymentId: number | null;
+}

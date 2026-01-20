@@ -146,6 +146,43 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
 
+  apps/worker-transform:
+    dependencies:
+      '@dxta/extract-schema':
+        specifier: '*'
+        version: link:../../packages/schemas/extract
+      '@dxta/super-schema':
+        specifier: '*'
+        version: link:../../packages/schemas/super
+      '@dxta/transform-functions':
+        specifier: '*'
+        version: link:../../packages/functions/transform
+      '@dxta/workflows':
+        specifier: '*'
+        version: link:../workflows
+      '@libsql/client':
+        specifier: ^0.17.0
+        version: 0.17.0
+      '@temporalio/activity':
+        specifier: ^1.11.7
+        version: 1.14.1
+      '@temporalio/worker':
+        specifier: ^1.11.7
+        version: 1.14.1(tslib@2.8.1)
+      drizzle-orm:
+        specifier: ^0.45.1
+        version: 0.45.1(@aws-sdk/client-rds-data@3.972.0(aws-crt@1.29.0))(@libsql/client@0.17.0)(@upstash/redis@1.36.1)(kysely@0.25.0)
+      zod:
+        specifier: ^3.24.4
+        version: 3.25.76
+    devDependencies:
+      tsx:
+        specifier: ^4.19.0
+        version: 4.21.0
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
   apps/workflows:
     dependencies:
       '@temporalio/workflow':

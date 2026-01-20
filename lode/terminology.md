@@ -10,8 +10,8 @@ Child workflow - workflow started by another workflow for sub-orchestration.
 extractTenantsWorkflow - main extract entry point workflow.
 extractRepositoryWorkflow - per-repo extract orchestration.
 extractMergeRequestWorkflow - per-MR extract orchestration.
-transformTenantsWorkflow - main transform entry point workflow.
-transformRepositoryWorkflow - per-repo transform orchestration.
+transformTenantsWorkflow - main transform entry point workflow (fetches tenants, fans out to repos).
+transformRepositoryWorkflow - per-repo transform orchestration (queries MR-deployment pairs, transforms each).
 SST stacks - current AWS infra in `apps/stack` (to be removed).
 Railway - hosting platform for Temporal server and workers.
 Orchestrator - app for manual triggers and schedule management (`apps/orchestrator`).

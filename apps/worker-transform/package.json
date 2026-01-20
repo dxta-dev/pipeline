@@ -1,0 +1,28 @@
+{
+  "name": "@dxta/worker-transform",
+  "version": "1.0.0",
+  "description": "Temporal transform worker",
+  "main": "src/index.ts",
+  "scripts": {
+    "type-check": "tsc --noEmit && echo \"No TypeScript warnings or errors\"",
+    "build": "tsc",
+    "lint": "biome lint . && echo \"No Biome warnings or errors\"",
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@dxta/extract-schema": "*",
+    "@dxta/super-schema": "*",
+    "@dxta/transform-functions": "*",
+    "@dxta/workflows": "*",
+    "@libsql/client": "^0.17.0",
+    "@temporalio/activity": "^1.11.7",
+    "@temporalio/worker": "^1.11.7",
+    "drizzle-orm": "^0.45.1",
+    "zod": "^3.24.4"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0",
+    "typescript": "^5.9.3"
+  }
+}

@@ -2,11 +2,15 @@
 
 This repo is a TypeScript monorepo that currently runs extract/transform
 pipelines via SST stacks in `apps/stack`, with an active migration to Temporal
-on Railway. Two Temporal apps are now scaffolded: `apps/workflows` (workflow
-definitions) and `apps/worker-extract` (extract activities). Transform worker
-and orchestrator are pending. Drizzle and integrations remain in `packages/`.
-GitHub Actions workflows are currently removed; CI/CD is pending.
-The Nix dev shell includes Node.js, pnpm, Biome, git, and jq.
+on Railway. Extract pipeline migration is complete: `apps/workflows` contains
+workflow definitions (`extractTenantsWorkflow`, `extractRepositoryWorkflow`,
+`extractMergeRequestWorkflow`) and `apps/worker-extract` implements all 17
+extract activities. Transform pipeline migration is complete: `apps/workflows`
+contains `transformTenantsWorkflow` and `transformRepositoryWorkflow`, and
+`apps/worker-transform` implements 2 transform activities. Orchestrator and
+scheduling are pending. Drizzle and integrations remain in `packages/`. GitHub
+Actions workflows are currently removed; CI/CD is pending. The Nix dev shell
+includes Node.js, pnpm, Biome, git, and jq.
 
 ## Invariants
 - Source of truth for current infra remains `apps/stack` until Temporal workers ship.
@@ -38,7 +42,7 @@ export interface ExtractTenantsInput {
 ## Diagram
 ```mermaid
 flowchart LR
-  orchestrator[apps/orchestrator] --> workflows[apps/workflows]
+  orchestrator[apps/orchestrator - pending] --> workflows[apps/workflows]
   workflows --> workerExtract[apps/worker-extract]
   workflows --> workerTransform[apps/worker-transform]
   workerExtract --> packages[packages/*]

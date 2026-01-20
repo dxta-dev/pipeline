@@ -35,8 +35,8 @@ while keeping Drizzle and existing integrations intact.
 
 ## Plan Phases
 1. ✅ Baseline design: workflow/activity interfaces, workflow-only app structure.
-2. 🔄 Extract migration: activities + ExtractTenantsWorkflow (in progress).
-3. ⏳ Transform migration: activities + TransformTenantWorkflow.
+2. ✅ Extract migration: activities + extract workflows complete.
+3. ✅ Transform migration: activities + transformTenantsWorkflow + transformRepositoryWorkflow.
 4. ⏳ Scheduling/manual start: Temporal schedules + client entrypoints.
 5. ⏳ Remove SST/AWS infra: delete stacks and SST config.
 6. ⏳ Production rollout: deploy workers, validate schedules and visibility.

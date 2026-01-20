@@ -64,3 +64,22 @@ export interface ExtractDeploymentsInput {
   crawlId: number;
   timePeriod: TimePeriod;
 }
+
+// Transform inputs
+
+export interface TransformTenantsInput {
+  tenantId?: number;
+  timePeriod: TimePeriod;
+}
+
+export interface TransformRepositoryInput {
+  tenantDbUrl: string;
+  repositoryId: number;
+  timePeriod: TimePeriod;
+}
+
+export interface TransformMergeRequestInput {
+  tenantDbUrl: string;
+  mergeRequestId: number;
+  deploymentId: number | null;
+}

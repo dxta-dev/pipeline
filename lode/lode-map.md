@@ -10,6 +10,7 @@
 - `lode/plans/temporal-migration.md`
 - `lode/temporal/baseline-design.md`
 - `lode/temporal/extract-worker.md`
+- `lode/temporal/transform-worker.md`
 
 ## Invariants
 - Every lode file covers one topic and stays under 250 lines.
@@ -36,6 +37,7 @@ export const lodeIndex = [
   "lode/plans/temporal-migration.md",
   "lode/temporal/baseline-design.md",
   "lode/temporal/extract-worker.md",
+  "lode/temporal/transform-worker.md",
 ];
 ```
 
@@ -57,6 +59,7 @@ flowchart TD
   tooling --> commands[monorepo-commands.md]
   temporal --> baseline[baseline-design.md]
   temporal --> extractWorker[extract-worker.md]
+  temporal --> transformWorker[transform-worker.md]
 ```
 
 ## Related
@@ -65,3 +68,4 @@ flowchart TD
 - [Monorepo commands](tooling/monorepo-commands.md)
 - [Temporal baseline design](temporal/baseline-design.md)
 - [Extract worker](temporal/extract-worker.md)
+- [Transform worker](temporal/transform-worker.md)

@@ -640,7 +640,6 @@ export const extractActivities: ExtractActivities = {
         },
       );
 
-      // Collect deployments with undetermined status (null or pending)
       const undeterminedIds = extracted
         .filter((d) => d.status === null || d.status === "pending")
         .map((d) => d.id);

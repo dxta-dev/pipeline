@@ -34,26 +34,32 @@ apps/worker-extract/
 ## Activities
 
 All activities are defined in `extractActivities` object and implement the
-`ExtractActivities` interface from `@dxta/workflows`.
+`ExtractActivities` interface from `@dxta/workflows`. Activities that return
+result objects enable workflow fanout patterns.
 
-| Activity | Purpose |
-|----------|---------|
-| `getTenants` | Fetch tenants from super database |
-| `getRepositoriesForTenant` | List repositories for a tenant |
-| `extractRepository` | Extract repository metadata, create crawl instance |
-| `extractMergeRequests` | Extract merge requests for a repository |
-| `extractMergeRequestDiffs` | Extract diffs for a merge request |
-| `extractMergeRequestCommits` | Extract commits for a merge request |
-| `extractMergeRequestNotes` | Extract notes/comments for a merge request |
-| `extractTimelineEvents` | Extract GitHub timeline events (GitHub only) |
-| `extractMembers` | Extract repository members |
-| `extractMemberInfo` | Extract detailed member info |
-| `extractNamespaceMembers` | Extract namespace/org members |
-| `extractDeployments` | Extract deployments for a repository |
-| `extractDeploymentStatus` | Extract deployment status |
-| `extractDefaultBranchCommits` | Extract commits on default branch |
-| `extractWorkflowDeployments` | Extract GitHub workflow deployments |
-| `extractWorkflowDeploymentStatus` | Extract workflow deployment status |
+| Activity | Returns | Purpose |
+|----------|---------|---------|
+| `getTenants` | `Tenant[]` | Fetch tenants from super database |
+| `getRepositoriesForTenant` | `RepositoryInfo[]` | List repositories for a tenant |
+| `extractRepository` | `ExtractRepositoryResult` | Extract repository metadata, create crawl instance |
+| `extractMergeRequests` | `ExtractMergeRequestsResult` | Extract merge requests for a repository |
+| `extractMergeRequestDiffs` | `void` | Extract diffs for a merge request |
+| `extractMergeRequestCommits` | `void` | Extract commits for a merge request |
+| `extractMergeRequestNotes` | `void` | Extract notes/comments for a merge request |
+| `extractTimelineEvents` | `void` | Extract GitHub timeline events (GitHub only) |
+| `extractMembers` | `ExtractMembersResult` | Extract repository members |
+| `extractMemberInfo` | `void` | Extract detailed member info |
+| `extractNamespaceMembers` | `void` | Extract namespace/org members |
+| `extractDeployments` | `ExtractDeploymentsResult` | Extract deployments for a repository |
+| `extractDeploymentStatus` | `void` | Extract deployment status |
+| `extractDefaultBranchCommits` | `void` | Extract commits on default branch |
+| `extractWorkflowDeployments` | `ExtractWorkflowDeploymentsResult` | Extract GitHub workflow deployments |
+| `extractWorkflowDeploymentStatus` | `void` | Extract workflow deployment status |
+
+Activities returning `*Result` types provide IDs for subsequent fanout. For
+example, `extractWorkflowDeployments` returns `{ deploymentIds: number[] }`
+containing deployments with `status=null` or `status='pending'`, which the
+workflow uses to call `extractWorkflowDeploymentStatus` for each.
 
 ## Context Initialization
 

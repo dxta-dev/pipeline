@@ -6,6 +6,8 @@ import type {
   ExtractTenantsInput,
   SourceControl,
   TimePeriod,
+  TransformMergeRequestInput,
+  TransformRepositoryInput,
 } from "./inputs";
 import type {
   ExtractDeploymentsResult,
@@ -14,6 +16,7 @@ import type {
   ExtractRepositoryResult,
   ExtractWorkflowDeploymentsResult,
   ExtractWorkflowDeploymentInput,
+  MergeRequestDeploymentPair,
   RepositoryInfo,
   Tenant,
 } from "./results";
@@ -111,4 +114,12 @@ export interface ExtractActivities {
     deploymentId: number;
     userId: string;
   }): Promise<void>;
+}
+
+export interface TransformActivities {
+  getMergeRequestDeploymentPairs(
+    input: TransformRepositoryInput,
+  ): Promise<MergeRequestDeploymentPair[]>;
+
+  transformMergeRequest(input: TransformMergeRequestInput): Promise<void>;
 }
