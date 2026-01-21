@@ -33,6 +33,7 @@ CREATE TABLE `extract_repository_commits` (
 	FOREIGN KEY (`repository_sha_id`) REFERENCES `extract_repository_shas`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
+CREATE UNIQUE INDEX `repository_commits_repository_sha_id_idx` ON `extract_repository_commits` (`repository_sha_id`);--> statement-breakpoint
 CREATE TABLE `extract_deployments` (
 	`id` integer PRIMARY KEY NOT NULL,
 	`external_id` integer NOT NULL,
@@ -51,6 +52,7 @@ CREATE TABLE `extract_deployments` (
 	FOREIGN KEY (`repository_sha_id`) REFERENCES `extract_repository_shas`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
+CREATE UNIQUE INDEX `deployments_external_id_idx` ON `extract_deployments` (`external_id`,`repository_id`,`deployment_type`);--> statement-breakpoint
 CREATE TABLE `extract_git_identities` (
 	`id` integer PRIMARY KEY NOT NULL,
 	`repository_id` integer NOT NULL,
@@ -61,6 +63,7 @@ CREATE TABLE `extract_git_identities` (
 	FOREIGN KEY (`repository_id`) REFERENCES `extract_repositories`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
+CREATE UNIQUE INDEX `repository_id_email_name_idx` ON `extract_git_identities` (`repository_id`,`email`,`name`);--> statement-breakpoint
 CREATE TABLE `extract_members` (
 	`id` integer PRIMARY KEY NOT NULL,
 	`external_id` integer NOT NULL,
@@ -76,6 +79,7 @@ CREATE TABLE `extract_members` (
 	`__extracted_at` integer
 );
 --> statement-breakpoint
+CREATE UNIQUE INDEX `members_external_id_idx` ON `extract_members` (`external_id`,`forge_type`);--> statement-breakpoint
 CREATE TABLE `extract_merge_request_commits` (
 	`id` integer PRIMARY KEY NOT NULL,
 	`merge_request_id` integer NOT NULL,
@@ -99,6 +103,7 @@ CREATE TABLE `extract_merge_request_commits` (
 	FOREIGN KEY (`merge_request_id`) REFERENCES `extract_merge_requests`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
+CREATE UNIQUE INDEX `merge_request_commits_external_id_idx` ON `extract_merge_request_commits` (`merge_request_id`,`external_id`);--> statement-breakpoint
 CREATE TABLE `extract_merge_request_diffs` (
 	`id` integer PRIMARY KEY NOT NULL,
 	`merge_request_id` integer NOT NULL,
@@ -115,6 +120,7 @@ CREATE TABLE `extract_merge_request_diffs` (
 	FOREIGN KEY (`merge_request_id`) REFERENCES `extract_merge_requests`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
+CREATE UNIQUE INDEX `diffs_merge_request_id_newPath_idx` ON `extract_merge_request_diffs` (`merge_request_id`,`new_path`);--> statement-breakpoint
 CREATE TABLE `extract_merge_request_notes` (
 	`id` integer PRIMARY KEY NOT NULL,
 	`external_id` integer NOT NULL,
@@ -131,6 +137,7 @@ CREATE TABLE `extract_merge_request_notes` (
 	FOREIGN KEY (`merge_request_id`) REFERENCES `extract_merge_requests`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
+CREATE UNIQUE INDEX `merge_request_notes_external_id_idx` ON `extract_merge_request_notes` (`merge_request_id`,`external_id`);--> statement-breakpoint
 CREATE TABLE `extract_merge_requests` (
 	`id` integer PRIMARY KEY NOT NULL,
 	`external_id` integer NOT NULL,
@@ -156,6 +163,7 @@ CREATE TABLE `extract_merge_requests` (
 	FOREIGN KEY (`repository_sha_id`) REFERENCES `extract_repository_shas`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
+CREATE UNIQUE INDEX `merge_requests_external_id_idx` ON `extract_merge_requests` (`external_id`,`repository_id`);--> statement-breakpoint
 CREATE TABLE `extract_namespaces` (
 	`id` integer PRIMARY KEY NOT NULL,
 	`external_id` integer NOT NULL,
@@ -166,6 +174,7 @@ CREATE TABLE `extract_namespaces` (
 	`__updated_at` integer DEFAULT (strftime('%s', 'now'))
 );
 --> statement-breakpoint
+CREATE UNIQUE INDEX `namespaces_external_id_idx` ON `extract_namespaces` (`external_id`,`forge_type`);--> statement-breakpoint
 CREATE TABLE `extract_repositories` (
 	`id` integer PRIMARY KEY NOT NULL,
 	`external_id` integer NOT NULL,
@@ -178,12 +187,13 @@ CREATE TABLE `extract_repositories` (
 	FOREIGN KEY (`namespace_id`) REFERENCES `extract_namespaces`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
+CREATE UNIQUE INDEX `repositories_external_id_idx` ON `extract_repositories` (`external_id`,`forge_type`);--> statement-breakpoint
 CREATE TABLE `extract_repositories_to_members` (
 	`repository_id` integer NOT NULL,
 	`member_id` integer NOT NULL,
 	`__created_at` integer DEFAULT (strftime('%s', 'now')),
 	`__updated_at` integer DEFAULT (strftime('%s', 'now')),
-	PRIMARY KEY(`member_id`, `repository_id`),
+	PRIMARY KEY(`repository_id`, `member_id`),
 	FOREIGN KEY (`repository_id`) REFERENCES `extract_repositories`(`id`) ON UPDATE no action ON DELETE no action,
 	FOREIGN KEY (`member_id`) REFERENCES `extract_members`(`id`) ON UPDATE no action ON DELETE no action
 );
@@ -193,7 +203,7 @@ CREATE TABLE `extract_repository_sha_trees` (
 	`parent_id` integer NOT NULL,
 	`__created_at` integer DEFAULT (strftime('%s', 'now')),
 	`__updated_at` integer DEFAULT (strftime('%s', 'now')),
-	PRIMARY KEY(`parent_id`, `sha_id`),
+	PRIMARY KEY(`sha_id`, `parent_id`),
 	FOREIGN KEY (`sha_id`) REFERENCES `extract_repository_shas`(`id`) ON UPDATE no action ON DELETE no action,
 	FOREIGN KEY (`parent_id`) REFERENCES `extract_repository_shas`(`id`) ON UPDATE no action ON DELETE no action
 );
@@ -207,6 +217,7 @@ CREATE TABLE `extract_repository_shas` (
 	FOREIGN KEY (`repository_id`) REFERENCES `extract_repositories`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
+CREATE UNIQUE INDEX `repository_shas_repository_id_sha_idx` ON `extract_repository_shas` (`repository_id`,`sha`);--> statement-breakpoint
 CREATE TABLE `extract_timeline_events` (
 	`id` integer PRIMARY KEY NOT NULL,
 	`external_id` integer NOT NULL,
@@ -223,6 +234,7 @@ CREATE TABLE `extract_timeline_events` (
 	FOREIGN KEY (`merge_request_id`) REFERENCES `extract_merge_requests`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
+CREATE UNIQUE INDEX `timeline_events_external_id_merge_request_id_type_idx` ON `extract_timeline_events` (`external_id`,`merge_request_id`,`type`);--> statement-breakpoint
 CREATE TABLE `tenant_cicd_deploy_workflows` (
 	`id` integer PRIMARY KEY NOT NULL,
 	`workflow_external_id` integer NOT NULL,
@@ -235,7 +247,7 @@ CREATE TABLE `tenant_cicd_deploy_workflows` (
 --> statement-breakpoint
 CREATE TABLE `tenant_config` (
 	`id` integer PRIMARY KEY NOT NULL,
-	`hq_timezone` integer NOT NULL,
+	`tzdata` text DEFAULT 'UTC' NOT NULL,
 	`__created_at` integer DEFAULT (strftime('%s', 'now')),
 	`__updated_at` integer DEFAULT (strftime('%s', 'now'))
 );
@@ -258,6 +270,7 @@ CREATE TABLE `tenant_team_members` (
 	FOREIGN KEY (`team`) REFERENCES `tenant_teams`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
+CREATE UNIQUE INDEX `team_members_unique_idx` ON `tenant_team_members` (`team`,`member`);--> statement-breakpoint
 CREATE TABLE `tenant_teams` (
 	`id` integer PRIMARY KEY NOT NULL,
 	`name` text NOT NULL,
@@ -272,6 +285,7 @@ CREATE TABLE `transform_branches` (
 	`__updated_at` integer DEFAULT (strftime('%s', 'now'))
 );
 --> statement-breakpoint
+CREATE UNIQUE INDEX `branches_name_idx` ON `transform_branches` (`name`);--> statement-breakpoint
 CREATE TABLE `transform_dates` (
 	`id` integer PRIMARY KEY NOT NULL,
 	`day` integer NOT NULL,
@@ -282,6 +296,22 @@ CREATE TABLE `transform_dates` (
 	`__updated_at` integer DEFAULT (strftime('%s', 'now'))
 );
 --> statement-breakpoint
+CREATE UNIQUE INDEX `dates_day_week_month_year_idx` ON `transform_dates` (`day`,`week`,`month`,`year`);--> statement-breakpoint
+CREATE INDEX `dates_week_idx` ON `transform_dates` (`week`);--> statement-breakpoint
+CREATE TABLE `transform_deployments` (
+	`id` integer PRIMARY KEY NOT NULL,
+	`external_id` integer NOT NULL,
+	`deployment_type` integer NOT NULL,
+	`repository_id` integer NOT NULL,
+	`status` integer,
+	`deployed_at` integer NOT NULL,
+	`__created_at` integer DEFAULT (strftime('%s', 'now')),
+	`__updated_at` integer DEFAULT (strftime('%s', 'now')),
+	FOREIGN KEY (`repository_id`) REFERENCES `transform_repositories`(`id`) ON UPDATE no action ON DELETE no action,
+	FOREIGN KEY (`deployed_at`) REFERENCES `transform_dates`(`id`) ON UPDATE no action ON DELETE no action
+);
+--> statement-breakpoint
+CREATE UNIQUE INDEX `t_deployments_external_id_type_idx` ON `transform_deployments` (`external_id`,`repository_id`,`deployment_type`);--> statement-breakpoint
 CREATE TABLE `transform_forge_users` (
 	`id` integer PRIMARY KEY NOT NULL,
 	`external_id` integer NOT NULL,
@@ -294,6 +324,7 @@ CREATE TABLE `transform_forge_users` (
 	`__updated_at` integer DEFAULT (strftime('%s', 'now'))
 );
 --> statement-breakpoint
+CREATE UNIQUE INDEX `forge_users_external_id_forge_type_idx` ON `transform_forge_users` (`external_id`,`forge_type`);--> statement-breakpoint
 CREATE TABLE `transform_merge_request_fact_dates_junk` (
 	`id` integer PRIMARY KEY NOT NULL,
 	`deployed_at` integer NOT NULL,
@@ -338,6 +369,9 @@ CREATE TABLE `transform_merge_request_events` (
 	FOREIGN KEY (`merge_request`) REFERENCES `transform_merge_requests`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
+CREATE INDEX `merge_request_events_occured_on_idx` ON `transform_merge_request_events` (`occured_on`);--> statement-breakpoint
+CREATE INDEX `merge_request_events_merge_request_idx` ON `transform_merge_request_events` (`merge_request`);--> statement-breakpoint
+CREATE INDEX `merge_request_events_commited_at_idx` ON `transform_merge_request_events` (`commited_at`);--> statement-breakpoint
 CREATE TABLE `transform_merge_request_metrics` (
 	`id` integer PRIMARY KEY NOT NULL,
 	`users_junk` integer NOT NULL,
@@ -351,6 +385,7 @@ CREATE TABLE `transform_merge_request_metrics` (
 	`review_start_delay` integer NOT NULL,
 	`review_duration` integer NOT NULL,
 	`deploy_duration` integer NOT NULL,
+	`time_to_merge` integer DEFAULT 0 NOT NULL,
 	`handover` integer NOT NULL,
 	`review_depth` integer NOT NULL,
 	`deployed` integer NOT NULL,
@@ -366,6 +401,10 @@ CREATE TABLE `transform_merge_request_metrics` (
 	FOREIGN KEY (`dates_junk`) REFERENCES `transform_merge_request_fact_dates_junk`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
+CREATE INDEX `merge_request_metrics_users_junk_idx` ON `transform_merge_request_metrics` (`users_junk`);--> statement-breakpoint
+CREATE INDEX `merge_request_metrics_dates_junk_idx` ON `transform_merge_request_metrics` (`dates_junk`);--> statement-breakpoint
+CREATE INDEX `merge_request_metrics_repository_idx` ON `transform_merge_request_metrics` (`repository`);--> statement-breakpoint
+CREATE INDEX `merge_request_metrics_merge_request_idx` ON `transform_merge_request_metrics` (`merge_request`);--> statement-breakpoint
 CREATE TABLE `transform_merge_request_fact_users_junk` (
 	`id` integer PRIMARY KEY NOT NULL,
 	`author` integer NOT NULL,
@@ -453,6 +492,7 @@ CREATE TABLE `transform_merge_requests` (
 	FOREIGN KEY (`source_branch`) REFERENCES `transform_branches`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
+CREATE UNIQUE INDEX `merge_requests_external_id_forge_type_idx` ON `transform_merge_requests` (`external_id`,`forge_type`);--> statement-breakpoint
 CREATE TABLE `transform_null_rows` (
 	`id` integer PRIMARY KEY NOT NULL,
 	`dates_id` integer NOT NULL,
@@ -464,41 +504,17 @@ CREATE TABLE `transform_null_rows` (
 	`__updated_at` integer DEFAULT (strftime('%s', 'now'))
 );
 --> statement-breakpoint
+CREATE UNIQUE INDEX `null_rows_unique_values_idx` ON `transform_null_rows` (`dates_id`,`users_id`,`merge_requests_id`,`repository_id`,`branch_id`);--> statement-breakpoint
 CREATE TABLE `transform_repositories` (
 	`id` integer PRIMARY KEY NOT NULL,
 	`external_id` integer NOT NULL,
 	`forge_type` integer NOT NULL,
 	`name` text NOT NULL,
 	`namespace_name` text DEFAULT '',
+	`default_branch` integer,
 	`__created_at` integer DEFAULT (strftime('%s', 'now')),
-	`__updated_at` integer DEFAULT (strftime('%s', 'now'))
+	`__updated_at` integer DEFAULT (strftime('%s', 'now')),
+	FOREIGN KEY (`default_branch`) REFERENCES `transform_branches`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
-CREATE UNIQUE INDEX `repository_commits_repository_sha_id_idx` ON `extract_repository_commits` (`repository_sha_id`);--> statement-breakpoint
-CREATE UNIQUE INDEX `deployments_external_id_idx` ON `extract_deployments` (`external_id`,`repository_id`,`deployment_type`);--> statement-breakpoint
-CREATE UNIQUE INDEX `repository_id_email_name_idx` ON `extract_git_identities` (`repository_id`,`email`,`name`);--> statement-breakpoint
-CREATE UNIQUE INDEX `members_external_id_idx` ON `extract_members` (`external_id`,`forge_type`);--> statement-breakpoint
-CREATE UNIQUE INDEX `merge_request_commits_external_id_idx` ON `extract_merge_request_commits` (`merge_request_id`,`external_id`);--> statement-breakpoint
-CREATE UNIQUE INDEX `diffs_merge_request_id_newPath_idx` ON `extract_merge_request_diffs` (`merge_request_id`,`new_path`);--> statement-breakpoint
-CREATE UNIQUE INDEX `merge_request_notes_external_id_idx` ON `extract_merge_request_notes` (`merge_request_id`,`external_id`);--> statement-breakpoint
-CREATE UNIQUE INDEX `merge_requests_external_id_idx` ON `extract_merge_requests` (`external_id`,`repository_id`);--> statement-breakpoint
-CREATE UNIQUE INDEX `namespaces_external_id_idx` ON `extract_namespaces` (`external_id`,`forge_type`);--> statement-breakpoint
-CREATE UNIQUE INDEX `repositories_external_id_idx` ON `extract_repositories` (`external_id`,`forge_type`);--> statement-breakpoint
-CREATE UNIQUE INDEX `repository_shas_repository_id_sha_idx` ON `extract_repository_shas` (`repository_id`,`sha`);--> statement-breakpoint
-CREATE UNIQUE INDEX `timeline_events_external_id_merge_request_id_type_idx` ON `extract_timeline_events` (`external_id`,`merge_request_id`,`type`);--> statement-breakpoint
-CREATE UNIQUE INDEX `tenant_config_unique_idx` ON `tenant_config` (`hq_timezone`);--> statement-breakpoint
-CREATE UNIQUE INDEX `team_members_unique_idx` ON `tenant_team_members` (`team`,`member`);--> statement-breakpoint
-CREATE UNIQUE INDEX `branches_name_idx` ON `transform_branches` (`name`);--> statement-breakpoint
-CREATE UNIQUE INDEX `dates_day_week_month_year_idx` ON `transform_dates` (`day`,`week`,`month`,`year`);--> statement-breakpoint
-CREATE INDEX `dates_week_idx` ON `transform_dates` (`week`);--> statement-breakpoint
-CREATE UNIQUE INDEX `forge_users_external_id_forge_type_idx` ON `transform_forge_users` (`external_id`,`forge_type`);--> statement-breakpoint
-CREATE INDEX `merge_request_events_occured_on_idx` ON `transform_merge_request_events` (`occured_on`);--> statement-breakpoint
-CREATE INDEX `merge_request_events_merge_request_idx` ON `transform_merge_request_events` (`merge_request`);--> statement-breakpoint
-CREATE INDEX `merge_request_events_commited_at_idx` ON `transform_merge_request_events` (`commited_at`);--> statement-breakpoint
-CREATE INDEX `merge_request_metrics_users_junk_idx` ON `transform_merge_request_metrics` (`users_junk`);--> statement-breakpoint
-CREATE INDEX `merge_request_metrics_dates_junk_idx` ON `transform_merge_request_metrics` (`dates_junk`);--> statement-breakpoint
-CREATE INDEX `merge_request_metrics_repository_idx` ON `transform_merge_request_metrics` (`repository`);--> statement-breakpoint
-CREATE INDEX `merge_request_metrics_merge_request_idx` ON `transform_merge_request_metrics` (`merge_request`);--> statement-breakpoint
-CREATE UNIQUE INDEX `merge_requests_external_id_forge_type_idx` ON `transform_merge_requests` (`external_id`,`forge_type`);--> statement-breakpoint
-CREATE UNIQUE INDEX `null_rows_unique_values_idx` ON `transform_null_rows` (`dates_id`,`users_id`,`merge_requests_id`,`repository_id`,`branch_id`);--> statement-breakpoint
 CREATE UNIQUE INDEX `repositories_external_id_forge_type_idx` ON `transform_repositories` (`external_id`,`forge_type`);

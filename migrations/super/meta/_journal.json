@@ -1,26 +1,12 @@
 {
-  "version": "5",
+  "version": "7",
   "dialect": "sqlite",
   "entries": [
     {
       "idx": 0,
-      "version": "5",
-      "when": 1705062905089,
-      "tag": "0000_smooth_enchantress",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "5",
-      "when": 1707136443075,
-      "tag": "0001_smart_sheva_callister",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
       "version": "6",
-      "when": 1769028082591,
-      "tag": "0002_thin_butterfly",
+      "when": 1769028218657,
+      "tag": "0000_freezing_speedball",
       "breakpoints": true
     }
   ]

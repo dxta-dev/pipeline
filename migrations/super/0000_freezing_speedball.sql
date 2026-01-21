@@ -8,4 +8,11 @@ CREATE TABLE `tenant_source_control` (
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `tenant_source_control_tenant_provider_idx` ON `tenant_source_control` (`tenant_id`,`provider`);--> statement-breakpoint
-ALTER TABLE `tenants` ADD `crawl_user_id` text NOT NULL;
+CREATE TABLE `tenants` (
+	`id` integer PRIMARY KEY NOT NULL,
+	`subdomain` text NOT NULL,
+	`db_url` text NOT NULL,
+	`crawl_user_id` text NOT NULL,
+	`__created_at` integer DEFAULT (strftime('%s', 'now')),
+	`__updated_at` integer DEFAULT (strftime('%s', 'now'))
+);
