@@ -12,7 +12,6 @@ extractRepositoryWorkflow - per-repo extract orchestration.
 extractMergeRequestWorkflow - per-MR extract orchestration.
 transformTenantsWorkflow - main transform entry point workflow (fetches tenants, fans out to repos).
 transformRepositoryWorkflow - per-repo transform orchestration (queries MR-deployment pairs, transforms each).
-SST stacks - current AWS infra in `apps/stack` (to be removed).
 Railway - hosting platform for Temporal server and workers.
 Orchestrator - app for manual triggers and schedule management (`apps/orchestrator`).
 
@@ -23,7 +22,7 @@ Orchestrator - app for manual triggers and schedule management (`apps/orchestrat
 - Workflow and activity names align with exported functions.
 
 ## Rationale
-- Shared vocabulary reduces mistakes when mapping AWS constructs to Temporal.
+- Shared vocabulary ensures consistent communication about the architecture.
 
 ## Lessons
 - "Workflow" means orchestration only; "activity" means I/O.

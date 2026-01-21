@@ -1,20 +1,17 @@
 # Lode Summary
 
-This repo is a TypeScript monorepo that currently runs extract/transform
-pipelines via SST stacks in `apps/stack`, with an active migration to Temporal
-on Railway. Extract pipeline migration is complete: `apps/workflows` contains
-workflow definitions (`extractTenantsWorkflow`, `extractRepositoryWorkflow`,
-`extractMergeRequestWorkflow`) and `apps/worker-extract` implements all 17
-extract activities. Transform pipeline migration is complete: `apps/workflows`
-contains `transformTenantsWorkflow` and `transformRepositoryWorkflow`, and
-`apps/worker-transform` implements 2 transform activities. Orchestrator is
-complete: `apps/orchestrator` creates Temporal schedules on startup and provides
-CLI commands for manual workflow triggers. Drizzle and integrations remain in
-`packages/`. GitHub Actions workflows are currently removed; CI/CD is pending.
-The Nix dev shell includes Node.js, pnpm, Biome, git, and jq.
+This repo is a TypeScript monorepo running extract/transform pipelines via
+Temporal on Railway. `apps/workflows` contains workflow definitions
+(`extractTenantsWorkflow`, `extractRepositoryWorkflow`, `extractMergeRequestWorkflow`,
+`transformTenantsWorkflow`, `transformRepositoryWorkflow`). `apps/worker-extract`
+implements 17 extract activities and `apps/worker-transform` implements 2
+transform activities. `apps/orchestrator` creates Temporal schedules on startup
+and provides CLI commands for manual workflow triggers. Drizzle schemas and
+integrations remain in `packages/`. GitHub Actions workflows are currently
+removed; CI/CD is pending. The Nix dev shell includes Node.js, pnpm, Biome,
+Temporal CLI, git, and jq.
 
 ## Invariants
-- Source of truth for current infra remains `apps/stack` until Temporal workers ship.
 - Workflow code is deterministic and lives only in `apps/workflows`.
 - Activities encapsulate all I/O and can use `packages/functions`,
   `packages/integrations`, and `packages/schemas`.
@@ -25,8 +22,8 @@ The Nix dev shell includes Node.js, pnpm, Biome, git, and jq.
 - Extract workers poll `extract` queue; transform workers poll `transform` queue.
 
 ## Rationale
-- Temporal on Railway replaces AWS-only infra while preserving existing data and
-  integrations.
+- Temporal on Railway provides workflow orchestration with built-in retries,
+  visibility, and scheduling.
 
 ## Lessons
 - Fanout and orchestration stay in workflows; retries/timeouts replace DLQs.

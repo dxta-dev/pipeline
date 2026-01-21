@@ -50,6 +50,5 @@ flowchart TD
 ```
 
 ## Related
-- [Extract auth](../stack/extract-auth.md)
 - [Extract worker](../temporal/extract-worker.md)
 - [Lode summary](../summary.md)

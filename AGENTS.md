@@ -12,7 +12,7 @@ directly with pnpm (no Turbo).
 - Primary language: TypeScript
 - Lint/format: Biome (`biome.json`)
 - Tests: Jest in selected packages
-- Infra app: SST in `apps/stack`
+- Workflow orchestration: Temporal
 
 ## Root Commands
 
@@ -36,7 +36,7 @@ Prefer `pnpm --filter` for a single package or app.
 
 - `pnpm --filter @dxta/transform-functions lint`
 - `pnpm --filter @dxta/extract-functions test`
-- `pnpm --filter ./apps/stack dev`
+- `pnpm --filter @dxta/worker-extract dev`
 - `pnpm --filter ./packages/schemas/transform type-check`
 
 ## Running a Single Test
@@ -49,17 +49,6 @@ Jest runs at the package level. Use `--runTestsByPath` or `-t`.
   - `pnpm --filter @dxta/transform-functions test -- -t "parse hunks"`
 - Another package:
   - `pnpm --filter @dxta/source-control test -- --runTestsByPath src/github/client.test.ts`
-
-## Stack App (SST)
-
-Located in `apps/stack`.
-
-- Dev: `pnpm --filter ./apps/stack dev`
-- Build: `pnpm --filter ./apps/stack build`
-- Deploy: `pnpm --filter ./apps/stack deploy`
-- Deploy with stage: `pnpm --filter ./apps/stack deploy:stage -- prod`
-- Remove: `pnpm --filter ./apps/stack remove`
-- Console: `pnpm --filter ./apps/stack console`
 
 ## Formatting and Linting
 
@@ -120,7 +109,7 @@ Guidelines:
 - Schemas: `packages/schemas/*`
 - Shared functions: `packages/functions/*`
 - Integrations: `packages/integrations/*`
-- Apps: `apps/*` (Temporal workers/workflows, stack infra)
+- Apps: `apps/*` (Temporal workers, workflows, orchestrator)
 
 ## Tests
 

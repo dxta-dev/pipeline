@@ -3,9 +3,8 @@
 - `lode/summary.md`
 - `lode/terminology.md`
 - `lode/practices.md`
-- `lode/stack/summary.md`
-- `lode/stack/extract-auth.md`
 - `lode/tooling/monorepo-commands.md`
+- `lode/tooling/local-dev.md`
 - `lode/plans/github-app-auth.md`
 - `lode/plans/temporal-migration.md`
 - `lode/temporal/baseline-design.md`
@@ -31,9 +30,8 @@ export const lodeIndex = [
   "lode/summary.md",
   "lode/terminology.md",
   "lode/practices.md",
-  "lode/stack/summary.md",
-  "lode/stack/extract-auth.md",
   "lode/tooling/monorepo-commands.md",
+  "lode/tooling/local-dev.md",
   "lode/plans/github-app-auth.md",
   "lode/plans/temporal-migration.md",
   "lode/temporal/baseline-design.md",
@@ -48,7 +46,6 @@ export const lodeIndex = [
 flowchart TD
   lode[lode/] --> core[core files]
   lode --> plans[plans/]
-  lode --> stack[stack/]
   lode --> temporal[temporal/]
   lode --> tooling[tooling/]
   core --> summary[summary.md]
@@ -56,9 +53,8 @@ flowchart TD
   core --> practices[practices.md]
   plans --> migration[temporal-migration.md]
   plans --> githubAuth[github-app-auth.md]
-  stack --> stackSummary[summary.md]
-  stack --> stackAuth[extract-auth.md]
   tooling --> commands[monorepo-commands.md]
+  tooling --> localDev[local-dev.md]
   temporal --> baseline[baseline-design.md]
   temporal --> extractWorker[extract-worker.md]
   temporal --> transformWorker[transform-worker.md]

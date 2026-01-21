@@ -168,7 +168,7 @@ const longRunningActivityOptions = {
 
 ## Scheduling
 
-Temporal schedules replace SST Cron rules:
+Temporal schedules run workflows on a cadence:
 
 | Schedule ID | Workflow | Interval | Offset |
 |-------------|----------|----------|--------|

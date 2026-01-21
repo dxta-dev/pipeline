@@ -3,14 +3,8 @@
 Goal: replace SST/AWS extract-transform infrastructure with Temporal on Railway
 while keeping Drizzle and existing integrations intact.
 
-## Current State (Source of Truth)
-- SST stacks in `apps/stack/stacks/ExtractStack.ts` and
-  `apps/stack/stacks/TransformStack.ts` own EventBus, SQS + DLQs, API Gateway
-  routes, and cron schedules.
-- Runtime configuration is managed via SST config/parameters.
-
-## Target Architecture
-- Temporal server runs on Railway (local dev via nix flake).
+## Current Architecture
+- Temporal server runs on Railway (local dev via `temporal server start-dev`).
 - Workflow definitions live in `apps/workflows`.
 - Worker services live in `apps/worker-extract` and `apps/worker-transform`.
 - Manual starts and schedule creation live in `apps/orchestrator`.
@@ -18,28 +12,26 @@ while keeping Drizzle and existing integrations intact.
 - Task queues: `extract` and `transform` (separate for independent scaling).
 
 ## Workflow Boundaries
-- ExtractTenantsWorkflow orchestrates tenant/repo/MR fanout using activities that
-  map to existing extract handlers in `apps/stack/src/extract/*`.
+- ExtractTenantsWorkflow orchestrates tenant/repo/MR fanout.
 - ExtractInitialDeploymentsWorkflow covers the initial deployment extraction
   path.
-- TransformTenantWorkflow runs tenant transform + timeline transforms.
+- TransformTenantsWorkflow runs tenant transform + timeline transforms.
 
 ## Scheduling
-- Temporal schedules replace SST cron rules.
 - Extract schedule runs every 15 minutes with an offset (minute 8).
 - Transform schedule runs every 15 minutes on the quarter-hour (minute 0).
 
-## Env Migration
-- Move SST config/secret values to Railway environment variables.
-- Introduce a shared config module for activities to validate env values.
+## Environment Configuration
+- Workers read credentials from environment variables (see `.env.example`).
+- Zod schemas validate env at startup.
 
 ## Plan Phases
 1. ✅ Baseline design: workflow/activity interfaces, workflow-only app structure.
 2. ✅ Extract migration: activities + extract workflows complete.
 3. ✅ Transform migration: activities + transformTenantsWorkflow + transformRepositoryWorkflow.
 4. ✅ Scheduling/manual start: Temporal schedules + CLI commands in `apps/orchestrator`.
-5. ⏳ Remove SST/AWS infra: delete stacks and SST config.
-6. ⏳ Production rollout: deploy workers, validate schedules and visibility.
+5. ✅ Remove SST/AWS infra: deleted `apps/stack` and related documentation.
+6. ⏳ Production rollout: deploy workers to Railway, validate schedules and visibility.
 
 ## Invariants
 - Workflow code is deterministic and contains no I/O.
@@ -54,7 +46,7 @@ while keeping Drizzle and existing integrations intact.
 - Railway-hosted Temporal reduces AWS coupling and consolidates orchestration.
 
 ## Lessons
-- Prefer child workflows or fanout loops over SQS fanout patterns.
+- Prefer child workflows or fanout loops for complex fanout patterns.
 
 ## Code Example
 ```ts
@@ -76,11 +68,10 @@ export async function extractTenantsWorkflow(input: ExtractTenantsInput) {
 ## Diagram
 ```mermaid
 flowchart LR
-  sst[SST stacks today] --> plan[Temporal migration]
-  plan --> workflows[apps/workflows]
-  plan --> workerExtract[apps/worker-extract]
-  plan --> workerTransform[apps/worker-transform]
-  plan --> orchestrator[apps/orchestrator]
+  orchestrator[apps/orchestrator] --> temporal[Temporal Server]
+  temporal --> workflows[apps/workflows]
+  workflows --> workerExtract[apps/worker-extract]
+  workflows --> workerTransform[apps/worker-transform]
 ```
 
 ## Related

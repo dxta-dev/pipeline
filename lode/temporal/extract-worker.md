@@ -63,8 +63,6 @@ workflow uses to call `extractWorkflowDeploymentStatus` for each.
 
 ## Context Initialization
 
-The worker reuses patterns from `apps/stack/src/extract/context.ts`:
-
 - `initDatabase(dbUrl)` - Creates a Drizzle client for a tenant database
 - `initSuperDatabase()` - Creates a Drizzle client for the super database
 - `initSourceControl({ tenantId, sourceControl })` - Loads GitHub App installation id
@@ -96,7 +94,6 @@ pnpm run start --workspace @dxta/worker-extract
 
 ## Rationale
 
-- Porting from SST handlers preserves existing extract logic.
 - Shared `packages/functions/extract` functions reduce duplication.
 - Environment validation via Zod catches config errors at startup.
 

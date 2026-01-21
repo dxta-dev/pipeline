@@ -86,7 +86,6 @@ pnpm --filter @dxta/worker-transform start
 
 ## Rationale
 
-- Porting from SST handlers preserves existing transform logic.
 - Shared `packages/functions/transform` functions reduce duplication.
 - Environment validation via Zod catches config errors at startup.
 - Simpler than extract: no pagination, no per-MR child workflows needed.

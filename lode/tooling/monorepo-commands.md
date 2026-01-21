@@ -41,3 +41,5 @@ flowchart LR
 ## Related
 - [Summary](../summary.md)
 - [Practices](../practices.md)
+- [README.md](../../README.md) - User-facing setup guide
+- [.env.example](../../.env.example) - Environment variable template
