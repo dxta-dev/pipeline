@@ -12,6 +12,7 @@
   "license": "ISC",
   "dependencies": {
     "@dxta/extract-schema": "*",
+    "@dxta/tenant-schema": "*",
     "@dxta/transform-schema": "*"
   },
   "devDependencies": {

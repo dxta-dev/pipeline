@@ -23,7 +23,8 @@ Temporal CLI, git, and jq.
 
 ## Rationale
 - Temporal on Railway provides workflow orchestration with built-in retries,
-  visibility, and scheduling.
+  visibility, and scheduling. Deployment images are built with Nix via
+  `nix2container` for the orchestrator and both workers.
 
 ## Lessons
 - Fanout and orchestration stay in workflows; retries/timeouts replace DLQs.

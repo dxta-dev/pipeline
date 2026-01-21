@@ -1,0 +1,60 @@
+name: Build and Push OCI Images
+
+on:
+  push:
+    branches: ["main"]
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v27
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+
+      - name: Build images
+        run: |
+          nix build .#image-orchestrator --out-link result-orchestrator
+          nix build .#image-worker-extract --out-link result-worker-extract
+          nix build .#image-worker-transform --out-link result-worker-transform
+
+      - name: Login to GHCR
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | nix shell nixpkgs#skopeo -c skopeo login ghcr.io \
+            --username "${{ github.actor }}" \
+            --password-stdin
+
+      - name: Push images
+        env:
+          REGISTRY_OWNER: ${{ github.repository_owner }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          nix shell nixpkgs#skopeo -c skopeo copy --all \
+            nix:./result-orchestrator \
+            docker://ghcr.io/${REGISTRY_OWNER}/dxta-orchestrator:${IMAGE_TAG}
+          nix shell nixpkgs#skopeo -c skopeo copy --all \
+            nix:./result-orchestrator \
+            docker://ghcr.io/${REGISTRY_OWNER}/dxta-orchestrator:latest
+
+          nix shell nixpkgs#skopeo -c skopeo copy --all \
+            nix:./result-worker-extract \
+            docker://ghcr.io/${REGISTRY_OWNER}/dxta-worker-extract:${IMAGE_TAG}
+          nix shell nixpkgs#skopeo -c skopeo copy --all \
+            nix:./result-worker-extract \
+            docker://ghcr.io/${REGISTRY_OWNER}/dxta-worker-extract:latest
+
+          nix shell nixpkgs#skopeo -c skopeo copy --all \
+            nix:./result-worker-transform \
+            docker://ghcr.io/${REGISTRY_OWNER}/dxta-worker-transform:${IMAGE_TAG}
+          nix shell nixpkgs#skopeo -c skopeo copy --all \
+            nix:./result-worker-transform \
+            docker://ghcr.io/${REGISTRY_OWNER}/dxta-worker-transform:latest

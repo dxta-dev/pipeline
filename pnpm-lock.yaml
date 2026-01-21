@@ -194,6 +194,9 @@ importers:
       '@dxta/extract-schema':
         specifier: '*'
         version: link:../../schemas/extract
+      '@dxta/tenant-schema':
+        specifier: '*'
+        version: link:../../schemas/tenant
       '@dxta/transform-schema':
         specifier: '*'
         version: link:../../schemas/transform
