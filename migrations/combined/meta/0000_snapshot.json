@@ -1,8 +1,6 @@
 {
-  "version": "5",
+  "version": "6",
   "dialect": "sqlite",
-  "id": "fae96bda-469b-4df3-954f-bf5c93ef1c04",
-  "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "crawl_events": {
       "name": "crawl_events",
@@ -72,15 +70,20 @@
         "crawl_events_instance_id_crawl_instances_id_fk": {
           "name": "crawl_events_instance_id_crawl_instances_id_fk",
           "tableFrom": "crawl_events",
+          "columnsFrom": [
+            "instance_id"
+          ],
           "tableTo": "crawl_instances",
-          "columnsFrom": ["instance_id"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "crawl_instances": {
       "name": "crawl_instances",
@@ -148,7 +151,8 @@
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "extract_repository_commits": {
       "name": "extract_repository_commits",
@@ -208,7 +212,9 @@
       "indexes": {
         "repository_commits_repository_sha_id_idx": {
           "name": "repository_commits_repository_sha_id_idx",
-          "columns": ["repository_sha_id"],
+          "columns": [
+            "repository_sha_id"
+          ],
           "isUnique": true
         }
       },
@@ -216,24 +222,33 @@
         "extract_repository_commits_repository_id_extract_repositories_id_fk": {
           "name": "extract_repository_commits_repository_id_extract_repositories_id_fk",
           "tableFrom": "extract_repository_commits",
+          "columnsFrom": [
+            "repository_id"
+          ],
           "tableTo": "extract_repositories",
-          "columnsFrom": ["repository_id"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "extract_repository_commits_repository_sha_id_extract_repository_shas_id_fk": {
           "name": "extract_repository_commits_repository_sha_id_extract_repository_shas_id_fk",
           "tableFrom": "extract_repository_commits",
+          "columnsFrom": [
+            "repository_sha_id"
+          ],
           "tableTo": "extract_repository_shas",
-          "columnsFrom": ["repository_sha_id"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "extract_deployments": {
       "name": "extract_deployments",
@@ -335,7 +350,11 @@
       "indexes": {
         "deployments_external_id_idx": {
           "name": "deployments_external_id_idx",
-          "columns": ["external_id", "repository_id", "deployment_type"],
+          "columns": [
+            "external_id",
+            "repository_id",
+            "deployment_type"
+          ],
           "isUnique": true
         }
       },
@@ -343,24 +362,33 @@
         "extract_deployments_repository_id_extract_repositories_id_fk": {
           "name": "extract_deployments_repository_id_extract_repositories_id_fk",
           "tableFrom": "extract_deployments",
+          "columnsFrom": [
+            "repository_id"
+          ],
           "tableTo": "extract_repositories",
-          "columnsFrom": ["repository_id"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "extract_deployments_repository_sha_id_extract_repository_shas_id_fk": {
           "name": "extract_deployments_repository_sha_id_extract_repository_shas_id_fk",
           "tableFrom": "extract_deployments",
+          "columnsFrom": [
+            "repository_sha_id"
+          ],
           "tableTo": "extract_repository_shas",
-          "columnsFrom": ["repository_sha_id"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "extract_git_identities": {
       "name": "extract_git_identities",
@@ -413,7 +441,11 @@
       "indexes": {
         "repository_id_email_name_idx": {
           "name": "repository_id_email_name_idx",
-          "columns": ["repository_id", "email", "name"],
+          "columns": [
+            "repository_id",
+            "email",
+            "name"
+          ],
           "isUnique": true
         }
       },
@@ -421,15 +453,20 @@
         "extract_git_identities_repository_id_extract_repositories_id_fk": {
           "name": "extract_git_identities_repository_id_extract_repositories_id_fk",
           "tableFrom": "extract_git_identities",
+          "columnsFrom": [
+            "repository_id"
+          ],
           "tableTo": "extract_repositories",
-          "columnsFrom": ["repository_id"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "extract_members": {
       "name": "extract_members",
@@ -526,13 +563,17 @@
       "indexes": {
         "members_external_id_idx": {
           "name": "members_external_id_idx",
-          "columns": ["external_id", "forge_type"],
+          "columns": [
+            "external_id",
+            "forge_type"
+          ],
           "isUnique": true
         }
       },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "extract_merge_request_commits": {
       "name": "extract_merge_request_commits",
@@ -676,7 +717,10 @@
       "indexes": {
         "merge_request_commits_external_id_idx": {
           "name": "merge_request_commits_external_id_idx",
-          "columns": ["merge_request_id", "external_id"],
+          "columns": [
+            "merge_request_id",
+            "external_id"
+          ],
           "isUnique": true
         }
       },
@@ -684,15 +728,20 @@
         "extract_merge_request_commits_merge_request_id_extract_merge_requests_id_fk": {
           "name": "extract_merge_request_commits_merge_request_id_extract_merge_requests_id_fk",
           "tableFrom": "extract_merge_request_commits",
+          "columnsFrom": [
+            "merge_request_id"
+          ],
           "tableTo": "extract_merge_requests",
-          "columnsFrom": ["merge_request_id"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "extract_merge_request_diffs": {
       "name": "extract_merge_request_diffs",
@@ -787,7 +836,10 @@
       "indexes": {
         "diffs_merge_request_id_newPath_idx": {
           "name": "diffs_merge_request_id_newPath_idx",
-          "columns": ["merge_request_id", "new_path"],
+          "columns": [
+            "merge_request_id",
+            "new_path"
+          ],
           "isUnique": true
         }
       },
@@ -795,15 +847,20 @@
         "extract_merge_request_diffs_merge_request_id_extract_merge_requests_id_fk": {
           "name": "extract_merge_request_diffs_merge_request_id_extract_merge_requests_id_fk",
           "tableFrom": "extract_merge_request_diffs",
+          "columnsFrom": [
+            "merge_request_id"
+          ],
           "tableTo": "extract_merge_requests",
-          "columnsFrom": ["merge_request_id"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "extract_merge_request_notes": {
       "name": "extract_merge_request_notes",
@@ -898,7 +955,10 @@
       "indexes": {
         "merge_request_notes_external_id_idx": {
           "name": "merge_request_notes_external_id_idx",
-          "columns": ["merge_request_id", "external_id"],
+          "columns": [
+            "merge_request_id",
+            "external_id"
+          ],
           "isUnique": true
         }
       },
@@ -906,15 +966,20 @@
         "extract_merge_request_notes_merge_request_id_extract_merge_requests_id_fk": {
           "name": "extract_merge_request_notes_merge_request_id_extract_merge_requests_id_fk",
           "tableFrom": "extract_merge_request_notes",
+          "columnsFrom": [
+            "merge_request_id"
+          ],
           "tableTo": "extract_merge_requests",
-          "columnsFrom": ["merge_request_id"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "extract_merge_requests": {
       "name": "extract_merge_requests",
@@ -1066,7 +1131,10 @@
       "indexes": {
         "merge_requests_external_id_idx": {
           "name": "merge_requests_external_id_idx",
-          "columns": ["external_id", "repository_id"],
+          "columns": [
+            "external_id",
+            "repository_id"
+          ],
           "isUnique": true
         }
       },
@@ -1074,24 +1142,33 @@
         "extract_merge_requests_repository_id_extract_repositories_id_fk": {
           "name": "extract_merge_requests_repository_id_extract_repositories_id_fk",
           "tableFrom": "extract_merge_requests",
+          "columnsFrom": [
+            "repository_id"
+          ],
           "tableTo": "extract_repositories",
-          "columnsFrom": ["repository_id"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "extract_merge_requests_repository_sha_id_extract_repository_shas_id_fk": {
           "name": "extract_merge_requests_repository_sha_id_extract_repository_shas_id_fk",
           "tableFrom": "extract_merge_requests",
+          "columnsFrom": [
+            "repository_sha_id"
+          ],
           "tableTo": "extract_repository_shas",
-          "columnsFrom": ["repository_sha_id"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "extract_namespaces": {
       "name": "extract_namespaces",
@@ -1152,13 +1229,17 @@
       "indexes": {
         "namespaces_external_id_idx": {
           "name": "namespaces_external_id_idx",
-          "columns": ["external_id", "forge_type"],
+          "columns": [
+            "external_id",
+            "forge_type"
+          ],
           "isUnique": true
         }
       },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "extract_repositories": {
       "name": "extract_repositories",
@@ -1225,7 +1306,10 @@
       "indexes": {
         "repositories_external_id_idx": {
           "name": "repositories_external_id_idx",
-          "columns": ["external_id", "forge_type"],
+          "columns": [
+            "external_id",
+            "forge_type"
+          ],
           "isUnique": true
         }
       },
@@ -1233,15 +1317,20 @@
         "extract_repositories_namespace_id_extract_namespaces_id_fk": {
           "name": "extract_repositories_namespace_id_extract_namespaces_id_fk",
           "tableFrom": "extract_repositories",
+          "columnsFrom": [
+            "namespace_id"
+          ],
           "tableTo": "extract_namespaces",
-          "columnsFrom": ["namespace_id"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "extract_repositories_to_members": {
       "name": "extract_repositories_to_members",
@@ -1282,29 +1371,41 @@
         "extract_repositories_to_members_repository_id_extract_repositories_id_fk": {
           "name": "extract_repositories_to_members_repository_id_extract_repositories_id_fk",
           "tableFrom": "extract_repositories_to_members",
+          "columnsFrom": [
+            "repository_id"
+          ],
           "tableTo": "extract_repositories",
-          "columnsFrom": ["repository_id"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "extract_repositories_to_members_member_id_extract_members_id_fk": {
           "name": "extract_repositories_to_members_member_id_extract_members_id_fk",
           "tableFrom": "extract_repositories_to_members",
+          "columnsFrom": [
+            "member_id"
+          ],
           "tableTo": "extract_members",
-          "columnsFrom": ["member_id"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {
         "extract_repositories_to_members_repository_id_member_id_pk": {
-          "columns": ["member_id", "repository_id"],
+          "columns": [
+            "member_id",
+            "repository_id"
+          ],
           "name": "extract_repositories_to_members_repository_id_member_id_pk"
         }
       },
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "extract_repository_sha_trees": {
       "name": "extract_repository_sha_trees",
@@ -1345,29 +1446,41 @@
         "extract_repository_sha_trees_sha_id_extract_repository_shas_id_fk": {
           "name": "extract_repository_sha_trees_sha_id_extract_repository_shas_id_fk",
           "tableFrom": "extract_repository_sha_trees",
+          "columnsFrom": [
+            "sha_id"
+          ],
           "tableTo": "extract_repository_shas",
-          "columnsFrom": ["sha_id"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "extract_repository_sha_trees_parent_id_extract_repository_shas_id_fk": {
           "name": "extract_repository_sha_trees_parent_id_extract_repository_shas_id_fk",
           "tableFrom": "extract_repository_sha_trees",
+          "columnsFrom": [
+            "parent_id"
+          ],
           "tableTo": "extract_repository_shas",
-          "columnsFrom": ["parent_id"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {
         "extract_repository_sha_trees_sha_id_parent_id_pk": {
-          "columns": ["parent_id", "sha_id"],
+          "columns": [
+            "parent_id",
+            "sha_id"
+          ],
           "name": "extract_repository_sha_trees_sha_id_parent_id_pk"
         }
       },
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "extract_repository_shas": {
       "name": "extract_repository_shas",
@@ -1413,7 +1526,10 @@
       "indexes": {
         "repository_shas_repository_id_sha_idx": {
           "name": "repository_shas_repository_id_sha_idx",
-          "columns": ["repository_id", "sha"],
+          "columns": [
+            "repository_id",
+            "sha"
+          ],
           "isUnique": true
         }
       },
@@ -1421,15 +1537,20 @@
         "extract_repository_shas_repository_id_extract_repositories_id_fk": {
           "name": "extract_repository_shas_repository_id_extract_repositories_id_fk",
           "tableFrom": "extract_repository_shas",
+          "columnsFrom": [
+            "repository_id"
+          ],
           "tableTo": "extract_repositories",
-          "columnsFrom": ["repository_id"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "extract_timeline_events": {
       "name": "extract_timeline_events",
@@ -1524,7 +1645,11 @@
       "indexes": {
         "timeline_events_external_id_merge_request_id_type_idx": {
           "name": "timeline_events_external_id_merge_request_id_type_idx",
-          "columns": ["external_id", "merge_request_id", "type"],
+          "columns": [
+            "external_id",
+            "merge_request_id",
+            "type"
+          ],
           "isUnique": true
         }
       },
@@ -1532,15 +1657,20 @@
         "extract_timeline_events_merge_request_id_extract_merge_requests_id_fk": {
           "name": "extract_timeline_events_merge_request_id_extract_merge_requests_id_fk",
           "tableFrom": "extract_timeline_events",
+          "columnsFrom": [
+            "merge_request_id"
+          ],
           "tableTo": "extract_merge_requests",
-          "columnsFrom": ["merge_request_id"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "tenant_cicd_deploy_workflows": {
       "name": "tenant_cicd_deploy_workflows",
@@ -1600,7 +1730,8 @@
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "tenant_config": {
       "name": "tenant_config",
@@ -1639,13 +1770,16 @@
       "indexes": {
         "tenant_config_unique_idx": {
           "name": "tenant_config_unique_idx",
-          "columns": ["hq_timezone"],
+          "columns": [
+            "hq_timezone"
+          ],
           "isUnique": true
         }
       },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "tenant_deployment_environments": {
       "name": "tenant_deployment_environments",
@@ -1698,7 +1832,8 @@
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "tenant_team_members": {
       "name": "tenant_team_members",
@@ -1744,7 +1879,10 @@
       "indexes": {
         "team_members_unique_idx": {
           "name": "team_members_unique_idx",
-          "columns": ["team", "member"],
+          "columns": [
+            "team",
+            "member"
+          ],
           "isUnique": true
         }
       },
@@ -1752,15 +1890,20 @@
         "tenant_team_members_team_tenant_teams_id_fk": {
           "name": "tenant_team_members_team_tenant_teams_id_fk",
           "tableFrom": "tenant_team_members",
+          "columnsFrom": [
+            "team"
+          ],
           "tableTo": "tenant_teams",
-          "columnsFrom": ["team"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "tenant_teams": {
       "name": "tenant_teams",
@@ -1799,7 +1942,8 @@
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "transform_branches": {
       "name": "transform_branches",
@@ -1838,13 +1982,16 @@
       "indexes": {
         "branches_name_idx": {
           "name": "branches_name_idx",
-          "columns": ["name"],
+          "columns": [
+            "name"
+          ],
           "isUnique": true
         }
       },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "transform_dates": {
       "name": "transform_dates",
@@ -1904,18 +2051,26 @@
       "indexes": {
         "dates_day_week_month_year_idx": {
           "name": "dates_day_week_month_year_idx",
-          "columns": ["day", "week", "month", "year"],
+          "columns": [
+            "day",
+            "week",
+            "month",
+            "year"
+          ],
           "isUnique": true
         },
         "dates_week_idx": {
           "name": "dates_week_idx",
-          "columns": ["week"],
+          "columns": [
+            "week"
+          ],
           "isUnique": false
         }
       },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "transform_forge_users": {
       "name": "transform_forge_users",
@@ -1991,13 +2146,17 @@
       "indexes": {
         "forge_users_external_id_forge_type_idx": {
           "name": "forge_users_external_id_forge_type_idx",
-          "columns": ["external_id", "forge_type"],
+          "columns": [
+            "external_id",
+            "forge_type"
+          ],
           "isUnique": true
         }
       },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "transform_merge_request_fact_dates_junk": {
       "name": "transform_merge_request_fact_dates_junk",
@@ -2087,78 +2246,111 @@
         "transform_merge_request_fact_dates_junk_deployed_at_transform_dates_id_fk": {
           "name": "transform_merge_request_fact_dates_junk_deployed_at_transform_dates_id_fk",
           "tableFrom": "transform_merge_request_fact_dates_junk",
+          "columnsFrom": [
+            "deployed_at"
+          ],
           "tableTo": "transform_dates",
-          "columnsFrom": ["deployed_at"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "transform_merge_request_fact_dates_junk_merged_at_transform_dates_id_fk": {
           "name": "transform_merge_request_fact_dates_junk_merged_at_transform_dates_id_fk",
           "tableFrom": "transform_merge_request_fact_dates_junk",
+          "columnsFrom": [
+            "merged_at"
+          ],
           "tableTo": "transform_dates",
-          "columnsFrom": ["merged_at"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "transform_merge_request_fact_dates_junk_opened_at_transform_dates_id_fk": {
           "name": "transform_merge_request_fact_dates_junk_opened_at_transform_dates_id_fk",
           "tableFrom": "transform_merge_request_fact_dates_junk",
+          "columnsFrom": [
+            "opened_at"
+          ],
           "tableTo": "transform_dates",
-          "columnsFrom": ["opened_at"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "transform_merge_request_fact_dates_junk_closed_at_transform_dates_id_fk": {
           "name": "transform_merge_request_fact_dates_junk_closed_at_transform_dates_id_fk",
           "tableFrom": "transform_merge_request_fact_dates_junk",
+          "columnsFrom": [
+            "closed_at"
+          ],
           "tableTo": "transform_dates",
-          "columnsFrom": ["closed_at"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "transform_merge_request_fact_dates_junk_last_updated_at_transform_dates_id_fk": {
           "name": "transform_merge_request_fact_dates_junk_last_updated_at_transform_dates_id_fk",
           "tableFrom": "transform_merge_request_fact_dates_junk",
+          "columnsFrom": [
+            "last_updated_at"
+          ],
           "tableTo": "transform_dates",
-          "columnsFrom": ["last_updated_at"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "transform_merge_request_fact_dates_junk_started_coding_at_transform_dates_id_fk": {
           "name": "transform_merge_request_fact_dates_junk_started_coding_at_transform_dates_id_fk",
           "tableFrom": "transform_merge_request_fact_dates_junk",
+          "columnsFrom": [
+            "started_coding_at"
+          ],
           "tableTo": "transform_dates",
-          "columnsFrom": ["started_coding_at"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "transform_merge_request_fact_dates_junk_started_pickup_at_transform_dates_id_fk": {
           "name": "transform_merge_request_fact_dates_junk_started_pickup_at_transform_dates_id_fk",
           "tableFrom": "transform_merge_request_fact_dates_junk",
+          "columnsFrom": [
+            "started_pickup_at"
+          ],
           "tableTo": "transform_dates",
-          "columnsFrom": ["started_pickup_at"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "transform_merge_request_fact_dates_junk_started_review_at_transform_dates_id_fk": {
           "name": "transform_merge_request_fact_dates_junk_started_review_at_transform_dates_id_fk",
           "tableFrom": "transform_merge_request_fact_dates_junk",
+          "columnsFrom": [
+            "started_review_at"
+          ],
           "tableTo": "transform_dates",
-          "columnsFrom": ["started_review_at"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "transform_merge_request_events": {
       "name": "transform_merge_request_events",
@@ -2261,17 +2453,23 @@
       "indexes": {
         "merge_request_events_occured_on_idx": {
           "name": "merge_request_events_occured_on_idx",
-          "columns": ["occured_on"],
+          "columns": [
+            "occured_on"
+          ],
           "isUnique": false
         },
         "merge_request_events_merge_request_idx": {
           "name": "merge_request_events_merge_request_idx",
-          "columns": ["merge_request"],
+          "columns": [
+            "merge_request"
+          ],
           "isUnique": false
         },
         "merge_request_events_commited_at_idx": {
           "name": "merge_request_events_commited_at_idx",
-          "columns": ["commited_at"],
+          "columns": [
+            "commited_at"
+          ],
           "isUnique": false
         }
       },
@@ -2279,60 +2477,85 @@
         "transform_merge_request_events_actor_transform_forge_users_id_fk": {
           "name": "transform_merge_request_events_actor_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_events",
+          "columnsFrom": [
+            "actor"
+          ],
           "tableTo": "transform_forge_users",
-          "columnsFrom": ["actor"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "transform_merge_request_events_subject_transform_forge_users_id_fk": {
           "name": "transform_merge_request_events_subject_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_events",
+          "columnsFrom": [
+            "subject"
+          ],
           "tableTo": "transform_forge_users",
-          "columnsFrom": ["subject"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "transform_merge_request_events_occured_on_transform_dates_id_fk": {
           "name": "transform_merge_request_events_occured_on_transform_dates_id_fk",
           "tableFrom": "transform_merge_request_events",
+          "columnsFrom": [
+            "occured_on"
+          ],
           "tableTo": "transform_dates",
-          "columnsFrom": ["occured_on"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "transform_merge_request_events_commited_at_transform_dates_id_fk": {
           "name": "transform_merge_request_events_commited_at_transform_dates_id_fk",
           "tableFrom": "transform_merge_request_events",
+          "columnsFrom": [
+            "commited_at"
+          ],
           "tableTo": "transform_dates",
-          "columnsFrom": ["commited_at"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "transform_merge_request_events_repository_transform_repositories_id_fk": {
           "name": "transform_merge_request_events_repository_transform_repositories_id_fk",
           "tableFrom": "transform_merge_request_events",
+          "columnsFrom": [
+            "repository"
+          ],
           "tableTo": "transform_repositories",
-          "columnsFrom": ["repository"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "transform_merge_request_events_merge_request_transform_merge_requests_id_fk": {
           "name": "transform_merge_request_events_merge_request_transform_merge_requests_id_fk",
           "tableFrom": "transform_merge_request_events",
+          "columnsFrom": [
+            "merge_request"
+          ],
           "tableTo": "transform_merge_requests",
-          "columnsFrom": ["merge_request"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "transform_merge_request_metrics": {
       "name": "transform_merge_request_metrics",
@@ -2492,22 +2715,30 @@
       "indexes": {
         "merge_request_metrics_users_junk_idx": {
           "name": "merge_request_metrics_users_junk_idx",
-          "columns": ["users_junk"],
+          "columns": [
+            "users_junk"
+          ],
           "isUnique": false
         },
         "merge_request_metrics_dates_junk_idx": {
           "name": "merge_request_metrics_dates_junk_idx",
-          "columns": ["dates_junk"],
+          "columns": [
+            "dates_junk"
+          ],
           "isUnique": false
         },
         "merge_request_metrics_repository_idx": {
           "name": "merge_request_metrics_repository_idx",
-          "columns": ["repository"],
+          "columns": [
+            "repository"
+          ],
           "isUnique": false
         },
         "merge_request_metrics_merge_request_idx": {
           "name": "merge_request_metrics_merge_request_idx",
-          "columns": ["merge_request"],
+          "columns": [
+            "merge_request"
+          ],
           "isUnique": false
         }
       },
@@ -2515,42 +2746,59 @@
         "transform_merge_request_metrics_users_junk_transform_merge_request_fact_users_junk_id_fk": {
           "name": "transform_merge_request_metrics_users_junk_transform_merge_request_fact_users_junk_id_fk",
           "tableFrom": "transform_merge_request_metrics",
+          "columnsFrom": [
+            "users_junk"
+          ],
           "tableTo": "transform_merge_request_fact_users_junk",
-          "columnsFrom": ["users_junk"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "transform_merge_request_metrics_repository_transform_repositories_id_fk": {
           "name": "transform_merge_request_metrics_repository_transform_repositories_id_fk",
           "tableFrom": "transform_merge_request_metrics",
+          "columnsFrom": [
+            "repository"
+          ],
           "tableTo": "transform_repositories",
-          "columnsFrom": ["repository"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "transform_merge_request_metrics_merge_request_transform_merge_requests_id_fk": {
           "name": "transform_merge_request_metrics_merge_request_transform_merge_requests_id_fk",
           "tableFrom": "transform_merge_request_metrics",
+          "columnsFrom": [
+            "merge_request"
+          ],
           "tableTo": "transform_merge_requests",
-          "columnsFrom": ["merge_request"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "transform_merge_request_metrics_dates_junk_transform_merge_request_fact_dates_junk_id_fk": {
           "name": "transform_merge_request_metrics_dates_junk_transform_merge_request_fact_dates_junk_id_fk",
           "tableFrom": "transform_merge_request_metrics",
+          "columnsFrom": [
+            "dates_junk"
+          ],
           "tableTo": "transform_merge_request_fact_dates_junk",
-          "columnsFrom": ["dates_junk"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "transform_merge_request_fact_users_junk": {
       "name": "transform_merge_request_fact_users_junk",
@@ -2808,294 +3056,423 @@
         "transform_merge_request_fact_users_junk_author_transform_forge_users_id_fk": {
           "name": "transform_merge_request_fact_users_junk_author_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_fact_users_junk",
+          "columnsFrom": [
+            "author"
+          ],
           "tableTo": "transform_forge_users",
-          "columnsFrom": ["author"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "transform_merge_request_fact_users_junk_merged_by_transform_forge_users_id_fk": {
           "name": "transform_merge_request_fact_users_junk_merged_by_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_fact_users_junk",
+          "columnsFrom": [
+            "merged_by"
+          ],
           "tableTo": "transform_forge_users",
-          "columnsFrom": ["merged_by"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "transform_merge_request_fact_users_junk_approver1_transform_forge_users_id_fk": {
           "name": "transform_merge_request_fact_users_junk_approver1_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_fact_users_junk",
+          "columnsFrom": [
+            "approver1"
+          ],
           "tableTo": "transform_forge_users",
-          "columnsFrom": ["approver1"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "transform_merge_request_fact_users_junk_approver2_transform_forge_users_id_fk": {
           "name": "transform_merge_request_fact_users_junk_approver2_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_fact_users_junk",
+          "columnsFrom": [
+            "approver2"
+          ],
           "tableTo": "transform_forge_users",
-          "columnsFrom": ["approver2"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "transform_merge_request_fact_users_junk_approver3_transform_forge_users_id_fk": {
           "name": "transform_merge_request_fact_users_junk_approver3_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_fact_users_junk",
+          "columnsFrom": [
+            "approver3"
+          ],
           "tableTo": "transform_forge_users",
-          "columnsFrom": ["approver3"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "transform_merge_request_fact_users_junk_approver4_transform_forge_users_id_fk": {
           "name": "transform_merge_request_fact_users_junk_approver4_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_fact_users_junk",
+          "columnsFrom": [
+            "approver4"
+          ],
           "tableTo": "transform_forge_users",
-          "columnsFrom": ["approver4"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "transform_merge_request_fact_users_junk_approver5_transform_forge_users_id_fk": {
           "name": "transform_merge_request_fact_users_junk_approver5_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_fact_users_junk",
+          "columnsFrom": [
+            "approver5"
+          ],
           "tableTo": "transform_forge_users",
-          "columnsFrom": ["approver5"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "transform_merge_request_fact_users_junk_approver6_transform_forge_users_id_fk": {
           "name": "transform_merge_request_fact_users_junk_approver6_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_fact_users_junk",
+          "columnsFrom": [
+            "approver6"
+          ],
           "tableTo": "transform_forge_users",
-          "columnsFrom": ["approver6"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "transform_merge_request_fact_users_junk_approver7_transform_forge_users_id_fk": {
           "name": "transform_merge_request_fact_users_junk_approver7_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_fact_users_junk",
+          "columnsFrom": [
+            "approver7"
+          ],
           "tableTo": "transform_forge_users",
-          "columnsFrom": ["approver7"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "transform_merge_request_fact_users_junk_approver8_transform_forge_users_id_fk": {
           "name": "transform_merge_request_fact_users_junk_approver8_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_fact_users_junk",
+          "columnsFrom": [
+            "approver8"
+          ],
           "tableTo": "transform_forge_users",
-          "columnsFrom": ["approver8"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "transform_merge_request_fact_users_junk_approver9_transform_forge_users_id_fk": {
           "name": "transform_merge_request_fact_users_junk_approver9_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_fact_users_junk",
+          "columnsFrom": [
+            "approver9"
+          ],
           "tableTo": "transform_forge_users",
-          "columnsFrom": ["approver9"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "transform_merge_request_fact_users_junk_approver10_transform_forge_users_id_fk": {
           "name": "transform_merge_request_fact_users_junk_approver10_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_fact_users_junk",
+          "columnsFrom": [
+            "approver10"
+          ],
           "tableTo": "transform_forge_users",
-          "columnsFrom": ["approver10"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "transform_merge_request_fact_users_junk_committer1_transform_forge_users_id_fk": {
           "name": "transform_merge_request_fact_users_junk_committer1_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_fact_users_junk",
+          "columnsFrom": [
+            "committer1"
+          ],
           "tableTo": "transform_forge_users",
-          "columnsFrom": ["committer1"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "transform_merge_request_fact_users_junk_committer2_transform_forge_users_id_fk": {
           "name": "transform_merge_request_fact_users_junk_committer2_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_fact_users_junk",
+          "columnsFrom": [
+            "committer2"
+          ],
           "tableTo": "transform_forge_users",
-          "columnsFrom": ["committer2"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "transform_merge_request_fact_users_junk_committer3_transform_forge_users_id_fk": {
           "name": "transform_merge_request_fact_users_junk_committer3_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_fact_users_junk",
+          "columnsFrom": [
+            "committer3"
+          ],
           "tableTo": "transform_forge_users",
-          "columnsFrom": ["committer3"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "transform_merge_request_fact_users_junk_committer4_transform_forge_users_id_fk": {
           "name": "transform_merge_request_fact_users_junk_committer4_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_fact_users_junk",
+          "columnsFrom": [
+            "committer4"
+          ],
           "tableTo": "transform_forge_users",
-          "columnsFrom": ["committer4"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "transform_merge_request_fact_users_junk_committer5_transform_forge_users_id_fk": {
           "name": "transform_merge_request_fact_users_junk_committer5_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_fact_users_junk",
+          "columnsFrom": [
+            "committer5"
+          ],
           "tableTo": "transform_forge_users",
-          "columnsFrom": ["committer5"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "transform_merge_request_fact_users_junk_committer6_transform_forge_users_id_fk": {
           "name": "transform_merge_request_fact_users_junk_committer6_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_fact_users_junk",
+          "columnsFrom": [
+            "committer6"
+          ],
           "tableTo": "transform_forge_users",
-          "columnsFrom": ["committer6"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "transform_merge_request_fact_users_junk_committer7_transform_forge_users_id_fk": {
           "name": "transform_merge_request_fact_users_junk_committer7_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_fact_users_junk",
+          "columnsFrom": [
+            "committer7"
+          ],
           "tableTo": "transform_forge_users",
-          "columnsFrom": ["committer7"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "transform_merge_request_fact_users_junk_committer8_transform_forge_users_id_fk": {
           "name": "transform_merge_request_fact_users_junk_committer8_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_fact_users_junk",
+          "columnsFrom": [
+            "committer8"
+          ],
           "tableTo": "transform_forge_users",
-          "columnsFrom": ["committer8"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "transform_merge_request_fact_users_junk_committer9_transform_forge_users_id_fk": {
           "name": "transform_merge_request_fact_users_junk_committer9_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_fact_users_junk",
+          "columnsFrom": [
+            "committer9"
+          ],
           "tableTo": "transform_forge_users",
-          "columnsFrom": ["committer9"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "transform_merge_request_fact_users_junk_committer10_transform_forge_users_id_fk": {
           "name": "transform_merge_request_fact_users_junk_committer10_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_fact_users_junk",
+          "columnsFrom": [
+            "committer10"
+          ],
           "tableTo": "transform_forge_users",
-          "columnsFrom": ["committer10"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "transform_merge_request_fact_users_junk_reviewer1_transform_forge_users_id_fk": {
           "name": "transform_merge_request_fact_users_junk_reviewer1_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_fact_users_junk",
+          "columnsFrom": [
+            "reviewer1"
+          ],
           "tableTo": "transform_forge_users",
-          "columnsFrom": ["reviewer1"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "transform_merge_request_fact_users_junk_reviewer2_transform_forge_users_id_fk": {
           "name": "transform_merge_request_fact_users_junk_reviewer2_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_fact_users_junk",
+          "columnsFrom": [
+            "reviewer2"
+          ],
           "tableTo": "transform_forge_users",
-          "columnsFrom": ["reviewer2"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "transform_merge_request_fact_users_junk_reviewer3_transform_forge_users_id_fk": {
           "name": "transform_merge_request_fact_users_junk_reviewer3_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_fact_users_junk",
+          "columnsFrom": [
+            "reviewer3"
+          ],
           "tableTo": "transform_forge_users",
-          "columnsFrom": ["reviewer3"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "transform_merge_request_fact_users_junk_reviewer4_transform_forge_users_id_fk": {
           "name": "transform_merge_request_fact_users_junk_reviewer4_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_fact_users_junk",
+          "columnsFrom": [
+            "reviewer4"
+          ],
           "tableTo": "transform_forge_users",
-          "columnsFrom": ["reviewer4"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "transform_merge_request_fact_users_junk_reviewer5_transform_forge_users_id_fk": {
           "name": "transform_merge_request_fact_users_junk_reviewer5_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_fact_users_junk",
+          "columnsFrom": [
+            "reviewer5"
+          ],
           "tableTo": "transform_forge_users",
-          "columnsFrom": ["reviewer5"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "transform_merge_request_fact_users_junk_reviewer6_transform_forge_users_id_fk": {
           "name": "transform_merge_request_fact_users_junk_reviewer6_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_fact_users_junk",
+          "columnsFrom": [
+            "reviewer6"
+          ],
           "tableTo": "transform_forge_users",
-          "columnsFrom": ["reviewer6"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "transform_merge_request_fact_users_junk_reviewer7_transform_forge_users_id_fk": {
           "name": "transform_merge_request_fact_users_junk_reviewer7_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_fact_users_junk",
+          "columnsFrom": [
+            "reviewer7"
+          ],
           "tableTo": "transform_forge_users",
-          "columnsFrom": ["reviewer7"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "transform_merge_request_fact_users_junk_reviewer8_transform_forge_users_id_fk": {
           "name": "transform_merge_request_fact_users_junk_reviewer8_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_fact_users_junk",
+          "columnsFrom": [
+            "reviewer8"
+          ],
           "tableTo": "transform_forge_users",
-          "columnsFrom": ["reviewer8"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "transform_merge_request_fact_users_junk_reviewer9_transform_forge_users_id_fk": {
           "name": "transform_merge_request_fact_users_junk_reviewer9_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_fact_users_junk",
+          "columnsFrom": [
+            "reviewer9"
+          ],
           "tableTo": "transform_forge_users",
-          "columnsFrom": ["reviewer9"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "transform_merge_request_fact_users_junk_reviewer10_transform_forge_users_id_fk": {
           "name": "transform_merge_request_fact_users_junk_reviewer10_transform_forge_users_id_fk",
           "tableFrom": "transform_merge_request_fact_users_junk",
+          "columnsFrom": [
+            "reviewer10"
+          ],
           "tableTo": "transform_forge_users",
-          "columnsFrom": ["reviewer10"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "transform_merge_requests": {
       "name": "transform_merge_requests",
@@ -3194,7 +3571,10 @@
       "indexes": {
         "merge_requests_external_id_forge_type_idx": {
           "name": "merge_requests_external_id_forge_type_idx",
-          "columns": ["external_id", "forge_type"],
+          "columns": [
+            "external_id",
+            "forge_type"
+          ],
           "isUnique": true
         }
       },
@@ -3202,24 +3582,33 @@
         "transform_merge_requests_target_branch_transform_branches_id_fk": {
           "name": "transform_merge_requests_target_branch_transform_branches_id_fk",
           "tableFrom": "transform_merge_requests",
+          "columnsFrom": [
+            "target_branch"
+          ],
           "tableTo": "transform_branches",
-          "columnsFrom": ["target_branch"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "transform_merge_requests_source_branch_transform_branches_id_fk": {
           "name": "transform_merge_requests_source_branch_transform_branches_id_fk",
           "tableFrom": "transform_merge_requests",
+          "columnsFrom": [
+            "source_branch"
+          ],
           "tableTo": "transform_branches",
-          "columnsFrom": ["source_branch"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "transform_null_rows": {
       "name": "transform_null_rows",
@@ -3299,7 +3688,8 @@
       },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "transform_repositories": {
       "name": "transform_repositories",
@@ -3360,19 +3750,25 @@
       "indexes": {
         "repositories_external_id_forge_type_idx": {
           "name": "repositories_external_id_forge_type_idx",
-          "columns": ["external_id", "forge_type"],
+          "columns": [
+            "external_id",
+            "forge_type"
+          ],
           "isUnique": true
         }
       },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     }
   },
   "enums": {},
   "_meta": {
-    "schemas": {},
     "tables": {},
     "columns": {}
-  }
+  },
+  "id": "fae96bda-469b-4df3-954f-bf5c93ef1c04",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "views": {}
 }

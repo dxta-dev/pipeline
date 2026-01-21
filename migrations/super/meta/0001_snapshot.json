@@ -1,8 +1,6 @@
 {
-  "version": "5",
+  "version": "6",
   "dialect": "sqlite",
-  "id": "455e7068-5d45-4bb1-9f5b-be432e6c85fd",
-  "prevId": "33f5c656-1746-4e5c-945b-d4767b78431c",
   "tables": {
     "tenants": {
       "name": "tenants",
@@ -48,15 +46,18 @@
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     }
   },
   "enums": {},
   "_meta": {
-    "schemas": {},
     "tables": {},
     "columns": {
       "\"tenants\".\"name\"": "\"tenants\".\"subdomain\""
     }
-  }
+  },
+  "id": "455e7068-5d45-4bb1-9f5b-be432e6c85fd",
+  "prevId": "33f5c656-1746-4e5c-945b-d4767b78431c",
+  "views": {}
 }

@@ -140,7 +140,7 @@ packages/
 | `pnpm run lint:fix` | Auto-fix lint issues |
 | `pnpm run format` | Format with Biome |
 | `pnpm run test` | Run all tests |
-| `pnpm run db:generate` | Generate Drizzle schemas |
+| `pnpm run db:generate` | Generate database migrations |
 
 ### Single package commands
 
@@ -173,3 +173,30 @@ pnpm --filter @dxta/transform-functions test -- -t "parse hunks"
 When the orchestrator starts, it creates Temporal schedules:
 - **Extract**: Every 15 minutes at minute 8 (`:08`, `:23`, `:38`, `:53`)
 - **Transform**: Every 15 minutes on the quarter-hour (`:00`, `:15`, `:30`, `:45`)
+
+## Database Migrations
+
+The project uses Drizzle Kit to generate SQL migrations. There are two migration
+targets:
+
+| Schema | Purpose | Output |
+|--------|---------|--------|
+| `@dxta/combined-schema` | All per-tenant tables | `migrations/combined/` |
+| `@dxta/super-schema` | Central tenant registry (deprecated) | `migrations/super/` |
+
+### Generate migrations
+
+```bash
+# Generate all migrations
+pnpm run db:generate
+
+# Generate combined migrations only
+pnpm --filter @dxta/combined-schema db:generate
+
+# Generate super migrations only (deprecated)
+pnpm --filter @dxta/super-schema db:generate
+```
+
+The `combined-schema` aggregates tables from `extract-schema`, `transform-schema`,
+`tenant-schema`, and `crawl-schema`. When you modify any of these base schemas,
+regenerate combined migrations.

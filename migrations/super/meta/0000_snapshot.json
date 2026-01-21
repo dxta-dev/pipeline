@@ -1,8 +1,6 @@
 {
-  "version": "5",
+  "version": "6",
   "dialect": "sqlite",
-  "id": "33f5c656-1746-4e5c-945b-d4767b78431c",
-  "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "tenants": {
       "name": "tenants",
@@ -48,13 +46,16 @@
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     }
   },
   "enums": {},
   "_meta": {
-    "schemas": {},
     "tables": {},
     "columns": {}
-  }
+  },
+  "id": "33f5c656-1746-4e5c-945b-d4767b78431c",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "views": {}
 }
