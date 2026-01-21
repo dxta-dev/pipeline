@@ -7,6 +7,7 @@
 - `lode/tooling/local-dev.md`
 - `lode/tooling/nix-images.md`
 - `lode/tooling/migrations.md`
+- `lode/tooling/scripts.md`
 - `lode/plans/github-app-auth.md`
 - `lode/plans/temporal-migration.md`
 - `lode/temporal/baseline-design.md`
@@ -35,6 +36,7 @@ export const lodeIndex = [
   "lode/tooling/monorepo-commands.md",
   "lode/tooling/local-dev.md",
   "lode/tooling/migrations.md",
+  "lode/tooling/scripts.md",
   "lode/plans/github-app-auth.md",
   "lode/plans/temporal-migration.md",
   "lode/temporal/baseline-design.md",
@@ -59,6 +61,7 @@ flowchart TD
   tooling --> commands[monorepo-commands.md]
   tooling --> localDev[local-dev.md]
   tooling --> migrations[migrations.md]
+  tooling --> scripts[scripts.md]
   temporal --> baseline[baseline-design.md]
   temporal --> extractWorker[extract-worker.md]
   temporal --> transformWorker[transform-worker.md]
@@ -66,9 +69,11 @@ flowchart TD
 ```
 
 ## Related
+
 - [Summary](summary.md)
 - [Temporal migration plan](plans/temporal-migration.md)
 - [Monorepo commands](tooling/monorepo-commands.md)
+- [Tooling scripts](tooling/scripts.md)
 - [Temporal baseline design](temporal/baseline-design.md)
 - [Extract worker](temporal/extract-worker.md)
 - [Transform worker](temporal/transform-worker.md)
