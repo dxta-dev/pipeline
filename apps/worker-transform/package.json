@@ -7,7 +7,7 @@
     "type-check": "tsc --noEmit && echo \"No TypeScript warnings or errors\"",
     "build": "tsc",
     "lint": "biome lint . && echo \"No Biome warnings or errors\"",
-    "dev": "tsx watch src/index.ts",
+    "dev": "tsx watch --env-file ../../.env src/index.ts",
     "start": "node dist/index.js"
   },
   "dependencies": {

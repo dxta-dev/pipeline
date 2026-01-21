@@ -7,10 +7,10 @@
     "type-check": "tsc --noEmit && echo \"No TypeScript warnings or errors\"",
     "build": "tsc",
     "lint": "biome lint . && echo \"No Biome warnings or errors\"",
-    "dev": "tsx watch src/index.ts",
+    "dev": "tsx watch --env-file ../../.env src/index.ts",
     "start": "node dist/index.js",
-    "start:extract": "tsx src/commands/start-extract.ts",
-    "start:transform": "tsx src/commands/start-transform.ts"
+    "start:extract": "tsx --env-file .env src/commands/start-extract.ts",
+    "start:transform": "tsx --env-file .env src/commands/start-transform.ts"
   },
   "dependencies": {
     "@dxta/workflows": "*",

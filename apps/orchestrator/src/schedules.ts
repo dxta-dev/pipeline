@@ -1,4 +1,7 @@
-import { ScheduleOverlapPolicy } from "@temporalio/client";
+import {
+  ScheduleNotFoundError,
+  ScheduleOverlapPolicy,
+} from "@temporalio/client";
 
 import { getClient } from "./client";
 import { getEnv } from "./env";
@@ -19,7 +22,7 @@ async function scheduleExists(scheduleId: string): Promise<boolean> {
     await handle.describe();
     return true;
   } catch (err) {
-    if (err instanceof Error && err.message.includes("schedule not found")) {
+    if (err instanceof ScheduleNotFoundError) {
       return false;
     }
     throw err;
