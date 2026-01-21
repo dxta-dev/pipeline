@@ -200,3 +200,19 @@ pnpm --filter @dxta/super-schema db:generate
 The `combined-schema` aggregates tables from `extract-schema`, `transform-schema`,
 `tenant-schema`, and `crawl-schema`. When you modify any of these base schemas,
 regenerate combined migrations.
+
+## Scripts
+
+### Seed Schema
+
+Seeds dimension tables (dates, times, forge users) in a tenant database.
+
+```bash
+pnpm tsx scripts/seed-schema.mts -u "<DATABASE_URL>" -t "<AUTH_TOKEN>"
+```
+
+Arguments:
+- `-u, --url` (required): LibSQL database URL
+- `-t, --authToken` (optional): Database auth token
+
+The script seeds data for a 10-year range (5 years before and after the current date).
