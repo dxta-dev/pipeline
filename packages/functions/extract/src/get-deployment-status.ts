@@ -11,25 +11,41 @@ export type GetDeploymentStatusInput = {
 
 export type GetDeploymentStatusOutput = void;
 
-export type GetDeploymentStatusSourceControl = Pick<SourceControl, 'fetchDeployment'>;
-export type GetDeploymentStatusEntities = Pick<Entities, 'deployments'>;
+export type GetDeploymentStatusSourceControl = Pick<
+  SourceControl,
+  "fetchDeployment"
+>;
+export type GetDeploymentStatusEntities = Pick<Entities, "deployments">;
 
-export type GetDeploymentStatusFunction = ExtractFunction<GetDeploymentStatusInput, GetDeploymentStatusOutput, GetDeploymentStatusSourceControl, GetDeploymentStatusEntities>;
+export type GetDeploymentStatusFunction = ExtractFunction<
+  GetDeploymentStatusInput,
+  GetDeploymentStatusOutput,
+  GetDeploymentStatusSourceControl,
+  GetDeploymentStatusEntities
+>;
 
 export const getDeploymentStatus: GetDeploymentStatusFunction = async (
   { namespace, repository, deployment },
-  { db, entities, integrations }
+  { db, entities, integrations },
 ) => {
   if (!integrations.sourceControl) {
     throw new Error("Source control integration not configured");
   }
-  const { deployment: upToDateDeployment } = await integrations.sourceControl.fetchDeployment(repository, namespace, deployment);
+  const { deployment: upToDateDeployment } =
+    await integrations.sourceControl.fetchDeployment(
+      repository,
+      namespace,
+      deployment,
+    );
 
-  await db.update(entities.deployments).set({
-    status: upToDateDeployment.status,
-    updatedAt: upToDateDeployment.updatedAt,
-    deployedAt: upToDateDeployment.deployedAt,
-    _updatedAt: sql`(strftime('%s', 'now'))`,
-  }).where(eq(entities.deployments.id, upToDateDeployment.id)).run();
-
+  await db
+    .update(entities.deployments)
+    .set({
+      status: upToDateDeployment.status,
+      updatedAt: upToDateDeployment.updatedAt,
+      deployedAt: upToDateDeployment.deployedAt,
+      _updatedAt: sql`(strftime('%s', 'now'))`,
+    })
+    .where(eq(entities.deployments.id, upToDateDeployment.id))
+    .run();
 };

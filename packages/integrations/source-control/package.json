@@ -6,24 +6,24 @@
   "scripts": {
     "type-check": "tsc --noEmit && echo \"✔ No TypeScript warnings or errors\"",
     "test": "echo \"Warning: no test specified\"",
-    "lint": "eslint . && echo \"✔ No ESLint warnings or errors\""
+    "lint": "biome lint . && echo \"✔ No Biome warnings or errors\""
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@dxta/extract-schema": "*",
-    "@gitbeaker/core": "^39.34.2",
-    "@gitbeaker/rest": "^39.34.2",
-    "@octokit/request-error": "^5.0.1",
-    "@octokit/rest": "^20.0.2",
+    "@gitbeaker/core": "^43.8.0",
+    "@gitbeaker/rest": "^43.8.0",
+    "@octokit/request-error": "^7.1.0",
+    "@octokit/rest": "^22.0.1",
     "@types/parse-link-header": "^2.0.3",
-    "fuse.js": "^7.0.0",
+    "fuse.js": "^7.1.0",
     "parse-link-header": "^2.0.0"
   },
   "devDependencies": {
-    "@jest/globals": "^29.7.0",
-    "@types/jest": "^29.5.5",
-    "ts-jest": "^29.1.1",
-    "ts-node": "^10.9.1"
+    "@jest/globals": "^30.2.0",
+    "@types/jest": "^30.0.0",
+    "ts-jest": "^29.4.6",
+    "ts-node": "^10.9.2"
   }
 }

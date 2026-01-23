@@ -1,7 +1,6 @@
 import type { RateLimitState } from "./rate-limits";
 
 export class RateLimitExceededError extends Error {
-
   name: "RateLimitExceededError";
   state: RateLimitState;
 
@@ -11,5 +10,4 @@ export class RateLimitExceededError extends Error {
     this.name = "RateLimitExceededError";
     this.state = state;
   }
-
 }

@@ -8,36 +8,23 @@ const js = [
   /\.yarn\//, // yarn version of node_modules
   /(^|\/)\.pnp\..*$/, // yarn module resolution scripts
   /pnpm-lock\.yaml$/, // pnpm version of package-lock
-  /(^|\/)shrinkwrap\.(yaml|json)$/ // pnpm version of shrinkwrap
+  /(^|\/)shrinkwrap\.(yaml|json)$/, // pnpm version of shrinkwrap
 ];
 
-const python = [
-  /Pipfile\.lock$/,
-  /poetry\.lock$/,
-  /__pycache__\//,
-];
+const python = [/Pipfile\.lock$/, /poetry\.lock$/, /__pycache__\//];
 
-const java = [
-  /(^|\/)\.m2\//,
-];
+const java = [/(^|\/)\.m2\//];
 
 const dotnet = [
-  /\.designer\.(cs|vb)$/i, // Visual Studio designer partial classes 
+  /\.designer\.(cs|vb)$/i, // Visual Studio designer partial classes
   /\.feature\.cs$/i, // Visual Studio SpecFlow feature file
 ];
 
-const ruby = [
-  /Gemfile\.lock$/,
-];
+const ruby = [/Gemfile\.lock$/];
 
-const php = [
-  /composer\.lock$/,
-];
+const php = [/composer\.lock$/];
 
-const swift = [
-  /(^|\/)\.swiftpm\//,
-  /Package\.resolved$/,
-];
+const swift = [/(^|\/)\.swiftpm\//, /Package\.resolved$/];
 
 const go = [
   /Gopk\.lock$/,
@@ -48,9 +35,7 @@ const go = [
   /(^|\/)go\.sum/,
 ];
 
-const rust = [
-  /Cargo\.lock$/,
-];
+const rust = [/Cargo\.lock$/];
 
 const IDEs = [
   /(^|\/)\.idea\//,
@@ -77,4 +62,5 @@ const matchers = [
   ...IDEs,
 ];
 
-export const isCodeGen = (path: string): boolean => !!matchers.find(matcher => matcher.test(path));
+export const isCodeGen = (path: string): boolean =>
+  !!matchers.find((matcher) => matcher.test(path));

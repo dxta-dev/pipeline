@@ -5,10 +5,10 @@
   "main": "src/index.ts",
   "type": "module",
   "scripts": {
-    "db:generate": "drizzle-kit generate:sqlite",
+    "db:generate": "drizzle-kit generate",
     "type-check": "tsc --noEmit && echo \"✔ No TypeScript warnings or errors\"",
     "test": "echo \"Warning: no test specified\"",
-    "lint": "eslint . && echo \"✔ No ESLint warnings or errors\"",
+    "lint": "biome lint . && echo \"✔ No Biome warnings or errors\"",
     "studio:turso": "npm run with-env drizzle-kit studio -- --config turso.config.ts",
     "with-env": "dotenv -e ../../../.env --"
   },
@@ -19,8 +19,8 @@
     "@dxta/transform-schema": "*"
   },
   "devDependencies": {
-    "dotenv-cli": "^7.3.0",
-    "drizzle-kit": "^0.20.6"
+    "dotenv-cli": "^11.0.0",
+    "drizzle-kit": "^0.31.8"
   },
   "keywords": [],
   "author": "",

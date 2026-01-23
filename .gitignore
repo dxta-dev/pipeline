@@ -46,3 +46,10 @@ yarn-error.log*
 
 # turbo
 .turbo
+
+# direnv
+.direnv
+
+# nix
+result
+result-*

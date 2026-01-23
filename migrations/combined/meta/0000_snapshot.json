@@ -1,7 +1,7 @@
 {
-  "version": "5",
+  "version": "6",
   "dialect": "sqlite",
-  "id": "fae96bda-469b-4df3-954f-bf5c93ef1c04",
+  "id": "da77e527-3b3d-4a16-bac5-666d52090b9e",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "crawl_events": {
@@ -84,7 +84,8 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "crawl_instances": {
       "name": "crawl_instances",
@@ -152,7 +153,8 @@
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "extract_repository_commits": {
       "name": "extract_repository_commits",
@@ -247,7 +249,8 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "extract_deployments": {
       "name": "extract_deployments",
@@ -386,7 +389,8 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "extract_git_identities": {
       "name": "extract_git_identities",
@@ -463,7 +467,8 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "extract_members": {
       "name": "extract_members",
@@ -569,7 +574,8 @@
       },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "extract_merge_request_commits": {
       "name": "extract_merge_request_commits",
@@ -736,7 +742,8 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "extract_merge_request_diffs": {
       "name": "extract_merge_request_diffs",
@@ -854,7 +861,8 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "extract_merge_request_notes": {
       "name": "extract_merge_request_notes",
@@ -972,7 +980,8 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "extract_merge_requests": {
       "name": "extract_merge_requests",
@@ -1160,7 +1169,8 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "extract_namespaces": {
       "name": "extract_namespaces",
@@ -1230,7 +1240,8 @@
       },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "extract_repositories": {
       "name": "extract_repositories",
@@ -1320,7 +1331,8 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "extract_repositories_to_members": {
       "name": "extract_repositories_to_members",
@@ -1388,13 +1400,14 @@
       "compositePrimaryKeys": {
         "extract_repositories_to_members_repository_id_member_id_pk": {
           "columns": [
-            "member_id",
-            "repository_id"
+            "repository_id",
+            "member_id"
           ],
           "name": "extract_repositories_to_members_repository_id_member_id_pk"
         }
       },
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "extract_repository_sha_trees": {
       "name": "extract_repository_sha_trees",
@@ -1462,13 +1475,14 @@
       "compositePrimaryKeys": {
         "extract_repository_sha_trees_sha_id_parent_id_pk": {
           "columns": [
-            "parent_id",
-            "sha_id"
+            "sha_id",
+            "parent_id"
           ],
           "name": "extract_repository_sha_trees_sha_id_parent_id_pk"
         }
       },
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "extract_repository_shas": {
       "name": "extract_repository_shas",
@@ -1537,7 +1551,8 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "extract_timeline_events": {
       "name": "extract_timeline_events",
@@ -1656,7 +1671,8 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "tenant_cicd_deploy_workflows": {
       "name": "tenant_cicd_deploy_workflows",
@@ -1716,7 +1732,8 @@
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "tenant_config": {
       "name": "tenant_config",
@@ -1728,12 +1745,13 @@
           "notNull": true,
           "autoincrement": false
         },
-        "hq_timezone": {
-          "name": "hq_timezone",
-          "type": "integer",
+        "tzdata": {
+          "name": "tzdata",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false
+          "autoincrement": false,
+          "default": "'UTC'"
         },
         "__created_at": {
           "name": "__created_at",
@@ -1752,18 +1770,11 @@
           "default": "(strftime('%s', 'now'))"
         }
       },
-      "indexes": {
-        "tenant_config_unique_idx": {
-          "name": "tenant_config_unique_idx",
-          "columns": [
-            "hq_timezone"
-          ],
-          "isUnique": true
-        }
-      },
+      "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "tenant_deployment_environments": {
       "name": "tenant_deployment_environments",
@@ -1816,7 +1827,8 @@
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "tenant_team_members": {
       "name": "tenant_team_members",
@@ -1885,7 +1897,8 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "tenant_teams": {
       "name": "tenant_teams",
@@ -1924,7 +1937,8 @@
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "transform_branches": {
       "name": "transform_branches",
@@ -1971,7 +1985,8 @@
       },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "transform_dates": {
       "name": "transform_dates",
@@ -2049,7 +2064,113 @@
       },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "transform_deployments": {
+      "name": "transform_deployments",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "external_id": {
+          "name": "external_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "deployment_type": {
+          "name": "deployment_type",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "repository_id": {
+          "name": "repository_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "deployed_at": {
+          "name": "deployed_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "__created_at": {
+          "name": "__created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        },
+        "__updated_at": {
+          "name": "__updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        }
+      },
+      "indexes": {
+        "t_deployments_external_id_type_idx": {
+          "name": "t_deployments_external_id_type_idx",
+          "columns": [
+            "external_id",
+            "repository_id",
+            "deployment_type"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "transform_deployments_repository_id_transform_repositories_id_fk": {
+          "name": "transform_deployments_repository_id_transform_repositories_id_fk",
+          "tableFrom": "transform_deployments",
+          "tableTo": "transform_repositories",
+          "columnsFrom": [
+            "repository_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "transform_deployments_deployed_at_transform_dates_id_fk": {
+          "name": "transform_deployments_deployed_at_transform_dates_id_fk",
+          "tableFrom": "transform_deployments",
+          "tableTo": "transform_dates",
+          "columnsFrom": [
+            "deployed_at"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "transform_forge_users": {
       "name": "transform_forge_users",
@@ -2134,7 +2255,8 @@
       },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "transform_merge_request_fact_dates_junk": {
       "name": "transform_merge_request_fact_dates_junk",
@@ -2327,7 +2449,8 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "transform_merge_request_events": {
       "name": "transform_merge_request_events",
@@ -2531,7 +2654,8 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "transform_merge_request_metrics": {
       "name": "transform_merge_request_metrics",
@@ -2621,6 +2745,14 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
+        },
+        "time_to_merge": {
+          "name": "time_to_merge",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
         },
         "handover": {
           "name": "handover",
@@ -2773,7 +2905,8 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "transform_merge_request_fact_users_junk": {
       "name": "transform_merge_request_fact_users_junk",
@@ -3446,7 +3579,8 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "transform_merge_requests": {
       "name": "transform_merge_requests",
@@ -3581,7 +3715,8 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "transform_null_rows": {
       "name": "transform_null_rows",
@@ -3661,7 +3796,8 @@
       },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "transform_repositories": {
       "name": "transform_repositories",
@@ -3702,6 +3838,13 @@
           "autoincrement": false,
           "default": "''"
         },
+        "default_branch": {
+          "name": "default_branch",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "__created_at": {
           "name": "__created_at",
           "type": "integer",
@@ -3729,15 +3872,34 @@
           "isUnique": true
         }
       },
-      "foreignKeys": {},
+      "foreignKeys": {
+        "transform_repositories_default_branch_transform_branches_id_fk": {
+          "name": "transform_repositories_default_branch_transform_branches_id_fk",
+          "tableFrom": "transform_repositories",
+          "tableTo": "transform_branches",
+          "columnsFrom": [
+            "default_branch"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     }
   },
+  "views": {},
   "enums": {},
   "_meta": {
     "schemas": {},
     "tables": {},
     "columns": {}
+  },
+  "internal": {
+    "indexes": {}
   }
 }

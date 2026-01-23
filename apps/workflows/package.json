@@ -1,0 +1,17 @@
+{
+  "name": "@dxta/workflows",
+  "version": "1.0.0",
+  "description": "Temporal workflow definitions",
+  "main": "src/index.ts",
+  "scripts": {
+    "type-check": "tsc --noEmit && echo \"No TypeScript warnings or errors\"",
+    "build": "tsc",
+    "lint": "biome lint . && echo \"No Biome warnings or errors\""
+  },
+  "dependencies": {
+    "@temporalio/workflow": "^1.11.7"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
+}

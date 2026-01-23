@@ -20,13 +20,18 @@ const modError = (error: unknown) => {
   }
 
   return error;
-}
+};
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type AsyncFunction<T extends any[] = any[], R = any> = (...args: T) => Promise<R>;
+type AsyncFunction<T extends any[] = any[], R = any> = (
+  ...args: T
+) => Promise<R>;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const handleError = <T extends any[], R = any, I = any>(thisArg: I, f?: AsyncFunction<T, R>) => {
+const handleError = <T extends any[], R = any, I = any>(
+  thisArg: I,
+  f?: AsyncFunction<T, R>,
+) => {
   if (!f) return undefined;
 
   return async (...args: T) => {
@@ -36,16 +41,21 @@ const handleError = <T extends any[], R = any, I = any>(thisArg: I, f?: AsyncFun
     } catch (error) {
       throw modError(error);
     }
-  }
-}
+  };
+};
 
-export const githubErrorMod = <SC extends Partial<SourceControl>>(client: SC) => {
+export const githubErrorMod = <SC extends Partial<SourceControl>>(
+  client: SC,
+) => {
   const upgradedClient = {
     fetchCommits: handleError(client, client.fetchCommits),
     fetchDeployment: handleError(client, client.fetchDeployment),
     fetchDeployments: handleError(client, client.fetchDeployments),
     fetchMembers: handleError(client, client.fetchMembers),
-    fetchMergeRequestCommits: handleError(client, client.fetchMergeRequestCommits),
+    fetchMergeRequestCommits: handleError(
+      client,
+      client.fetchMergeRequestCommits,
+    ),
     fetchMergeRequestDiffs: handleError(client, client.fetchMergeRequestDiffs),
     fetchMergeRequestNotes: handleError(client, client.fetchMergeRequestNotes),
     fetchMergeRequests: handleError(client, client.fetchMergeRequests),
@@ -53,9 +63,17 @@ export const githubErrorMod = <SC extends Partial<SourceControl>>(client: SC) =>
     fetchRepository: handleError(client, client.fetchRepository),
     fetchTimelineEvents: handleError(client, client.fetchTimelineEvents),
     fetchUserInfo: handleError(client, client.fetchUserInfo),
-    fetchWorkflowDeployment: handleError(client, client.fetchWorkflowDeployment),
-    fetchWorkflowDeployments: handleError(client, client.fetchWorkflowDeployments),
-  } satisfies { [K in keyof Required<SourceControl>]: SourceControl[K] | undefined };
+    fetchWorkflowDeployment: handleError(
+      client,
+      client.fetchWorkflowDeployment,
+    ),
+    fetchWorkflowDeployments: handleError(
+      client,
+      client.fetchWorkflowDeployments,
+    ),
+  } satisfies {
+    [K in keyof Required<SourceControl>]: SourceControl[K] | undefined;
+  };
 
-  return upgradedClient as (Partial<SourceControl> & SC);
-}
+  return upgradedClient as Partial<SourceControl> & SC;
+};

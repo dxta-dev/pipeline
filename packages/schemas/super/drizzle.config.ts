@@ -1,7 +1,8 @@
-import type { Config } from 'drizzle-kit';
+import { defineConfig } from "drizzle-kit";
 
 // deprecated since [TOOL-189]
-export default {
+export default defineConfig({
   schema: "./src/index.ts",
   out: "../../../migrations/super",
-} satisfies Config;
+  dialect: "sqlite",
+});
