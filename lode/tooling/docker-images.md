@@ -11,7 +11,7 @@ caching.
 
 ## Contracts
 - Orchestrator exposes port 3000; workers have no exposed ports.
-- All images run `node apps/<service>/dist/index.js` from `/app`.
+- All images run `tsx apps/<service>/src/index.ts` from `/app`.
 - `NODE_ENV=production` is set in runtime stage.
 
 ## Rationale
@@ -24,11 +24,10 @@ caching.
 - Use `--frozen-lockfile` to ensure reproducible installs.
 - Avoid BuildKit cache mounts (`--mount=type=cache`) as Railway requires specific
   cache ID prefixes; rely on Docker layer caching instead.
-- App tsconfigs must set `"noEmit": false` to override the root's `"noEmit": true`,
-  otherwise `tsc` runs without errors but produces no output files. Docker builds
-  succeed but containers crash with `MODULE_NOT_FOUND` at runtime.
+- App tsconfigs must set `"noEmit": false` to override the root's `"noEmit": true`
+  because build still runs `tsc` for typechecking even though runtime uses `tsx`.
 - App tsconfigs must set `"module": "commonjs"` since package.json doesn't have
-  `"type": "module"`. ESM output fails with `ERR_UNSUPPORTED_DIR_IMPORT` errors.
+  `"type": "module"`.
 
 ## Code Example
 ```dockerfile
@@ -52,7 +51,7 @@ ENV NODE_ENV=production
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/apps ./apps
 COPY --from=build /app/packages ./packages
-CMD ["node", "apps/orchestrator/dist/index.js"]
+CMD ["tsx", "apps/orchestrator/src/index.ts"]
 ```
 
 ## Diagram
