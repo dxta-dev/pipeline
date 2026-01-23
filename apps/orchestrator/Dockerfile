@@ -29,10 +29,11 @@ RUN pnpm run build
 FROM base AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
+RUN npm install -g tsx
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/apps ./apps
 COPY --from=build /app/packages ./packages
 COPY --from=build /app/package.json ./
 COPY --from=build /app/pnpm-workspace.yaml ./
 EXPOSE 3000
-CMD ["node", "apps/orchestrator/dist/index.js"]
+CMD ["tsx", "apps/orchestrator/src/index.ts"]
