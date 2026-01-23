@@ -14,8 +14,8 @@ import type {
   ExtractMembersResult,
   ExtractMergeRequestsResult,
   ExtractRepositoryResult,
-  ExtractWorkflowDeploymentsResult,
   ExtractWorkflowDeploymentInput,
+  ExtractWorkflowDeploymentsResult,
   MergeRequestDeploymentPair,
   RepositoryInfo,
   Tenant,
@@ -121,6 +121,13 @@ export interface ExtractActivities {
 }
 
 export interface TransformActivities {
+  getTenants(input: ExtractTenantsInput): Promise<Tenant[]>;
+
+  getRepositoriesForTenant(input: {
+    tenantDbUrl: string;
+    sourceControl?: SourceControl;
+  }): Promise<RepositoryInfo[]>;
+
   getMergeRequestDeploymentPairs(
     input: TransformRepositoryInput,
   ): Promise<MergeRequestDeploymentPair[]>;
