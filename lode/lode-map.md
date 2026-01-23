@@ -5,7 +5,7 @@
 - `lode/practices.md`
 - `lode/tooling/monorepo-commands.md`
 - `lode/tooling/local-dev.md`
-- `lode/tooling/nix-images.md`
+- `lode/tooling/docker-images.md`
 - `lode/tooling/migrations.md`
 - `lode/tooling/scripts.md`
 - `lode/plans/github-app-auth.md`
