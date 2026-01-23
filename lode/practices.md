@@ -16,6 +16,11 @@
 
 ## Lessons
 - Keep Temporal-specific code out of `packages/` to avoid cross-cutting imports.
+- App tsconfigs must set `"noEmit": false` to override the root config's `"noEmit": true`.
+  The root uses `noEmit` for type-checking only; apps that run `tsc` to build need emitted JS.
+- App tsconfigs must set `"module": "commonjs"` to override the root's `"module": "esnext"`.
+  Node.js without `"type": "module"` in package.json expects CommonJS. ESM output fails with
+  `ERR_UNSUPPORTED_DIR_IMPORT` on directory imports like `./activities`.
 
 ## Local Development
 - Temporal server runs via `temporal server start-dev` (Temporal CLI).

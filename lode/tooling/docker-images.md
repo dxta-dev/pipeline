@@ -24,6 +24,11 @@ caching.
 - Use `--frozen-lockfile` to ensure reproducible installs.
 - Avoid BuildKit cache mounts (`--mount=type=cache`) as Railway requires specific
   cache ID prefixes; rely on Docker layer caching instead.
+- App tsconfigs must set `"noEmit": false` to override the root's `"noEmit": true`,
+  otherwise `tsc` runs without errors but produces no output files. Docker builds
+  succeed but containers crash with `MODULE_NOT_FOUND` at runtime.
+- App tsconfigs must set `"module": "commonjs"` since package.json doesn't have
+  `"type": "module"`. ESM output fails with `ERR_UNSUPPORTED_DIR_IMPORT` errors.
 
 ## Code Example
 ```dockerfile
