@@ -17,11 +17,12 @@ caching.
 ## Rationale
 - Standard Dockerfiles are simpler to maintain and debug than Nix-based builds.
 - Multi-stage builds keep final images small by excluding build tooling.
-- BuildKit cache mounts speed up CI builds.
 
 ## Lessons
 - Copy all workspace `package.json` files before `pnpm install` for layer caching.
 - Use `--frozen-lockfile` to ensure reproducible installs.
+- Avoid BuildKit cache mounts (`--mount=type=cache`) as Railway requires specific
+  cache ID prefixes; rely on Docker layer caching instead.
 
 ## Code Example
 ```dockerfile
@@ -35,7 +36,7 @@ WORKDIR /app
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/orchestrator/package.json ./apps/orchestrator/
 # ... copy other workspace package.json files
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile
 COPY . .
 RUN pnpm run build
 

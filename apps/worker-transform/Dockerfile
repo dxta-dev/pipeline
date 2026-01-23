@@ -19,7 +19,7 @@ COPY packages/schemas/extract/package.json ./packages/schemas/extract/
 COPY packages/schemas/super/package.json ./packages/schemas/super/
 COPY packages/schemas/tenant/package.json ./packages/schemas/tenant/
 COPY packages/schemas/transform/package.json ./packages/schemas/transform/
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile
 COPY . .
 RUN pnpm run build
 
