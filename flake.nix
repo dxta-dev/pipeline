@@ -60,6 +60,7 @@
         let
           pkgs = import nixpkgs { inherit system; };
           nodejs = pkgs.nodejs_24;
+          skopeoNix2container = nix2container.packages.${system}.skopeo-nix2container;
           pnpmDeps = pkgs.fetchPnpmDeps {
             pname = "dxta-pipeline";
             version = "1.0.0";
@@ -135,6 +136,7 @@
           };
         in
         {
+          skopeo-nix2container = skopeoNix2container;
           orchestrator-bundle = orchestratorBundle;
           worker-extract-bundle = workerExtractBundle;
           worker-transform-bundle = workerTransformBundle;

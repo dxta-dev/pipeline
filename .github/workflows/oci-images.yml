@@ -29,7 +29,7 @@ jobs:
 
       - name: Login to GHCR
         run: |
-          echo "${{ secrets.GITHUB_TOKEN }}" | nix shell nixpkgs#skopeo -c skopeo login ghcr.io \
+          echo "${{ secrets.GITHUB_TOKEN }}" | nix shell .#skopeo-nix2container -c skopeo login ghcr.io \
             --username "${{ github.actor }}" \
             --password-stdin
 
@@ -38,23 +38,23 @@ jobs:
           REGISTRY_OWNER: ${{ github.repository_owner }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          nix shell nixpkgs#skopeo -c skopeo copy --all \
+          nix shell .#skopeo-nix2container -c skopeo copy --all \
             nix:./result-orchestrator \
             docker://ghcr.io/${REGISTRY_OWNER}/dxta-orchestrator:${IMAGE_TAG}
-          nix shell nixpkgs#skopeo -c skopeo copy --all \
+          nix shell .#skopeo-nix2container -c skopeo copy --all \
             nix:./result-orchestrator \
             docker://ghcr.io/${REGISTRY_OWNER}/dxta-orchestrator:latest
 
-          nix shell nixpkgs#skopeo -c skopeo copy --all \
+          nix shell .#skopeo-nix2container -c skopeo copy --all \
             nix:./result-worker-extract \
             docker://ghcr.io/${REGISTRY_OWNER}/dxta-worker-extract:${IMAGE_TAG}
-          nix shell nixpkgs#skopeo -c skopeo copy --all \
+          nix shell .#skopeo-nix2container -c skopeo copy --all \
             nix:./result-worker-extract \
             docker://ghcr.io/${REGISTRY_OWNER}/dxta-worker-extract:latest
 
-          nix shell nixpkgs#skopeo -c skopeo copy --all \
+          nix shell .#skopeo-nix2container -c skopeo copy --all \
             nix:./result-worker-transform \
             docker://ghcr.io/${REGISTRY_OWNER}/dxta-worker-transform:${IMAGE_TAG}
-          nix shell nixpkgs#skopeo -c skopeo copy --all \
+          nix shell .#skopeo-nix2container -c skopeo copy --all \
             nix:./result-worker-transform \
             docker://ghcr.io/${REGISTRY_OWNER}/dxta-worker-transform:latest
