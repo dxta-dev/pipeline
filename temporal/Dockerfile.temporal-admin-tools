@@ -1,5 +1,4 @@
 ARG TEMPORAL_ADMINTOOLS_VERSION=latest
 FROM temporalio/admin-tools:${TEMPORAL_ADMINTOOLS_VERSION}
 
-COPY temporal/scripts /scripts
-RUN chmod +x /scripts/*.sh
+COPY --chmod=755 temporal/scripts /scripts

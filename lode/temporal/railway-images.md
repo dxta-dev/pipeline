@@ -9,7 +9,8 @@ cover `temporal`, `temporal-admin-tools` (also used for namespace creation), and
 
 - Dynamic config is baked into the Temporal server image at
   `/etc/temporal/config/dynamicconfig`.
-- Admin-tools scripts live in `/scripts` and are executable.
+- Admin-tools scripts live in `/scripts` and are executable via
+  `COPY --chmod=755`.
 - Postgres runs as a managed Railway database, not as a Docker image.
 
 ## Contracts
@@ -38,6 +39,11 @@ ARG TEMPORAL_VERSION=latest
 FROM temporalio/server:${TEMPORAL_VERSION}
 
 COPY temporal/dynamicconfig /etc/temporal/config/dynamicconfig
+
+ARG TEMPORAL_ADMINTOOLS_VERSION=latest
+FROM temporalio/admin-tools:${TEMPORAL_ADMINTOOLS_VERSION}
+
+COPY --chmod=755 temporal/scripts /scripts
 ```
 
 ## Diagram
