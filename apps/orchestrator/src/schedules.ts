@@ -67,7 +67,7 @@ export async function ensureTransformSchedule(): Promise<void> {
   const handle = await client.schedule.create({
     scheduleId: TRANSFORM_SCHEDULE_ID,
     spec: {
-      intervals: { every: "15m" }],
+      intervals: [{ every: "15m" }],
     },
     action: {
       type: "startWorkflow",
