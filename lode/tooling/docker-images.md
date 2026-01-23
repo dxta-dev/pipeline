@@ -19,7 +19,8 @@ caching.
 - Multi-stage builds keep final images small by excluding build tooling.
 
 ## Lessons
-- Copy all workspace `package.json` files before `pnpm install` for layer caching.
+- Copy ALL workspace `package.json` files before `pnpm install` - pnpm needs the
+  complete workspace structure to resolve internal dependencies correctly.
 - Use `--frozen-lockfile` to ensure reproducible installs.
 - Avoid BuildKit cache mounts (`--mount=type=cache`) as Railway requires specific
   cache ID prefixes; rely on Docker layer caching instead.

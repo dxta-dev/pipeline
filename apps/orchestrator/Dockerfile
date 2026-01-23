@@ -9,7 +9,14 @@ FROM base AS build
 WORKDIR /app
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/orchestrator/package.json ./apps/orchestrator/
+COPY apps/worker-extract/package.json ./apps/worker-extract/
+COPY apps/worker-transform/package.json ./apps/worker-transform/
 COPY apps/workflows/package.json ./apps/workflows/
+COPY packages/functions/crawl/package.json ./packages/functions/crawl/
+COPY packages/functions/extract/package.json ./packages/functions/extract/
+COPY packages/functions/transform/package.json ./packages/functions/transform/
+COPY packages/integrations/source-control/package.json ./packages/integrations/source-control/
+COPY packages/schemas/combined/package.json ./packages/schemas/combined/
 COPY packages/schemas/crawl/package.json ./packages/schemas/crawl/
 COPY packages/schemas/extract/package.json ./packages/schemas/extract/
 COPY packages/schemas/super/package.json ./packages/schemas/super/
