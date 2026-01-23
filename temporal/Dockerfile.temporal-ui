@@ -1,0 +1,2 @@
+ARG TEMPORAL_UI_VERSION=latest
+FROM temporalio/ui:${TEMPORAL_UI_VERSION}

@@ -1,0 +1,4 @@
+ARG TEMPORAL_VERSION=latest
+FROM temporalio/server:${TEMPORAL_VERSION}
+
+COPY temporal/dynamicconfig /etc/temporal/config/dynamicconfig

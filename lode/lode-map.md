@@ -11,6 +11,7 @@
 - `lode/plans/github-app-auth.md`
 - `lode/plans/temporal-migration.md`
 - `lode/temporal/baseline-design.md`
+- `lode/temporal/railway-images.md`
 - `lode/temporal/extract-worker.md`
 - `lode/temporal/transform-worker.md`
 - `lode/temporal/orchestrator.md`
@@ -40,6 +41,7 @@ export const lodeIndex = [
   "lode/plans/github-app-auth.md",
   "lode/plans/temporal-migration.md",
   "lode/temporal/baseline-design.md",
+  "lode/temporal/railway-images.md",
   "lode/temporal/extract-worker.md",
   "lode/temporal/transform-worker.md",
   "lode/temporal/orchestrator.md",
@@ -63,6 +65,7 @@ flowchart TD
   tooling --> migrations[migrations.md]
   tooling --> scripts[scripts.md]
   temporal --> baseline[baseline-design.md]
+  temporal --> railwayImages[railway-images.md]
   temporal --> extractWorker[extract-worker.md]
   temporal --> transformWorker[transform-worker.md]
   temporal --> orchestrator[orchestrator.md]

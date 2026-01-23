@@ -11,6 +11,10 @@ integrations remain in `packages/`. GitHub Actions workflows are currently
 removed; CI/CD is pending. The Nix dev shell includes Node.js, pnpm, Biome,
 Temporal CLI, git, and jq.
 
+Temporal infrastructure images for Railway live under `temporal/`, with wrapper
+Dockerfiles that bundle dynamic config and scripts for the server and
+admin-tools services.
+
 ## Invariants
 - Workflow code is deterministic and lives only in `apps/workflows`.
 - Activities encapsulate all I/O and can use `packages/functions`,

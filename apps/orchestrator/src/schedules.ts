@@ -40,7 +40,8 @@ export async function ensureExtractSchedule(): Promise<void> {
   const handle = await client.schedule.create({
     scheduleId: EXTRACT_SCHEDULE_ID,
     spec: {
-      cronExpressions: ["8 */15 * * *"],
+      intervals: [{ every: "15m" }],
+      startAt: new Date("2026-01-24T00:08:00Z"),
     },
     action: {
       type: "startWorkflow",
@@ -66,7 +67,7 @@ export async function ensureTransformSchedule(): Promise<void> {
   const handle = await client.schedule.create({
     scheduleId: TRANSFORM_SCHEDULE_ID,
     spec: {
-      cronExpressions: ["0 */15 * * *"],
+      intervals: { every: "15m" }],
     },
     action: {
       type: "startWorkflow",
