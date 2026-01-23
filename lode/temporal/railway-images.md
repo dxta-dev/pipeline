@@ -21,6 +21,9 @@ cover `temporal`, `temporal-admin-tools` (also used for namespace creation), and
   `config/dynamicconfig/development-sql.yaml` at runtime.
 - Namespace creation uses the same admin-tools image with
   `/scripts/create-namespace.sh` as the start command.
+- Admin-tools setup scripts read `POSTGRES_HOST`, `POSTGRES_PORT`,
+  `POSTGRES_USER`, and optional `POSTGRES_PASSWORD` (defaults are
+  `postgresql`, `5432`, `temporal`).
 
 ## Rationale
 
