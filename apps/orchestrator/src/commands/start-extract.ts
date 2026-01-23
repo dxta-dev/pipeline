@@ -4,19 +4,27 @@ import { getClient } from "../client";
 
 function parseArgs(): {
   tenantId?: number;
-  from?: Date;
-  to?: Date;
+  from?: number;
+  to?: number;
 } {
   const args = process.argv.slice(2);
-  const result: { tenantId?: number; from?: Date; to?: Date } = {};
+  const result: { tenantId?: number; from?: number; to?: number } = {};
 
   for (const arg of args) {
     if (arg.startsWith("--tenantId=")) {
       result.tenantId = Number.parseInt(arg.split("=")[1] ?? "", 10);
     } else if (arg.startsWith("--from=")) {
-      result.from = new Date(arg.split("=")[1] ?? "");
+      const parsed = new Date(arg.split("=")[1] ?? "");
+      const timestamp = parsed.getTime();
+      if (!Number.isNaN(timestamp)) {
+        result.from = timestamp;
+      }
     } else if (arg.startsWith("--to=")) {
-      result.to = new Date(arg.split("=")[1] ?? "");
+      const parsed = new Date(arg.split("=")[1] ?? "");
+      const timestamp = parsed.getTime();
+      if (!Number.isNaN(timestamp)) {
+        result.to = timestamp;
+      }
     }
   }
 
@@ -26,8 +34,8 @@ function parseArgs(): {
 async function main() {
   const { tenantId, from, to } = parseArgs();
 
-  const now = new Date();
-  const fifteenMinutesAgo = new Date(now.getTime() - 15 * 60 * 1000);
+  const now = Date.now();
+  const fifteenMinutesAgo = now - 15 * 60 * 1000;
 
   const input: ExtractTenantsInput = {
     timePeriod: {

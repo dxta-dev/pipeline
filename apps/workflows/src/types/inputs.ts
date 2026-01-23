@@ -1,8 +1,8 @@
 export type SourceControl = "github";
 
 export interface TimePeriod {
-  from: Date;
-  to: Date;
+  from: number;
+  to: number;
 }
 
 export interface ExtractTenantsInput {

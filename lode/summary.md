@@ -34,7 +34,7 @@ Temporal CLI, git, and jq.
 export interface ExtractTenantsInput {
   tenantId?: number;
   sourceControl?: "github" | "gitlab";
-  timePeriod: { from: Date; to: Date };
+  timePeriod: { from: number; to: number };
 }
 ```
 

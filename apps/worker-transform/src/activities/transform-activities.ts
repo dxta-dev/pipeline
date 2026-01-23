@@ -1,27 +1,34 @@
 import {
-  selectMergeRequestsDeployments,
-  run,
   type ExtractDatabase,
-  type TransformDatabase,
+  run,
+  selectMergeRequestsDeployments,
   type TenantDatabase,
+  type TransformDatabase,
 } from "@dxta/transform-functions";
 import type {
-  TransformActivities,
   MergeRequestDeploymentPair,
+  TimePeriod,
+  TransformActivities,
 } from "@dxta/workflows";
 
 import { initDatabase } from "../context";
+
+const toDateTimePeriod = (timePeriod: TimePeriod) => ({
+  from: new Date(timePeriod.from),
+  to: new Date(timePeriod.to),
+});
 
 export const transformActivities: TransformActivities = {
   async getMergeRequestDeploymentPairs(
     input,
   ): Promise<MergeRequestDeploymentPair[]> {
     const db = initDatabase(input.tenantDbUrl);
+    const timePeriod = toDateTimePeriod(input.timePeriod);
     return selectMergeRequestsDeployments(
       db,
       input.repositoryId,
-      input.timePeriod.from,
-      input.timePeriod.to,
+      timePeriod.from,
+      timePeriod.to,
     );
   },
 

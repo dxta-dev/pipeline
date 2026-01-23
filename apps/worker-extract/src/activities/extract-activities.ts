@@ -1,64 +1,67 @@
-import { eq, and } from "drizzle-orm";
-
 import { setInstance } from "@dxta/crawl-functions";
 import { instances } from "@dxta/crawl-schema";
 import {
-  getRepository,
-  getMergeRequests,
-  getMergeRequestsDiffs,
+  getCommits,
+  getDeploymentStatus,
+  getDeployments,
+  getMemberInfo,
+  getMembers,
   getMergeRequestCommits,
   getMergeRequestNotes,
-  getTimelineEvents,
-  getMembers,
-  getMemberInfo,
+  getMergeRequests,
+  getMergeRequestsDiffs,
   getNamespaceMembers,
-  getDeployments,
-  getDeploymentStatus,
-  getCommits,
-  getWorkflowDeployments,
+  getRepository,
+  getTimelineEvents,
   getWorkflowDeploymentStatus,
+  getWorkflowDeployments,
 } from "@dxta/extract-functions";
 import {
-  repositories,
-  namespaces,
-  mergeRequests,
-  mergeRequestDiffs,
-  mergeRequestCommits,
-  mergeRequestNotes,
-  timelineEvents,
-  members,
-  repositoriesToMembers,
   deployments,
-  repositoryShas,
   gitIdentities,
+  members,
+  mergeRequestCommits,
+  mergeRequestDiffs,
+  mergeRequestNotes,
+  mergeRequests,
+  namespaces,
+  repositories,
+  repositoriesToMembers,
   repositoryCommits,
+  repositoryShas,
   repositoryShaTrees,
+  timelineEvents,
 } from "@dxta/extract-schema";
-import {
-  deploymentEnvironments,
-  cicdDeployWorkflows,
-} from "@dxta/tenant-schema";
 import { getTenants } from "@dxta/super-schema";
+import {
+  cicdDeployWorkflows,
+  deploymentEnvironments,
+} from "@dxta/tenant-schema";
 import type {
   ExtractActivities,
-  ExtractTenantsInput,
-  ExtractRepositoryInput,
-  ExtractMergeRequestInput,
-  ExtractMembersInput,
   ExtractDeploymentsInput,
-  SourceControl,
-  TimePeriod,
-  Tenant,
-  RepositoryInfo,
-  ExtractRepositoryResult,
-  ExtractMergeRequestsResult,
-  ExtractMembersResult,
   ExtractDeploymentsResult,
+  ExtractMembersInput,
+  ExtractMembersResult,
+  ExtractMergeRequestInput,
+  ExtractMergeRequestsResult,
+  ExtractRepositoryInput,
+  ExtractRepositoryResult,
+  ExtractTenantsInput,
   ExtractWorkflowDeploymentsResult,
+  RepositoryInfo,
+  SourceControl,
+  Tenant,
+  TimePeriod,
 } from "@dxta/workflows";
-
-import { getEnv } from "../env";
+import { and, eq } from "drizzle-orm";
 import { initDatabase, initSourceControl, initSuperDatabase } from "../context";
+import { getEnv } from "../env";
+
+const toDateTimePeriod = (timePeriod: TimePeriod) => ({
+  from: new Date(timePeriod.from),
+  to: new Date(timePeriod.to),
+});
 
 export const extractActivities: ExtractActivities = {
   async getTenants(input: ExtractTenantsInput): Promise<Tenant[]> {
@@ -119,6 +122,7 @@ export const extractActivities: ExtractActivities = {
       tenantId: input.tenantId,
       sourceControl: input.sourceControl,
     });
+    const timePeriod = toDateTimePeriod(input.timePeriod);
 
     const { repository, namespace } = await getRepository(
       {
@@ -137,8 +141,8 @@ export const extractActivities: ExtractActivities = {
       {
         repositoryId: repository.id,
         userId: input.userId,
-        since: input.timePeriod.from,
-        until: input.timePeriod.to,
+        since: timePeriod.from,
+        until: timePeriod.to,
       },
       { db, entities: { instances } },
     );
@@ -171,6 +175,7 @@ export const extractActivities: ExtractActivities = {
       tenantId: input.tenantId,
       sourceControl: input.sourceControl,
     });
+    const timePeriod = toDateTimePeriod(input.timePeriod);
 
     const { processableMergeRequests, paginationInfo } = await getMergeRequests(
       {
@@ -180,7 +185,7 @@ export const extractActivities: ExtractActivities = {
         repositoryId: input.repositoryId,
         page: input.page,
         perPage: input.perPage,
-        timePeriod: input.timePeriod,
+        timePeriod,
       },
       {
         db,
@@ -558,6 +563,7 @@ export const extractActivities: ExtractActivities = {
       tenantId: input.tenantId,
       sourceControl: input.sourceControl,
     });
+    const timePeriod = toDateTimePeriod(input.timePeriod);
 
     const repository = await db
       .select()
@@ -577,7 +583,7 @@ export const extractActivities: ExtractActivities = {
         repository,
         namespace,
         ref: repository.defaultBranch ?? undefined,
-        timePeriod: input.timePeriod,
+        timePeriod,
         perPage: getEnv().PER_PAGE,
       },
       {
@@ -609,6 +615,7 @@ export const extractActivities: ExtractActivities = {
       tenantId: input.tenantId,
       sourceControl: "github",
     });
+    const timePeriod = toDateTimePeriod(input.timePeriod);
 
     const repository = await db
       .select()
@@ -647,7 +654,7 @@ export const extractActivities: ExtractActivities = {
         {
           repository,
           namespace,
-          timePeriod: input.timePeriod,
+          timePeriod,
           workflowId: workflow.workflowExternalid,
           branch: workflow.branch || undefined,
           perPage: getEnv().PER_PAGE,

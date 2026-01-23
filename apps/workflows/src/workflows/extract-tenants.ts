@@ -49,7 +49,7 @@ export async function extractTenantsWorkflow(
               timePeriod: input.timePeriod,
             },
           ],
-          workflowId: `extract-repo-${tenant.id}-${repo.id}-${input.timePeriod.from.getTime()}`,
+          workflowId: `extract-repo-${tenant.id}-${repo.id}-${input.timePeriod.from}`,
         }),
       ),
     );

@@ -1,7 +1,7 @@
 import { executeChild, proxyActivities } from "@temporalio/workflow";
 
 import type { ExtractActivities } from "../types/activities";
-import type { ExtractRepositoryInput } from "../types/inputs";
+import type { ExtractRepositoryInput, TimePeriod } from "../types/inputs";
 import { extractMergeRequestWorkflow } from "./extract-merge-request";
 
 const DEFAULT_PER_PAGE = 30;
@@ -63,7 +63,7 @@ async function extractMergeRequestsAndChildren(
     sourceControl: "github";
     userId: string;
     crawlId: number;
-    timePeriod: { from: Date; to: Date };
+    timePeriod: TimePeriod;
   },
   input: ExtractRepositoryInput,
   initialMergeRequestIds: number[],
@@ -131,7 +131,7 @@ async function extractMembersAndInfo(
     sourceControl: "github";
     userId: string;
     crawlId: number;
-    timePeriod: { from: Date; to: Date };
+    timePeriod: TimePeriod;
   },
   input: ExtractRepositoryInput,
 ): Promise<void> {
@@ -175,7 +175,7 @@ async function extractDeploymentsAndStatus(
     sourceControl: "github";
     userId: string;
     crawlId: number;
-    timePeriod: { from: Date; to: Date };
+    timePeriod: TimePeriod;
   },
   input: ExtractRepositoryInput,
 ): Promise<void> {
@@ -210,7 +210,7 @@ async function extractGitHubSpecific(
     sourceControl: "github";
     userId: string;
     crawlId: number;
-    timePeriod: { from: Date; to: Date };
+    timePeriod: TimePeriod;
   },
   input: ExtractRepositoryInput,
 ): Promise<void> {

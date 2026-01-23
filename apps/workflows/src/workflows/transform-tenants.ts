@@ -43,7 +43,7 @@ export async function transformTenantsWorkflow(
               timePeriod: input.timePeriod,
             },
           ],
-          workflowId: `transform-repo-${tenant.id}-${repo.id}-${input.timePeriod.from.getTime()}`,
+          workflowId: `transform-repo-${tenant.id}-${repo.id}-${input.timePeriod.from}`,
         }),
       ),
     );

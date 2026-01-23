@@ -49,7 +49,7 @@ export interface ExtractWorkflowDeploymentInput {
   namespaceName: string;
   userId: string;
   crawlId: number;
-  timePeriod: { from: Date; to: Date };
+  timePeriod: { from: number; to: number };
 }
 
 // Transform results

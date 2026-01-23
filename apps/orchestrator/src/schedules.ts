@@ -9,9 +9,9 @@ import { getEnv } from "./env";
 const EXTRACT_SCHEDULE_ID = "extract-tenants-schedule";
 const TRANSFORM_SCHEDULE_ID = "transform-tenants-schedule";
 
-function createTimePeriod(): { from: Date; to: Date } {
-  const now = new Date();
-  const fifteenMinutesAgo = new Date(now.getTime() - 15 * 60 * 1000);
+function createTimePeriod(): { from: number; to: number } {
+  const now = Date.now();
+  const fifteenMinutesAgo = now - 15 * 60 * 1000;
   return { from: fifteenMinutesAgo, to: now };
 }
 

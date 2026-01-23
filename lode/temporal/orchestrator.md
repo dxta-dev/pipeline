@@ -31,7 +31,8 @@ Two schedules are created on startup (idempotent):
 
 Both use `ALLOW_ALL` overlap policy (concurrent runs permitted).
 
-Time period is a rolling 15-minute window: `{ from: now - 15min, to: now }`.
+Time period is a rolling 15-minute window in epoch milliseconds:
+`{ from: now - 15min, to: now }`.
 
 ## CLI Commands
 
@@ -92,6 +93,9 @@ routing traffic.
 
 ```ts
 // Manual workflow trigger
+const from = Date.now() - 15 * 60 * 1000;
+const to = Date.now();
+
 const handle = await client.workflow.start("extractTenantsWorkflow", {
   taskQueue: "extract",
   workflowId: `extract-tenants-manual-${Date.now()}`,
