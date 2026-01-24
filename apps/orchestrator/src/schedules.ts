@@ -66,7 +66,15 @@ export async function ensureTransformSchedule(): Promise<void> {
   const handle = await client.schedule.create({
     scheduleId: TRANSFORM_SCHEDULE_ID,
     spec: {
-      calendars: [{ minute: [8, 23, 38, 53] }],
+      calendars: [
+        {
+          minute: [8, 23, 38, 53],
+          hour: [
+            0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18,
+            19, 20, 21, 22, 23,
+          ],
+        },
+      ],
     },
     action: {
       type: "startWorkflow",
