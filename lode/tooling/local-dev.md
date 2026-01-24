@@ -6,8 +6,9 @@ and proper environment configuration.
 ## Prerequisites
 
 The Nix dev shell (`nix develop`) provides all required tooling: Node.js 24,
-pnpm 9.12.2, Temporal CLI, Biome, git, and jq. Alternatively, install these
-manually.
+pnpm 9.12.2, Temporal CLI, Biome, git, and jq. The shell stays minimal and
+avoids extra native image/graphics dependencies unless needed. Alternatively,
+install these manually.
 
 ## Environment Variables
 

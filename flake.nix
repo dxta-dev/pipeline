@@ -37,13 +37,8 @@
                 temporal
                 temporal-cli
                 python3
-                pkg-config
-                cairo
                 openssl
                 zlib
-                libpng
-                giflib
-                libjpeg_turbo
               ])
               ++ pkgs.lib.optionals pkgs.stdenv.isLinux [
                 pkgs.libuuid
