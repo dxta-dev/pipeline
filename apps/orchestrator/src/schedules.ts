@@ -41,7 +41,6 @@ export async function ensureExtractSchedule(): Promise<void> {
     scheduleId: EXTRACT_SCHEDULE_ID,
     spec: {
       intervals: [{ every: "15m" }],
-      startAt: new Date("2026-01-24T00:08:00Z"),
     },
     action: {
       type: "startWorkflow",
@@ -67,7 +66,7 @@ export async function ensureTransformSchedule(): Promise<void> {
   const handle = await client.schedule.create({
     scheduleId: TRANSFORM_SCHEDULE_ID,
     spec: {
-      intervals: [{ every: "15m" }],
+      calendars: [{ minute: [8, 23, 38, 53] }],
     },
     action: {
       type: "startWorkflow",
