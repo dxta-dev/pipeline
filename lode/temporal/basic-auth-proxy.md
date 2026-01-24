@@ -43,7 +43,7 @@ ARG PORT=4000
 ARG USERNAME=user
 ARG PASSWORD=password
 
-COPY ./basic-auth/nginx.conf.template /etc/nginx/nginx.conf.template
+COPY ./temporal/basic-auth/nginx.conf.template /etc/nginx/nginx.conf.template
 RUN apk add --no-cache gettext openssl
 
 ENV PROXY_PASS=${PROXY_PASS}
@@ -51,8 +51,8 @@ ENV PORT=${PORT}
 ENV USERNAME=${USERNAME}
 ENV PASSWORD=${PASSWORD}
 
-COPY --chmod=755 ./basic-auth/render-nginx-conf.sh /docker-entrypoint.d/20-render-nginx-conf.sh
-COPY --chmod=755 ./basic-auth/gen_passwd.sh /docker-entrypoint.d/10-gen-passwd.sh
+COPY --chmod=755 ./temporal/basic-auth/render-nginx-conf.sh /docker-entrypoint.d/20-render-nginx-conf.sh
+COPY --chmod=755 ./temporal/basic-auth/gen_passwd.sh /docker-entrypoint.d/10-gen-passwd.sh
 ```
 
 ```sh
