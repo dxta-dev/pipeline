@@ -15,6 +15,7 @@
 - `lode/temporal/extract-worker.md`
 - `lode/temporal/transform-worker.md`
 - `lode/temporal/orchestrator.md`
+- `lode/temporal/basic-auth-proxy.md`
 
 ## Invariants
 - Every lode file covers one topic and stays under 250 lines.
@@ -45,6 +46,7 @@ export const lodeIndex = [
   "lode/temporal/extract-worker.md",
   "lode/temporal/transform-worker.md",
   "lode/temporal/orchestrator.md",
+  "lode/temporal/basic-auth-proxy.md",
 ];
 ```
 
@@ -69,6 +71,7 @@ flowchart TD
   temporal --> extractWorker[extract-worker.md]
   temporal --> transformWorker[transform-worker.md]
   temporal --> orchestrator[orchestrator.md]
+  temporal --> basicAuthProxy[basic-auth-proxy.md]
 ```
 
 ## Related
@@ -81,3 +84,4 @@ flowchart TD
 - [Extract worker](temporal/extract-worker.md)
 - [Transform worker](temporal/transform-worker.md)
 - [Orchestrator](temporal/orchestrator.md)
+- [Basic auth proxy](temporal/basic-auth-proxy.md)
