@@ -58,7 +58,8 @@ export interface SourceControl {
     externalId: number,
     username: string,
   ): Promise<{ member: NewMember }>;
-  fetchMergeRequests(
+  /** @deprecated GitLab only - use fetchMergeRequestsV2 for GitHub */
+  fetchMergeRequests?(
     externalRepositoryId: number,
     namespaceName: string,
     repositoryName: string,
@@ -71,7 +72,6 @@ export interface SourceControl {
     mergeRequests: NewMergeRequestWithSha[];
     pagination: Pagination;
   }>;
-  /** @deprecated Use fetchMergeRequestsV2 instead */
   fetchMergeRequestsV2?(
     externalRepositoryId: number,
     namespaceName: string,

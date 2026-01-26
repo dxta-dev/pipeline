@@ -12,7 +12,6 @@ import type {
 import type {
   ExtractDeploymentsResult,
   ExtractMembersResult,
-  ExtractMergeRequestsResult,
   ExtractMergeRequestsV2Result,
   ExtractRepositoryResult,
   ExtractWorkflowDeploymentInput,
@@ -33,22 +32,6 @@ export interface ExtractActivities {
   extractRepository(
     input: ExtractRepositoryInput,
   ): Promise<ExtractRepositoryResult>;
-
-  extractMergeRequests(input: {
-    tenantId: number;
-    tenantDbUrl: string;
-    repositoryId: number;
-    externalRepositoryId: number;
-    repositoryName: string;
-    namespaceId: number;
-    namespaceName: string;
-    sourceControl: SourceControl;
-    userId: string;
-    crawlId: number;
-    timePeriod: TimePeriod;
-    page: number;
-    perPage: number;
-  }): Promise<ExtractMergeRequestsResult>;
 
   extractMergeRequestsV2(input: {
     tenantId: number;

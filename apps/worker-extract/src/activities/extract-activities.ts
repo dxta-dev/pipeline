@@ -10,7 +10,6 @@ import {
   getMergeRequestCommits,
   getMergeRequestMerger,
   getMergeRequestNotes,
-  getMergeRequests,
   getMergeRequestsDiffs,
   getMergeRequestsV2,
   getNamespaceMembers,
@@ -47,7 +46,6 @@ import type {
   ExtractMembersInput,
   ExtractMembersResult,
   ExtractMergeRequestInput,
-  ExtractMergeRequestsResult,
   ExtractRepositoryInput,
   ExtractRepositoryResult,
   ExtractTenantsInput,
@@ -155,51 +153,6 @@ export const extractActivities: ExtractActivities = {
       namespaceId: namespace.id,
       crawlId: instanceId,
       mergeRequestIds: [],
-    };
-  },
-
-  async extractMergeRequests(input: {
-    tenantId: number;
-    tenantDbUrl: string;
-    repositoryId: number;
-    externalRepositoryId: number;
-    repositoryName: string;
-    namespaceId: number;
-    namespaceName: string;
-    sourceControl: SourceControl;
-    userId: string;
-    crawlId: number;
-    timePeriod: TimePeriod;
-    page: number;
-    perPage: number;
-  }): Promise<ExtractMergeRequestsResult> {
-    const db = initDatabase(input.tenantDbUrl);
-    const sourceControl = await initSourceControl({
-      tenantId: input.tenantId,
-      sourceControl: input.sourceControl,
-    });
-    const timePeriod = toDateTimePeriod(input.timePeriod);
-
-    const { processableMergeRequests, paginationInfo } = await getMergeRequests(
-      {
-        externalRepositoryId: input.externalRepositoryId,
-        namespaceName: input.namespaceName,
-        repositoryName: input.repositoryName,
-        repositoryId: input.repositoryId,
-        page: input.page,
-        perPage: input.perPage,
-        timePeriod,
-      },
-      {
-        db,
-        integrations: { sourceControl },
-        entities: { mergeRequests, repositoryShas },
-      },
-    );
-
-    return {
-      mergeRequestIds: processableMergeRequests.map((mr) => mr.id),
-      totalPages: paginationInfo.totalPages,
     };
   },
 

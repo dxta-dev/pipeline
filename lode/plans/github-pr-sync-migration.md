@@ -1,6 +1,6 @@
-# GitHub PR Sync Migration
+# GitHub PR Sync Migration (Complete)
 
-Migrate GitHub merge request ingestion from Search API to Pulls + Issues for
+Migrated GitHub merge request ingestion from Search API to Pulls + Issues for
 complete enumeration, PR-native fields, and stable pagination.
 
 ## New Methods (Implemented)
@@ -35,10 +35,10 @@ Fetches closer info for closed PRs via `issues.get` endpoint.
 - Returns `{ closerExternalId: number | null }`
 - Call only for PRs where `closedAt` is set but `mergedAt` is null
 
-## Legacy Method (Deprecated)
+## Legacy Method
 
-The old `fetchMergeRequests` method remains unchanged for backward compatibility.
-It will be removed after activities are migrated to use `fetchMergeRequestsV2`.
+The `fetchMergeRequests` interface method remains optional for GitLab compatibility.
+GitHub implementation has been removed; only `fetchMergeRequestsV2` is used for GitHub.
 
 ## Invariants
 
@@ -116,26 +116,26 @@ Replaced Search API pagination with watermark-based sequential pagination.
 [parallel-pagination-option.md](./parallel-pagination-option.md) for future
 parallel batching optimization if performance becomes a concern.
 
-## Implementation Tasks
+## Implementation Tasks (All Complete)
 
-### Integration Layer (Complete)
+### Integration Layer
 1. [x] Add `fetchMergeRequestsV2` with watermark-based pagination (new method)
 2. [x] Add `fetchMergeRequestMerger` method (`merged_by` not in `pulls.list`)
 3. [x] Only store `mergeCommitSha` when `merged_at` is present in V2
 4. [x] Add `fetchMergeRequestCloser` method for Issues API
 5. [x] Update `SourceControl` interface with new methods
 
-### Phase A: Merger/Closer Activities (Complete)
+### Phase A: Merger/Closer Activities
 6. [x] Add `extractMergeRequestMerger` activity to `ExtractActivities` interface
 7. [x] Add `extractMergeRequestCloser` activity to `ExtractActivities` interface
 8. [x] Implement activities in `apps/worker-extract/src/activities/extract-activities.ts`
 9. [x] Update `extractMergeRequestWorkflow` to call merger/closer activities
 
-### Phase B: V2 Pagination (Complete)
+### Phase B: V2 Pagination
 10. [x] Create `getMergeRequestsV2` function in `packages/functions/extract`
 11. [x] Create `extractMergeRequestsV2` activity
 12. [x] Update `extractRepositoryWorkflow` to use `hasMore` pagination loop
-13. [ ] Remove deprecated `fetchMergeRequests` after migration validated
+13. [x] Remove deprecated `fetchMergeRequests` from GitHub (interface kept optional for GitLab)
 
 ## Code Example
 

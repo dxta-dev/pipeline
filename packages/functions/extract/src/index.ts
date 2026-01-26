@@ -9,7 +9,6 @@ export * from "./get-merge-request-commits";
 export * from "./get-merge-request-diffs";
 export * from "./get-merge-request-merger";
 export * from "./get-merge-request-notes";
-export * from "./get-merge-requests";
 export * from "./get-merge-requests-v2";
 export * from "./get-namespace-members";
 export * from "./get-repository";
