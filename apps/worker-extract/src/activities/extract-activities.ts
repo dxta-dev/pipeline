@@ -12,6 +12,7 @@ import {
   getMergeRequestNotes,
   getMergeRequests,
   getMergeRequestsDiffs,
+  getMergeRequestsV2,
   getNamespaceMembers,
   getRepository,
   getTimelineEvents,
@@ -199,6 +200,57 @@ export const extractActivities: ExtractActivities = {
     return {
       mergeRequestIds: processableMergeRequests.map((mr) => mr.id),
       totalPages: paginationInfo.totalPages,
+    };
+  },
+
+  async extractMergeRequestsV2(input: {
+    tenantId: number;
+    tenantDbUrl: string;
+    repositoryId: number;
+    externalRepositoryId: number;
+    repositoryName: string;
+    namespaceId: number;
+    namespaceName: string;
+    sourceControl: SourceControl;
+    userId: string;
+    crawlId: number;
+    updatedAfter: number;
+    page: number;
+    perPage: number;
+  }): Promise<{
+    mergeRequestIds: number[];
+    hasMore: boolean;
+    reachedWatermark: boolean;
+  }> {
+    const db = initDatabase(input.tenantDbUrl);
+    const sourceControl = await initSourceControl({
+      tenantId: input.tenantId,
+      sourceControl: input.sourceControl,
+    });
+    const updatedAfter = new Date(input.updatedAfter);
+
+    const { processableMergeRequests, pagination, reachedWatermark } =
+      await getMergeRequestsV2(
+        {
+          externalRepositoryId: input.externalRepositoryId,
+          namespaceName: input.namespaceName,
+          repositoryName: input.repositoryName,
+          repositoryId: input.repositoryId,
+          page: input.page,
+          perPage: input.perPage,
+          updatedAfter,
+        },
+        {
+          db,
+          integrations: { sourceControl },
+          entities: { mergeRequests, repositoryShas },
+        },
+      );
+
+    return {
+      mergeRequestIds: processableMergeRequests.map((mr) => mr.id),
+      hasMore: pagination.hasMore,
+      reachedWatermark,
     };
   },
 

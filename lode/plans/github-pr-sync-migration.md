@@ -92,15 +92,29 @@ works with the existing pagination and adds value immediately.
 - `apps/worker-extract/src/activities/extract-activities.ts` - Activity implementations
 - `apps/workflows/src/workflows/extract-merge-request.ts` - Workflow updated
 
-### Phase B: V2 Pagination (Later)
+### Phase B: V2 Pagination (Complete)
 
-Replace Search API pagination with watermark-based pagination. Lower priority
-since Phase A doesn't depend on it.
+Replaced Search API pagination with watermark-based sequential pagination.
 
-1. Create `getMergeRequestsV2` function in `packages/functions/extract`
-2. Create `extractMergeRequestsV2` activity
-3. Update `extractRepositoryWorkflow` to use `hasMore` loop instead of `totalPages`
-4. Remove deprecated `fetchMergeRequests` after migration complete
+**Changes made:**
+
+1. `getMergeRequestsV2` function in `packages/functions/extract/src/get-merge-requests-v2.ts`
+   - Uses `fetchMergeRequestsV2` from source control
+   - Accepts `updatedAfter?: Date` instead of `timePeriod`
+   - Returns `{ hasMore, reachedWatermark }` instead of `totalPages`
+
+2. `extractMergeRequestsV2` activity in `apps/worker-extract/src/activities/extract-activities.ts`
+   - Wraps `getMergeRequestsV2` for Temporal
+   - Input: `updatedAfter: number` (epoch ms)
+   - Output: `{ mergeRequestIds, hasMore, reachedWatermark }`
+
+3. `extractRepositoryWorkflow` in `apps/workflows/src/workflows/extract-repository.ts`
+   - Sequential pagination loop instead of parallel `totalPages` batching
+   - Stops when `!hasMore || reachedWatermark`
+
+**Pagination approach:** Sequential (one page at a time). See
+[parallel-pagination-option.md](./parallel-pagination-option.md) for future
+parallel batching optimization if performance becomes a concern.
 
 ## Implementation Tasks
 
@@ -117,30 +131,38 @@ since Phase A doesn't depend on it.
 8. [x] Implement activities in `apps/worker-extract/src/activities/extract-activities.ts`
 9. [x] Update `extractMergeRequestWorkflow` to call merger/closer activities
 
-### Phase B: V2 Pagination (Later)
-10. [ ] Create `getMergeRequestsV2` function in `packages/functions/extract`
-11. [ ] Create `extractMergeRequestsV2` activity
-12. [ ] Update `extractRepositoryWorkflow` to use `hasMore` pagination loop
-13. [ ] Remove deprecated `fetchMergeRequests` after activities migrated
+### Phase B: V2 Pagination (Complete)
+10. [x] Create `getMergeRequestsV2` function in `packages/functions/extract`
+11. [x] Create `extractMergeRequestsV2` activity
+12. [x] Update `extractRepositoryWorkflow` to use `hasMore` pagination loop
+13. [ ] Remove deprecated `fetchMergeRequests` after migration validated
 
 ## Code Example
 
 ```ts
-// fetchMergeRequestsV2 - watermark-based pagination, no Search API
-async fetchMergeRequestsV2(
-  externalRepositoryId: number,
-  namespaceName: string,
-  repositoryName: string,
-  repositoryId: number,
-  perPage: number,
-  updatedAfter?: Date,
-  page?: number,
-): Promise<{
-  mergeRequests: NewMergeRequestWithSha[];
-  pagination: { page: number; perPage: number; hasMore: boolean };
-  reachedWatermark: boolean;
-}> {
-  // ... calls pulls.list, maps fields, checks watermark
+// Workflow: sequential pagination with watermark-based early exit
+async function extractMergeRequestsAndChildren(...) {
+  const allMergeRequestIds = [...initialMergeRequestIds];
+  let page = 1;
+  let hasMore = true;
+
+  while (hasMore) {
+    const result = await extractMergeRequestsV2({
+      ...baseInput,
+      updatedAfter: input.timePeriod.from,
+      page,
+      perPage: DEFAULT_PER_PAGE,
+    });
+
+    allMergeRequestIds.push(...result.mergeRequestIds);
+
+    if (!result.hasMore || result.reachedWatermark) {
+      hasMore = false;
+    } else {
+      page++;
+    }
+  }
+  // ... process unique MR IDs
 }
 
 // merged_by requires pulls.get (not available in pulls.list)

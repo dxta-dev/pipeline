@@ -10,6 +10,7 @@
 - `lode/tooling/scripts.md`
 - `lode/plans/github-app-auth.md`
 - `lode/plans/github-pr-sync-migration.md`
+- `lode/plans/parallel-pagination-option.md`
 - `lode/plans/temporal-migration.md`
 - `lode/temporal/baseline-design.md`
 - `lode/temporal/railway-images.md`
@@ -43,6 +44,7 @@ export const lodeIndex = [
   "lode/tooling/scripts.md",
   "lode/plans/github-app-auth.md",
   "lode/plans/github-pr-sync-migration.md",
+  "lode/plans/parallel-pagination-option.md",
   "lode/plans/temporal-migration.md",
   "lode/temporal/baseline-design.md",
   "lode/temporal/railway-images.md",
@@ -66,6 +68,7 @@ flowchart TD
   plans --> migration[temporal-migration.md]
   plans --> githubAuth[github-app-auth.md]
   plans --> prSync[github-pr-sync-migration.md]
+  plans --> parallelPagination[parallel-pagination-option.md]
   tooling --> commands[monorepo-commands.md]
   tooling --> localDev[local-dev.md]
   tooling --> migrations[migrations.md]

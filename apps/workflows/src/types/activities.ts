@@ -13,6 +13,7 @@ import type {
   ExtractDeploymentsResult,
   ExtractMembersResult,
   ExtractMergeRequestsResult,
+  ExtractMergeRequestsV2Result,
   ExtractRepositoryResult,
   ExtractWorkflowDeploymentInput,
   ExtractWorkflowDeploymentsResult,
@@ -48,6 +49,22 @@ export interface ExtractActivities {
     page: number;
     perPage: number;
   }): Promise<ExtractMergeRequestsResult>;
+
+  extractMergeRequestsV2(input: {
+    tenantId: number;
+    tenantDbUrl: string;
+    repositoryId: number;
+    externalRepositoryId: number;
+    repositoryName: string;
+    namespaceId: number;
+    namespaceName: string;
+    sourceControl: SourceControl;
+    userId: string;
+    crawlId: number;
+    updatedAfter: number;
+    page: number;
+    perPage: number;
+  }): Promise<ExtractMergeRequestsV2Result>;
 
   extractMergeRequestDiffs(input: ExtractMergeRequestInput): Promise<void>;
 
