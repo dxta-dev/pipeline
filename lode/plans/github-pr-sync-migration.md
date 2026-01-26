@@ -64,23 +64,77 @@ It will be removed after activities are migrated to use `fetchMergeRequestsV2`.
 
 ## Migration Strategy
 
-We use Option C: add new method `fetchMergeRequestsV2`, deprecate old method.
+Two-phase approach: Phase A adds merger/closer extraction to enrich existing data,
+Phase B switches to V2 pagination.
 
-- `fetchMergeRequestsV2` has a clean interface with `hasMore` instead of `totalPages`
-- `fetchMergeRequests` remains unchanged for now (backward compatible)
-- Activities will be updated in a later step to use V2, then old method removed
+### Phase A: Merger/Closer Extraction (Next)
+
+Add activities to fetch `mergerExternalId` and `closerExternalId` per-PR. This
+works with the existing pagination and adds value immediately.
+
+**New activities to add:**
+
+1. `extractMergeRequestMerger` - Calls `fetchMergeRequestMerger` for merged PRs
+   - Input: `{ tenantId, tenantDbUrl, repositoryId, namespaceId, mergeRequestId, sourceControl }`
+   - Queries DB for PR's `canonId` (PR number) and `mergedAt`
+   - Only calls API if `mergedAt` is set
+   - Updates `mergeRequests.mergerExternalId` in DB
+
+2. `extractMergeRequestCloser` - Calls `fetchMergeRequestCloser` for closed-unmerged PRs
+   - Input: `{ tenantId, tenantDbUrl, repositoryId, namespaceId, mergeRequestId, sourceControl }`
+   - Queries DB for PR's `canonId`, `closedAt`, `mergedAt`
+   - Only calls API if `closedAt` is set AND `mergedAt` is null
+   - Updates `mergeRequests.closerExternalId` in DB
+
+**Workflow changes:**
+
+Update `extractMergeRequestWorkflow` to call merger/closer after existing activities:
+
+```ts
+export async function extractMergeRequestWorkflow(input) {
+  await extractMergeRequestDiffs(input);
+  await extractMergeRequestCommits(input);
+  await extractMergeRequestNotes(input);
+
+  if (input.sourceControl === "github") {
+    await extractTimelineEvents(input);
+    // New: enrich merger/closer
+    await extractMergeRequestMerger(input);
+    await extractMergeRequestCloser(input);
+  }
+}
+```
+
+### Phase B: V2 Pagination (Later)
+
+Replace Search API pagination with watermark-based pagination. Lower priority
+since Phase A doesn't depend on it.
+
+1. Create `getMergeRequestsV2` function in `packages/functions/extract`
+2. Create `extractMergeRequestsV2` activity
+3. Update `extractRepositoryWorkflow` to use `hasMore` loop instead of `totalPages`
+4. Remove deprecated `fetchMergeRequests` after migration complete
 
 ## Implementation Tasks
 
+### Integration Layer (Complete)
 1. [x] Add `fetchMergeRequestsV2` with watermark-based pagination (new method)
 2. [x] Add `fetchMergeRequestMerger` method (`merged_by` not in `pulls.list`)
 3. [x] Only store `mergeCommitSha` when `merged_at` is present in V2
 4. [x] Add `fetchMergeRequestCloser` method for Issues API
 5. [x] Update `SourceControl` interface with new methods
-6. [ ] Add Temporal activity for merger/closer extraction
-7. [ ] Update workflow to call merger/closer extraction
-8. [ ] Update extract activities to use `fetchMergeRequestsV2`
-9. [ ] Remove deprecated `fetchMergeRequests` after activities migrated
+
+### Phase A: Merger/Closer Activities (Next)
+6. [ ] Add `extractMergeRequestMerger` activity to `ExtractActivities` interface
+7. [ ] Add `extractMergeRequestCloser` activity to `ExtractActivities` interface
+8. [ ] Implement activities in `apps/worker-extract/src/activities/extract-activities.ts`
+9. [ ] Update `extractMergeRequestWorkflow` to call merger/closer activities
+
+### Phase B: V2 Pagination (Later)
+10. [ ] Create `getMergeRequestsV2` function in `packages/functions/extract`
+11. [ ] Create `extractMergeRequestsV2` activity
+12. [ ] Update `extractRepositoryWorkflow` to use `hasMore` pagination loop
+13. [ ] Remove deprecated `fetchMergeRequests` after activities migrated
 
 ## Code Example
 
