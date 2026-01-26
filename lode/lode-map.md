@@ -9,6 +9,7 @@
 - `lode/tooling/migrations.md`
 - `lode/tooling/scripts.md`
 - `lode/plans/github-app-auth.md`
+- `lode/plans/github-pr-sync-migration.md`
 - `lode/plans/temporal-migration.md`
 - `lode/temporal/baseline-design.md`
 - `lode/temporal/railway-images.md`

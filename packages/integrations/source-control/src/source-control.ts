@@ -1,17 +1,19 @@
 import type {
-  NewRepository,
-  NewNamespace,
-  NewMergeRequestWithSha,
-  NewMember,
-  NewMergeRequestDiff,
-  NewMergeRequestCommit,
-  NewMergeRequestNote,
-  NewTimelineEvents,
+  Deployment,
+  MergeRequest,
+  Namespace,
   NewCommit,
   NewDeploymentWithSha,
-  Deployment,
+  NewMember,
+  NewMergeRequestCommit,
+  NewMergeRequestDiff,
+  NewMergeRequestNote,
+  NewMergeRequestWithSha,
+  NewNamespace,
+  NewRepository,
+  NewTimelineEvents,
+  Repository,
 } from "@dxta/extract-schema";
-import type { Repository, Namespace, MergeRequest } from "@dxta/extract-schema";
 
 export type Pagination = {
   perPage: number;
@@ -69,6 +71,30 @@ export interface SourceControl {
     mergeRequests: NewMergeRequestWithSha[];
     pagination: Pagination;
   }>;
+  /** @deprecated Use fetchMergeRequestsV2 instead */
+  fetchMergeRequestsV2?(
+    externalRepositoryId: number,
+    namespaceName: string,
+    repositoryName: string,
+    repositoryId: number,
+    perPage: number,
+    updatedAfter?: Date,
+    page?: number,
+  ): Promise<{
+    mergeRequests: NewMergeRequestWithSha[];
+    pagination: { page: number; perPage: number; hasMore: boolean };
+    reachedWatermark: boolean;
+  }>;
+  fetchMergeRequestMerger?(
+    namespaceName: string,
+    repositoryName: string,
+    pullNumber: number,
+  ): Promise<{ mergerExternalId: number | null }>;
+  fetchMergeRequestCloser?(
+    namespaceName: string,
+    repositoryName: string,
+    pullNumber: number,
+  ): Promise<{ closerExternalId: number | null }>;
   fetchMergeRequestDiffs(
     repository: Repository,
     namespace: Namespace,

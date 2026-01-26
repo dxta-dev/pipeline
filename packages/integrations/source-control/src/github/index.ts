@@ -1,29 +1,28 @@
-import type { SourceControl } from "..";
-import { Octokit } from "@octokit/rest";
-import parseLinkHeader from "parse-link-header";
-
 import type {
-  NewRepository,
-  NewNamespace,
-  NewMergeRequestWithSha,
-  NewMember,
-  NewMergeRequestDiff,
-  Repository,
-  Namespace,
-  MergeRequest,
-  NewMergeRequestCommit,
-  NewMergeRequestNote,
-  NewTimelineEvents,
-  TimelineEventType,
-  NewDeploymentWithSha,
   Deployment,
   deploymentsStatusEnum,
+  MergeRequest,
+  Namespace,
+  NewDeploymentWithSha,
+  NewMember,
+  NewMergeRequestCommit,
+  NewMergeRequestDiff,
+  NewMergeRequestNote,
+  NewMergeRequestWithSha,
+  NewNamespace,
+  NewRepository,
+  NewTimelineEvents,
+  Repository,
+  TimelineEventType,
 } from "@dxta/extract-schema";
-import type { CommitData, Pagination, TimePeriod } from "../source-control";
 import type { components } from "@octokit/openapi-types";
-import { TimelineEventTypes } from "../../../../../packages/schemas/extract/src/timeline-events";
 import { RequestError } from "@octokit/request-error";
+import { Octokit } from "@octokit/rest";
 import assert from "assert";
+import parseLinkHeader from "parse-link-header";
+import { TimelineEventTypes } from "../../../../../packages/schemas/extract/src/timeline-events";
+import type { SourceControl } from "..";
+import type { CommitData, Pagination, TimePeriod } from "../source-control";
 
 const FILE_STATUS_FLAGS_MAPPING: Record<
   | "added"
@@ -366,7 +365,7 @@ export class GitHubSourceControl implements SourceControl {
       from: Date,
       to: Date | "today",
     ) => {
-      let updated;
+      let updated: string;
 
       if (to === "today") {
         updated = `>=${from.toISOString().slice(0, 10)}`;
@@ -533,6 +532,123 @@ export class GitHubSourceControl implements SourceControl {
           }) satisfies NewMergeRequestWithSha,
       ),
       pagination,
+    };
+  }
+
+  /**
+   * Fetch merge requests using watermark-based pagination (no Search API).
+   * Replaces fetchMergeRequests with a cleaner interface.
+   *
+   * @param updatedAfter - Stop paginating when PR updated_at < this date
+   * @returns hasMore instead of totalPages; reachedWatermark indicates stop reason
+   */
+  async fetchMergeRequestsV2(
+    externalRepositoryId: number,
+    namespaceName: string,
+    repositoryName: string,
+    repositoryId: number,
+    perPage: number,
+    updatedAfter?: Date,
+    page?: number,
+  ): Promise<{
+    mergeRequests: NewMergeRequestWithSha[];
+    pagination: { page: number; perPage: number; hasMore: boolean };
+    reachedWatermark: boolean;
+  }> {
+    page = page || 1;
+
+    const result = await this.api.pulls.list({
+      owner: namespaceName,
+      repo: repositoryName,
+      page,
+      per_page: perPage,
+      state: "all",
+      sort: "updated",
+      direction: "desc",
+    });
+
+    const linkHeader = parseLinkHeader(result.headers.link);
+    const hasNextPage = linkHeader !== null && "next" in linkHeader;
+
+    const mergeRequests = result.data.map(
+      (pr) =>
+        ({
+          externalId: pr.id,
+          canonId: pr.number,
+          repositoryId,
+          title: pr.title,
+          description: pr.body,
+          webUrl: pr.html_url,
+          createdAt: new Date(pr.created_at),
+          updatedAt: new Date(pr.updated_at),
+          closedAt: pr.closed_at ? new Date(pr.closed_at) : undefined,
+          mergedAt: pr.merged_at ? new Date(pr.merged_at) : undefined,
+          // Note: merged_by is not available in pulls.list, only in pulls.get
+          // mergerExternalId will be fetched separately via fetchMergeRequestMerger
+          authorExternalId: pr.user?.id,
+          state: pr.state,
+          targetBranch: pr.base.ref,
+          sourceBranch: pr.head.ref,
+          mergeCommitSha: pr.merged_at ? pr.merge_commit_sha : undefined,
+        }) satisfies NewMergeRequestWithSha,
+    );
+
+    // Watermark check: did the oldest PR in this page cross the boundary?
+    const oldestPr = mergeRequests[mergeRequests.length - 1];
+    const reachedWatermark =
+      updatedAfter !== undefined &&
+      oldestPr !== undefined &&
+      oldestPr.updatedAt !== undefined &&
+      oldestPr.updatedAt < updatedAfter;
+
+    return {
+      mergeRequests,
+      pagination: {
+        page,
+        perPage,
+        hasMore: hasNextPage && !reachedWatermark,
+      },
+      reachedWatermark,
+    };
+  }
+
+  /**
+   * Fetch merger info for a merged PR using pulls.get endpoint.
+   * Required because pulls.list doesn't include merged_by field.
+   */
+  async fetchMergeRequestMerger(
+    namespaceName: string,
+    repositoryName: string,
+    pullNumber: number,
+  ): Promise<{ mergerExternalId: number | null }> {
+    const result = await this.api.pulls.get({
+      owner: namespaceName,
+      repo: repositoryName,
+      pull_number: pullNumber,
+    });
+
+    return {
+      mergerExternalId: result.data.merged_by?.id ?? null,
+    };
+  }
+
+  /**
+   * Fetch closer info for a closed PR using issues.get endpoint.
+   * PRs are issues in GitHub, so we use the issues API for closed_by.
+   */
+  async fetchMergeRequestCloser(
+    namespaceName: string,
+    repositoryName: string,
+    pullNumber: number,
+  ): Promise<{ closerExternalId: number | null }> {
+    const result = await this.api.issues.get({
+      owner: namespaceName,
+      repo: repositoryName,
+      issue_number: pullNumber,
+    });
+
+    return {
+      closerExternalId: result.data.closed_by?.id ?? null,
     };
   }
 
@@ -712,7 +828,7 @@ export class GitHubSourceControl implements SourceControl {
       .map((singleEvent) => {
         switch (singleEvent.event) {
           case "assigned":
-          case "unassigned":
+          case "unassigned": {
             const assignedEvent = singleEvent as
               | components["schemas"]["timeline-assigned-issue-event"]
               | components["schemas"]["timeline-unassigned-issue-event"];
@@ -729,7 +845,8 @@ export class GitHubSourceControl implements SourceControl {
                 assigneeName: assignedEvent.assignee.login,
               },
             } satisfies NewTimelineEvents;
-          case "committed":
+          }
+          case "committed": {
             const committedEvent =
               singleEvent as components["schemas"]["timeline-committed-event"];
             return {
@@ -746,8 +863,9 @@ export class GitHubSourceControl implements SourceControl {
                 committedDate: new Date(committedEvent.committer.date),
               },
             } satisfies NewTimelineEvents;
+          }
           case "review_requested":
-          case "review_request_removed":
+          case "review_request_removed": {
             const requestedEvent = singleEvent as
               | components["schemas"]["review-requested-issue-event"]
               | components["schemas"]["review-request-removed-issue-event"];
@@ -764,7 +882,8 @@ export class GitHubSourceControl implements SourceControl {
                 requestedReviewerName: requestedEvent.requested_reviewer?.login,
               },
             } satisfies NewTimelineEvents;
-          case "reviewed":
+          }
+          case "reviewed": {
             const reviewedEvent =
               singleEvent as components["schemas"]["timeline-reviewed-event"];
             return {
@@ -779,7 +898,8 @@ export class GitHubSourceControl implements SourceControl {
                 state: reviewedEvent.state,
               },
             } satisfies NewTimelineEvents;
-          case "commented":
+          }
+          case "commented": {
             const commentedEvent =
               singleEvent as components["schemas"]["timeline-comment-event"];
             return {
@@ -791,7 +911,8 @@ export class GitHubSourceControl implements SourceControl {
               actorName: commentedEvent.actor?.login || "",
               actorId: commentedEvent.actor?.id,
             } satisfies NewTimelineEvents;
-          default:
+          }
+          default: {
             const generalEvent =
               singleEvent as components["schemas"]["state-change-issue-event"];
             return {
@@ -803,6 +924,7 @@ export class GitHubSourceControl implements SourceControl {
               actorId: generalEvent.actor?.id,
               htmlUrl: null,
             } satisfies NewTimelineEvents;
+          }
         }
       });
 
