@@ -3,49 +3,42 @@
 Migrate GitHub merge request ingestion from Search API to Pulls + Issues for
 complete enumeration, PR-native fields, and stable pagination.
 
-## Current Implementation (Before Migration)
+## New Methods (Implemented)
 
 Location: `packages/integrations/source-control/src/github/index.ts`
 
-The current `fetchMergeRequests` method has two stages:
+Three new methods added to `GitHubSourceControl`:
 
-1. **Search API for pagination** (lines 361-451):
-   - Calls `search.issuesAndPullRequests` with `type:pr+repo:{owner}/{repo}+updated:{range}`
-   - Uses Search to calculate `totalPages` and page offset for time-period filtering
-   - Problem: Search API is capped at 1,000 results per query
+### `fetchMergeRequestsV2`
 
-2. **Pulls API for data** (lines 474-536):
-   - Calls `pulls.list` with `state=all&sort=updated&direction=desc`
-   - Maps PR fields to `NewMergeRequestWithSha`
+Replaces `fetchMergeRequests` with watermark-based pagination (no Search API).
 
-**Current field mapping issues:**
-- `mergerExternalId`: NOT extracted (GitHub PRs have `merged_by` but it's ignored)
-- `closerExternalId`: NOT extracted (would need Issues API)
-- `mergeCommitSha`: Stored for ALL PRs, but for open PRs this is transient
+- Calls `pulls.list` with `state=all&sort=updated&direction=desc`
+- Returns `hasMore` boolean instead of unreliable `totalPages`
+- Returns `reachedWatermark` to indicate stop reason
+- Only stores `mergeCommitSha` when `merged_at` is present
+- Does NOT include `mergerExternalId` (not available in `pulls.list`)
 
-**Parameter naming issue:**
-- Interface parameter is `creationPeriod?: TimePeriod`
-- Actually filters by `updated` date, not `created` date
-- Internal variable renamed to `timePeriod` which is confusing
+### `fetchMergeRequestMerger`
 
-## Target Implementation
+Fetches merger info for merged PRs via `pulls.get` endpoint.
 
-### Changes to `fetchMergeRequests`
+- Required because `pulls.list` doesn't include `merged_by` field
+- Returns `{ mergerExternalId: number | null }`
+- Call only for PRs where `mergedAt` is set
 
-1. **Remove Search API entirely** - use Pulls API pagination directly
-2. **Watermark-based pagination stop**:
-   - Paginate until oldest PR's `updated_at < period.from`
-   - Or hit a configurable max page limit (safety bound)
-3. **Extract `merged_by.id`** as `mergerExternalId` for merged PRs
-4. **Only store `mergeCommitSha`** when `merged_at` is present
-5. **Remove `totalPages` parameter** - no longer needed without Search
+### `fetchMergeRequestCloser`
 
-### New method: `fetchMergeRequestCloser`
+Fetches closer info for closed PRs via `issues.get` endpoint.
 
-For closed-unmerged PRs, closer attribution requires Issues API:
-- Endpoint: `GET /repos/{owner}/{repo}/issues/{pull_number}`
-- Extract: `closed_by.id` as `closerExternalId`
-- Called per-PR from Temporal activity (not batched in fetchMergeRequests)
+- PRs are Issues in GitHub, so we use Issues API for `closed_by`
+- Returns `{ closerExternalId: number | null }`
+- Call only for PRs where `closedAt` is set but `mergedAt` is null
+
+## Legacy Method (Deprecated)
+
+The old `fetchMergeRequests` method remains unchanged for backward compatibility.
+It will be removed after activities are migrated to use `fetchMergeRequestsV2`.
 
 ## Invariants
 
@@ -134,19 +127,23 @@ async fetchMergeRequestCloser(
 
 ```mermaid
 flowchart TD
-  subgraph "fetchMergeRequests (simplified)"
-    pulls[List PRs via Pulls API] --> map[Map PR fields]
+  subgraph "fetchMergeRequestsV2 (paginated list)"
+    pulls[pulls.list API] --> map[Map PR fields]
     map --> check{oldest updated_at < watermark?}
-    check -->|yes| stop[Return results, hasMore=false]
-    check -->|no| more{more pages?}
-    more -->|yes| next[Return results, hasMore=true]
+    check -->|yes| stop[hasMore=false]
+    check -->|no| more{link header has next?}
+    more -->|yes| next[hasMore=true]
     more -->|no| stop
   end
 
-  subgraph "Closer Attribution (separate activity)"
-    mr[Closed-unmerged MR] --> issues[Fetch Issue via Issues API]
-    issues --> closer[Extract closed_by.id]
-    closer --> update[Update MR closerExternalId]
+  subgraph "Per-PR enrichment (separate calls)"
+    merged{PR merged?} -->|yes| merger[fetchMergeRequestMerger]
+    merger --> pullsGet[pulls.get API]
+    pullsGet --> mergerExternalId
+
+    closed{PR closed, not merged?} -->|yes| closer[fetchMergeRequestCloser]
+    closer --> issuesGet[issues.get API]
+    issuesGet --> closerExternalId
   end
 ```
 

@@ -38,9 +38,11 @@ export const lodeIndex = [
   "lode/practices.md",
   "lode/tooling/monorepo-commands.md",
   "lode/tooling/local-dev.md",
+  "lode/tooling/docker-images.md",
   "lode/tooling/migrations.md",
   "lode/tooling/scripts.md",
   "lode/plans/github-app-auth.md",
+  "lode/plans/github-pr-sync-migration.md",
   "lode/plans/temporal-migration.md",
   "lode/temporal/baseline-design.md",
   "lode/temporal/railway-images.md",
@@ -63,6 +65,7 @@ flowchart TD
   core --> practices[practices.md]
   plans --> migration[temporal-migration.md]
   plans --> githubAuth[github-app-auth.md]
+  plans --> prSync[github-pr-sync-migration.md]
   tooling --> commands[monorepo-commands.md]
   tooling --> localDev[local-dev.md]
   tooling --> migrations[migrations.md]
