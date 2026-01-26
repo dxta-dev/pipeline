@@ -6,7 +6,9 @@ import {
   getDeployments,
   getMemberInfo,
   getMembers,
+  getMergeRequestCloser,
   getMergeRequestCommits,
+  getMergeRequestMerger,
   getMergeRequestNotes,
   getMergeRequests,
   getMergeRequestsDiffs,
@@ -316,6 +318,60 @@ export const extractActivities: ExtractActivities = {
           members,
           repositoriesToMembers,
           gitIdentities,
+        },
+      },
+    );
+  },
+
+  async extractMergeRequestMerger(
+    input: ExtractMergeRequestInput,
+  ): Promise<void> {
+    const db = initDatabase(input.tenantDbUrl);
+    const sourceControl = await initSourceControl({
+      tenantId: input.tenantId,
+      sourceControl: input.sourceControl,
+    });
+
+    await getMergeRequestMerger(
+      {
+        mergeRequestId: input.mergeRequestId,
+        repositoryId: input.repositoryId,
+        namespaceId: input.namespaceId,
+      },
+      {
+        db,
+        integrations: { sourceControl },
+        entities: {
+          mergeRequests,
+          namespaces,
+          repositories,
+        },
+      },
+    );
+  },
+
+  async extractMergeRequestCloser(
+    input: ExtractMergeRequestInput,
+  ): Promise<void> {
+    const db = initDatabase(input.tenantDbUrl);
+    const sourceControl = await initSourceControl({
+      tenantId: input.tenantId,
+      sourceControl: input.sourceControl,
+    });
+
+    await getMergeRequestCloser(
+      {
+        mergeRequestId: input.mergeRequestId,
+        repositoryId: input.repositoryId,
+        namespaceId: input.namespaceId,
+      },
+      {
+        db,
+        integrations: { sourceControl },
+        entities: {
+          mergeRequests,
+          namespaces,
+          repositories,
         },
       },
     );

@@ -67,43 +67,30 @@ It will be removed after activities are migrated to use `fetchMergeRequestsV2`.
 Two-phase approach: Phase A adds merger/closer extraction to enrich existing data,
 Phase B switches to V2 pagination.
 
-### Phase A: Merger/Closer Extraction (Next)
+### Phase A: Merger/Closer Extraction (Complete)
 
 Add activities to fetch `mergerExternalId` and `closerExternalId` per-PR. This
 works with the existing pagination and adds value immediately.
 
-**New activities to add:**
+**Activities added:**
 
 1. `extractMergeRequestMerger` - Calls `fetchMergeRequestMerger` for merged PRs
-   - Input: `{ tenantId, tenantDbUrl, repositoryId, namespaceId, mergeRequestId, sourceControl }`
-   - Queries DB for PR's `canonId` (PR number) and `mergedAt`
-   - Only calls API if `mergedAt` is set
+   - Uses `ExtractMergeRequestInput` (same as other MR activities)
+   - Skips if PR is not merged or already has `mergerExternalId`
    - Updates `mergeRequests.mergerExternalId` in DB
 
 2. `extractMergeRequestCloser` - Calls `fetchMergeRequestCloser` for closed-unmerged PRs
-   - Input: `{ tenantId, tenantDbUrl, repositoryId, namespaceId, mergeRequestId, sourceControl }`
-   - Queries DB for PR's `canonId`, `closedAt`, `mergedAt`
-   - Only calls API if `closedAt` is set AND `mergedAt` is null
+   - Uses `ExtractMergeRequestInput` (same as other MR activities)
+   - Skips if PR is merged, still open, or already has `closerExternalId`
    - Updates `mergeRequests.closerExternalId` in DB
 
-**Workflow changes:**
+**Files created/modified:**
 
-Update `extractMergeRequestWorkflow` to call merger/closer after existing activities:
-
-```ts
-export async function extractMergeRequestWorkflow(input) {
-  await extractMergeRequestDiffs(input);
-  await extractMergeRequestCommits(input);
-  await extractMergeRequestNotes(input);
-
-  if (input.sourceControl === "github") {
-    await extractTimelineEvents(input);
-    // New: enrich merger/closer
-    await extractMergeRequestMerger(input);
-    await extractMergeRequestCloser(input);
-  }
-}
-```
+- `packages/functions/extract/src/get-merge-request-merger.ts` - Extract function
+- `packages/functions/extract/src/get-merge-request-closer.ts` - Extract function
+- `apps/workflows/src/types/activities.ts` - Interface additions
+- `apps/worker-extract/src/activities/extract-activities.ts` - Activity implementations
+- `apps/workflows/src/workflows/extract-merge-request.ts` - Workflow updated
 
 ### Phase B: V2 Pagination (Later)
 
@@ -124,11 +111,11 @@ since Phase A doesn't depend on it.
 4. [x] Add `fetchMergeRequestCloser` method for Issues API
 5. [x] Update `SourceControl` interface with new methods
 
-### Phase A: Merger/Closer Activities (Next)
-6. [ ] Add `extractMergeRequestMerger` activity to `ExtractActivities` interface
-7. [ ] Add `extractMergeRequestCloser` activity to `ExtractActivities` interface
-8. [ ] Implement activities in `apps/worker-extract/src/activities/extract-activities.ts`
-9. [ ] Update `extractMergeRequestWorkflow` to call merger/closer activities
+### Phase A: Merger/Closer Activities (Complete)
+6. [x] Add `extractMergeRequestMerger` activity to `ExtractActivities` interface
+7. [x] Add `extractMergeRequestCloser` activity to `ExtractActivities` interface
+8. [x] Implement activities in `apps/worker-extract/src/activities/extract-activities.ts`
+9. [x] Update `extractMergeRequestWorkflow` to call merger/closer activities
 
 ### Phase B: V2 Pagination (Later)
 10. [ ] Create `getMergeRequestsV2` function in `packages/functions/extract`

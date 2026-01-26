@@ -57,6 +57,10 @@ export interface ExtractActivities {
 
   extractTimelineEvents(input: ExtractMergeRequestInput): Promise<void>;
 
+  extractMergeRequestMerger(input: ExtractMergeRequestInput): Promise<void>;
+
+  extractMergeRequestCloser(input: ExtractMergeRequestInput): Promise<void>;
+
   extractMembers(input: ExtractMembersInput): Promise<ExtractMembersResult>;
 
   extractMemberInfo(input: {
