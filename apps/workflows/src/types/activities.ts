@@ -12,7 +12,7 @@ import type {
 import type {
   ExtractDeploymentsResult,
   ExtractMembersResult,
-  ExtractMergeRequestsResult,
+  ExtractMergeRequestsV2Result,
   ExtractRepositoryResult,
   ExtractWorkflowDeploymentInput,
   ExtractWorkflowDeploymentsResult,
@@ -33,7 +33,7 @@ export interface ExtractActivities {
     input: ExtractRepositoryInput,
   ): Promise<ExtractRepositoryResult>;
 
-  extractMergeRequests(input: {
+  extractMergeRequestsV2(input: {
     tenantId: number;
     tenantDbUrl: string;
     repositoryId: number;
@@ -44,10 +44,10 @@ export interface ExtractActivities {
     sourceControl: SourceControl;
     userId: string;
     crawlId: number;
-    timePeriod: TimePeriod;
+    updatedAfter: number;
     page: number;
     perPage: number;
-  }): Promise<ExtractMergeRequestsResult>;
+  }): Promise<ExtractMergeRequestsV2Result>;
 
   extractMergeRequestDiffs(input: ExtractMergeRequestInput): Promise<void>;
 
@@ -56,6 +56,10 @@ export interface ExtractActivities {
   extractMergeRequestNotes(input: ExtractMergeRequestInput): Promise<void>;
 
   extractTimelineEvents(input: ExtractMergeRequestInput): Promise<void>;
+
+  extractMergeRequestMerger(input: ExtractMergeRequestInput): Promise<void>;
+
+  extractMergeRequestCloser(input: ExtractMergeRequestInput): Promise<void>;
 
   extractMembers(input: ExtractMembersInput): Promise<ExtractMembersResult>;
 

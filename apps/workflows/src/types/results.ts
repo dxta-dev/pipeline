@@ -21,9 +21,10 @@ export interface ExtractRepositoryResult {
   mergeRequestIds: number[];
 }
 
-export interface ExtractMergeRequestsResult {
+export interface ExtractMergeRequestsV2Result {
   mergeRequestIds: number[];
-  totalPages: number;
+  hasMore: boolean;
+  reachedWatermark: boolean;
 }
 
 export interface ExtractMembersResult {

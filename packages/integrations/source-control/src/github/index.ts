@@ -1,29 +1,28 @@
-import type { SourceControl } from "..";
-import { Octokit } from "@octokit/rest";
-import parseLinkHeader from "parse-link-header";
-
 import type {
-  NewRepository,
-  NewNamespace,
-  NewMergeRequestWithSha,
-  NewMember,
-  NewMergeRequestDiff,
-  Repository,
-  Namespace,
-  MergeRequest,
-  NewMergeRequestCommit,
-  NewMergeRequestNote,
-  NewTimelineEvents,
-  TimelineEventType,
-  NewDeploymentWithSha,
   Deployment,
   deploymentsStatusEnum,
+  MergeRequest,
+  Namespace,
+  NewDeploymentWithSha,
+  NewMember,
+  NewMergeRequestCommit,
+  NewMergeRequestDiff,
+  NewMergeRequestNote,
+  NewMergeRequestWithSha,
+  NewNamespace,
+  NewRepository,
+  NewTimelineEvents,
+  Repository,
+  TimelineEventType,
 } from "@dxta/extract-schema";
-import type { CommitData, Pagination, TimePeriod } from "../source-control";
 import type { components } from "@octokit/openapi-types";
-import { TimelineEventTypes } from "../../../../../packages/schemas/extract/src/timeline-events";
 import { RequestError } from "@octokit/request-error";
+import { Octokit } from "@octokit/rest";
 import assert from "assert";
+import parseLinkHeader from "parse-link-header";
+import { TimelineEventTypes } from "../../../../../packages/schemas/extract/src/timeline-events";
+import type { SourceControl } from "..";
+import type { CommitData, Pagination, TimePeriod } from "../source-control";
 
 const FILE_STATUS_FLAGS_MAPPING: Record<
   | "added"
@@ -344,195 +343,120 @@ export class GitHubSourceControl implements SourceControl {
     };
   }
 
-  async fetchMergeRequests(
+  /**
+   * Fetch merge requests using watermark-based pagination (no Search API).
+   * Replaces fetchMergeRequests with a cleaner interface.
+   *
+   * @param updatedAfter - Stop paginating when PR updated_at < this date
+   * @returns hasMore instead of totalPages; reachedWatermark indicates stop reason
+   */
+  async fetchMergeRequestsV2(
     externalRepositoryId: number,
     namespaceName: string,
     repositoryName: string,
     repositoryId: number,
     perPage: number,
-    creationPeriod?: TimePeriod,
+    updatedAfter?: Date,
     page?: number,
-    totalPages?: number,
   ): Promise<{
     mergeRequests: NewMergeRequestWithSha[];
-    pagination: Pagination;
+    pagination: { page: number; perPage: number; hasMore: boolean };
+    reachedWatermark: boolean;
   }> {
     page = page || 1;
-    const serchPRs = async (
-      namespaceName: string,
-      repositoryName: string,
-      page: number,
-      perPage: number,
-      from: Date,
-      to: Date | "today",
-    ) => {
-      let updated;
-
-      if (to === "today") {
-        updated = `>=${from.toISOString().slice(0, 10)}`;
-      } else {
-        updated = `${from.toISOString().slice(0, 10)}..${to.toISOString().slice(0, 10)}`;
-      }
-
-      const searchResult = await this.api.rest.search.issuesAndPullRequests({
-        q: `type:pr+repo:${namespaceName}/${repositoryName}+updated:${updated}`,
-        page,
-        per_page: perPage,
-        state: "all",
-        sort: "updated",
-      });
-
-      return {
-        totalCount: searchResult.data.total_count,
-        queryDidTimeout: searchResult.data.incomplete_results,
-      };
-    };
-
-    async function getPagination({
-      page,
-      perPage,
-      totalPages,
-      timePeriod,
-    }: {
-      page: number;
-      perPage: number;
-      totalPages?: number;
-      timePeriod?: TimePeriod;
-    }) {
-      if (totalPages || !timePeriod) return null;
-
-      const searchPRsResult = await serchPRs(
-        namespaceName,
-        repositoryName,
-        page,
-        perPage,
-        timePeriod.from,
-        timePeriod.to,
-      );
-
-      function isToday(date: Date) {
-        const today = new Date();
-        return (
-          date.getDate() === today.getDate() &&
-          date.getMonth() === today.getMonth() &&
-          date.getFullYear() === today.getFullYear()
-        );
-      }
-
-      if (isToday(timePeriod.to)) {
-        return {
-          page,
-          totalPages: Math.ceil(searchPRsResult.totalCount / perPage),
-          perPage, // perPage should be calculated from the pulls api not search
-          queryDidTimeout: searchPRsResult.queryDidTimeout,
-        };
-      }
-      const searchOffsetResult = await serchPRs(
-        namespaceName,
-        repositoryName,
-        page,
-        perPage,
-        timePeriod.from,
-        "today",
-      );
-
-      return {
-        page:
-          page +
-          Math.floor(
-            (searchOffsetResult.totalCount - searchPRsResult.totalCount) /
-              perPage,
-          ),
-        totalPages: Math.ceil(searchOffsetResult.totalCount / perPage), // totalPages is actually the last page that contains MRs inside the search period
-        perPage, // perPage should be calculated from pulls api not search
-        queryDidTimeout:
-          searchPRsResult.queryDidTimeout || searchOffsetResult.queryDidTimeout,
-      };
-    }
-
-    const firstPagePagination = await getPagination({
-      page,
-      perPage,
-      totalPages,
-      timePeriod: creationPeriod,
-    });
-
-    if (
-      firstPagePagination !== null &&
-      firstPagePagination.totalPages === 0 &&
-      firstPagePagination.queryDidTimeout === false
-    )
-      return {
-        mergeRequests: [],
-        pagination: {
-          page: firstPagePagination.page,
-          perPage: firstPagePagination.perPage,
-          totalPages: firstPagePagination.totalPages,
-        },
-      };
 
     const result = await this.api.pulls.list({
       owner: namespaceName,
       repo: repositoryName,
-      page: firstPagePagination?.page || page,
-      per_page: firstPagePagination?.perPage || perPage,
+      page,
+      per_page: perPage,
       state: "all",
       sort: "updated",
       direction: "desc",
     });
-    const linkHeader = parseLinkHeader(result.headers.link) || {
-      next: { per_page: perPage },
-    };
 
-    const pullsTotalPages = !("last" in linkHeader)
-      ? page
-      : Number(linkHeader.last?.page);
-    const pullsPerPage =
-      "next" in linkHeader
-        ? Number(linkHeader.next?.per_page)
-        : Number(linkHeader.prev?.per_page);
+    const linkHeader = parseLinkHeader(result.headers.link);
+    const hasNextPage = linkHeader !== null && "next" in linkHeader;
 
-    const pagination = {
-      page: firstPagePagination?.page || page,
-      perPage:
-        perPage !== undefined
-          ? perPage
-          : firstPagePagination?.perPage !== undefined
-            ? firstPagePagination?.perPage
-            : pullsPerPage, // Dejan: This can break if firstPagePagination returns different perPage -> check documentation on linkHeader ???
-      totalPages:
-        totalPages !== undefined
-          ? totalPages
-          : firstPagePagination?.totalPages !== undefined
-            ? firstPagePagination?.totalPages
-            : pullsTotalPages, // Refactor: should recalculate totalPages here if pulls api returns different perPage
-    } satisfies Pagination;
+    const mergeRequests = result.data.map(
+      (pr) =>
+        ({
+          externalId: pr.id,
+          canonId: pr.number,
+          repositoryId,
+          title: pr.title,
+          description: pr.body,
+          webUrl: pr.html_url,
+          createdAt: new Date(pr.created_at),
+          updatedAt: new Date(pr.updated_at),
+          closedAt: pr.closed_at ? new Date(pr.closed_at) : undefined,
+          mergedAt: pr.merged_at ? new Date(pr.merged_at) : undefined,
+          // Note: merged_by is not available in pulls.list, only in pulls.get
+          // mergerExternalId will be fetched separately via fetchMergeRequestMerger
+          authorExternalId: pr.user?.id,
+          state: pr.state,
+          targetBranch: pr.base.ref,
+          sourceBranch: pr.head.ref,
+          mergeCommitSha: pr.merged_at ? pr.merge_commit_sha : undefined,
+        }) satisfies NewMergeRequestWithSha,
+    );
+
+    // Watermark check: did the oldest PR in this page cross the boundary?
+    const oldestPr = mergeRequests[mergeRequests.length - 1];
+    const reachedWatermark =
+      updatedAfter !== undefined &&
+      oldestPr !== undefined &&
+      oldestPr.updatedAt !== undefined &&
+      oldestPr.updatedAt < updatedAfter;
+
     return {
-      mergeRequests: result.data.map(
-        (mergeRequest) =>
-          ({
-            externalId: mergeRequest.id,
-            canonId: mergeRequest.number,
-            repositoryId,
-            title: mergeRequest.title,
-            description: mergeRequest.body,
-            webUrl: mergeRequest.html_url,
-            createdAt: new Date(mergeRequest.created_at),
-            updatedAt: new Date(mergeRequest.updated_at),
-            mergedAt: mergeRequest.merged_at
-              ? new Date(mergeRequest.merged_at)
-              : undefined,
-            closedAt: mergeRequest.closed_at
-              ? new Date(mergeRequest.closed_at)
-              : undefined,
-            authorExternalId: mergeRequest.user?.id,
-            state: mergeRequest.state,
-            targetBranch: mergeRequest.base.ref,
-            sourceBranch: mergeRequest.head.ref,
-            mergeCommitSha: mergeRequest.merge_commit_sha, // hypothesis: is null when conflict exists
-          }) satisfies NewMergeRequestWithSha,
-      ),
-      pagination,
+      mergeRequests,
+      pagination: {
+        page,
+        perPage,
+        hasMore: hasNextPage && !reachedWatermark,
+      },
+      reachedWatermark,
+    };
+  }
+
+  /**
+   * Fetch merger info for a merged PR using pulls.get endpoint.
+   * Required because pulls.list doesn't include merged_by field.
+   */
+  async fetchMergeRequestMerger(
+    namespaceName: string,
+    repositoryName: string,
+    pullNumber: number,
+  ): Promise<{ mergerExternalId: number | null }> {
+    const result = await this.api.pulls.get({
+      owner: namespaceName,
+      repo: repositoryName,
+      pull_number: pullNumber,
+    });
+
+    return {
+      mergerExternalId: result.data.merged_by?.id ?? null,
+    };
+  }
+
+  /**
+   * Fetch closer info for a closed PR using issues.get endpoint.
+   * PRs are issues in GitHub, so we use the issues API for closed_by.
+   */
+  async fetchMergeRequestCloser(
+    namespaceName: string,
+    repositoryName: string,
+    pullNumber: number,
+  ): Promise<{ closerExternalId: number | null }> {
+    const result = await this.api.issues.get({
+      owner: namespaceName,
+      repo: repositoryName,
+      issue_number: pullNumber,
+    });
+
+    return {
+      closerExternalId: result.data.closed_by?.id ?? null,
     };
   }
 
@@ -712,7 +636,7 @@ export class GitHubSourceControl implements SourceControl {
       .map((singleEvent) => {
         switch (singleEvent.event) {
           case "assigned":
-          case "unassigned":
+          case "unassigned": {
             const assignedEvent = singleEvent as
               | components["schemas"]["timeline-assigned-issue-event"]
               | components["schemas"]["timeline-unassigned-issue-event"];
@@ -729,7 +653,8 @@ export class GitHubSourceControl implements SourceControl {
                 assigneeName: assignedEvent.assignee.login,
               },
             } satisfies NewTimelineEvents;
-          case "committed":
+          }
+          case "committed": {
             const committedEvent =
               singleEvent as components["schemas"]["timeline-committed-event"];
             return {
@@ -746,8 +671,9 @@ export class GitHubSourceControl implements SourceControl {
                 committedDate: new Date(committedEvent.committer.date),
               },
             } satisfies NewTimelineEvents;
+          }
           case "review_requested":
-          case "review_request_removed":
+          case "review_request_removed": {
             const requestedEvent = singleEvent as
               | components["schemas"]["review-requested-issue-event"]
               | components["schemas"]["review-request-removed-issue-event"];
@@ -764,7 +690,8 @@ export class GitHubSourceControl implements SourceControl {
                 requestedReviewerName: requestedEvent.requested_reviewer?.login,
               },
             } satisfies NewTimelineEvents;
-          case "reviewed":
+          }
+          case "reviewed": {
             const reviewedEvent =
               singleEvent as components["schemas"]["timeline-reviewed-event"];
             return {
@@ -779,7 +706,8 @@ export class GitHubSourceControl implements SourceControl {
                 state: reviewedEvent.state,
               },
             } satisfies NewTimelineEvents;
-          case "commented":
+          }
+          case "commented": {
             const commentedEvent =
               singleEvent as components["schemas"]["timeline-comment-event"];
             return {
@@ -791,7 +719,8 @@ export class GitHubSourceControl implements SourceControl {
               actorName: commentedEvent.actor?.login || "",
               actorId: commentedEvent.actor?.id,
             } satisfies NewTimelineEvents;
-          default:
+          }
+          default: {
             const generalEvent =
               singleEvent as components["schemas"]["state-change-issue-event"];
             return {
@@ -803,6 +732,7 @@ export class GitHubSourceControl implements SourceControl {
               actorId: generalEvent.actor?.id,
               htmlUrl: null,
             } satisfies NewTimelineEvents;
+          }
         }
       });
 

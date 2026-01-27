@@ -1,59 +1,51 @@
 import type { MergeRequest, NewMergeRequest, Sha } from "@dxta/extract-schema";
-import type { ExtractFunction, Entities } from "./config";
-import type {
-  Pagination,
-  SourceControl,
-  TimePeriod,
-} from "@dxta/source-control";
+import type { SourceControl } from "@dxta/source-control";
 import { sql } from "drizzle-orm";
 import { isRelativeResidualMergeRequest } from "./classify-merge-requests";
+import type { Entities, ExtractFunction } from "./config";
 
-export type GetMergeRequestsInput = {
+export type GetMergeRequestsV2Input = {
   externalRepositoryId: number;
   namespaceName: string;
   repositoryName: string;
   repositoryId: number;
   page?: number;
   perPage: number;
-  timePeriod?: TimePeriod;
-  totalPages?: number;
+  updatedAfter?: Date;
 };
 
-export type GetMergeRequestsOutput = {
+export type GetMergeRequestsV2Output = {
   mergeRequests: MergeRequest[];
   processableMergeRequests: MergeRequest[];
-  paginationInfo: Pagination;
+  pagination: { page: number; perPage: number; hasMore: boolean };
+  reachedWatermark: boolean;
 };
 
-export type GetMergeRequestsSourceControl = Pick<
+export type GetMergeRequestsV2SourceControl = Pick<
   SourceControl,
-  "fetchMergeRequests"
+  "fetchMergeRequestsV2"
 >;
-export type GetMergeRequestsEntities = Pick<
+export type GetMergeRequestsV2Entities = Pick<
   Entities,
   "mergeRequests" | "repositoryShas"
 >;
 
-export type GetMergeRequestsFunction = ExtractFunction<
-  GetMergeRequestsInput,
-  GetMergeRequestsOutput,
-  GetMergeRequestsSourceControl,
-  GetMergeRequestsEntities
+export type GetMergeRequestsV2Function = ExtractFunction<
+  GetMergeRequestsV2Input,
+  GetMergeRequestsV2Output,
+  GetMergeRequestsV2SourceControl,
+  GetMergeRequestsV2Entities
 >;
 
-export const wasMergeRequestUpdatedInTimePeriod = (
+const wasMergeRequestUpdatedAfter = (
   mergeRequest: NewMergeRequest,
-  timePeriod: TimePeriod,
+  updatedAfter: Date,
 ) => {
-  const timestamp = mergeRequest.updatedAt || mergeRequest.createdAt; // TODO: why is updatedAt nullable ? Add note in table
-
-  return (
-    timestamp.getTime() < timePeriod.to.getTime() &&
-    timestamp.getTime() >= timePeriod.from.getTime()
-  );
+  const timestamp = mergeRequest.updatedAt || mergeRequest.createdAt;
+  return timestamp.getTime() >= updatedAfter.getTime();
 };
 
-export const getMergeRequests: GetMergeRequestsFunction = async (
+export const getMergeRequestsV2: GetMergeRequestsV2Function = async (
   {
     externalRepositoryId,
     namespaceName,
@@ -61,8 +53,7 @@ export const getMergeRequests: GetMergeRequestsFunction = async (
     repositoryId,
     page,
     perPage,
-    timePeriod,
-    totalPages,
+    updatedAfter,
   },
   { integrations, db, entities },
 ) => {
@@ -70,34 +61,37 @@ export const getMergeRequests: GetMergeRequestsFunction = async (
     throw new Error("Source control integration not configured");
   }
 
-  const { mergeRequests, pagination } =
-    await integrations.sourceControl.fetchMergeRequests(
+  if (!integrations.sourceControl.fetchMergeRequestsV2) {
+    throw new Error("fetchMergeRequestsV2 not available on source control");
+  }
+
+  const { mergeRequests, pagination, reachedWatermark } =
+    await integrations.sourceControl.fetchMergeRequestsV2(
       externalRepositoryId,
       namespaceName,
       repositoryName,
       repositoryId,
       perPage,
-      timePeriod,
+      updatedAfter,
       page,
-      totalPages,
     );
 
-  // HOTFIX: insertion issue when page all PRs without intent. Should be removed at some point when we remove invalid pagination / identify issue
-  const mergeRequestsUpdatedInPeriod = mergeRequests.filter((mr) =>
-    timePeriod === undefined
+  // Filter MRs to only those updated after the watermark
+  const mergeRequestsUpdatedAfterWatermark = mergeRequests.filter((mr) =>
+    updatedAfter === undefined
       ? true
-      : wasMergeRequestUpdatedInTimePeriod(mr, timePeriod),
+      : wasMergeRequestUpdatedAfter(mr, updatedAfter),
   );
 
   const insertedShas = await db.transaction(async (tx) => {
     return Promise.all(
-      mergeRequestsUpdatedInPeriod
+      mergeRequestsUpdatedAfterWatermark
         .map((mergeRequest) => mergeRequest.mergeCommitSha)
-        .filter((sha) => sha != undefined)
+        .filter((sha): sha is string => sha !== undefined && sha !== null)
         .map((sha) =>
           tx
             .insert(entities.repositoryShas)
-            .values({ repositoryId: repositoryId, sha: sha as string })
+            .values({ repositoryId: repositoryId, sha: sha })
             .onConflictDoUpdate({
               target: [
                 entities.repositoryShas.repositoryId,
@@ -118,7 +112,7 @@ export const getMergeRequests: GetMergeRequestsFunction = async (
 
   const insertedMergeRequests = await db.transaction(async (tx) => {
     return Promise.all(
-      mergeRequestsUpdatedInPeriod.map((mergeRequest) =>
+      mergeRequestsUpdatedAfterWatermark.map((mergeRequest) =>
         tx
           .insert(entities.mergeRequests)
           .values({
@@ -170,21 +164,24 @@ export const getMergeRequests: GetMergeRequestsFunction = async (
     );
   });
 
-  if (timePeriod === undefined)
+  if (updatedAfter === undefined) {
     return {
       mergeRequests: insertedMergeRequests,
-      paginationInfo: pagination,
+      pagination,
       processableMergeRequests: insertedMergeRequests,
+      reachedWatermark,
     };
+  }
 
   const SIX_MONTHS = 6 * 30 * 24 * 60 * 60 * 1000;
   const processable = insertedMergeRequests.filter(
-    (mr) => !isRelativeResidualMergeRequest(mr, timePeriod.from, SIX_MONTHS),
+    (mr) => !isRelativeResidualMergeRequest(mr, updatedAfter, SIX_MONTHS),
   );
 
   return {
     mergeRequests: insertedMergeRequests,
-    paginationInfo: pagination,
+    pagination,
     processableMergeRequests: processable,
+    reachedWatermark,
   };
 };

@@ -1,7 +1,7 @@
 import { RequestError } from "@octokit/request-error";
 import type { SourceControl } from "..";
-import { headersRateLimitState } from "./rate-limits";
 import { RateLimitExceededError } from "./errors";
+import { headersRateLimitState } from "./rate-limits";
 
 const modError = (error: unknown) => {
   if (!(error instanceof RequestError)) {
@@ -59,6 +59,15 @@ export const githubErrorMod = <SC extends Partial<SourceControl>>(
     fetchMergeRequestDiffs: handleError(client, client.fetchMergeRequestDiffs),
     fetchMergeRequestNotes: handleError(client, client.fetchMergeRequestNotes),
     fetchMergeRequests: handleError(client, client.fetchMergeRequests),
+    fetchMergeRequestsV2: handleError(client, client.fetchMergeRequestsV2),
+    fetchMergeRequestMerger: handleError(
+      client,
+      client.fetchMergeRequestMerger,
+    ),
+    fetchMergeRequestCloser: handleError(
+      client,
+      client.fetchMergeRequestCloser,
+    ),
     fetchNamespaceMembers: handleError(client, client.fetchNamespaceMembers),
     fetchRepository: handleError(client, client.fetchRepository),
     fetchTimelineEvents: handleError(client, client.fetchTimelineEvents),

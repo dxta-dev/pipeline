@@ -6,10 +6,12 @@ import {
   getDeployments,
   getMemberInfo,
   getMembers,
+  getMergeRequestCloser,
   getMergeRequestCommits,
+  getMergeRequestMerger,
   getMergeRequestNotes,
-  getMergeRequests,
   getMergeRequestsDiffs,
+  getMergeRequestsV2,
   getNamespaceMembers,
   getRepository,
   getTimelineEvents,
@@ -44,7 +46,6 @@ import type {
   ExtractMembersInput,
   ExtractMembersResult,
   ExtractMergeRequestInput,
-  ExtractMergeRequestsResult,
   ExtractRepositoryInput,
   ExtractRepositoryResult,
   ExtractTenantsInput,
@@ -155,7 +156,7 @@ export const extractActivities: ExtractActivities = {
     };
   },
 
-  async extractMergeRequests(input: {
+  async extractMergeRequestsV2(input: {
     tenantId: number;
     tenantDbUrl: string;
     repositoryId: number;
@@ -166,37 +167,43 @@ export const extractActivities: ExtractActivities = {
     sourceControl: SourceControl;
     userId: string;
     crawlId: number;
-    timePeriod: TimePeriod;
+    updatedAfter: number;
     page: number;
     perPage: number;
-  }): Promise<ExtractMergeRequestsResult> {
+  }): Promise<{
+    mergeRequestIds: number[];
+    hasMore: boolean;
+    reachedWatermark: boolean;
+  }> {
     const db = initDatabase(input.tenantDbUrl);
     const sourceControl = await initSourceControl({
       tenantId: input.tenantId,
       sourceControl: input.sourceControl,
     });
-    const timePeriod = toDateTimePeriod(input.timePeriod);
+    const updatedAfter = new Date(input.updatedAfter);
 
-    const { processableMergeRequests, paginationInfo } = await getMergeRequests(
-      {
-        externalRepositoryId: input.externalRepositoryId,
-        namespaceName: input.namespaceName,
-        repositoryName: input.repositoryName,
-        repositoryId: input.repositoryId,
-        page: input.page,
-        perPage: input.perPage,
-        timePeriod,
-      },
-      {
-        db,
-        integrations: { sourceControl },
-        entities: { mergeRequests, repositoryShas },
-      },
-    );
+    const { processableMergeRequests, pagination, reachedWatermark } =
+      await getMergeRequestsV2(
+        {
+          externalRepositoryId: input.externalRepositoryId,
+          namespaceName: input.namespaceName,
+          repositoryName: input.repositoryName,
+          repositoryId: input.repositoryId,
+          page: input.page,
+          perPage: input.perPage,
+          updatedAfter,
+        },
+        {
+          db,
+          integrations: { sourceControl },
+          entities: { mergeRequests, repositoryShas },
+        },
+      );
 
     return {
       mergeRequestIds: processableMergeRequests.map((mr) => mr.id),
-      totalPages: paginationInfo.totalPages,
+      hasMore: pagination.hasMore,
+      reachedWatermark,
     };
   },
 
@@ -316,6 +323,60 @@ export const extractActivities: ExtractActivities = {
           members,
           repositoriesToMembers,
           gitIdentities,
+        },
+      },
+    );
+  },
+
+  async extractMergeRequestMerger(
+    input: ExtractMergeRequestInput,
+  ): Promise<void> {
+    const db = initDatabase(input.tenantDbUrl);
+    const sourceControl = await initSourceControl({
+      tenantId: input.tenantId,
+      sourceControl: input.sourceControl,
+    });
+
+    await getMergeRequestMerger(
+      {
+        mergeRequestId: input.mergeRequestId,
+        repositoryId: input.repositoryId,
+        namespaceId: input.namespaceId,
+      },
+      {
+        db,
+        integrations: { sourceControl },
+        entities: {
+          mergeRequests,
+          namespaces,
+          repositories,
+        },
+      },
+    );
+  },
+
+  async extractMergeRequestCloser(
+    input: ExtractMergeRequestInput,
+  ): Promise<void> {
+    const db = initDatabase(input.tenantDbUrl);
+    const sourceControl = await initSourceControl({
+      tenantId: input.tenantId,
+      sourceControl: input.sourceControl,
+    });
+
+    await getMergeRequestCloser(
+      {
+        mergeRequestId: input.mergeRequestId,
+        repositoryId: input.repositoryId,
+        namespaceId: input.namespaceId,
+      },
+      {
+        db,
+        integrations: { sourceControl },
+        entities: {
+          mergeRequests,
+          namespaces,
+          repositories,
         },
       },
     );

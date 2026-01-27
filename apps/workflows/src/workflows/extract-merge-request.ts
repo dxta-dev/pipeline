@@ -8,6 +8,8 @@ const {
   extractMergeRequestCommits,
   extractMergeRequestNotes,
   extractTimelineEvents,
+  extractMergeRequestMerger,
+  extractMergeRequestCloser,
 } = proxyActivities<ExtractActivities>({
   startToCloseTimeout: "10 minutes",
   retry: {
@@ -27,5 +29,7 @@ export async function extractMergeRequestWorkflow(
 
   if (input.sourceControl === "github") {
     await extractTimelineEvents(input);
+    await extractMergeRequestMerger(input);
+    await extractMergeRequestCloser(input);
   }
 }

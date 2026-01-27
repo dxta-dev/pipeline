@@ -8,7 +8,7 @@ const DEFAULT_PER_PAGE = 30;
 
 const {
   extractRepository,
-  extractMergeRequests,
+  extractMergeRequestsV2,
   extractMembers,
   extractMemberInfo,
   extractNamespaceMembers,
@@ -68,42 +68,32 @@ async function extractMergeRequestsAndChildren(
   input: ExtractRepositoryInput,
   initialMergeRequestIds: number[],
 ): Promise<void> {
-  const firstPageResult = await extractMergeRequests({
-    ...baseInput,
-    externalRepositoryId: input.externalRepositoryId,
-    repositoryName: input.repositoryName,
-    namespaceName: input.namespaceName,
-    page: 1,
-    perPage: DEFAULT_PER_PAGE,
-  });
-
   const allMergeRequestIds = [...initialMergeRequestIds];
 
-  if (firstPageResult.totalPages > 1) {
-    const remainingPages: number[] = [];
-    for (let page = 2; page <= firstPageResult.totalPages; page++) {
-      remainingPages.push(page);
-    }
+  // Sequential pagination with watermark-based early exit
+  let page = 1;
+  let hasMore = true;
 
-    const pageResults = await Promise.all(
-      remainingPages.map((page) =>
-        extractMergeRequests({
-          ...baseInput,
-          externalRepositoryId: input.externalRepositoryId,
-          repositoryName: input.repositoryName,
-          namespaceName: input.namespaceName,
-          page,
-          perPage: DEFAULT_PER_PAGE,
-        }),
-      ),
-    );
+  while (hasMore) {
+    const result = await extractMergeRequestsV2({
+      ...baseInput,
+      externalRepositoryId: input.externalRepositoryId,
+      repositoryName: input.repositoryName,
+      namespaceName: input.namespaceName,
+      updatedAfter: input.timePeriod.from,
+      page,
+      perPage: DEFAULT_PER_PAGE,
+    });
 
-    for (const pageResult of pageResults) {
-      allMergeRequestIds.push(...pageResult.mergeRequestIds);
+    allMergeRequestIds.push(...result.mergeRequestIds);
+
+    // Stop if no more pages or we've reached the watermark
+    if (!result.hasMore || result.reachedWatermark) {
+      hasMore = false;
+    } else {
+      page++;
     }
   }
-
-  allMergeRequestIds.push(...firstPageResult.mergeRequestIds);
 
   const uniqueMergeRequestIds = [...new Set(allMergeRequestIds)];
 
