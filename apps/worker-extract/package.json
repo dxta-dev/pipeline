@@ -23,6 +23,7 @@
     "@libsql/client": "^0.17.0",
     "@octokit/auth-app": "^7.0.1",
     "@temporalio/activity": "^1.11.7",
+    "@temporalio/interceptors-opentelemetry": "^1.11.7",
     "@temporalio/worker": "^1.11.7",
     "drizzle-orm": "^0.45.1"
   },

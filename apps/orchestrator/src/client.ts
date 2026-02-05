@@ -1,4 +1,5 @@
 import { Client, Connection } from "@temporalio/client";
+import { OpenTelemetryWorkflowClientInterceptor } from "@temporalio/interceptors-opentelemetry";
 
 import { getEnv } from "./env";
 
@@ -16,6 +17,9 @@ export async function getClient(): Promise<Client> {
   cachedClient = new Client({
     connection,
     namespace: env.TEMPORAL_NAMESPACE,
+    interceptors: {
+      workflow: [new OpenTelemetryWorkflowClientInterceptor()],
+    },
   });
 
   return cachedClient;

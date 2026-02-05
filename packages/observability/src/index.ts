@@ -1,3 +1,4 @@
+import { createTraceExporter } from "./exporters";
 import {
   initObservability,
   isObservabilityInitialized,
@@ -12,6 +13,7 @@ import {
   recordJobFailed,
   traceJob,
 } from "./metrics";
+import { createResource } from "./resource";
 
 // Initialize metrics when module loads
 initMetrics();
@@ -25,5 +27,7 @@ export {
   recordJobDuration,
   traceJob,
   logInfo,
+  createResource,
+  createTraceExporter,
   type JobMetricAttributes,
 };
