@@ -55,9 +55,9 @@ export function initObservability(config: ObservabilityConfig): void {
     resource,
     traceExporter: createTraceExporter(otlpEndpoint),
     metricReader: createMetricReader(otlpEndpoint),
-    logRecordProcessor: new BatchLogRecordProcessor(
-      createLogExporter(otlpEndpoint),
-    ),
+    logRecordProcessors: [
+      new BatchLogRecordProcessor(createLogExporter(otlpEndpoint)),
+    ],
     instrumentations: createInstrumentations(),
   });
 

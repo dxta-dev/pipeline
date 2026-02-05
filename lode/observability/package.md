@@ -210,6 +210,7 @@ initObservability({
 - Batches exports every 60 seconds for metrics
 - Graceful shutdown on SIGTERM/SIGINT
 - Metrics export is configured via NodeSDK `metricReaders`
+- Log export is configured via NodeSDK `logRecordProcessors`
 
 ## Related
 
