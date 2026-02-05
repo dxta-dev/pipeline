@@ -18,6 +18,16 @@ initObservability({
 import { otherStuff } from "./other";
 ```
 
+Log startup events via OTEL so they are exported as log records.
+
+```typescript
+import { logInfo } from "@dxta/observability";
+
+const env = getEnv();
+
+logInfo("Starting @dxta/worker-extract...");
+```
+
 ## Configuration
 
 | Option | Type | Default | Description |
@@ -72,6 +82,16 @@ await traceJob("extract-merge-request", "fetch-data", async () => {
   // Your job logic here
   return await fetchMergeRequest(id);
 });
+```
+
+### `logInfo(message, attributes?)`
+
+Emit an OTEL log record and mirror it to stdout.
+
+```typescript
+import { logInfo } from "@dxta/observability";
+
+logInfo("@dxta/orchestrator ready");
 ```
 
 ### `recordJobExecuted(attrs)` / `recordJobFailed(attrs)` / `recordJobDuration(ms, attrs)`

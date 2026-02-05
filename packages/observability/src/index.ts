@@ -3,6 +3,7 @@ import {
   isObservabilityInitialized,
   shutdownObservability,
 } from "./init";
+import { logInfo } from "./logs";
 import {
   initMetrics,
   type JobMetricAttributes,
@@ -23,5 +24,6 @@ export {
   recordJobFailed,
   recordJobDuration,
   traceJob,
+  logInfo,
   type JobMetricAttributes,
 };

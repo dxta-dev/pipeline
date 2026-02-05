@@ -1,5 +1,5 @@
 // MUST be first import - before any other imports!
-import { initObservability } from "@dxta/observability";
+import { initObservability, logInfo } from "@dxta/observability";
 
 initObservability({
   serviceName: "@dxta/worker-transform",
@@ -14,6 +14,8 @@ import { getEnv } from "./env";
 async function run() {
   const env = getEnv();
 
+  logInfo("Starting @dxta/worker-transform...");
+
   const connection = await NativeConnection.connect({
     address: env.TEMPORAL_ADDRESS,
   });
@@ -26,7 +28,7 @@ async function run() {
     activities: transformActivities,
   });
 
-  console.log("Transform worker started, polling task queue: transform");
+  logInfo("@dxta/worker-transform started, polling task queue: transform");
 
   await worker.run();
 }

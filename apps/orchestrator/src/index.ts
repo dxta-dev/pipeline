@@ -1,5 +1,5 @@
 // MUST be first import - before any other imports!
-import { initObservability } from "@dxta/observability";
+import { initObservability, logInfo } from "@dxta/observability";
 
 initObservability({
   serviceName: "@dxta/orchestrator",
@@ -14,7 +14,7 @@ import { ensureSchedules } from "./schedules";
 async function run() {
   const env = getEnv();
 
-  console.log("Orchestrator starting...");
+  logInfo("Starting @dxta/orchestrator...");
 
   // Ensure schedules exist on startup
   await ensureSchedules();
@@ -31,8 +31,8 @@ async function run() {
   });
 
   server.listen(env.PORT, () => {
-    console.log(`Health check server listening on port ${env.PORT}`);
-    console.log(`Orchestrator ready`);
+    logInfo(`Health check server listening on port ${env.PORT}`);
+    logInfo("@dxta/orchestrator ready");
   });
 }
 

@@ -1,4 +1,5 @@
 import { DiagConsoleLogger, DiagLogLevel, diag } from "@opentelemetry/api";
+import { BatchLogRecordProcessor } from "@opentelemetry/sdk-logs";
 import { NodeSDK } from "@opentelemetry/sdk-node";
 import {
   createLogExporter,
@@ -6,6 +7,7 @@ import {
   createTraceExporter,
 } from "./exporters";
 import { createInstrumentations } from "./instrumentations";
+import { initLogs } from "./logs";
 import { createResource } from "./resource";
 
 export interface ObservabilityConfig {
@@ -47,14 +49,21 @@ export function initObservability(config: ObservabilityConfig): void {
   const otlpEndpoint =
     config.otlpEndpoint || "http://otel.railway.internal:4317";
 
+  const resource = createResource(config.serviceName, config.serviceVersion);
+
   sdk = new NodeSDK({
-    resource: createResource(config.serviceName, config.serviceVersion),
+    resource,
     traceExporter: createTraceExporter(otlpEndpoint),
     metricReaders: [createMetricReader(otlpEndpoint)],
+    logRecordProcessor: new BatchLogRecordProcessor(
+      createLogExporter(otlpEndpoint),
+    ),
     instrumentations: createInstrumentations(),
   });
 
   sdk.start();
+
+  initLogs(config.serviceName);
 
   console.log(`[observability] SDK initialized for ${config.serviceName}`);
   console.log(`[observability] OTLP endpoint: ${otlpEndpoint}`);

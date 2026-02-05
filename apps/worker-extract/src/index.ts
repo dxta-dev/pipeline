@@ -1,5 +1,5 @@
 // MUST be first import - before any other imports!
-import { initObservability } from "@dxta/observability";
+import { initObservability, logInfo } from "@dxta/observability";
 
 initObservability({
   serviceName: "@dxta/worker-extract",
@@ -14,6 +14,8 @@ import { getEnv } from "./env";
 async function run() {
   const env = getEnv();
 
+  logInfo("Starting @dxta/worker-extract...");
+
   const connection = await NativeConnection.connect({
     address: env.TEMPORAL_ADDRESS,
   });
@@ -26,7 +28,7 @@ async function run() {
     activities: extractActivities,
   });
 
-  console.log("Extract worker started, polling task queue: extract");
+  logInfo("@dxta/worker-extract started, polling task queue: extract");
 
   await worker.run();
 }
