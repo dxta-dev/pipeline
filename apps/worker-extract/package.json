@@ -15,6 +15,7 @@
     "@dxta/crawl-schema": "*",
     "@dxta/extract-functions": "*",
     "@dxta/extract-schema": "*",
+    "@dxta/observability": "*",
     "@dxta/source-control": "*",
     "@dxta/super-schema": "*",
     "@dxta/tenant-schema": "*",

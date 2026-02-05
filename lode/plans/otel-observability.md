@@ -174,8 +174,9 @@ OTEL_LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).default("info"),
 | `apps/orchestrator/package.json` | ✅ | Added `@dxta/observability` dependency |
 | `apps/orchestrator/src/index.ts` | ✅ | Added initObservability() at top |
 | `apps/orchestrator/src/env.ts` | ✅ | Added OTEL env vars |
-| `apps/worker-extract/src/index.ts` | ⏳ | Add initObservability() at top |
-| `apps/worker-extract/src/env.ts` | ⏳ | Add OTEL env vars |
+| `apps/worker-extract/package.json` | ✅ | Added `@dxta/observability` dependency |
+| `apps/worker-extract/src/index.ts` | ✅ | Added initObservability() at top |
+| `apps/worker-extract/src/env.ts` | ✅ | Added OTEL env vars |
 | `apps/worker-extract/src/activities/*.ts` | ⏳ | Add metrics instrumentation |
 | `apps/worker-transform/src/index.ts` | ⏳ | Add initObservability() at top |
 | `apps/worker-transform/src/env.ts` | ⏳ | Add OTEL env vars |

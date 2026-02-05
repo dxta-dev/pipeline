@@ -10,6 +10,10 @@ const envSchema = z.object({
   GITHUB_APP_PRIVATE_KEY: z.string(),
   PER_PAGE: z.coerce.number().default(30),
   FETCH_TIMELINE_EVENTS_PER_PAGE: z.coerce.number().default(1000),
+  OTEL_EXPORTER_OTLP_ENDPOINT: z
+    .string()
+    .default("http://otel.railway.internal:4317"),
+  OTEL_LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).default("info"),
 });
 
 export type Env = z.infer<typeof envSchema>;

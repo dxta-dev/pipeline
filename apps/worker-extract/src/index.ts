@@ -1,3 +1,11 @@
+// MUST be first import - before any other imports!
+import { initObservability } from "@dxta/observability";
+
+initObservability({
+  serviceName: "@dxta/worker-extract",
+  serviceVersion: "1.0.0",
+});
+
 import { NativeConnection, Worker } from "@temporalio/worker";
 
 import { extractActivities } from "./activities";
