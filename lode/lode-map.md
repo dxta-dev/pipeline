@@ -8,8 +8,10 @@
 - `lode/tooling/docker-images.md`
 - `lode/tooling/migrations.md`
 - `lode/tooling/scripts.md`
+- `lode/observability/package.md`
 - `lode/plans/github-app-auth.md`
 - `lode/plans/github-pr-sync-migration.md`
+- `lode/plans/otel-observability.md`
 - `lode/plans/parallel-pagination-option.md`
 - `lode/plans/temporal-migration.md`
 - `lode/temporal/baseline-design.md`
@@ -42,8 +44,10 @@ export const lodeIndex = [
   "lode/tooling/docker-images.md",
   "lode/tooling/migrations.md",
   "lode/tooling/scripts.md",
+  "lode/observability/package.md",
   "lode/plans/github-app-auth.md",
   "lode/plans/github-pr-sync-migration.md",
+  "lode/plans/otel-observability.md",
   "lode/plans/parallel-pagination-option.md",
   "lode/plans/temporal-migration.md",
   "lode/temporal/baseline-design.md",
@@ -59,15 +63,18 @@ export const lodeIndex = [
 ```mermaid
 flowchart TD
   lode[lode/] --> core[core files]
+  lode --> observability[observability/]
   lode --> plans[plans/]
   lode --> temporal[temporal/]
   lode --> tooling[tooling/]
+  observability --> obsPackage[package.md]
   core --> summary[summary.md]
   core --> terminology[terminology.md]
   core --> practices[practices.md]
   plans --> migration[temporal-migration.md]
   plans --> githubAuth[github-app-auth.md]
   plans --> prSync[github-pr-sync-migration.md]
+  plans --> otel[otel-observability.md]
   plans --> parallelPagination[parallel-pagination-option.md]
   tooling --> commands[monorepo-commands.md]
   tooling --> localDev[local-dev.md]
