@@ -178,8 +178,9 @@ OTEL_LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).default("info"),
 | `apps/worker-extract/src/index.ts` | ✅ | Added initObservability() at top |
 | `apps/worker-extract/src/env.ts` | ✅ | Added OTEL env vars |
 | `apps/worker-extract/src/activities/*.ts` | ⏳ | Add metrics instrumentation |
-| `apps/worker-transform/src/index.ts` | ⏳ | Add initObservability() at top |
-| `apps/worker-transform/src/env.ts` | ⏳ | Add OTEL env vars |
+| `apps/worker-transform/package.json` | ✅ | Added `@dxta/observability` dependency |
+| `apps/worker-transform/src/index.ts` | ✅ | Added initObservability() at top |
+| `apps/worker-transform/src/env.ts` | ✅ | Added OTEL env vars |
 | `apps/worker-transform/src/activities/*.ts` | ⏳ | Add metrics instrumentation |
 
 ## Testing
@@ -196,9 +197,9 @@ OTEL_LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).default("info"),
 ## Rollout
 
 1. ✅ Create `@dxta/observability` package
-2. ✅ Integrate into one app (orchestrator) first
-3. ⏳ Test on Railway
-4. ⏳ Roll out to workers
+2. ✅ Integrate into orchestrator
+3. ✅ Integrate into workers (extract and transform)
+4. ⏳ Test on Railway
 5. ⏳ Add custom metrics gradually
 
 ## Risks & Mitigations

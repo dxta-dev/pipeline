@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@dxta/extract-schema": "*",
+    "@dxta/observability": "*",
     "@dxta/super-schema": "*",
     "@dxta/transform-functions": "*",
     "@dxta/workflows": "*",

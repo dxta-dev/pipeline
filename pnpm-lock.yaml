@@ -112,6 +112,9 @@ importers:
       '@dxta/extract-schema':
         specifier: '*'
         version: link:../../packages/schemas/extract
+      '@dxta/observability':
+        specifier: '*'
+        version: link:../../packages/observability
       '@dxta/super-schema':
         specifier: '*'
         version: link:../../packages/schemas/super
