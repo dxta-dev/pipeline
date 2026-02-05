@@ -156,30 +156,30 @@ Every span and metric includes:
 
 ## Dependencies
 
-Uses **OpenTelemetry JavaScript SDK 2.0** (requires Node.js ^18.19.0 || >=20.6.0):
+Uses the **OpenTelemetry JavaScript SDK 1.x** line to stay compatible with
+Temporal's OpenTelemetry interceptors:
 
 ```json
 {
   "@opentelemetry/api": "^1.9.0",
-  "@opentelemetry/sdk-node": "^0.211.0",
-  "@opentelemetry/sdk-trace-node": "^2.5.0",
-  "@opentelemetry/sdk-metrics": "^2.5.0",
-  "@opentelemetry/sdk-logs": "^0.211.0",
-  "@opentelemetry/resources": "^2.3.0",
-  "@opentelemetry/semantic-conventions": "^1.39.0",
-  "@opentelemetry/exporter-trace-otlp-grpc": "^0.211.0",
-  "@opentelemetry/exporter-logs-otlp-grpc": "^0.211.0",
-  "@opentelemetry/exporter-metrics-otlp-grpc": "^0.211.0",
-  "@opentelemetry/instrumentation": "^0.208.0",
-  "@opentelemetry/instrumentation-http": "^0.211.0"
+  "@opentelemetry/sdk-node": "0.54.2",
+  "@opentelemetry/sdk-trace-node": "1.27.0",
+  "@opentelemetry/sdk-metrics": "1.27.0",
+  "@opentelemetry/sdk-logs": "0.54.2",
+  "@opentelemetry/resources": "1.27.0",
+  "@opentelemetry/semantic-conventions": "1.27.0",
+  "@opentelemetry/exporter-trace-otlp-grpc": "0.54.2",
+  "@opentelemetry/exporter-logs-otlp-grpc": "0.54.2",
+  "@opentelemetry/exporter-metrics-otlp-grpc": "0.54.2",
+  "@opentelemetry/instrumentation": "0.54.2",
+  "@opentelemetry/instrumentation-http": "0.54.2"
 }
 ```
 
-### SDK 2.0 Changes
+### Compatibility
 
-- **Semantic Conventions**: Uses new `ATTR_*` constants (e.g., `ATTR_SERVICE_NAME` instead of `SEMRESATTRS_SERVICE_NAME`)
-- **Resources**: Direct `Resource` class import instead of namespace
-- **Performance**: Better tree-shaking and ES2022 compilation target
+- Temporal's interceptors depend on `@opentelemetry/sdk-trace-base` 1.x.
+- All trace exporters must use the same 1.x line to avoid span type conflicts.
 
 ## Local Testing
 

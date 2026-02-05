@@ -29,6 +29,11 @@ async function run() {
     address: env.TEMPORAL_ADDRESS,
   });
 
+  const workflowResource = createResource(
+    "@dxta/worker-extract",
+    "1.0.0",
+  ) as unknown as Parameters<typeof makeWorkflowExporter>[1];
+
   const worker = await Worker.create({
     connection,
     namespace: env.TEMPORAL_NAMESPACE,
@@ -46,7 +51,7 @@ async function run() {
     sinks: {
       exporter: makeWorkflowExporter(
         createTraceExporter(env.OTEL_EXPORTER_OTLP_ENDPOINT),
-        createResource("@dxta/worker-extract", "1.0.0"),
+        workflowResource,
       ),
     },
   });

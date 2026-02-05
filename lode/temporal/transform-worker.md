@@ -83,6 +83,7 @@ pnpm --filter @dxta/worker-transform start
 - Worker polls `transform` task queue.
 - Workflows are loaded from `@dxta/workflows` package.
 - Activity functions match `TransformActivities` interface exactly.
+- Workflow OTEL sink uses an OpenTelemetry `Resource` compatible with Temporal's interceptors.
 
 ## Rationale
 

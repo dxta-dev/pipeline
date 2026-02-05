@@ -54,7 +54,7 @@ export function initObservability(config: ObservabilityConfig): void {
   sdk = new NodeSDK({
     resource,
     traceExporter: createTraceExporter(otlpEndpoint),
-    metricReaders: [createMetricReader(otlpEndpoint)],
+    metricReader: createMetricReader(otlpEndpoint),
     logRecordProcessor: new BatchLogRecordProcessor(
       createLogExporter(otlpEndpoint),
     ),

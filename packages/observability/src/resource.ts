@@ -1,5 +1,4 @@
-import type { Resource } from "@opentelemetry/resources";
-import { resourceFromAttributes } from "@opentelemetry/resources";
+import { Resource } from "@opentelemetry/resources";
 import {
   SEMRESATTRS_DEPLOYMENT_ENVIRONMENT,
   SEMRESATTRS_SERVICE_INSTANCE_ID,
@@ -17,7 +16,7 @@ export function createResource(
   const instanceId = `${serviceName}-${process.pid}-${Date.now()}`;
   const environment = process.env.NODE_ENV || "development";
 
-  return resourceFromAttributes({
+  return new Resource({
     [SEMRESATTRS_SERVICE_NAME]: serviceName,
     [SEMRESATTRS_SERVICE_VERSION]: serviceVersion,
     [SEMRESATTRS_SERVICE_INSTANCE_ID]: instanceId,

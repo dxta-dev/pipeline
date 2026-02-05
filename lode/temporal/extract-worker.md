@@ -91,6 +91,7 @@ pnpm run start --workspace @dxta/worker-extract
 - Worker polls `extract` task queue.
 - Workflows are loaded from `@dxta/workflows` package.
 - Activity functions match `ExtractActivities` interface exactly.
+- Workflow OTEL sink uses an OpenTelemetry `Resource` compatible with Temporal's interceptors.
 
 ## Rationale
 
