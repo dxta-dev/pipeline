@@ -50,7 +50,7 @@ export function initObservability(config: ObservabilityConfig): void {
   sdk = new NodeSDK({
     resource: createResource(config.serviceName, config.serviceVersion),
     traceExporter: createTraceExporter(otlpEndpoint),
-    metricReader: createMetricReader(otlpEndpoint),
+    metricReaders: [createMetricReader(otlpEndpoint)],
     instrumentations: createInstrumentations(),
   });
 

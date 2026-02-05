@@ -189,6 +189,7 @@ initObservability({
 - Exports traces, logs, and metrics via OTLP/gRPC
 - Batches exports every 60 seconds for metrics
 - Graceful shutdown on SIGTERM/SIGINT
+- Metrics export is configured via NodeSDK `metricReaders`
 
 ## Related
 
