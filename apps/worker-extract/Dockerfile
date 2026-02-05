@@ -16,6 +16,7 @@ COPY packages/functions/crawl/package.json ./packages/functions/crawl/
 COPY packages/functions/extract/package.json ./packages/functions/extract/
 COPY packages/functions/transform/package.json ./packages/functions/transform/
 COPY packages/integrations/source-control/package.json ./packages/integrations/source-control/
+COPY packages/observability/package.json ./packages/observability/
 COPY packages/schemas/combined/package.json ./packages/schemas/combined/
 COPY packages/schemas/crawl/package.json ./packages/schemas/crawl/
 COPY packages/schemas/extract/package.json ./packages/schemas/extract/

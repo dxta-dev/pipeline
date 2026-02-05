@@ -41,6 +41,7 @@ WORKDIR /app
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/orchestrator/package.json ./apps/orchestrator/
 # ... copy other workspace package.json files
+COPY packages/observability/package.json ./packages/observability/
 RUN pnpm install --frozen-lockfile
 COPY . .
 RUN pnpm run build
