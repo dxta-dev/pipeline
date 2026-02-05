@@ -1,3 +1,11 @@
+// MUST be first import - before any other imports!
+import { initObservability } from "@dxta/observability";
+
+initObservability({
+  serviceName: "@dxta/orchestrator",
+  serviceVersion: "1.0.0",
+});
+
 import { createServer } from "node:http";
 
 import { getEnv } from "./env";

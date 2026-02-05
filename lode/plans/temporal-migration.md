@@ -1,5 +1,7 @@
 # Temporal Migration Plan
 
+**Status: ✅ COMPLETED**
+
 Goal: replace SST/AWS extract-transform infrastructure with Temporal on Railway
 while keeping Drizzle and existing integrations intact.
 
@@ -25,13 +27,13 @@ while keeping Drizzle and existing integrations intact.
 - Workers read credentials from environment variables (see `.env.example`).
 - Zod schemas validate env at startup.
 
-## Plan Phases
+## Completed Phases
 1. ✅ Baseline design: workflow/activity interfaces, workflow-only app structure.
 2. ✅ Extract migration: activities + extract workflows complete.
 3. ✅ Transform migration: activities + transformTenantsWorkflow + transformRepositoryWorkflow.
 4. ✅ Scheduling/manual start: Temporal schedules + CLI commands in `apps/orchestrator`.
 5. ✅ Remove SST/AWS infra: deleted `apps/stack` and related documentation.
-6. ⏳ Production rollout: deploy workers to Railway, validate schedules and visibility.
+6. ✅ Production rollout: workers deployed to Railway, schedules and visibility validated.
 
 ## Invariants
 - Workflow code is deterministic and contains no I/O.

@@ -13,6 +13,7 @@
     "start:transform": "tsx --env-file .env src/commands/start-transform.ts"
   },
   "dependencies": {
+    "@dxta/observability": "*",
     "@dxta/workflows": "*",
     "@temporalio/client": "^1.11.7",
     "zod": "^4.3.5"

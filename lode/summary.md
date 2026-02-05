@@ -7,9 +7,10 @@ Temporal on Railway. `apps/workflows` contains workflow definitions
 implements 17 extract activities and `apps/worker-transform` implements 2
 transform activities. `apps/orchestrator` creates Temporal schedules on startup
 and provides CLI commands for manual workflow triggers. Drizzle schemas and
-integrations remain in `packages/`. GitHub Actions workflows are currently
-removed; CI/CD is pending. The Nix dev shell includes Node.js, pnpm, Biome,
-Temporal CLI, git, and jq.
+integrations remain in `packages/`. The `@dxta/observability` package provides
+OpenTelemetry SDK for distributed tracing and metrics export to Railway.
+GitHub Actions workflows are currently removed; CI/CD is pending. The Nix dev
+shell includes Node.js, pnpm, Biome, Temporal CLI, git, and jq.
 
 Temporal infrastructure images for Railway live under `temporal/`, with wrapper
 Dockerfiles that bundle dynamic config and scripts for the server and

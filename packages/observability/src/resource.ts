@@ -1,9 +1,10 @@
-import { Resource } from "@opentelemetry/resources";
+import type { Resource } from "@opentelemetry/resources";
+import { resourceFromAttributes } from "@opentelemetry/resources";
 import {
-  ATTR_DEPLOYMENT_ENVIRONMENT,
-  ATTR_SERVICE_INSTANCE_ID,
-  ATTR_SERVICE_NAME,
-  ATTR_SERVICE_VERSION,
+  SEMRESATTRS_DEPLOYMENT_ENVIRONMENT,
+  SEMRESATTRS_SERVICE_INSTANCE_ID,
+  SEMRESATTRS_SERVICE_NAME,
+  SEMRESATTRS_SERVICE_VERSION,
 } from "@opentelemetry/semantic-conventions";
 
 /**
@@ -16,10 +17,10 @@ export function createResource(
   const instanceId = `${serviceName}-${process.pid}-${Date.now()}`;
   const environment = process.env.NODE_ENV || "development";
 
-  return new Resource({
-    [ATTR_SERVICE_NAME]: serviceName,
-    [ATTR_SERVICE_VERSION]: serviceVersion,
-    [ATTR_SERVICE_INSTANCE_ID]: instanceId,
-    [ATTR_DEPLOYMENT_ENVIRONMENT]: environment,
+  return resourceFromAttributes({
+    [SEMRESATTRS_SERVICE_NAME]: serviceName,
+    [SEMRESATTRS_SERVICE_VERSION]: serviceVersion,
+    [SEMRESATTRS_SERVICE_INSTANCE_ID]: instanceId,
+    [SEMRESATTRS_DEPLOYMENT_ENVIRONMENT]: environment,
   });
 }

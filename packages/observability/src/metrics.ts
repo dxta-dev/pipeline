@@ -52,8 +52,13 @@ export function recordJobExecuted(attributes: JobMetricAttributes): void {
 export function recordJobFailed(
   attributes: Omit<JobMetricAttributes, "status">,
 ): void {
+  const attrsWithStatus: JobMetricAttributes = {
+    ...attributes,
+    job_type: (attributes as JobMetricAttributes).job_type,
+    status: "failure",
+  };
   jobsFailedCounter?.add(1, attributes);
-  recordJobExecuted({ ...attributes, status: "failure" });
+  recordJobExecuted(attrsWithStatus);
 }
 
 /**

@@ -12,6 +12,10 @@ const envSchema = z.object({
     .string()
     .default("true")
     .transform((v) => v === "true"),
+  OTEL_EXPORTER_OTLP_ENDPOINT: z
+    .string()
+    .default("http://otel.railway.internal:4317"),
+  OTEL_LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).default("info"),
 });
 
 export type Env = z.infer<typeof envSchema>;

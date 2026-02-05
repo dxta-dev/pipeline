@@ -166,20 +166,20 @@ OTEL_LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).default("info"),
 
 ## File Changes
 
-| File | Change |
-|------|--------|
-| `packages/observability/package.json` | Create |
-| `packages/observability/src/*.ts` | Create |
-| `apps/orchestrator/src/index.ts` | Add initObservability() at top |
-| `apps/orchestrator/src/env.ts` | Add OTEL env vars |
-| `apps/worker-extract/src/index.ts` | Add initObservability() at top |
-| `apps/worker-extract/src/env.ts` | Add OTEL env vars |
-| `apps/worker-extract/src/activities/*.ts` | Add metrics instrumentation |
-| `apps/worker-transform/src/index.ts` | Add initObservability() at top |
-| `apps/worker-transform/src/env.ts` | Add OTEL env vars |
-| `apps/worker-transform/src/activities/*.ts` | Add metrics instrumentation |
-| `package.json` | Add workspaces entry |
-| `pnpm-lock.yaml` | Auto-updated |
+| File | Status | Change |
+|------|--------|--------|
+| `packages/observability/package.json` | ✅ | Created with OTEL SDK dependencies |
+| `packages/observability/src/*.ts` | ✅ | Created (index, init, resource, instrumentations, metrics, exporters) |
+| `packages/observability/tsconfig.json` | ✅ | Configured with `noEmit: false` and `declaration: true` |
+| `apps/orchestrator/package.json` | ✅ | Added `@dxta/observability` dependency |
+| `apps/orchestrator/src/index.ts` | ✅ | Added initObservability() at top |
+| `apps/orchestrator/src/env.ts` | ✅ | Added OTEL env vars |
+| `apps/worker-extract/src/index.ts` | ⏳ | Add initObservability() at top |
+| `apps/worker-extract/src/env.ts` | ⏳ | Add OTEL env vars |
+| `apps/worker-extract/src/activities/*.ts` | ⏳ | Add metrics instrumentation |
+| `apps/worker-transform/src/index.ts` | ⏳ | Add initObservability() at top |
+| `apps/worker-transform/src/env.ts` | ⏳ | Add OTEL env vars |
+| `apps/worker-transform/src/activities/*.ts` | ⏳ | Add metrics instrumentation |
 
 ## Testing
 
@@ -194,11 +194,11 @@ OTEL_LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).default("info"),
 
 ## Rollout
 
-1. Create `@dxta/observability` package
-2. Integrate into one app (orchestrator) first
-3. Test on Railway
-4. Roll out to workers
-5. Add custom metrics gradually
+1. ✅ Create `@dxta/observability` package
+2. ✅ Integrate into one app (orchestrator) first
+3. ⏳ Test on Railway
+4. ⏳ Roll out to workers
+5. ⏳ Add custom metrics gradually
 
 ## Risks & Mitigations
 

@@ -9,7 +9,9 @@ export function createInstrumentations(): Instrumentation[] {
     // HTTP/HTTPS auto-instrumentation
     new HttpInstrumentation({
       // Don't trace health check endpoints
-      ignoreIncomingPaths: [/^\/health/],
+      ignoreIncomingRequestHook: (request) => {
+        return request.url?.startsWith("/health") ?? false;
+      },
     }),
   ];
 }
