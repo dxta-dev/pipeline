@@ -10,10 +10,8 @@
 - `lode/tooling/scripts.md`
 - `lode/observability/package.md`
 - `lode/plans/github-app-auth.md`
-- `lode/plans/github-pr-sync-migration.md`
 - `lode/plans/otel-observability.md`
 - `lode/plans/parallel-pagination-option.md`
-- `lode/plans/temporal-migration.md`
 - `lode/temporal/baseline-design.md`
 - `lode/temporal/railway-images.md`
 - `lode/temporal/extract-worker.md`
@@ -46,10 +44,8 @@ export const lodeIndex = [
   "lode/tooling/scripts.md",
   "lode/observability/package.md",
   "lode/plans/github-app-auth.md",
-  "lode/plans/github-pr-sync-migration.md",
   "lode/plans/otel-observability.md",
   "lode/plans/parallel-pagination-option.md",
-  "lode/plans/temporal-migration.md",
   "lode/temporal/baseline-design.md",
   "lode/temporal/railway-images.md",
   "lode/temporal/extract-worker.md",
@@ -71,9 +67,7 @@ flowchart TD
   core --> summary[summary.md]
   core --> terminology[terminology.md]
   core --> practices[practices.md]
-  plans --> migration[temporal-migration.md]
   plans --> githubAuth[github-app-auth.md]
-  plans --> prSync[github-pr-sync-migration.md]
   plans --> otel[otel-observability.md]
   plans --> parallelPagination[parallel-pagination-option.md]
   tooling --> commands[monorepo-commands.md]
@@ -91,7 +85,6 @@ flowchart TD
 ## Related
 
 - [Summary](summary.md)
-- [Temporal migration plan](plans/temporal-migration.md)
 - [Monorepo commands](tooling/monorepo-commands.md)
 - [Tooling scripts](tooling/scripts.md)
 - [Temporal baseline design](temporal/baseline-design.md)
