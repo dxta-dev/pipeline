@@ -240,7 +240,7 @@ flowchart TD
 
 ## Related
 
-- [Summary](../summary.md)
+- [Overview](../overview.md)
 - [Migration plan](../plans/temporal-migration.md)
-- [Terminology](../terminology.md)
-- [Practices](../practices.md)
+- [Glossary](../glossary.md)
+- [Patterns](../patterns.md)

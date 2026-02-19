@@ -1,4 +1,4 @@
-# SCE Summary
+# SCE Overview
 
 This repo is a TypeScript monorepo running extract/transform pipelines via
 Temporal on Railway. `apps/workflows` contains workflow definitions
@@ -57,5 +57,5 @@ flowchart LR
 - [Temporal migration plan](plans/temporal-migration.md)
 - [Baseline design](temporal/baseline-design.md)
 - [Orchestrator](temporal/orchestrator.md)
-- [Terminology](terminology.md)
-- [Practices](practices.md)
+- [Glossary](glossary.md)
+- [Patterns](patterns.md)

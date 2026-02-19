@@ -72,5 +72,5 @@ in parallel, with Docker Buildx and GitHub Actions cache for faster builds.
 Images are tagged with both the commit SHA and `latest`.
 
 ## Related
-- [Summary](../summary.md)
+- [Overview](../overview.md)
 - [Monorepo commands](monorepo-commands.md)

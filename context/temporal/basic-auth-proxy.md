@@ -76,4 +76,4 @@ flowchart TD
 
 - [Temporal Railway images](railway-images.md)
 - [Docker images](../tooling/docker-images.md)
-- [SCE summary](../summary.md)
+- [SCE overview](../overview.md)

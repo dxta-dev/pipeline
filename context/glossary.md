@@ -1,4 +1,4 @@
-# Terminology
+# Glossary
 
 Temporal - workflow engine used for orchestration on Railway.
 Workflow - deterministic orchestration code in `apps/workflows`.
@@ -16,7 +16,7 @@ Railway - hosting platform for Temporal server and workers.
 Orchestrator - app for manual triggers and schedule management (`apps/orchestrator`).
 
 ## Invariants
-- Terminology reflects current architecture direction and workflow names.
+- Glossary entries reflect current architecture direction and workflow names.
 
 ## Contracts
 - Workflow and activity names align with exported functions.
@@ -40,6 +40,6 @@ flowchart TD
 ```
 
 ## Related
-- [Summary](summary.md)
+- [Overview](overview.md)
 - [Temporal migration plan](plans/temporal-migration.md)
 - [Baseline design](temporal/baseline-design.md)

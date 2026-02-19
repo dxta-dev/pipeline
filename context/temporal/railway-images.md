@@ -65,4 +65,4 @@ flowchart TD
 
 - [Docker images](../tooling/docker-images.md)
 - [Temporal baseline design](baseline-design.md)
-- [SCE summary](../summary.md)
+- [SCE overview](../overview.md)

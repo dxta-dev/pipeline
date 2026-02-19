@@ -51,4 +51,4 @@ flowchart TD
 
 ## Related
 - [Extract worker](../temporal/extract-worker.md)
-- [SCE summary](../summary.md)
+- [SCE overview](../overview.md)

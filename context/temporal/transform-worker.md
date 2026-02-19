@@ -131,4 +131,4 @@ flowchart TD
 - [Extract worker](extract-worker.md)
 - [Baseline design](baseline-design.md)
 - [Migration plan](../plans/temporal-migration.md)
-- [Summary](../summary.md)
+- [Overview](../overview.md)

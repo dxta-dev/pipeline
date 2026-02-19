@@ -1,4 +1,4 @@
-# Practices
+# Patterns
 
 ## Invariants
 - Keep workflow code deterministic; no I/O or non-deterministic APIs.
@@ -47,5 +47,5 @@ flowchart LR
 ```
 
 ## Related
-- [Summary](summary.md)
+- [Overview](overview.md)
 - [Temporal migration plan](plans/temporal-migration.md)

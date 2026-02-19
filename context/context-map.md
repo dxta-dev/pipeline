@@ -1,8 +1,8 @@
 # Context Map
 
-- `context/summary.md`
-- `context/terminology.md`
-- `context/practices.md`
+- `context/overview.md`
+- `context/glossary.md`
+- `context/patterns.md`
 - `context/tooling/monorepo-commands.md`
 - `context/tooling/local-dev.md`
 - `context/tooling/docker-images.md`
@@ -34,9 +34,9 @@
 ## Code Example
 ```ts
 export const contextIndex = [
-  "context/summary.md",
-  "context/terminology.md",
-  "context/practices.md",
+  "context/overview.md",
+  "context/glossary.md",
+  "context/patterns.md",
   "context/tooling/monorepo-commands.md",
   "context/tooling/local-dev.md",
   "context/tooling/docker-images.md",
@@ -59,14 +59,16 @@ export const contextIndex = [
 ```mermaid
 flowchart TD
   context[context/] --> core[core files]
+  context --> decisions[decisions/]
+  context --> handovers[handovers/]
   context --> observability[observability/]
   context --> plans[plans/]
   context --> temporal[temporal/]
   context --> tooling[tooling/]
   observability --> obsPackage[package.md]
-  core --> summary[summary.md]
-  core --> terminology[terminology.md]
-  core --> practices[practices.md]
+  core --> overview[overview.md]
+  core --> glossary[glossary.md]
+  core --> patterns[patterns.md]
   plans --> githubAuth[github-app-auth.md]
   plans --> otel[otel-observability.md]
   plans --> parallelPagination[parallel-pagination-option.md]
@@ -84,7 +86,7 @@ flowchart TD
 
 ## Related
 
-- [Summary](summary.md)
+- [Overview](overview.md)
 - [Monorepo commands](tooling/monorepo-commands.md)
 - [Tooling scripts](tooling/scripts.md)
 - [Temporal baseline design](temporal/baseline-design.md)
