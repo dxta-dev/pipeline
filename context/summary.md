@@ -1,4 +1,4 @@
-# Lode Summary
+# SCE Summary
 
 This repo is a TypeScript monorepo running extract/transform pipelines via
 Temporal on Railway. `apps/workflows` contains workflow definitions
