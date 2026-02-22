@@ -3,6 +3,13 @@
 - `context/overview.md`
 - `context/glossary.md`
 - `context/patterns.md`
+- `context/functions/packages-functions.md`
+- `context/functions/crawl-functions.md`
+- `context/functions/extract-functions.md`
+- `context/functions/transform-functions.md`
+- `context/functions/tenant-activities.md`
+- `context/integrations/source-control.md`
+- `context/integrations/github-source-control.md`
 - `context/tooling/monorepo-commands.md`
 - `context/tooling/local-dev.md`
 - `context/tooling/docker-images.md`
@@ -37,6 +44,13 @@ export const contextIndex = [
   "context/overview.md",
   "context/glossary.md",
   "context/patterns.md",
+  "context/functions/packages-functions.md",
+  "context/functions/crawl-functions.md",
+  "context/functions/extract-functions.md",
+  "context/functions/transform-functions.md",
+  "context/functions/tenant-activities.md",
+  "context/integrations/source-control.md",
+  "context/integrations/github-source-control.md",
   "context/tooling/monorepo-commands.md",
   "context/tooling/local-dev.md",
   "context/tooling/docker-images.md",
@@ -60,6 +74,8 @@ export const contextIndex = [
 flowchart TD
   context[context/] --> core[core files]
   context --> decisions[decisions/]
+  context --> functions[functions/]
+  context --> integrations[integrations/]
   context --> handovers[handovers/]
   context --> observability[observability/]
   context --> plans[plans/]
@@ -69,6 +85,13 @@ flowchart TD
   core --> overview[overview.md]
   core --> glossary[glossary.md]
   core --> patterns[patterns.md]
+  functions --> functionsDomain[packages-functions.md]
+  functions --> crawlFunctions[crawl-functions.md]
+  functions --> extractFunctions[extract-functions.md]
+  functions --> transformFunctions[transform-functions.md]
+  functions --> tenantActivities[tenant-activities.md]
+  integrations --> sourceControl[source-control.md]
+  integrations --> githubSourceControl[github-source-control.md]
   plans --> githubAuth[github-app-auth.md]
   plans --> otel[otel-observability.md]
   plans --> parallelPagination[parallel-pagination-option.md]
@@ -87,6 +110,9 @@ flowchart TD
 ## Related
 
 - [Overview](overview.md)
+- [Functions domain](functions/packages-functions.md)
+- [Source control integration](integrations/source-control.md)
+- [GitHub source control](integrations/github-source-control.md)
 - [Monorepo commands](tooling/monorepo-commands.md)
 - [Tooling scripts](tooling/scripts.md)
 - [Temporal baseline design](temporal/baseline-design.md)
