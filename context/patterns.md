@@ -26,26 +26,6 @@
 - Temporal server runs via `temporal server start-dev` (Temporal CLI).
 - Workers connect to `localhost:7233` with namespace `default`.
 
-## Code Example
-```ts
-import { proxyActivities } from "@temporalio/workflow";
-
-import type { ExtractActivities } from "../types/activities";
-
-const { extractTenants } = proxyActivities<ExtractActivities>({
-  startToCloseTimeout: "10 minutes",
-  retry: { initialInterval: "5 seconds", maximumAttempts: 10 },
-});
-```
-
-## Diagram
-```mermaid
-flowchart LR
-  plan[Plan] --> workflow[Workflow app]
-  workflow --> worker[Worker app]
-  worker --> activity[Activities]
-```
-
 ## Related
 - [Overview](overview.md)
 - [Temporal migration plan](plans/temporal-migration.md)

@@ -27,18 +27,6 @@ Orchestrator - app for manual triggers and schedule management (`apps/orchestrat
 ## Lessons
 - "Workflow" means orchestration only; "activity" means I/O.
 
-## Code Example
-```ts
-export type RunMode = "full" | "incremental";
-```
-
-## Diagram
-```mermaid
-flowchart TD
-  schedule[Schedule] --> workflow[Workflow]
-  workflow --> activity[Activity]
-```
-
 ## Related
 - [Overview](overview.md)
 - [Temporal migration plan](plans/temporal-migration.md)

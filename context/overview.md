@@ -34,25 +34,6 @@ admin-tools services.
 ## Lessons
 - Fanout and orchestration stay in workflows; retries/timeouts replace DLQs.
 
-## Code Example
-```ts
-export interface ExtractTenantsInput {
-  tenantId?: number;
-  sourceControl?: "github" | "gitlab";
-  timePeriod: { from: number; to: number };
-}
-```
-
-## Diagram
-```mermaid
-flowchart LR
-  orchestrator[apps/orchestrator] --> workflows[apps/workflows]
-  workflows --> workerExtract[apps/worker-extract]
-  workflows --> workerTransform[apps/worker-transform]
-  workerExtract --> packages[packages/*]
-  workerTransform --> packages
-```
-
 ## Related
 - [Temporal migration plan](plans/temporal-migration.md)
 - [Baseline design](temporal/baseline-design.md)
